@@ -276,7 +276,7 @@ export default function CampaignResultsView({ campaign, threshold = 85, onReset,
           {[
             { id: 'review', label: 'Review Documents' },
             { id: 'compare', label: 'Compare All' },
-            { id: 'deliver', label: 'Deliver' },
+            { id: 'deliver', label: 'Share & Publish' },
           ].map(mode => (
             <button key={mode.id} type="button" onClick={() => setViewMode(mode.id)}
               className={`px-3.5 py-1.5 rounded-md text-[12px] font-medium transition-all cursor-pointer ${
@@ -529,7 +529,7 @@ export default function CampaignResultsView({ campaign, threshold = 85, onReset,
         </div>
       )}
 
-      {/* ═══ VIEW: DELIVER ═══ */}
+      {/* ═══ VIEW: SHARE & PUBLISH ═══ */}
       {viewMode === 'deliver' && (
         <DeliverView
           campaign={campaign}
@@ -538,6 +538,11 @@ export default function CampaignResultsView({ campaign, threshold = 85, onReset,
           updateDestination={updateDestination}
           removeDestination={removeDestination}
           sendToDestination={sendToDestination}
+          reviewDocCount={reviewDocCount}
+          totalDocs={totalDocs}
+          readyCount={readyCount}
+          flaggedJobs={flaggedJobs}
+          threshold={threshold}
         />
       )}
 
@@ -555,50 +560,76 @@ export default function CampaignResultsView({ campaign, threshold = 85, onReset,
   );
 }
 
-/* ─── Deliver View ───────────────────────────────────────────── */
+/* ─── Share & Publish View ────────────────────────────────────── */
 
-function DeliverView({ campaign, destinations, addDestination, updateDestination, removeDestination, sendToDestination }) {
+function DeliverView({ campaign, destinations, addDestination, updateDestination, removeDestination, sendToDestination, reviewDocCount, totalDocs, readyCount, flaggedJobs, threshold }) {
   const [showExport, setShowExport] = useState(false);
   const hasReviewer = destinations.some(d => d.type === 'reviewer');
   const hasStraker = destinations.some(d => d.type === 'straker');
 
+  // Build smart context for reviewer note
+  const reviewSummary = useMemo(() => {
+    if (!flaggedJobs || flaggedJobs.length === 0) return '';
+    const localeGroups = {};
+    flaggedJobs.forEach(j => {
+      const lc = j.locale.toUpperCase();
+      if (!localeGroups[lc]) localeGroups[lc] = { count: 0, worstScore: 100 };
+      localeGroups[lc].count++;
+      localeGroups[lc].worstScore = Math.min(localeGroups[lc].worstScore, j.score);
+    });
+    const parts = Object.entries(localeGroups).map(([lc, g]) => `${lc} (${g.count} flagged, lowest: ${g.worstScore})`);
+    return `${flaggedJobs.length} segments need review across ${parts.join(', ')}. Threshold: ${threshold}%.`;
+  }, [flaggedJobs, threshold]);
+
   return (
     <div className="space-y-5">
-      {/* Primary: Invite reviewer */}
+      {/* Headline: what needs to happen */}
+      {reviewDocCount > 0 ? (
+        <div className="flex items-center gap-2.5 mb-1">
+          <AlertTriangle size={16} className="text-amber-500 shrink-0" />
+          <p className="text-[15px] font-semibold text-gray-900">
+            {reviewDocCount} document{reviewDocCount !== 1 ? 's' : ''} need review before publishing
+          </p>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2.5 mb-1">
+          <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
+          <p className="text-[15px] font-semibold text-gray-900">
+            All {totalDocs} documents are ready to publish
+          </p>
+        </div>
+      )}
+
+      {/* Primary: Send for Review */}
       {!hasReviewer ? (
         <button type="button" onClick={() => addDestination('reviewer')}
           className="w-full flex items-center gap-4 p-5 rounded-xl border-2 border-[#009eda]/20 bg-[#009eda]/[0.02] hover:border-[#009eda]/40 hover:bg-[#009eda]/[0.05] group cursor-pointer transition-all text-left">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#009eda]/10 group-hover:bg-[#009eda]/20 transition-colors shrink-0">
-            <UserCheck size={20} className="text-[#009eda]" />
+            <Send size={20} className="text-[#009eda]" />
           </div>
           <div className="flex-1">
-            <p className="text-[14px] font-semibold text-gray-900">Invite reviewer</p>
-            <p className="text-[12px] text-gray-500">They review directly in the platform</p>
+            <p className="text-[14px] font-semibold text-gray-900">Send for Review</p>
+            <p className="text-[12px] text-gray-500">Review happens in-platform</p>
           </div>
           <ArrowRight size={16} className="text-gray-300 group-hover:text-[#009eda] transition-colors" />
         </button>
       ) : (
-        /* Inline reviewer form — replaces the button once clicked */
         <ReviewerInlineForm
           dest={destinations.find(d => d.type === 'reviewer')}
           onChange={updateDestination}
           onRemove={removeDestination}
           onSend={sendToDestination}
+          defaultNote={reviewSummary}
         />
       )}
 
-      {/* Secondary: Send to Straker (upsell) */}
+      {/* Straker — demoted to text link */}
       {!hasStraker ? (
         <button type="button" onClick={() => addDestination('straker')}
-          className="w-full flex items-center gap-4 p-4 rounded-xl border border-black/[0.08] bg-white hover:border-black/[0.16] hover:bg-gray-50 group cursor-pointer transition-all text-left">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 group-hover:bg-gray-200 transition-colors shrink-0">
-            <Building2 size={18} className="text-gray-500" />
-          </div>
-          <div className="flex-1">
-            <p className="text-[13px] font-semibold text-gray-900">Send to Straker</p>
-            <p className="text-[11px] text-gray-400">Professional post-editing service</p>
-          </div>
-          <ChevronRight size={14} className="text-gray-300 group-hover:text-gray-500 transition-colors" />
+          className="flex items-center gap-1.5 text-[12px] text-gray-400 hover:text-gray-600 cursor-pointer transition-colors">
+          <Building2 size={13} />
+          <span>Or send to a professional post-editing service</span>
+          <ArrowRight size={11} />
         </button>
       ) : (
         <DeliveryDestinationForm
@@ -609,7 +640,7 @@ function DeliverView({ campaign, destinations, addDestination, updateDestination
         />
       )}
 
-      {/* Export files — collapsed behind disclosure */}
+      {/* Export files — quiet disclosure */}
       <div className="border-t border-black/[0.06] pt-4">
         <button type="button" onClick={() => setShowExport(v => !v)}
           className="flex items-center gap-2 text-[12px] text-gray-400 hover:text-gray-600 cursor-pointer transition-colors">
@@ -633,10 +664,17 @@ function DeliverView({ campaign, destinations, addDestination, updateDestination
 
 /* ─── Reviewer Inline Form ───────────────────────────────────── */
 
-function ReviewerInlineForm({ dest, onChange, onRemove, onSend }) {
+function ReviewerInlineForm({ dest, onChange, onRemove, onSend, defaultNote = '' }) {
   if (!dest) return null;
   const isSent = dest.status === 'sent';
   const isSending = dest.status === 'sending';
+
+  // Pre-populate note on first render if empty
+  const [initialized, setInitialized] = useState(false);
+  if (!initialized && defaultNote && !dest.message) {
+    onChange(dest.id, { message: defaultNote });
+    setInitialized(true);
+  }
 
   // Sent state: compact status row
   if (isSent) {
@@ -648,7 +686,7 @@ function ReviewerInlineForm({ dest, onChange, onRemove, onSend }) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[13px] font-medium text-gray-800">{dest.emails || 'Reviewer'}</p>
-            <p className="text-[11px] text-emerald-600">Invitation sent · just now</p>
+            <p className="text-[11px] text-emerald-600">Sent for review · just now</p>
           </div>
           <button type="button" onClick={() => onRemove(dest.id)} className="text-[11px] text-gray-400 hover:text-gray-600 cursor-pointer transition-colors">
             Revoke
@@ -663,8 +701,8 @@ function ReviewerInlineForm({ dest, onChange, onRemove, onSend }) {
     <div className="rounded-xl border border-[#009eda]/20 bg-[#009eda]/[0.02] p-5 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <UserCheck size={15} className="text-[#009eda]" />
-          <span className="text-[13px] font-semibold text-gray-900">Invite reviewer</span>
+          <Send size={15} className="text-[#009eda]" />
+          <span className="text-[14px] font-semibold text-gray-900">Send for Review</span>
         </div>
         <button type="button" onClick={() => onRemove(dest.id)} className="text-[11px] text-gray-400 hover:text-gray-600 cursor-pointer transition-colors">
           Cancel
@@ -683,10 +721,10 @@ function ReviewerInlineForm({ dest, onChange, onRemove, onSend }) {
       </div>
 
       <div>
-        <label className="block text-[11px] text-gray-500 mb-1">Add a note for the reviewer (optional)</label>
+        <label className="block text-[11px] text-gray-500 mb-1">Review summary (editable)</label>
         <textarea
           rows={2}
-          placeholder="e.g. Focus on the flagged compliance segments in the JA locale"
+          placeholder="What should the reviewer focus on?"
           value={dest.message ?? ''}
           onChange={e => onChange(dest.id, { message: e.target.value })}
           className="w-full rounded-lg border border-black/[0.08] bg-white px-3 py-2 text-[13px] text-gray-800 placeholder:text-gray-400 outline-none focus:border-[#009eda] focus:ring-1 focus:ring-[#009eda]/20 transition resize-none"
@@ -697,9 +735,9 @@ function ReviewerInlineForm({ dest, onChange, onRemove, onSend }) {
         type="button"
         onClick={() => onSend(dest.id)}
         disabled={isSending || !dest.emails?.trim()}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#009eda] hover:bg-[#007bb5] text-white text-[13px] font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#009eda] hover:bg-[#007bb5] text-white text-[13px] font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {isSending ? <><Loader2 size={13} className="animate-spin" /> Sending...</> : <><Send size={13} /> Send invitation</>}
+        {isSending ? <><Loader2 size={13} className="animate-spin" /> Sending...</> : <><Send size={13} /> Send for Review</>}
       </button>
     </div>
   );
