@@ -151,8 +151,8 @@ function buildBatchIssues(docSummaries) {
 /* ─── Delivery constants ─────────────────────────────────────── */
 
 const DESTINATION_TYPES = [
-  { id: 'straker', label: 'Straker', icon: Building2, description: 'Professional post-editing', primary: true },
-  { id: 'external-reviewer', label: 'External Reviewer', icon: UserCheck, description: 'Shareable link or email', primary: true },
+  { id: 'reviewer', label: 'Invite reviewer', icon: UserCheck, description: 'They review directly in the platform', primary: true },
+  { id: 'straker', label: 'Send to Straker', icon: Building2, description: 'Professional post-editing service', primary: true, upsell: true },
   { id: 's3', label: 'AWS S3', icon: Database, description: 'Push to an S3 bucket' },
   { id: 'sftp', label: 'SFTP', icon: Globe, description: 'Upload via secure FTP' },
   { id: 'webhook', label: 'Webhook', icon: Webhook, description: 'POST to an API endpoint' },
@@ -160,7 +160,7 @@ const DESTINATION_TYPES = [
 const DELIVERY_STATUS = {
   pending: { label: 'Pending', icon: Clock, color: 'text-gray-400', bg: 'bg-gray-50' },
   sending: { label: 'Sending', icon: Loader2, color: 'text-[#009eda]', bg: 'bg-[#009eda]/[0.06]' },
-  sent: { label: 'Sent', icon: CheckCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+  sent: { label: 'Invitation sent', icon: CheckCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
   failed: { label: 'Failed', icon: XCircle, color: 'text-red-500', bg: 'bg-red-50' },
 };
 
@@ -193,7 +193,7 @@ export default function CampaignResultsView({ campaign, threshold = 85, onReset,
 
   /* ── Delivery state ── */
   const addDestination = (typeId) => {
-    if (destinations.some(d => d.type === typeId && (typeId === 'straker' || typeId === 'external-reviewer'))) return;
+    if (destinations.some(d => d.type === typeId && (typeId === 'straker' || typeId === 'reviewer'))) return;
     setDestinations(prev => [...prev, { id: `dest-${Date.now()}`, type: typeId, status: 'pending' }]);
     setShowAddDest(false);
   };
@@ -531,31 +531,14 @@ export default function CampaignResultsView({ campaign, threshold = 85, onReset,
 
       {/* ═══ VIEW: DELIVER ═══ */}
       {viewMode === 'deliver' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-3">
-            <button type="button" onClick={() => addDestination('straker')}
-              className="flex items-center gap-3 p-4 rounded-xl border-2 border-[#009eda]/20 bg-[#009eda]/[0.03] hover:border-[#009eda]/40 hover:bg-[#009eda]/[0.06] group cursor-pointer transition-all text-left">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#009eda]/10 shrink-0"><Building2 size={18} className="text-[#009eda]" /></div>
-              <div><p className="text-[13px] font-semibold text-gray-900">Send to Straker</p><p className="text-[11px] text-gray-400">Professional post-editing</p></div>
-            </button>
-            <button type="button" onClick={() => addDestination('external-reviewer')}
-              className="flex items-center gap-3 p-4 rounded-xl border border-black/[0.08] bg-white hover:border-black/[0.16] hover:bg-gray-50 group cursor-pointer transition-all text-left">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 shrink-0"><UserCheck size={18} className="text-gray-500" /></div>
-              <div><p className="text-[13px] font-semibold text-gray-900">Assign external reviewer</p><p className="text-[11px] text-gray-400">Shareable link or email</p></div>
-            </button>
-          </div>
-          <div className="rounded-xl border border-black/[0.10] bg-white p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-4">Export campaign</p>
-            <ExportWizard campaign={campaign} onDone={() => {}} />
-          </div>
-          {destinations.length > 0 && (
-            <div className="space-y-3">
-              {destinations.map(dest => (
-                <DeliveryDestinationForm key={dest.id} dest={dest} onChange={updateDestination} onRemove={removeDestination} onSend={sendToDestination} />
-              ))}
-            </div>
-          )}
-        </div>
+        <DeliverView
+          campaign={campaign}
+          destinations={destinations}
+          addDestination={addDestination}
+          updateDestination={updateDestination}
+          removeDestination={removeDestination}
+          sendToDestination={sendToDestination}
+        />
       )}
 
       {/* ═══ FOOTER ═══ */}
@@ -569,6 +552,156 @@ export default function CampaignResultsView({ campaign, threshold = 85, onReset,
         </button>
       </div>
     </motion.div>
+  );
+}
+
+/* ─── Deliver View ───────────────────────────────────────────── */
+
+function DeliverView({ campaign, destinations, addDestination, updateDestination, removeDestination, sendToDestination }) {
+  const [showExport, setShowExport] = useState(false);
+  const hasReviewer = destinations.some(d => d.type === 'reviewer');
+  const hasStraker = destinations.some(d => d.type === 'straker');
+
+  return (
+    <div className="space-y-5">
+      {/* Primary: Invite reviewer */}
+      {!hasReviewer ? (
+        <button type="button" onClick={() => addDestination('reviewer')}
+          className="w-full flex items-center gap-4 p-5 rounded-xl border-2 border-[#009eda]/20 bg-[#009eda]/[0.02] hover:border-[#009eda]/40 hover:bg-[#009eda]/[0.05] group cursor-pointer transition-all text-left">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#009eda]/10 group-hover:bg-[#009eda]/20 transition-colors shrink-0">
+            <UserCheck size={20} className="text-[#009eda]" />
+          </div>
+          <div className="flex-1">
+            <p className="text-[14px] font-semibold text-gray-900">Invite reviewer</p>
+            <p className="text-[12px] text-gray-500">They review directly in the platform</p>
+          </div>
+          <ArrowRight size={16} className="text-gray-300 group-hover:text-[#009eda] transition-colors" />
+        </button>
+      ) : (
+        /* Inline reviewer form — replaces the button once clicked */
+        <ReviewerInlineForm
+          dest={destinations.find(d => d.type === 'reviewer')}
+          onChange={updateDestination}
+          onRemove={removeDestination}
+          onSend={sendToDestination}
+        />
+      )}
+
+      {/* Secondary: Send to Straker (upsell) */}
+      {!hasStraker ? (
+        <button type="button" onClick={() => addDestination('straker')}
+          className="w-full flex items-center gap-4 p-4 rounded-xl border border-black/[0.08] bg-white hover:border-black/[0.16] hover:bg-gray-50 group cursor-pointer transition-all text-left">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 group-hover:bg-gray-200 transition-colors shrink-0">
+            <Building2 size={18} className="text-gray-500" />
+          </div>
+          <div className="flex-1">
+            <p className="text-[13px] font-semibold text-gray-900">Send to Straker</p>
+            <p className="text-[11px] text-gray-400">Professional post-editing service</p>
+          </div>
+          <ChevronRight size={14} className="text-gray-300 group-hover:text-gray-500 transition-colors" />
+        </button>
+      ) : (
+        <DeliveryDestinationForm
+          dest={destinations.find(d => d.type === 'straker')}
+          onChange={updateDestination}
+          onRemove={removeDestination}
+          onSend={sendToDestination}
+        />
+      )}
+
+      {/* Export files — collapsed behind disclosure */}
+      <div className="border-t border-black/[0.06] pt-4">
+        <button type="button" onClick={() => setShowExport(v => !v)}
+          className="flex items-center gap-2 text-[12px] text-gray-400 hover:text-gray-600 cursor-pointer transition-colors">
+          <Download size={13} />
+          <span>Export files</span>
+          <ChevronRight size={12} className={`transition-transform ${showExport ? 'rotate-90' : ''}`} />
+        </button>
+        <AnimatePresence>
+          {showExport && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+              <div className="mt-3 rounded-xl border border-black/[0.08] bg-white p-5">
+                <ExportWizard campaign={campaign} onDone={() => {}} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Reviewer Inline Form ───────────────────────────────────── */
+
+function ReviewerInlineForm({ dest, onChange, onRemove, onSend }) {
+  if (!dest) return null;
+  const isSent = dest.status === 'sent';
+  const isSending = dest.status === 'sending';
+
+  // Sent state: compact status row
+  if (isSent) {
+    return (
+      <div className="rounded-xl border border-emerald-200/60 bg-emerald-50/30 p-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 shrink-0">
+            <CheckCheck size={14} className="text-emerald-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[13px] font-medium text-gray-800">{dest.emails || 'Reviewer'}</p>
+            <p className="text-[11px] text-emerald-600">Invitation sent · just now</p>
+          </div>
+          <button type="button" onClick={() => onRemove(dest.id)} className="text-[11px] text-gray-400 hover:text-gray-600 cursor-pointer transition-colors">
+            Revoke
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Pending state: inline form
+  return (
+    <div className="rounded-xl border border-[#009eda]/20 bg-[#009eda]/[0.02] p-5 space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <UserCheck size={15} className="text-[#009eda]" />
+          <span className="text-[13px] font-semibold text-gray-900">Invite reviewer</span>
+        </div>
+        <button type="button" onClick={() => onRemove(dest.id)} className="text-[11px] text-gray-400 hover:text-gray-600 cursor-pointer transition-colors">
+          Cancel
+        </button>
+      </div>
+
+      <div>
+        <label className="block text-[11px] text-gray-500 mb-1">Reviewer email</label>
+        <input
+          type="text"
+          placeholder="name@company.com"
+          value={dest.emails ?? ''}
+          onChange={e => onChange(dest.id, { emails: e.target.value })}
+          className="w-full rounded-lg border border-black/[0.08] bg-white px-3 py-2 text-[13px] text-gray-800 placeholder:text-gray-400 outline-none focus:border-[#009eda] focus:ring-1 focus:ring-[#009eda]/20 transition"
+        />
+      </div>
+
+      <div>
+        <label className="block text-[11px] text-gray-500 mb-1">Add a note for the reviewer (optional)</label>
+        <textarea
+          rows={2}
+          placeholder="e.g. Focus on the flagged compliance segments in the JA locale"
+          value={dest.message ?? ''}
+          onChange={e => onChange(dest.id, { message: e.target.value })}
+          className="w-full rounded-lg border border-black/[0.08] bg-white px-3 py-2 text-[13px] text-gray-800 placeholder:text-gray-400 outline-none focus:border-[#009eda] focus:ring-1 focus:ring-[#009eda]/20 transition resize-none"
+        />
+      </div>
+
+      <button
+        type="button"
+        onClick={() => onSend(dest.id)}
+        disabled={isSending || !dest.emails?.trim()}
+        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#009eda] hover:bg-[#007bb5] text-white text-[13px] font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {isSending ? <><Loader2 size={13} className="animate-spin" /> Sending...</> : <><Send size={13} /> Send invitation</>}
+      </button>
+    </div>
   );
 }
 
@@ -589,7 +722,7 @@ function DeliveryDestinationForm({ dest, onChange, onRemove, onSend }) {
       </div>
       <div className="px-4 py-3 space-y-2.5">
         {dest.type === 'straker' && (<><FormField label="Project name" placeholder="e.g. Q3 Earnings" value={dest.projectName ?? ''} onChange={v => onChange(dest.id, { projectName: v })} /><FormField label="Instructions" placeholder="Focus on terminology..." value={dest.notes ?? ''} onChange={v => onChange(dest.id, { notes: v })} multiline /></>)}
-        {dest.type === 'external-reviewer' && (<><FormField label="Reviewer email(s)" placeholder="reviewer@company.com" value={dest.emails ?? ''} onChange={v => onChange(dest.id, { emails: v })} /><FormField label="Message" placeholder="Please review..." value={dest.message ?? ''} onChange={v => onChange(dest.id, { message: v })} multiline /></>)}
+        {dest.type === 'reviewer' && (<><FormField label="Reviewer email(s)" placeholder="reviewer@company.com" value={dest.emails ?? ''} onChange={v => onChange(dest.id, { emails: v })} /><FormField label="Message" placeholder="Please review..." value={dest.message ?? ''} onChange={v => onChange(dest.id, { message: v })} multiline /></>)}
         {dest.type === 's3' && (<><FormField label="Bucket" placeholder="my-bucket" value={dest.bucket ?? ''} onChange={v => onChange(dest.id, { bucket: v })} /><FormField label="Prefix" placeholder="exports/" value={dest.prefix ?? ''} onChange={v => onChange(dest.id, { prefix: v })} /></>)}
         {dest.type === 'sftp' && (<><FormField label="Host" placeholder="sftp.example.com" value={dest.host ?? ''} onChange={v => onChange(dest.id, { host: v })} /><FormField label="Path" placeholder="/exports/" value={dest.path ?? ''} onChange={v => onChange(dest.id, { path: v })} /></>)}
         {dest.type === 'webhook' && (<FormField label="Endpoint" placeholder="https://api.example.com/webhook" value={dest.url ?? ''} onChange={v => onChange(dest.id, { url: v })} />)}
