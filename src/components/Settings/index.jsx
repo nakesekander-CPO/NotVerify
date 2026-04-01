@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { ArrowLeft, CreditCard, Puzzle, Building2, LayoutList } from 'lucide-react'
+import { ArrowLeft, CreditCard, Puzzle, Building2, LayoutList, Shield, Users, ScrollText, Network } from 'lucide-react'
 import CreditsAndBilling from './CreditsAndBilling'
 import BillingEntities from './BillingEntities'
 import BudgetsAndAllocations from './BudgetsAndAllocations'
+import OrgAccess from './OrgAccess'
 
 export default function SettingsPage({ onBack, onOpenIntegrations }) {
   const [activeSection, setActiveSection] = useState('billing')
@@ -10,7 +11,7 @@ export default function SettingsPage({ onBack, onOpenIntegrations }) {
 
   const handleTierChange = (newTier) => {
     setTier(newTier)
-    if (newTier !== 'enterprise' && (activeSection === 'billing-entities' || activeSection === 'budgets')) {
+    if (newTier !== 'enterprise' && (activeSection === 'billing-entities' || activeSection === 'budgets' || activeSection.startsWith('org-'))) {
       setActiveSection('billing')
     }
   }
@@ -22,6 +23,13 @@ export default function SettingsPage({ onBack, onOpenIntegrations }) {
       { id: 'budgets', label: 'Budgets & Allocations', icon: LayoutList, active: true, indent: true },
     ] : []),
     { id: 'integrations', label: 'API & Integrations', icon: Puzzle, active: true },
+    ...(tier === 'enterprise' ? [
+      { type: 'section-header', label: 'Organization & Access' },
+      { id: 'org-structure', label: 'Structure', icon: Network, active: true, indent: true },
+      { id: 'org-members', label: 'Members', icon: Users, active: true, indent: true },
+      { id: 'org-roles', label: 'Roles', icon: Shield, active: true, indent: true },
+      { id: 'org-audit', label: 'Audit Log', icon: ScrollText, active: true, indent: true },
+    ] : []),
   ]
 
   return (
@@ -39,16 +47,20 @@ export default function SettingsPage({ onBack, onOpenIntegrations }) {
         <nav className="w-48 shrink-0 flex flex-col gap-0.5">
           <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2">Settings</p>
           {navItems.map(item => (
-            <NavItem
-              key={item.id}
-              item={item}
-              isActive={activeSection === item.id}
-              onClick={() => {
-                if (!item.active) return
-                if (item.id === 'integrations') { onOpenIntegrations?.(); return }
-                setActiveSection(item.id)
-              }}
-            />
+            item.type === 'section-header' ? (
+              <p key={item.label} className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-3 mb-1.5 mt-4">{item.label}</p>
+            ) : (
+              <NavItem
+                key={item.id}
+                item={item}
+                isActive={activeSection === item.id}
+                onClick={() => {
+                  if (!item.active) return
+                  if (item.id === 'integrations') { onOpenIntegrations?.(); return }
+                  setActiveSection(item.id)
+                }}
+              />
+            )
           ))}
         </nav>
 
@@ -84,6 +96,7 @@ export default function SettingsPage({ onBack, onOpenIntegrations }) {
           {activeSection === 'billing' && <CreditsAndBilling tier={tier} />}
           {activeSection === 'billing-entities' && <BillingEntities />}
           {activeSection === 'budgets' && <BudgetsAndAllocations />}
+          {activeSection.startsWith('org-') && <OrgAccess activeTab={activeSection.replace('org-', '')} tier={tier} />}
         </div>
       </div>
     </div>

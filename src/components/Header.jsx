@@ -1,10 +1,16 @@
 import { useState, useRef, useEffect } from 'react'
 import { ChevronDown, User, Settings, Headphones, LogOut, Store } from 'lucide-react'
-// Headphones and LogOut are now functional (mailto + reload)
 import StatusPill from './StatusPill'
+import { USERS, ROLE_ASSIGNMENTS, ROLES, TENANTS } from '../data/rbacModel'
+
+const CURRENT_USER_ID = 'alex'
 
 export default function Header({ companyName, onOpenSettings, onOpenMarketplace, onNavigateHome }) {
   const [accountOpen, setAccountOpen] = useState(false)
+  const currentUser = USERS.find(u => u.id === CURRENT_USER_ID)
+  const primaryAssignment = ROLE_ASSIGNMENTS.find(a => a.userId === CURRENT_USER_ID && a.scopeType === 'tenant') || ROLE_ASSIGNMENTS.find(a => a.userId === CURRENT_USER_ID)
+  const roleName = ROLES.find(r => r.id === primaryAssignment?.roleId)?.name || 'User'
+  const tenantName = TENANTS.find(t => t.id === primaryAssignment?.tenantId)?.name || ''
   const accountRef = useRef(null)
 
   useEffect(() => {
@@ -71,8 +77,9 @@ export default function Header({ companyName, onOpenSettings, onOpenMarketplace,
                 className="absolute top-full mt-2 right-0 w-52 bg-white border border-black/[0.12] rounded-lg  py-1.5 z-50"
               >
                 <div className="px-3 py-2 border-b border-black/[0.12] mb-1.5">
-                  <p className="text-[12px] font-medium text-gray-900">Enterprise Admin</p>
-                  <p className="text-[11px] text-gray-500">admin@meridian-capital.com</p>
+                  <p className="text-[12px] font-medium text-gray-900">{roleName}</p>
+                  <p className="text-[11px] text-gray-500">{currentUser?.email || 'admin@meridian-capital.com'}</p>
+                  {tenantName && <p className="text-[10px] text-gray-400 mt-0.5">{tenantName}</p>}
                 </div>
                 <DropdownItem icon={Settings} label="Settings" onClick={() => { setAccountOpen(false); onOpenSettings?.() }} />
                 <DropdownItem icon={Store} label="Agent Marketplace" onClick={() => { setAccountOpen(false); onOpenMarketplace?.() }} />
