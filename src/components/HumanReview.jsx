@@ -515,6 +515,13 @@ function AssignPhase({ reviewRequest, teamMembers, onAssign, onBack, reduced }) 
             </div>
           </div>
 
+          {/* Status legend */}
+          <div className="flex items-center gap-4 px-4 pt-2 text-[10px] text-gray-400">
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-400" /> Available</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400" /> Away</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-400" /> Offline</span>
+          </div>
+
           <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4" style={{ scrollbarWidth: 'thin' }}>
             {/* Recommended */}
             {!searchQuery && recommended.length > 0 && (
