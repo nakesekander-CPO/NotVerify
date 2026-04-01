@@ -518,7 +518,7 @@ function AuditTab({ tenantId, auditLog, users }) {
    ═══════════════════════════════════════════════════════════════ */
 
 export default function OrgAccess({ activeTab, tier }) {
-  const [activeTenant, setActiveTenant] = useState('ibm')
+  const [activeTenant, setActiveTenant] = useState('meridian')
   const [users, setUsers] = useState(() => [...INITIAL_USERS])
   const [assignments, setAssignments] = useState(() => [...INITIAL_ASSIGNMENTS])
   const [auditLog, setAuditLog] = useState(() => [...INITIAL_AUDIT])

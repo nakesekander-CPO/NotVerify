@@ -8,34 +8,34 @@
 /* ─── Tenants ────────────────────────────────────────────────── */
 
 export const TENANTS = [
-  { id: 'ibm', name: 'IBM Corporation', plan: 'enterprise', domain: 'ibm.com' },
   { id: 'meridian', name: 'Meridian Capital', plan: 'enterprise', domain: 'meridian-capital.com' },
+  { id: 'straker', name: 'Straker Translations', plan: 'enterprise', domain: 'straker.com' },
 ];
 
 /* ─── Org Nodes (tree) ───────────────────────────────────────── */
 
 export const ORG_NODES = [
-  // IBM
-  { id: 'ibm-root',           tenantId: 'ibm', parentId: null,              name: 'IBM Corporation',  type: 'tenant' },
-  { id: 'ibm-americas',       tenantId: 'ibm', parentId: 'ibm-root',       name: 'Americas',         type: 'region' },
-  { id: 'ibm-us',             tenantId: 'ibm', parentId: 'ibm-americas',   name: 'United States',    type: 'country' },
-  { id: 'ibm-us-research',    tenantId: 'ibm', parentId: 'ibm-us',         name: 'Research',         type: 'department' },
-  { id: 'ibm-us-cloud',       tenantId: 'ibm', parentId: 'ibm-us',         name: 'Cloud Division',   type: 'department' },
-  { id: 'ibm-brazil',         tenantId: 'ibm', parentId: 'ibm-americas',   name: 'Brazil',           type: 'country' },
-  { id: 'ibm-emea',           tenantId: 'ibm', parentId: 'ibm-root',       name: 'EMEA',             type: 'region' },
-  { id: 'ibm-uk',             tenantId: 'ibm', parentId: 'ibm-emea',       name: 'United Kingdom',   type: 'country' },
-  { id: 'ibm-germany',        tenantId: 'ibm', parentId: 'ibm-emea',       name: 'Germany',          type: 'country' },
-  { id: 'ibm-germany-tax',    tenantId: 'ibm', parentId: 'ibm-germany',    name: 'Tax & Compliance', type: 'department' },
-  { id: 'ibm-france',         tenantId: 'ibm', parentId: 'ibm-emea',       name: 'France',           type: 'country' },
-  { id: 'ibm-apac',           tenantId: 'ibm', parentId: 'ibm-root',       name: 'APAC',             type: 'region' },
-  { id: 'ibm-japan',          tenantId: 'ibm', parentId: 'ibm-apac',       name: 'Japan',            type: 'country' },
-  { id: 'ibm-india',          tenantId: 'ibm', parentId: 'ibm-apac',       name: 'India',            type: 'country' },
-  // Meridian
-  { id: 'meridian-root',      tenantId: 'meridian', parentId: null,                name: 'Meridian Capital',    type: 'tenant' },
-  { id: 'meridian-london',    tenantId: 'meridian', parentId: 'meridian-root',     name: 'London HQ',          type: 'region' },
-  { id: 'meridian-singapore', tenantId: 'meridian', parentId: 'meridian-root',     name: 'Singapore Office',   type: 'region' },
-  { id: 'meridian-ma',        tenantId: 'meridian', parentId: 'meridian-london',   name: 'M&A Team',           type: 'team' },
-  { id: 'meridian-compliance',tenantId: 'meridian', parentId: 'meridian-london',   name: 'Compliance',         type: 'department' },
+  // Meridian Capital — primary tenant
+  { id: 'mc-root',            tenantId: 'meridian', parentId: null,              name: 'Meridian Capital',       type: 'tenant' },
+  // Japan
+  { id: 'mc-japan',           tenantId: 'meridian', parentId: 'mc-root',         name: 'Japan',                 type: 'country' },
+  { id: 'mc-japan-finance',   tenantId: 'meridian', parentId: 'mc-japan',        name: 'Financial Reporting',   type: 'department' },
+  { id: 'mc-japan-compliance',tenantId: 'meridian', parentId: 'mc-japan',        name: 'Compliance & Regulatory', type: 'department' },
+  { id: 'mc-japan-ma',        tenantId: 'meridian', parentId: 'mc-japan',        name: 'M&A Advisory',          type: 'team' },
+  // Germany
+  { id: 'mc-germany',         tenantId: 'meridian', parentId: 'mc-root',         name: 'Germany',               type: 'country' },
+  { id: 'mc-germany-tax',     tenantId: 'meridian', parentId: 'mc-germany',      name: 'Tax & Audit',           type: 'department' },
+  { id: 'mc-germany-wealth',  tenantId: 'meridian', parentId: 'mc-germany',      name: 'Wealth Management',     type: 'department' },
+  // New Zealand
+  { id: 'mc-nz',              tenantId: 'meridian', parentId: 'mc-root',         name: 'New Zealand',           type: 'country' },
+  { id: 'mc-nz-ops',          tenantId: 'meridian', parentId: 'mc-nz',           name: 'Operations',            type: 'department' },
+  { id: 'mc-nz-legal',        tenantId: 'meridian', parentId: 'mc-nz',           name: 'Legal',                 type: 'department' },
+  // Global shared
+  { id: 'mc-global-risk',     tenantId: 'meridian', parentId: 'mc-root',         name: 'Global Risk',           type: 'department' },
+  // Straker — secondary tenant (minimal)
+  { id: 'straker-root',       tenantId: 'straker', parentId: null,               name: 'Straker Translations',  type: 'tenant' },
+  { id: 'straker-apac',       tenantId: 'straker', parentId: 'straker-root',     name: 'APAC',                  type: 'region' },
+  { id: 'straker-emea',       tenantId: 'straker', parentId: 'straker-root',     name: 'EMEA',                  type: 'region' },
 ];
 
 /* ─── Node type styling ──────────────────────────────────────── */
@@ -65,13 +65,13 @@ export const ROLES = [
 
 export const USERS = [
   { id: 'alex',    name: 'Alex Chen',        initials: 'AC', email: 'alex.chen@meridian-capital.com',    status: 'online',  lastActive: '2026-03-31T09:15:00Z' },
-  { id: 'kenji',   name: 'Kenji Tanaka',     initials: 'KT', email: 'kenji.tanaka@ibm.com',             status: 'online',  lastActive: '2026-03-31T08:42:00Z' },
-  { id: 'sarah',   name: 'Sarah Chen',       initials: 'SC', email: 'sarah.chen@ibm.com',               status: 'online',  lastActive: '2026-03-31T07:30:00Z' },
-  { id: 'marcus',  name: 'Marcus Weber',     initials: 'MW', email: 'marcus.weber@ibm.com',             status: 'online',  lastActive: '2026-03-30T16:20:00Z' },
-  { id: 'thomas',  name: 'Thomas Park',      initials: 'TP', email: 'thomas.park@ibm.com',              status: 'away',    lastActive: '2026-03-30T14:05:00Z' },
-  { id: 'priya',   name: 'Priya Patel',      initials: 'PP', email: 'priya.patel@ibm.com',              status: 'offline', lastActive: '2026-03-29T11:00:00Z' },
-  { id: 'yuki',    name: 'Yuki Nakamura',    initials: 'YN', email: 'yuki.nakamura@ibm.com',            status: 'away',    lastActive: '2026-03-31T06:15:00Z' },
-  { id: 'maria',   name: 'Maria Santos',     initials: 'MS', email: 'maria.santos@ibm.com',             status: 'online',  lastActive: '2026-03-31T09:00:00Z' },
+  { id: 'kenji',   name: 'Kenji Tanaka',     initials: 'KT', email: 'kenji.tanaka@meridian-capital.com', status: 'online',  lastActive: '2026-03-31T08:42:00Z' },
+  { id: 'sarah',   name: 'Sarah Chen',       initials: 'SC', email: 'sarah.chen@meridian-capital.com',   status: 'online',  lastActive: '2026-03-31T07:30:00Z' },
+  { id: 'marcus',  name: 'Marcus Weber',     initials: 'MW', email: 'marcus.weber@meridian-capital.com', status: 'online',  lastActive: '2026-03-30T16:20:00Z' },
+  { id: 'thomas',  name: 'Thomas Park',      initials: 'TP', email: 'thomas.park@meridian-capital.com',  status: 'away',    lastActive: '2026-03-30T14:05:00Z' },
+  { id: 'priya',   name: 'Priya Patel',      initials: 'PP', email: 'priya.patel@meridian-capital.com',  status: 'offline', lastActive: '2026-03-29T11:00:00Z' },
+  { id: 'yuki',    name: 'Yuki Nakamura',    initials: 'YN', email: 'yuki.nakamura@meridian-capital.com',status: 'away',    lastActive: '2026-03-31T06:15:00Z' },
+  { id: 'lena',    name: 'Lena Crawford',    initials: 'LC', email: 'lena.crawford@meridian-capital.com', status: 'online', lastActive: '2026-03-31T09:00:00Z' },
   { id: 'james',   name: 'James Liu',        initials: 'JL', email: 'james.liu@meridian-capital.com',   status: 'online',  lastActive: '2026-03-31T08:55:00Z' },
   { id: 'support-bot', name: 'NV Support',   initials: 'NV', email: 'support@notverify.com',            status: 'online',  lastActive: '2026-03-31T09:20:00Z', internal: true },
 ];
@@ -80,55 +80,61 @@ export const USERS = [
 
 export const MEMBERSHIPS = [
   { userId: 'alex',    tenantId: 'meridian' },
+  { userId: 'kenji',   tenantId: 'meridian' },
+  { userId: 'sarah',   tenantId: 'meridian' },
+  { userId: 'marcus',  tenantId: 'meridian' },
+  { userId: 'thomas',  tenantId: 'meridian' },
+  { userId: 'priya',   tenantId: 'meridian' },
+  { userId: 'yuki',    tenantId: 'meridian' },
+  { userId: 'lena',    tenantId: 'meridian' },
   { userId: 'james',   tenantId: 'meridian' },
-  { userId: 'kenji',   tenantId: 'ibm' },
-  { userId: 'sarah',   tenantId: 'ibm' },
-  { userId: 'marcus',  tenantId: 'ibm' },
-  { userId: 'thomas',  tenantId: 'ibm' },
-  { userId: 'priya',   tenantId: 'ibm' },
-  { userId: 'yuki',    tenantId: 'ibm' },
-  { userId: 'maria',   tenantId: 'ibm' },
-  // Support has access to both tenants
-  { userId: 'support-bot', tenantId: 'ibm' },
   { userId: 'support-bot', tenantId: 'meridian' },
+  { userId: 'support-bot', tenantId: 'straker' },
 ];
 
 /* ─── Role Assignments (scoped) ──────────────────────────────── */
 
 export const ROLE_ASSIGNMENTS = [
-  // Meridian
-  { id: 'ra-1',  userId: 'alex',        tenantId: 'meridian', roleId: 'tenant-admin',     scopeType: 'tenant',     scopeId: 'meridian-root',     assignedAt: '2025-06-01T00:00:00Z', assignedBy: 'system' },
-  { id: 'ra-2',  userId: 'james',       tenantId: 'meridian', roleId: 'contributor',       scopeType: 'team',       scopeId: 'meridian-ma',       assignedAt: '2025-09-15T00:00:00Z', assignedBy: 'alex' },
-  // IBM
-  { id: 'ra-3',  userId: 'kenji',       tenantId: 'ibm',     roleId: 'org-manager',       scopeType: 'region',     scopeId: 'ibm-apac',          assignedAt: '2025-03-01T00:00:00Z', assignedBy: 'system' },
-  { id: 'ra-4',  userId: 'sarah',       tenantId: 'ibm',     roleId: 'approver',          scopeType: 'country',    scopeId: 'ibm-japan',         assignedAt: '2025-04-10T00:00:00Z', assignedBy: 'kenji' },
-  { id: 'ra-5',  userId: 'marcus',      tenantId: 'ibm',     roleId: 'contributor',        scopeType: 'region',     scopeId: 'ibm-emea',          assignedAt: '2025-05-20T00:00:00Z', assignedBy: 'system' },
-  { id: 'ra-6',  userId: 'thomas',      tenantId: 'ibm',     roleId: 'viewer',             scopeType: 'department', scopeId: 'ibm-germany-tax',   assignedAt: '2025-07-01T00:00:00Z', assignedBy: 'marcus' },
-  { id: 'ra-7',  userId: 'priya',       tenantId: 'ibm',     roleId: 'org-manager',       scopeType: 'country',    scopeId: 'ibm-india',         assignedAt: '2025-08-12T00:00:00Z', assignedBy: 'kenji' },
-  { id: 'ra-8',  userId: 'yuki',        tenantId: 'ibm',     roleId: 'approver',          scopeType: 'country',    scopeId: 'ibm-japan',         assignedAt: '2025-09-01T00:00:00Z', assignedBy: 'kenji' },
-  { id: 'ra-9',  userId: 'maria',       tenantId: 'ibm',     roleId: 'contributor',        scopeType: 'region',     scopeId: 'ibm-americas',      assignedAt: '2025-10-15T00:00:00Z', assignedBy: 'system' },
-  // Internal support
-  { id: 'ra-10', userId: 'support-bot', tenantId: 'ibm',     roleId: 'support-operator',  scopeType: 'tenant',     scopeId: 'ibm-root',          assignedAt: '2026-03-25T10:00:00Z', assignedBy: 'platform', internal: true, expiresAt: '2026-04-25T10:00:00Z' },
+  // Alex — Tenant Admin (full access to all of Meridian)
+  { id: 'ra-1',  userId: 'alex',        tenantId: 'meridian', roleId: 'tenant-admin',     scopeType: 'tenant',     scopeId: 'mc-root',            assignedAt: '2025-06-01T00:00:00Z', assignedBy: 'system' },
+  // Kenji — Org Manager for Japan (inherits to Financial Reporting, Compliance, M&A)
+  { id: 'ra-3',  userId: 'kenji',       tenantId: 'meridian', roleId: 'org-manager',      scopeType: 'country',    scopeId: 'mc-japan',           assignedAt: '2025-03-01T00:00:00Z', assignedBy: 'alex' },
+  // Sarah — Approver for Japan Financial Reporting (narrow scope)
+  { id: 'ra-4',  userId: 'sarah',       tenantId: 'meridian', roleId: 'approver',         scopeType: 'department', scopeId: 'mc-japan-finance',   assignedAt: '2025-04-10T00:00:00Z', assignedBy: 'kenji' },
+  // Marcus — Org Manager for Germany (inherits to Tax & Audit, Wealth Management)
+  { id: 'ra-5',  userId: 'marcus',      tenantId: 'meridian', roleId: 'org-manager',      scopeType: 'country',    scopeId: 'mc-germany',         assignedAt: '2025-05-20T00:00:00Z', assignedBy: 'alex' },
+  // Thomas — Viewer at Germany Tax & Audit (narrowest scope)
+  { id: 'ra-6',  userId: 'thomas',      tenantId: 'meridian', roleId: 'viewer',           scopeType: 'department', scopeId: 'mc-germany-tax',     assignedAt: '2025-07-01T00:00:00Z', assignedBy: 'marcus' },
+  // Priya — Contributor for Germany Wealth Management
+  { id: 'ra-7',  userId: 'priya',       tenantId: 'meridian', roleId: 'contributor',      scopeType: 'department', scopeId: 'mc-germany-wealth',  assignedAt: '2025-08-12T00:00:00Z', assignedBy: 'marcus' },
+  // Yuki — Approver for Japan Compliance & Regulatory
+  { id: 'ra-8',  userId: 'yuki',        tenantId: 'meridian', roleId: 'approver',         scopeType: 'department', scopeId: 'mc-japan-compliance', assignedAt: '2025-09-01T00:00:00Z', assignedBy: 'kenji' },
+  // Lena — Org Manager for New Zealand (inherits to Operations, Legal)
+  { id: 'ra-9',  userId: 'lena',        tenantId: 'meridian', roleId: 'org-manager',      scopeType: 'country',    scopeId: 'mc-nz',              assignedAt: '2025-10-15T00:00:00Z', assignedBy: 'alex' },
+  // James — Contributor for Global Risk
+  { id: 'ra-2',  userId: 'james',       tenantId: 'meridian', roleId: 'contributor',      scopeType: 'department', scopeId: 'mc-global-risk',     assignedAt: '2025-09-15T00:00:00Z', assignedBy: 'alex' },
+  // Internal support — scoped to entire tenant, time-bounded
+  { id: 'ra-10', userId: 'support-bot', tenantId: 'meridian', roleId: 'support-operator', scopeType: 'tenant',     scopeId: 'mc-root',            assignedAt: '2026-03-25T10:00:00Z', assignedBy: 'platform', internal: true, expiresAt: '2026-04-25T10:00:00Z' },
 ];
 
 /* ─── Audit Log ──────────────────────────────────────────────── */
 
 export const AUDIT_LOG = [
-  { id: 'al-1',  timestamp: '2026-03-31T09:20:00Z', actor: 'support-bot', action: 'support.access',   tenantId: 'ibm', scopeId: 'ibm-root',       targetUser: null,      roleId: 'support-operator', details: 'Support session initiated for ticket #4821', internal: true },
-  { id: 'al-2',  timestamp: '2026-03-31T08:15:00Z', actor: 'kenji',       action: 'resource.accessed', tenantId: 'ibm', scopeId: 'ibm-japan',      targetUser: null,      roleId: null,               details: 'Accessed Q3 Earnings Report (JA locale)' },
-  { id: 'al-3',  timestamp: '2026-03-30T16:42:00Z', actor: 'alex',        action: 'role.assigned',     tenantId: 'ibm', scopeId: 'ibm-emea',       targetUser: 'marcus',  roleId: 'contributor',      details: 'Assigned Contributor role at EMEA scope' },
-  { id: 'al-4',  timestamp: '2026-03-30T14:30:00Z', actor: 'marcus',      action: 'role.assigned',     tenantId: 'ibm', scopeId: 'ibm-germany-tax',targetUser: 'thomas',  roleId: 'viewer',           details: 'Assigned Viewer role at Tax & Compliance' },
-  { id: 'al-5',  timestamp: '2026-03-29T11:05:00Z', actor: 'kenji',       action: 'member.added',      tenantId: 'ibm', scopeId: 'ibm-apac',       targetUser: 'yuki',    roleId: null,               details: 'Added Yuki Nakamura to IBM tenant' },
-  { id: 'al-6',  timestamp: '2026-03-28T09:30:00Z', actor: 'sarah',       action: 'resource.accessed', tenantId: 'ibm', scopeId: 'ibm-japan',      targetUser: null,      roleId: null,               details: 'Approved Q3 Investor Presentation (JA)' },
-  { id: 'al-7',  timestamp: '2026-03-27T15:20:00Z', actor: 'kenji',       action: 'role.assigned',     tenantId: 'ibm', scopeId: 'ibm-japan',      targetUser: 'sarah',   roleId: 'approver',         details: 'Assigned Approver role at Japan scope' },
-  { id: 'al-8',  timestamp: '2026-03-26T10:00:00Z', actor: 'platform',    action: 'support.access',    tenantId: 'ibm', scopeId: 'ibm-root',       targetUser: 'support-bot', roleId: 'support-operator', details: 'Support access granted (expires 2026-04-25)', internal: true },
-  { id: 'al-9',  timestamp: '2026-03-25T09:15:00Z', actor: 'priya',       action: 'resource.accessed', tenantId: 'ibm', scopeId: 'ibm-india',      targetUser: null,      roleId: null,               details: 'Created new translation campaign for India' },
-  { id: 'al-10', timestamp: '2026-03-24T14:00:00Z', actor: 'marcus',      action: 'resource.accessed', tenantId: 'ibm', scopeId: 'ibm-uk',         targetUser: null,      roleId: null,               details: 'Submitted UK regulatory filing for review' },
-  { id: 'al-11', timestamp: '2026-03-23T11:30:00Z', actor: 'alex',        action: 'role.removed',      tenantId: 'meridian', scopeId: 'meridian-root', targetUser: 'james', roleId: 'viewer',          details: 'Upgraded from Viewer — reassigned as Contributor' },
-  { id: 'al-12', timestamp: '2026-03-22T16:45:00Z', actor: 'alex',        action: 'role.assigned',     tenantId: 'meridian', scopeId: 'meridian-ma',   targetUser: 'james', roleId: 'contributor',     details: 'Assigned Contributor role at M&A Team' },
-  { id: 'al-13', timestamp: '2026-03-20T08:00:00Z', actor: 'kenji',       action: 'member.added',      tenantId: 'ibm', scopeId: 'ibm-india',      targetUser: 'priya',   roleId: null,               details: 'Added Priya Patel to IBM tenant' },
-  { id: 'al-14', timestamp: '2026-03-18T13:00:00Z', actor: 'system',      action: 'role.assigned',     tenantId: 'ibm', scopeId: 'ibm-americas',   targetUser: 'maria',   roleId: 'contributor',     details: 'Auto-assigned via onboarding flow' },
-  { id: 'al-15', timestamp: '2026-03-15T10:30:00Z', actor: 'support-bot', action: 'resource.accessed', tenantId: 'ibm', scopeId: 'ibm-germany',    targetUser: null,      roleId: null,               details: 'Diagnostic access for support ticket #4790', internal: true },
+  { id: 'al-1',  timestamp: '2026-03-31T09:20:00Z', actor: 'support-bot', action: 'support.access',    tenantId: 'meridian', scopeId: 'mc-root',            targetUser: null,          roleId: 'support-operator', details: 'Support session initiated for ticket #4821', internal: true },
+  { id: 'al-2',  timestamp: '2026-03-31T08:15:00Z', actor: 'kenji',       action: 'resource.accessed', tenantId: 'meridian', scopeId: 'mc-japan-finance',   targetUser: null,          roleId: null,               details: 'Accessed Q3 Earnings Report (JA locale)' },
+  { id: 'al-3',  timestamp: '2026-03-30T16:42:00Z', actor: 'alex',        action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-germany',         targetUser: 'marcus',      roleId: 'org-manager',      details: 'Assigned Org Manager role at Germany scope' },
+  { id: 'al-4',  timestamp: '2026-03-30T14:30:00Z', actor: 'marcus',      action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-germany-tax',     targetUser: 'thomas',      roleId: 'viewer',           details: 'Assigned Viewer role at Tax & Audit' },
+  { id: 'al-5',  timestamp: '2026-03-29T11:05:00Z', actor: 'kenji',       action: 'member.added',      tenantId: 'meridian', scopeId: 'mc-japan',           targetUser: 'yuki',        roleId: null,               details: 'Added Yuki Nakamura to Japan region' },
+  { id: 'al-6',  timestamp: '2026-03-28T09:30:00Z', actor: 'sarah',       action: 'resource.accessed', tenantId: 'meridian', scopeId: 'mc-japan-finance',   targetUser: null,          roleId: null,               details: 'Approved Q3 Investor Presentation (JA)' },
+  { id: 'al-7',  timestamp: '2026-03-27T15:20:00Z', actor: 'kenji',       action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-japan-finance',   targetUser: 'sarah',       roleId: 'approver',         details: 'Assigned Approver role at Financial Reporting' },
+  { id: 'al-8',  timestamp: '2026-03-26T10:00:00Z', actor: 'platform',    action: 'support.access',    tenantId: 'meridian', scopeId: 'mc-root',            targetUser: 'support-bot', roleId: 'support-operator', details: 'Support access granted (expires 2026-04-25)', internal: true },
+  { id: 'al-9',  timestamp: '2026-03-25T09:15:00Z', actor: 'lena',        action: 'resource.accessed', tenantId: 'meridian', scopeId: 'mc-nz',              targetUser: null,          roleId: null,               details: 'Created new translation campaign for New Zealand' },
+  { id: 'al-10', timestamp: '2026-03-24T14:00:00Z', actor: 'marcus',      action: 'resource.accessed', tenantId: 'meridian', scopeId: 'mc-germany-wealth',  targetUser: null,          roleId: null,               details: 'Submitted DE regulatory filing for review' },
+  { id: 'al-11', timestamp: '2026-03-23T11:30:00Z', actor: 'alex',        action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-nz',              targetUser: 'lena',        roleId: 'org-manager',      details: 'Assigned Org Manager role at New Zealand' },
+  { id: 'al-12', timestamp: '2026-03-22T16:45:00Z', actor: 'alex',        action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-global-risk',     targetUser: 'james',       roleId: 'contributor',      details: 'Assigned Contributor role at Global Risk' },
+  { id: 'al-13', timestamp: '2026-03-20T08:00:00Z', actor: 'marcus',      action: 'member.added',      tenantId: 'meridian', scopeId: 'mc-germany',         targetUser: 'priya',       roleId: null,               details: 'Added Priya Patel to Germany Wealth Management' },
+  { id: 'al-14', timestamp: '2026-03-18T13:00:00Z', actor: 'system',      action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-japan-compliance', targetUser: 'yuki',       roleId: 'approver',         details: 'Auto-assigned Approver via onboarding flow' },
+  { id: 'al-15', timestamp: '2026-03-15T10:30:00Z', actor: 'support-bot', action: 'resource.accessed', tenantId: 'meridian', scopeId: 'mc-germany-tax',     targetUser: null,          roleId: null,               details: 'Diagnostic access for support ticket #4790', internal: true },
 ];
 
 /* ─── Action type styling ────────────────────────────────────── */
