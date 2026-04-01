@@ -403,55 +403,22 @@ function AssignPhase({ reviewRequest, teamMembers, onAssign, onBack, reduced }) 
         <button onClick={onBack} className="p-1.5 rounded-lg hover:bg-black/[0.06] transition-colors" aria-label="Go back">
           <ArrowLeft className="w-4 h-4 text-gray-900/60" />
         </button>
-        <h1 className="text-lg font-semibold text-gray-900">Assign Human Review</h1>
+        <h1 className="text-lg font-semibold text-gray-900">Get This Reviewed</h1>
       </div>
 
       {/* Content */}
       <div className="flex-1 flex flex-col p-6 overflow-hidden">
-        {/* Send to Straker card */}
-        <div className="shrink-0 mb-4 rounded-lg border border-black/[0.12] border-l-4 border-l-[#009eda] bg-white overflow-hidden">
-          <div className="flex items-center gap-5 px-5 py-4">
-            {/* Straker info */}
-            <div className="w-10 h-10 rounded-lg bg-[#009eda]/10 flex items-center justify-center shrink-0">
-              <Globe className="w-5 h-5 text-[#009eda]" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold text-gray-900">Send to Straker</h3>
-                <span className="px-1.5 py-0.5 rounded bg-[#009eda]/10 text-[9px] font-bold text-[#009eda] uppercase tracking-wider">Professional</span>
-              </div>
-              <p className="text-[11px] text-gray-500 mt-0.5">Expert linguists verify {segCount} flagged segments in {reviewRequest.locale}</p>
-            </div>
-            <div className="flex items-center gap-4 shrink-0">
-              <div className="text-right">
-                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Turnaround</p>
-                <p className="text-xs font-medium text-gray-700">~2 hrs</p>
-              </div>
-              <div className="text-right">
-                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Cost</p>
-                <p className="text-xs font-medium text-gray-700">0.54 TC</p>
-              </div>
-              <button
-                onClick={() => onAssign('straker', 'Sent to Straker for professional verification')}
-                className="px-4 py-2 rounded-lg bg-[#009eda] hover:bg-[#0089c4] text-white text-xs font-semibold transition-colors flex items-center gap-1.5"
-              >
-                <Send className="w-3.5 h-3.5" /> Send to Straker
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Self-review option */}
+        {/* Primary action: Review it yourself */}
         <button
           onClick={() => { onAssign('self', 'Self-review'); }}
-          className="shrink-0 w-full flex items-center gap-3 p-4 mb-4 rounded-lg border-2 border-straker-500/20 bg-straker-50/40 hover:bg-straker-50 transition-all cursor-pointer group"
+          className="shrink-0 w-full flex items-center gap-4 p-5 mb-4 rounded-xl border-2 border-straker-500/20 bg-straker-50/30 hover:bg-straker-50 transition-all cursor-pointer group"
         >
-          <div className="w-10 h-10 rounded-lg bg-straker-50 border border-straker-500/15 flex items-center justify-center shrink-0 group-hover:bg-straker-100 transition-colors">
+          <div className="w-11 h-11 rounded-xl bg-straker-50 border border-straker-500/15 flex items-center justify-center shrink-0 group-hover:bg-straker-100 transition-colors">
             <ShieldCheck className="w-5 h-5 text-straker-600" />
           </div>
           <div className="flex-1 text-left">
-            <p className="text-[13px] font-semibold text-gray-900">Start My Review</p>
-            <p className="text-[11px] text-gray-500">Review flagged segments yourself — no assignment required</p>
+            <p className="text-[14px] font-semibold text-gray-900">Review it myself</p>
+            <p className="text-[12px] text-gray-500">Open the review workspace now — no waiting</p>
           </div>
           <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-straker-600 transition-colors" />
         </button>
@@ -609,6 +576,18 @@ function AssignPhase({ reviewRequest, teamMembers, onAssign, onBack, reduced }) 
           </AnimatePresence>
         </div>
       </div>
+
+        {/* Straker — demoted to quiet secondary option */}
+        <div className="shrink-0 pt-3 mt-3 border-t border-black/[0.06]">
+          <button
+            onClick={() => onAssign('straker', 'Sent to Straker for professional verification')}
+            className="flex items-center gap-2 text-[12px] text-gray-400 hover:text-gray-600 cursor-pointer transition-colors"
+          >
+            <Globe className="w-3.5 h-3.5" />
+            <span>Need professional linguists? Send to Straker</span>
+            <span className="text-[10px] text-gray-300">~2 hrs · 0.54 TC</span>
+          </button>
+        </div>
       </div>
     </motion.div>
   )
