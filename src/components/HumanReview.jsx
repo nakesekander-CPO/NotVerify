@@ -4,7 +4,7 @@ import {
   ArrowLeft, Search, CheckCircle2, Circle, AlertTriangle, Clock,
   User, Send, Edit3, XCircle, ChevronDown, ChevronUp, Sparkles,
   Globe, FileText, Shield, Bot, RotateCcw, Brain, ArrowRightLeft, Zap,
-  Puzzle, Upload, MessageSquare, TicketCheck, Database, Play, X,
+  Puzzle, Upload, MessageSquare, TicketCheck, Database, Play, X, ArrowRight, ShieldCheck,
 } from 'lucide-react'
 import useReducedMotion from '../hooks/useReducedMotion'
 import useKnowledgeRules from '../hooks/useKnowledgeRules'
@@ -440,6 +440,21 @@ function AssignPhase({ reviewRequest, teamMembers, onAssign, onBack, reduced }) 
             </div>
           </div>
         </div>
+
+        {/* Self-review option */}
+        <button
+          onClick={() => { onAssign('self', 'Self-review'); }}
+          className="shrink-0 w-full flex items-center gap-3 p-4 mb-4 rounded-lg border-2 border-straker-500/20 bg-straker-50/40 hover:bg-straker-50 transition-all cursor-pointer group"
+        >
+          <div className="w-10 h-10 rounded-lg bg-straker-50 border border-straker-500/15 flex items-center justify-center shrink-0 group-hover:bg-straker-100 transition-colors">
+            <ShieldCheck className="w-5 h-5 text-straker-600" />
+          </div>
+          <div className="flex-1 text-left">
+            <p className="text-[13px] font-semibold text-gray-900">Start My Review</p>
+            <p className="text-[11px] text-gray-500">Review flagged segments yourself — no assignment required</p>
+          </div>
+          <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-straker-600 transition-colors" />
+        </button>
 
         {/* Divider */}
         <div className="shrink-0 flex items-center gap-3 mb-4">

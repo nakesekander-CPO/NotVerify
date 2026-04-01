@@ -22,7 +22,8 @@ import IntegrationsHub from './components/Integrations'
 import AgentAssemblyTransition from './components/AgentAssemblyTransition'
 import TimeJumpTransition from './components/TimeJumpTransition'
 import MobileBlocker from './components/MobileBlocker'
-import WorkflowStepper from './components/WorkflowStepper'
+import GlobalNav from './components/GlobalNav'
+import ProjectProgress from './components/ProjectProgress'
 import Footer from './components/Footer'
 import ParametersDrawer from './components/ParametersDrawer'
 import CampaignHub from './components/CampaignHub'
@@ -317,6 +318,13 @@ export default function App() {
     setPhase('human-review')
   }, [phase])
 
+  // Entry Point 1a-self: Review Now — skip assignment, go directly to review phase
+  const handleReviewNow = useCallback(() => {
+    setPreviousPhase(phase)
+    setHumanReviewMode('review')
+    setPhase('human-review')
+  }, [phase])
+
   // Entry Point 1b: Campaign review — specific doc×locale job
   const handleCampaignReviewJob = useCallback((job) => {
     const locale = job.locale.toUpperCase();
@@ -486,9 +494,19 @@ export default function App() {
         Skip to main content
       </a>
       <Header companyName={onboardingConfig?.orgName || 'Meridian Capital'} onOpenSettings={() => { setPreviousPhase(phase); setPhase('settings') }} onOpenMarketplace={() => setShowMarketplace(true)} onNavigateHome={() => setPhase('dashboard')} />
-      {phase !== 'settings' && phase !== 'integrations' && phase !== 'campaign-hub' && phase !== 'first-campaign' && !(phase === 'narrative' && activeCampaign && !triageData) && <WorkflowStepper currentState={phase} />}
+      {phase !== 'settings' && phase !== 'integrations' && phase !== 'onboarding' && phase !== 'agent-assembly' && (
+        <GlobalNav
+          currentPhase={phase}
+          onNavigate={(target) => { setPreviousPhase(phase); setPhase(target); }}
+        />
+      )}
       <main id="main-content" tabIndex={-1} className={`flex-1 flex outline-none ${isHumanReview ? 'overflow-hidden' : 'items-start justify-center px-6 lg:px-8 xl:px-12 2xl:px-16 pt-8 xl:pt-10 pb-12 xl:pb-16'}`}>
         <div className={containerClass}>
+          {/* Project progress — inline indicator during active project */}
+          {['reading', 'processing', 'narrative'].includes(phase) && !isHumanReview && !(phase === 'narrative' && activeCampaign && !triageData) && (
+            <ProjectProgress currentState={phase} />
+          )}
+
           {/* Settings page */}
           {phase === 'settings' && (
             <Settings
@@ -667,6 +685,7 @@ export default function App() {
                     onReset={handleReset}
                     activeAgents={activeAgents}
                     onComplianceRequired={handleComplianceRequired}
+                    onReviewNow={handleReviewNow}
                     onOpenOrgBrain={() => { setPreviousPhase('narrative'); setPhase('org-brain') }}
                     activeCampaign={activeCampaign}
                   />

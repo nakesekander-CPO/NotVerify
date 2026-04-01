@@ -22,6 +22,7 @@ import {
   Eye,
   EyeOff,
   Puzzle,
+  ArrowRight,
 } from 'lucide-react';
 import useReducedMotion from '../hooks/useReducedMotion';
 
@@ -442,11 +443,11 @@ export default function ColdStartDashboard({
       {/* ── Pipeline visualization strip ── */}
       <motion.div className="grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center mb-8" {...m(fadeUp(0.05))}>
         {[
-          { icon: FileUp,       label: 'Document in',    sub: 'DOCX · PDF · PPTX · XLSX',     color: 'text-gray-500'     },
+          { icon: FileUp,       label: 'Content Intake',         sub: 'Policies · Filings · Reports · Contracts', color: 'text-gray-500'     },
           { isArrow: true },
-          { icon: ShieldCheck,  label: 'AI trust review', sub: 'Compliance · Quality · Agents', color: 'text-[#009eda]'    },
+          { icon: ShieldCheck,  label: 'Intelligence Extraction', sub: 'Compliance · Risk · Knowledge',           color: 'text-[#009eda]'    },
           { isArrow: true },
-          { icon: CheckCircle2, label: 'Verified output', sub: 'Score · Locale flags · Audit',  color: 'text-emerald-600'  },
+          { icon: CheckCircle2, label: 'Trusted Output',          sub: 'Confidence · Flags · Audit Trail',        color: 'text-emerald-600'  },
         ].map((item, i) => {
           if (item.isArrow) return (
             <div key={i} className="flex justify-center px-3 text-gray-300 text-[14px] select-none">→</div>
@@ -477,9 +478,9 @@ export default function ColdStartDashboard({
             <BrainCircuit size={20} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[15px] font-semibold text-gray-900 mb-0.5">See the trust review pipeline in action</p>
+            <p className="text-[15px] font-semibold text-gray-900 mb-0.5">See intelligence extraction in action</p>
             <p className="text-[13px] text-gray-500 leading-snug">
-              We've loaded a sample Q3 Earnings Report. Watch Not Verify process it through compliance, quality scoring, and human review — no upload required.
+              We've loaded a sample Q3 Earnings Report. Watch Not Verify extract compliance intelligence, score quality, and surface risks — no upload required.
             </p>
           </div>
           <div className="flex items-center gap-1.5 shrink-0 self-center px-4 py-2 rounded-lg bg-straker-600 text-white text-[13px] font-semibold group-hover:bg-straker-700 transition-colors whitespace-nowrap">
@@ -489,7 +490,7 @@ export default function ColdStartDashboard({
 
         {/* Secondary CTAs — 2 columns, equal height */}
         <div className="grid grid-cols-2 gap-3 items-stretch">
-          {/* Upload your document */}
+          {/* Analyze your first document */}
           <motion.div
             ref={dropRef}
             role="button"
@@ -510,20 +511,20 @@ export default function ColdStartDashboard({
                 <FileUp size={17} />
               </div>
               <div>
-                <p className="text-[13px] font-semibold text-gray-800 mb-0.5">Upload your document</p>
-                <p className="text-[11px] text-gray-400 leading-snug">Your file stays in your environment. Results are yours.</p>
+                <p className="text-[13px] font-semibold text-gray-800 mb-0.5">Analyze your first document</p>
+                <p className="text-[11px] text-gray-400 leading-snug">Your content stays in your environment. Intelligence compounds.</p>
               </div>
             </div>
           </motion.div>
 
-          {/* How trust review works */}
+          {/* How intelligence extraction works */}
           <div className="flex flex-col h-full p-4 rounded-xl border border-black/[0.08] bg-white">
             <div className="flex items-start gap-3 flex-1">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-violet-50 text-violet-600">
                 <Dna size={17} />
               </div>
               <div>
-                <p className="text-[13px] font-semibold text-gray-800 mb-0.5">How trust review works</p>
+                <p className="text-[13px] font-semibold text-gray-800 mb-0.5">How intelligence extraction works</p>
                 <p className="text-[11px] text-gray-400 leading-snug">7 steps from document to verified output. See what happens at each stage.</p>
                 <button
                   type="button"
@@ -550,8 +551,8 @@ export default function ColdStartDashboard({
               <Layers size={16} />
             </div>
             <div>
-              <p className="text-[13px] font-semibold text-gray-800">Start a multi-document campaign</p>
-              <p className="text-[11px] text-gray-400 leading-snug">Bulk upload, shared settings, and a quality heatmap across all your documents</p>
+              <p className="text-[13px] font-semibold text-gray-800">Batch intelligence extraction</p>
+              <p className="text-[11px] text-gray-400 leading-snug">Multi-document analysis, cross-document patterns, and a compliance heatmap</p>
             </div>
           </div>
           <ChevronRight size={16} className="text-gray-300 group-hover:text-[#009eda] transition-colors shrink-0" />
@@ -559,36 +560,65 @@ export default function ColdStartDashboard({
       </motion.div>
 
       {/* ── Widget Grid ── */}
-      <motion.div {...m(fadeUp(0.4))}>
-        {/* Header with customize button */}
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-[12px] text-gray-400">
-            {visibleWidgets.length} widget{visibleWidgets.length !== 1 ? 's' : ''} visible
-          </p>
-          <div className="relative" ref={customizeRef}>
-            <button
-              onClick={() => setShowCustomize(prev => !prev)}
-              className="flex items-center gap-1.5 text-[12px] text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-              aria-label="Customize dashboard widgets"
-            >
-              <Settings2 size={13} />
-              <span>Customize</span>
-            </button>
-            <AnimatePresence>
-              {showCustomize && (
-                <CustomizePanel
-                  widgets={widgets}
-                  onUpdate={(updated) => { setWidgets(updated); saveWidgetConfig(updated); }}
-                  onClose={() => setShowCustomize(false)}
-                />
-              )}
-            </AnimatePresence>
+      {/* ── Org Brain Aspiration ── */}
+      <motion.div {...m(fadeUp(0.4))} className="rounded-xl border border-black/[0.08] bg-white p-8">
+        {/* Ghosted knowledge graph visualization */}
+        <div className="relative flex items-center justify-center py-8">
+          <svg width="480" height="240" viewBox="0 0 480 240" className="opacity-20">
+            {/* Connections */}
+            <line x1="240" y1="60" x2="100" y2="140" stroke="#009eda" strokeWidth="1.5" strokeDasharray="4 4" />
+            <line x1="240" y1="60" x2="380" y2="140" stroke="#a78bfa" strokeWidth="1.5" strokeDasharray="4 4" />
+            <line x1="100" y1="140" x2="180" y2="200" stroke="#fbbf24" strokeWidth="1.5" strokeDasharray="4 4" />
+            <line x1="380" y1="140" x2="300" y2="200" stroke="#34d399" strokeWidth="1.5" strokeDasharray="4 4" />
+            <line x1="240" y1="60" x2="240" y2="200" stroke="#f87171" strokeWidth="1" strokeDasharray="3 3" />
+            <line x1="100" y1="140" x2="380" y2="140" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3 3" />
+            {/* Nodes */}
+            <circle cx="240" cy="60" r="28" fill="none" stroke="#009eda" strokeWidth="2" strokeDasharray="4 4" />
+            <text x="240" y="64" textAnchor="middle" fill="#64748b" fontSize="9" fontWeight="600">Compliance</text>
+            <circle cx="100" cy="140" r="24" fill="none" stroke="#fbbf24" strokeWidth="2" strokeDasharray="4 4" />
+            <text x="100" y="144" textAnchor="middle" fill="#64748b" fontSize="9" fontWeight="600">Financial</text>
+            <circle cx="380" cy="140" r="24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeDasharray="4 4" />
+            <text x="380" y="144" textAnchor="middle" fill="#64748b" fontSize="9" fontWeight="600">Regulatory</text>
+            <circle cx="180" cy="200" r="20" fill="none" stroke="#34d399" strokeWidth="1.5" strokeDasharray="4 4" />
+            <text x="180" y="204" textAnchor="middle" fill="#64748b" fontSize="8" fontWeight="600">Cultural</text>
+            <circle cx="300" cy="200" r="20" fill="none" stroke="#f87171" strokeWidth="1.5" strokeDasharray="4 4" />
+            <text x="300" y="204" textAnchor="middle" fill="#64748b" fontSize="8" fontWeight="600">Brand</text>
+            <circle cx="440" cy="80" r="16" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="4 4" />
+            <text x="440" y="83" textAnchor="middle" fill="#94a3b8" fontSize="7" fontWeight="600">Legal</text>
+          </svg>
+          {/* Center overlay */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+            <Brain size={24} className="text-gray-300 mb-2" />
+            <p className="text-[14px] font-semibold text-gray-400">Your compliance intelligence will grow here</p>
+            <p className="text-[12px] text-gray-300 mt-1">Every analysis makes this smarter</p>
           </div>
         </div>
 
-        {/* Widget cards in a responsive grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {visibleWidgets.map(widget => renderWidget(widget))}
+        {/* Aspirational stats */}
+        <div className="flex items-center justify-center gap-8 mt-4 pt-4 border-t border-black/[0.06]">
+          {[
+            { current: 0, target: '1,247', label: 'Knowledge Entries' },
+            { current: 0, target: '342', label: 'Patterns' },
+            { current: 0, target: '47h', label: 'Time Saved' },
+          ].map(stat => (
+            <div key={stat.label} className="text-center">
+              <p className="text-[18px] font-bold tabular-nums text-gray-200">
+                {stat.current} <span className="text-[11px] font-normal text-gray-300">/ {stat.target}</span>
+              </p>
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <div className="flex justify-center mt-5">
+          <button
+            onClick={onStartFirstProject}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-straker-600 hover:bg-straker-500 text-white text-[13px] font-semibold transition-colors cursor-pointer"
+          >
+            Analyze your first document to start building your Org Brain
+            <ArrowRight size={14} />
+          </button>
         </div>
       </motion.div>
 

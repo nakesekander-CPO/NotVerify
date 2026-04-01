@@ -131,7 +131,7 @@ function LaunchBriefing({ file, defaultLocales, onConfirm, onCancel, prefersRedu
           disabled={locales.length === 0}
           className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-straker-600 hover:bg-straker-500 text-white text-[13px] font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Start Processing <ArrowRight className="w-4 h-4" />
+          Begin Analysis <ArrowRight className="w-4 h-4" />
         </button>
         <button
           type="button"
@@ -676,7 +676,7 @@ export default function CommandSurface({ onFileAccepted, onFileWithLocales, orgI
             Good morning, {userName || 'Alex'}.
           </h1>
           <p className="text-sm text-gray-500">
-            {totalProjectsCompleted.toLocaleString()} projects &middot; {totalWordsProcessed} words processed
+            {totalProjectsCompleted.toLocaleString()} analyses complete &middot; Org Brain: 1,247 intelligence entries
           </p>
         </div>
 
@@ -688,11 +688,11 @@ export default function CommandSurface({ onFileAccepted, onFileWithLocales, orgI
             </div>
             <div>
               <h2 className="text-[15px] font-semibold text-gray-900 mb-1">
-                It&rsquo;s Q3 Earnings season.
+                New intelligence available for Q3 Earnings
               </h2>
               <p className="text-[13px] text-gray-500 leading-relaxed max-w-md">
                 {prediction?.prompt ||
-                  "Your Q3 Earnings Report is due for processing. J-GAAP knowledge base (1,247 entries) and JA \u00b7 DE \u00b7 ZH targets are pre-loaded."}
+                  "Your J-GAAP knowledge base detected 23 new regulatory patterns. Run analysis to extract compliance insights across JA \u00b7 DE \u00b7 ZH."}
               </p>
             </div>
 
@@ -715,7 +715,7 @@ export default function CommandSurface({ onFileAccepted, onFileWithLocales, orgI
               onClick={handleStartPredicted}
               className="w-full h-10 bg-straker-600 hover:bg-straker-500 text-white font-semibold rounded-lg flex items-center justify-center gap-2 cursor-pointer transition-colors text-[13px]"
             >
-              Start Q3 Earnings Project
+              Analyze Q3 Earnings Report
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -770,7 +770,7 @@ export default function CommandSurface({ onFileAccepted, onFileWithLocales, orgI
               </div>
               <div className="min-w-0">
                 <p className={`text-[13px] font-medium transition-colors ${isDragOver ? 'text-straker-600' : 'text-gray-700'}`}>
-                  Or drop a new document here
+                  Analyze a new document
                 </p>
                 <p className="text-[11px] text-gray-400">
                   .docx, .pdf, .pptx, .xlsx, .mp4
@@ -792,10 +792,10 @@ export default function CommandSurface({ onFileAccepted, onFileWithLocales, orgI
             </div>
             <div className="text-left min-w-0">
               <p className="text-[13px] font-medium text-gray-700 group-hover:text-gray-900 transition-colors">
-                Start a multi-document campaign
+                Batch intelligence extraction
               </p>
               <p className="text-[11px] text-gray-400">
-                Bulk upload · shared settings · quality heatmap
+                Multi-document analysis · cross-document patterns · compliance heatmap
               </p>
             </div>
           </div>

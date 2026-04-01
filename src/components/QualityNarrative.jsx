@@ -419,7 +419,7 @@ function CausalityPopover({ open, title, children }) {
   )
 }
 
-export default function QualityNarrative({ data, computedQuality, enabledUpsells, qualityNarrative, orgIntelligence, onReset, activeAgents, onComplianceRequired, onOpenOrgBrain, activeCampaign }) {
+export default function QualityNarrative({ data, computedQuality, enabledUpsells, qualityNarrative, orgIntelligence, onReset, activeAgents, onComplianceRequired, onReviewNow, onOpenOrgBrain, activeCampaign }) {
   const [processing, setProcessing] = useState(true)
   const [diagnosticOpen, setDiagnosticOpen] = useState(false)
   const [glossaryAdded, setGlossaryAdded] = useState(false)
@@ -1031,14 +1031,22 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
                     <p className="text-[12px] text-gray-500 leading-relaxed mb-3">
                       Trust score is below threshold. 4 segments need human validation before this project can proceed. Assign a reviewer to resolve flagged items and retrain the model.
                     </p>
-                    <button
-                      onClick={onComplianceRequired}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-black/[0.12] text-gray-500 text-[12px] font-medium hover:bg-black/[0.02] transition-colors cursor-pointer"
-                    >
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                      Assign to External Reviewer
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={onReviewNow}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-straker-600 text-white text-[12px] font-semibold hover:bg-straker-500 transition-colors cursor-pointer"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        Review Now
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={onComplianceRequired}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-black/[0.12] text-gray-500 text-[12px] font-medium hover:bg-black/[0.02] transition-colors cursor-pointer"
+                      >
+                        Assign to Reviewer
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
