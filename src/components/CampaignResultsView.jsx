@@ -190,6 +190,7 @@ export default function CampaignResultsView({ campaign, threshold = 85, onReset,
 
   const readyCount = docSummaries.filter(d => d.status === 'ready').length;
   const reviewDocCount = docSummaries.filter(d => d.status === 'needs-review').length;
+  const flaggedJobs = useMemo(() => buildFlaggedJobs(campaign, threshold), [campaign, threshold]);
 
   /* ── Delivery state ── */
   const addDestination = (typeId) => {
