@@ -363,8 +363,22 @@ function MinimapScrollbar({ flaggedSegments, allSegments, decisions, onJump }) {
 
 function AssignPhase({ reviewRequest, teamMembers, onAssign, onBack, reduced }) {
   const [selectedMember, setSelectedMember] = useState(null)
+
+  // Build smart default note from flagged segment context
+  const smartNote = useMemo(() => {
+    const segs = reviewRequest.flaggedSegments || [];
+    if (segs.length === 0) return '';
+    const counts = { critical: 0, major: 0, minor: 0 };
+    segs.forEach(s => { if (s.severity) counts[s.severity]++; });
+    const parts = [];
+    if (counts.critical) parts.push(`${counts.critical} critical`);
+    if (counts.major) parts.push(`${counts.major} major`);
+    if (counts.minor) parts.push(`${counts.minor} minor`);
+    const locale = reviewRequest.locale || reviewRequest.localeCode || '';
+    return `${segs.length} flagged segments in ${locale} (${parts.join(', ')}). Trust score: ${reviewRequest.trustScore}/${reviewRequest.threshold}.`;
+  }, [reviewRequest]);
   const [searchQuery, setSearchQuery] = useState('')
-  const [note, setNote] = useState('')
+  const [note, setNote] = useState(null) // null = not yet initialized
   const [priority, setPriority] = useState('normal')
 
   const recommended = teamMembers.filter(m => m.recommended)
@@ -385,7 +399,6 @@ function AssignPhase({ reviewRequest, teamMembers, onAssign, onBack, reduced }) 
 
   const topSegments = [...reviewRequest.flaggedSegments]
     .sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity])
-    .slice(0, 2)
 
   const segCount = reviewRequest.flaggedSegments.length
   const estTime = Math.max(4, segCount * 3)
@@ -472,7 +485,7 @@ function AssignPhase({ reviewRequest, teamMembers, onAssign, onBack, reduced }) 
 
             {/* Top segments preview */}
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-gray-900/60 uppercase tracking-wider">Most Severe Segments</p>
+              <p className="text-xs font-semibold text-gray-900/60 uppercase tracking-wider">Flagged Segments</p>
               {topSegments.map(seg => (
                 <div key={seg.id} className={`rounded-lg px-3 py-2 border ${severityColor[seg.severity].border} ${severityColor[seg.severity].bg}`}>
                   <div className="flex items-center gap-2">
@@ -541,23 +554,33 @@ function AssignPhase({ reviewRequest, teamMembers, onAssign, onBack, reduced }) 
                 <div className="p-4 space-y-3">
                   <div className="flex items-center gap-2">
                     <Avatar initials={selectedMember.initials} size={28} />
-                    <span className="text-sm font-medium text-gray-900">{selectedMember.name}</span>
+                    <span className="text-sm font-medium text-gray-900 flex-1">{selectedMember.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedMember(null); setNote(null); }}
+                      className="text-[11px] text-gray-400 hover:text-gray-600 cursor-pointer transition-colors"
+                    >
+                      Change
+                    </button>
                   </div>
-                  <textarea
-                    value={note}
-                    onChange={e => setNote(e.target.value)}
-                    placeholder="Add context for the reviewer..."
-                    rows={2}
-                    className="w-full px-3 py-2 rounded-lg bg-black/[0.03] border border-black/[0.12] text-sm text-gray-900 placeholder:text-gray-900/30 outline-none focus:border-[#5c7cfa]/50 resize-none transition-colors"
-                  />
+                  <div>
+                    <label className="block text-[10px] text-gray-500 mb-1">Review summary (editable)</label>
+                    <textarea
+                      value={note ?? smartNote}
+                      onChange={e => setNote(e.target.value)}
+                      placeholder="What should the reviewer focus on?"
+                      rows={2}
+                      className="w-full px-3 py-2 rounded-lg bg-black/[0.03] border border-black/[0.12] text-sm text-gray-900 placeholder:text-gray-900/30 outline-none focus:border-[#5c7cfa]/50 resize-none transition-colors"
+                    />
+                  </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setPriority('normal')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${priority === 'normal' ? 'bg-[#5c7cfa]/20 text-[#5c7cfa] border border-[#5c7cfa]/40' : 'bg-black/[0.03] text-gray-900/50 border border-black/[0.12]'}`}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${priority === 'normal' ? 'bg-[#5c7cfa] text-white' : 'bg-black/[0.03] text-gray-900/50 border border-black/[0.12]'}`}
                     >Normal</button>
                     <button
                       onClick={() => setPriority('urgent')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${priority === 'urgent' ? 'bg-red-500/20 text-red-600 border border-red-500/40' : 'bg-black/[0.03] text-gray-900/50 border border-black/[0.12]'}`}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${priority === 'urgent' ? 'bg-red-500 text-white' : 'bg-black/[0.03] text-gray-900/50 border border-black/[0.12]'}`}
                     >Urgent</button>
                   </div>
                   <p className="text-[11px] text-gray-900/40 flex items-center gap-1.5">
@@ -565,10 +588,11 @@ function AssignPhase({ reviewRequest, teamMembers, onAssign, onBack, reduced }) 
                     Avg review time: ~{estTime} min for {segCount} segments
                   </p>
                   <button
-                    onClick={() => onAssign(selectedMember.id, note)}
-                    className="w-full py-2.5 rounded-lg bg-[#5c7cfa] hover:bg-[#4c6ef5] text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                    onClick={() => onAssign(selectedMember.id, note ?? smartNote)}
+                    className="w-full py-2.5 rounded-lg bg-[#5c7cfa] hover:bg-[#4c6ef5] text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2 group relative"
+                    title={`${selectedMember.name} will be notified and can start reviewing immediately`}
                   >
-                    <Send className="w-3.5 h-3.5" /> Assign Review
+                    <Send className="w-3.5 h-3.5" /> Assign to {selectedMember.name.split(' ')[0]}
                   </button>
                 </div>
               </motion.div>
