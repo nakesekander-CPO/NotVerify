@@ -321,53 +321,75 @@ export default function MissionControl({
         </div>
       )}
 
-      {/* Simplified Recommended Ensemble (default view) */}
+      {/* Trust Assessment — default view (simplified) */}
       {(triageData || preloaded) && !showAdvanced && isReady && (
-        <div className="max-w-lg mx-auto space-y-5">
-          <div className="bg-white border border-black/[0.12] rounded-xl p-6 space-y-5">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Recommended for</p>
-              <p className="text-[15px] font-semibold text-gray-900">{classification || 'This Document'}</p>
-            </div>
-
-            {/* Score + Cost */}
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-3">
-                <div className="relative" style={{ width: 64, height: 64 }}>
-                  <svg width={64} height={64} viewBox="0 0 64 64" className="transform -rotate-90">
-                    <circle cx={32} cy={32} r={28} fill="none" stroke="rgba(0,0,0,0.04)" strokeWidth={5} />
-                    <motion.circle cx={32} cy={32} r={28} fill="none" stroke={qualityColor} strokeWidth={5} strokeLinecap="round"
-                      strokeDasharray={2 * Math.PI * 28}
-                      initial={{ strokeDashoffset: 2 * Math.PI * 28 }}
-                      animate={{ strokeDashoffset: 2 * Math.PI * 28 - (projectedScore / 100) * 2 * Math.PI * 28 }}
-                      transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 80, damping: 15 }}
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="font-mono text-[18px] font-bold" style={{ color: qualityColor }}>{projectedScore}</span>
+        <div className="max-w-xl mx-auto space-y-5">
+          {/* Assessment header */}
+          <div className="bg-white border border-black/[0.12] rounded-xl overflow-hidden">
+            <div className="px-6 pt-5 pb-4 border-b border-black/[0.06]">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1">Trust assessment</p>
+                  <p className="text-[16px] font-semibold text-gray-900">{classification || 'Document Analysis'}</p>
+                  <p className="text-[12px] text-gray-500 mt-0.5">{fileName} &middot; {pageCount} pages &middot; {locales.map(l => l.toUpperCase()).join(', ')}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="relative" style={{ width: 56, height: 56 }}>
+                    <svg width={56} height={56} viewBox="0 0 56 56" className="transform -rotate-90">
+                      <circle cx={28} cy={28} r={24} fill="none" stroke="rgba(0,0,0,0.04)" strokeWidth={4} />
+                      <motion.circle cx={28} cy={28} r={24} fill="none" stroke={qualityColor} strokeWidth={4} strokeLinecap="round"
+                        strokeDasharray={2 * Math.PI * 24}
+                        initial={{ strokeDashoffset: 2 * Math.PI * 24 }}
+                        animate={{ strokeDashoffset: 2 * Math.PI * 24 - (projectedScore / 100) * 2 * Math.PI * 24 }}
+                        transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 80, damping: 15 }}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="font-mono text-[15px] font-bold" style={{ color: qualityColor }}>{projectedScore}</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[12px] font-semibold text-gray-800">Projected confidence</p>
+                    <p className="text-[10px] text-gray-400">{estimatedCost}cr &middot; ~{estimatedTime}m</p>
                   </div>
                 </div>
-                <div>
-                  <p className="text-[14px] font-semibold text-gray-900">Projected Confidence</p>
-                  <p className="text-[11px] text-gray-500">Based on 42 prior JA financial projects</p>
-                </div>
-              </div>
-              <div className="ml-auto text-right">
-                <p className="text-[14px] font-bold font-mono text-purple-500">{estimatedCost}cr</p>
-                <p className="text-[11px] text-gray-400">{estimatedTime}m est.</p>
               </div>
             </div>
 
-            {/* Agent names */}
-            <div className="border-t border-black/[0.06] pt-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Agent Ensemble</p>
-              <p className="text-[13px] text-gray-700">{activeAgents.map(a => a.name).join(' · ')}</p>
+            {/* Specialist intelligence selected */}
+            <div className="px-6 py-4 space-y-3">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Specialist intelligence assigned</p>
+              <div className="space-y-2">
+                {activeAgents.map(agent => (
+                  <div key={agent.id} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50 border border-black/[0.06]">
+                    <div className="w-7 h-7 rounded-md bg-[#009eda]/10 flex items-center justify-center shrink-0">
+                      <Shield className="w-3.5 h-3.5 text-[#009eda]" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12px] font-medium text-gray-800">{agent.name}</p>
+                      <p className="text-[10px] text-gray-400">
+                        {agent.id === 'JP-FIN-3' ? 'J-GAAP compliance, TSE terminology, currency formatting' :
+                         agent.id === 'MER-DT-1' ? 'Meridian Capital voice policy, organizational memory' :
+                         agent.id === 'BV-SENT-1' ? 'Brand voice consistency, register enforcement' :
+                         agent.id === 'EU-REG-5' ? 'EU regulatory precision, IFRS terminology' :
+                         agent.id === 'LEGAL-2' ? 'Legal compliance, contract clause integrity' :
+                         'Domain-specific quality assurance'}
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-emerald-600 font-medium shrink-0">+{agent.qualityLift} pts</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* Explanation */}
-            <p className="text-[11px] text-gray-400 leading-relaxed">
-              Selected based on your document type, regulatory context, and Org Brain coverage.
-            </p>
+            {/* Governance context */}
+            <div className="px-6 py-3 border-t border-black/[0.06] bg-gray-50/60">
+              <div className="space-y-1 text-[11px] text-gray-500">
+                <p className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" /> Org Brain: 1,247 entries loaded for domain memory</p>
+                <p className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" /> {(plan.guardrails || []).length || 5} guardrails active: {(plan.guardrails || ['J-GAAP compliance', 'TSE terminology', 'Currency formatting']).slice(0, 3).join(', ')}</p>
+                <p className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" /> Escalation: segments below confidence threshold routed to human review</p>
+              </div>
+            </div>
           </div>
 
           {/* Primary CTA */}
@@ -377,7 +399,7 @@ export default function MissionControl({
             animate={!prefersReducedMotion ? { scale: [1, 1.015, 1] } : {}}
             transition={{ duration: 0.3 }}
           >
-            Approve &amp; Start Analysis <ArrowRight size={16} />
+            Approve &amp; Begin Processing <ArrowRight size={16} />
           </motion.button>
 
           {/* Advanced toggle */}
@@ -386,7 +408,7 @@ export default function MissionControl({
             onClick={() => setShowAdvanced(true)}
             className="w-full flex items-center justify-center gap-1.5 text-[12px] text-gray-400 hover:text-gray-600 cursor-pointer transition-colors py-2"
           >
-            Advanced Configuration <ChevronRight size={13} className="transition-transform" />
+            Advanced configuration <ChevronRight size={13} className="transition-transform" />
           </button>
         </div>
       )}

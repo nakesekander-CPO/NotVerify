@@ -28,17 +28,66 @@ function recommendEnsemble(docType) {
 
 /* ─── Launch Briefing ─────────────────────────────────────────── */
 
+/* ─── Regulatory context by document type ────────────────────── */
+
+const REGULATORY_MAP = {
+  Financial: ['J-GAAP', 'IFRS', 'SEC', 'TSE'],
+  Legal: ['GDPR', 'SOX', 'Local Contract Law'],
+  Marketing: ['Brand Guidelines', 'Ad Standards'],
+  Technical: ['ISO 27001', 'SOC 2'],
+  General: [],
+}
+
+const TRUST_POLICIES = [
+  { id: 'conservative', label: 'Conservative', description: 'Review more, auto-commit less. For high-risk regulatory content.' },
+  { id: 'balanced', label: 'Balanced', description: 'Selective review based on confidence scoring.' },
+  { id: 'accelerated', label: 'Accelerated', description: 'Minimal review except critical issues. For low-risk content.' },
+]
+
+const SENSITIVITY_LEVELS = [
+  { id: 'high', label: 'High sensitivity', description: 'Escalate on any flagged term or ambiguity' },
+  { id: 'standard', label: 'Standard', description: 'Escalate on major and critical findings' },
+  { id: 'low', label: 'Low sensitivity', description: 'Escalate only on critical compliance failures' },
+]
+
+const DOCUMENT_TYPES = ['Earnings Report', 'Regulatory Filing', 'Legal Notice', 'Medical Communication', 'Policy Document', 'Investor Presentation', 'Contract', 'Technical Manual']
+const INDUSTRIES = ['Financial Services', 'Legal', 'Pharmaceutical', 'Insurance', 'Public Sector', 'Technology', 'Healthcare']
+
 function LaunchBriefing({ file, defaultLocales, onConfirm, onCancel, prefersReduced }) {
   const [locales, setLocales] = useState(() => defaultLocales.length > 0 ? [...defaultLocales] : ['ja', 'de', 'zh'])
   const [showLocalePicker, setShowLocalePicker] = useState(false)
+  const [showGuidance, setShowGuidance] = useState(false)
+  const [trustPolicy, setTrustPolicy] = useState('balanced')
+  const [sensitivity, setSensitivity] = useState('standard')
+  const [guidance, setGuidance] = useState('')
 
   const docType = detectDocumentType(file)
   const pageCount = estimatePageCount(file)
   const ensemble = recommendEnsemble(docType)
   const available = ALL_LOCALES.filter(l => !locales.includes(l.code))
+  const suggestedRegs = REGULATORY_MAP[docType] || []
+
+  // Auto-derive industry from doc type
+  const detectedIndustry = docType === 'Financial' ? 'Financial Services' : docType === 'Legal' ? 'Legal' : docType === 'Marketing' ? 'Technology' : docType === 'Technical' ? 'Technology' : 'Financial Services'
+
+  const [docTypeLabel, setDocTypeLabel] = useState(() => {
+    if (docType === 'Financial') return 'Earnings Report'
+    if (docType === 'Legal') return 'Legal Notice'
+    if (docType === 'Marketing') return 'Policy Document'
+    if (docType === 'Technical') return 'Technical Manual'
+    return 'Policy Document'
+  })
+  const [industry, setIndustry] = useState(detectedIndustry)
+  const [regulations, setRegulations] = useState(suggestedRegs)
 
   const removeLocale = (code) => setLocales(prev => prev.filter(l => l !== code))
   const addLocale = (code) => { setLocales(prev => [...prev, code]); setShowLocalePicker(false) }
+
+  // Output market labels from locale codes
+  const marketLabels = locales.map(code => {
+    const map = { ja: 'Japan', de: 'Germany', zh: 'China', fr: 'France', es: 'Spain', ko: 'South Korea', pt: 'Brazil', it: 'Italy', nl: 'Netherlands', ru: 'Russia', ar: 'Middle East', th: 'Thailand' }
+    return map[code] || code.toUpperCase()
+  })
 
   return (
     <motion.div
@@ -46,57 +95,92 @@ function LaunchBriefing({ file, defaultLocales, onConfirm, onCancel, prefersRedu
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={prefersReduced ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.98 }}
       transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-      className="w-full max-w-lg rounded-xl border border-black/[0.12] bg-white shadow-lg overflow-hidden"
+      className="w-full max-w-2xl rounded-xl border border-black/[0.12] bg-white shadow-lg overflow-hidden"
     >
-      {/* File info */}
-      <div className="px-5 pt-5 pb-4 border-b border-black/[0.06]">
-        <div className="flex items-center gap-3">
+      {/* Header */}
+      <div className="px-6 pt-5 pb-4 border-b border-black/[0.06]">
+        <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-lg bg-straker-50 border border-straker-500/15 flex items-center justify-center shrink-0">
-            <FileText className="w-5 h-5 text-straker-600" />
+            <Shield className="w-5 h-5 text-straker-600" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[14px] font-semibold text-gray-900 truncate">{file.name}</p>
-            <p className="text-[12px] text-gray-500">{docType} &middot; ~{pageCount} pages &middot; {(file.size / 1024).toFixed(0)} KB</p>
+            <p className="text-[14px] font-semibold text-gray-900">Governed Processing Workflow</p>
+            <p className="text-[12px] text-gray-500">Configure trust rules and compliance context before analysis begins</p>
           </div>
+        </div>
+        {/* File info strip */}
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 border border-black/[0.06]">
+          <FileText className="w-4 h-4 text-gray-400 shrink-0" />
+          <p className="text-[12px] text-gray-700 font-medium truncate">{file.name}</p>
+          <span className="text-[11px] text-gray-400 shrink-0">{docType} &middot; ~{pageCount} pages &middot; {(file.size / 1024).toFixed(0)} KB</span>
         </div>
       </div>
 
-      {/* Locale selector */}
-      <div className="px-5 py-4 space-y-3">
+      {/* Structured intake */}
+      <div className="px-6 py-4 space-y-4 max-h-[420px] overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
+        {/* Row 1: Document Type + Industry */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-[11px] text-gray-500 mb-1">Document type</label>
+            <select value={docTypeLabel} onChange={e => setDocTypeLabel(e.target.value)}
+              className="w-full rounded-lg border border-black/[0.08] bg-white px-3 py-2 text-[12px] text-gray-800 outline-none focus:border-[#009eda] transition cursor-pointer">
+              {DOCUMENT_TYPES.map(dt => <option key={dt} value={dt}>{dt}</option>)}
+            </select>
+            <p className="text-[10px] text-emerald-600 mt-0.5 flex items-center gap-1"><CheckCircle2 className="w-2.5 h-2.5" /> Auto-detected from filename</p>
+          </div>
+          <div>
+            <label className="block text-[11px] text-gray-500 mb-1">Industry</label>
+            <select value={industry} onChange={e => setIndustry(e.target.value)}
+              className="w-full rounded-lg border border-black/[0.08] bg-white px-3 py-2 text-[12px] text-gray-800 outline-none focus:border-[#009eda] transition cursor-pointer">
+              {INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
+            </select>
+          </div>
+        </div>
+
+        {/* Row 2: Regulatory context */}
         <div>
-          <label className="block text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-2">Target Languages</label>
+          <label className="block text-[11px] text-gray-500 mb-1">Regulatory context</label>
           <div className="flex flex-wrap items-center gap-1.5">
-            {locales.map(code => {
-              const locale = ALL_LOCALES.find(l => l.code === code)
-              return (
-                <span key={code} className="inline-flex items-center gap-1 bg-straker-50 border border-straker-500/20 text-straker-600 text-[12px] font-medium px-2.5 py-1 rounded-lg">
-                  {code.toUpperCase()}
-                  <button type="button" onClick={() => removeLocale(code)} className="ml-0.5 text-straker-400 hover:text-straker-600 cursor-pointer transition-colors" aria-label={`Remove ${locale?.label || code}`}>
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              )
-            })}
+            {regulations.map(reg => (
+              <span key={reg} className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 text-[11px] font-medium px-2 py-0.5 rounded-md">
+                {reg}
+                <button type="button" onClick={() => setRegulations(prev => prev.filter(r => r !== reg))} className="text-amber-400 hover:text-amber-600 cursor-pointer"><X className="w-2.5 h-2.5" /></button>
+              </span>
+            ))}
+            {suggestedRegs.filter(r => !regulations.includes(r)).length > 0 && (
+              <span className="text-[10px] text-gray-400">
+                + {suggestedRegs.filter(r => !regulations.includes(r)).map(r => (
+                  <button key={r} type="button" onClick={() => setRegulations(prev => [...prev, r])} className="text-[#009eda] hover:underline cursor-pointer mx-0.5">{r}</button>
+                ))}
+              </span>
+            )}
+          </div>
+          {regulations.length > 0 && <p className="text-[10px] text-emerald-600 mt-0.5 flex items-center gap-1"><CheckCircle2 className="w-2.5 h-2.5" /> Suggested from document type &amp; markets</p>}
+        </div>
+
+        {/* Row 3: Output markets */}
+        <div>
+          <label className="block text-[11px] text-gray-500 mb-1">Output markets</label>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {locales.map(code => (
+              <span key={code} className="inline-flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 text-[11px] font-medium px-2 py-0.5 rounded-md">
+                {ALL_LOCALES.find(l => l.code === code)?.label || code.toUpperCase()}
+                <button type="button" onClick={() => removeLocale(code)} className="text-blue-400 hover:text-blue-600 cursor-pointer"><X className="w-2.5 h-2.5" /></button>
+              </span>
+            ))}
             <div className="relative">
-              <button
-                type="button"
-                onClick={() => setShowLocalePicker(v => !v)}
-                className="inline-flex items-center gap-1 text-[12px] text-gray-400 hover:text-gray-600 px-2 py-1 rounded-lg border border-dashed border-black/[0.12] hover:border-black/[0.20] cursor-pointer transition-all"
-              >
-                <Plus className="w-3 h-3" /> Add
+              <button type="button" onClick={() => setShowLocalePicker(v => !v)}
+                className="inline-flex items-center gap-1 text-[11px] text-gray-400 hover:text-gray-600 px-1.5 py-0.5 rounded-md border border-dashed border-black/[0.10] hover:border-black/[0.18] cursor-pointer transition-all">
+                <Plus className="w-2.5 h-2.5" /> Add market
               </button>
               <AnimatePresence>
                 {showLocalePicker && available.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    className="absolute top-full left-0 mt-1 z-20 w-44 bg-white border border-black/[0.10] rounded-xl shadow-lg overflow-hidden"
-                  >
-                    <div className="max-h-[180px] overflow-y-auto py-1">
+                  <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+                    className="absolute top-full left-0 mt-1 z-20 w-44 bg-white border border-black/[0.10] rounded-xl shadow-lg overflow-hidden">
+                    <div className="max-h-[160px] overflow-y-auto py-1">
                       {available.map(l => (
                         <button key={l.code} type="button" onClick={() => addLocale(l.code)}
-                          className="w-full text-left px-3 py-2 text-[12px] text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors">
+                          className="w-full text-left px-3 py-1.5 text-[12px] text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors">
                           {l.label} <span className="text-gray-400 ml-1">{l.code.toUpperCase()}</span>
                         </button>
                       ))}
@@ -108,30 +192,75 @@ function LaunchBriefing({ file, defaultLocales, onConfirm, onCancel, prefersRedu
           </div>
         </div>
 
-        {/* Ensemble recommendation */}
-        {ensemble && (
+        {/* Row 4: Trust Policy + Sensitivity */}
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">Ensemble</label>
-            <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-gray-50 border border-black/[0.06]">
-              <Bot className="w-4 h-4 text-straker-600 shrink-0" />
-              <div className="min-w-0">
-                <p className="text-[12px] font-medium text-gray-800">{ensemble.name}</p>
-                <p className="text-[10px] text-gray-400">{ensemble.bestFor}</p>
-              </div>
+            <label className="block text-[11px] text-gray-500 mb-1">Trust policy</label>
+            <div className="space-y-1">
+              {TRUST_POLICIES.map(tp => (
+                <button key={tp.id} type="button" onClick={() => setTrustPolicy(tp.id)}
+                  className={`w-full text-left px-3 py-1.5 rounded-lg text-[11px] transition-all cursor-pointer ${
+                    trustPolicy === tp.id ? 'bg-[#009eda]/10 border border-[#009eda]/30 text-[#009eda] font-medium' : 'border border-black/[0.06] text-gray-600 hover:bg-gray-50'
+                  }`}>
+                  {tp.label}
+                </button>
+              ))}
             </div>
           </div>
-        )}
+          <div>
+            <label className="block text-[11px] text-gray-500 mb-1">Review sensitivity</label>
+            <div className="space-y-1">
+              {SENSITIVITY_LEVELS.map(sl => (
+                <button key={sl.id} type="button" onClick={() => setSensitivity(sl.id)}
+                  className={`w-full text-left px-3 py-1.5 rounded-lg text-[11px] transition-all cursor-pointer ${
+                    sensitivity === sl.id ? 'bg-[#009eda]/10 border border-[#009eda]/30 text-[#009eda] font-medium' : 'border border-black/[0.06] text-gray-600 hover:bg-gray-50'
+                  }`}>
+                  {sl.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Row 5: Organizational guidance (expandable) */}
+        <div>
+          <button type="button" onClick={() => setShowGuidance(v => !v)}
+            className="flex items-center gap-1.5 text-[11px] text-gray-400 hover:text-gray-600 cursor-pointer transition-colors">
+            <ChevronRight className={`w-3 h-3 transition-transform ${showGuidance ? 'rotate-90' : ''}`} />
+            Organizational guidance (optional)
+          </button>
+          {showGuidance && (
+            <textarea
+              rows={2}
+              value={guidance}
+              onChange={e => setGuidance(e.target.value)}
+              placeholder="Reference internal style guides, deal-specific context, known terminology preferences..."
+              className="mt-2 w-full rounded-lg border border-black/[0.08] bg-gray-50 px-3 py-2 text-[12px] text-gray-800 placeholder:text-gray-400 outline-none focus:border-[#009eda] focus:ring-1 focus:ring-[#009eda]/20 transition resize-none"
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Intelligence summary */}
+      <div className="px-6 py-3 border-t border-black/[0.06] bg-gray-50/60">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-2">Processing plan</p>
+        <div className="space-y-1 text-[11px] text-gray-600">
+          <p className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" /> Detected: {docTypeLabel} ({industry})</p>
+          <p className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" /> Applicable intelligence: {regulations.join(', ') || 'General'}{industry === 'Financial Services' ? ', Meridian Capital voice policy' : ''}</p>
+          <p className="flex items-center gap-1.5"><Shield className="w-3 h-3 text-amber-500 shrink-0" /> High-risk areas: {docType === 'Financial' ? 'financial terminology, legal disclaimers, investor messaging' : docType === 'Legal' ? 'contractual terms, regulatory references, jurisdiction language' : 'domain terminology, brand voice, cultural adaptation'}</p>
+          <p className="flex items-center gap-1.5"><Bot className="w-3 h-3 text-[#009eda] shrink-0" /> {ensemble?.name || 'General Purpose'} ensemble &middot; {TRUST_POLICIES.find(t => t.id === trustPolicy)?.label.toLowerCase()} trust &middot; Org Brain memory reuse</p>
+        </div>
       </div>
 
       {/* Actions */}
-      <div className="px-5 pb-5 flex items-center gap-2">
+      <div className="px-6 py-4 flex items-center gap-2 border-t border-black/[0.06]">
         <button
           type="button"
           onClick={() => onConfirm(file, locales)}
           disabled={locales.length === 0}
           className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-straker-600 hover:bg-straker-500 text-white text-[13px] font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Begin Analysis <ArrowRight className="w-4 h-4" />
+          Begin Governed Analysis <ArrowRight className="w-4 h-4" />
         </button>
         <button
           type="button"
