@@ -560,50 +560,94 @@ export default function ColdStartDashboard({
       </motion.div>
 
       {/* ── Widget Grid ── */}
-      {/* ── Org Brain Aspiration ── */}
-      <motion.div {...m(fadeUp(0.4))} className="rounded-xl border border-black/[0.08] bg-white p-8">
-        {/* Ghosted knowledge graph visualization */}
-        <div className="relative flex items-center justify-center py-8">
-          <svg width="480" height="240" viewBox="0 0 480 240" className="opacity-20">
-            {/* Connections */}
-            <line x1="240" y1="60" x2="100" y2="140" stroke="#009eda" strokeWidth="1.5" strokeDasharray="4 4" />
-            <line x1="240" y1="60" x2="380" y2="140" stroke="#a78bfa" strokeWidth="1.5" strokeDasharray="4 4" />
-            <line x1="100" y1="140" x2="180" y2="200" stroke="#fbbf24" strokeWidth="1.5" strokeDasharray="4 4" />
-            <line x1="380" y1="140" x2="300" y2="200" stroke="#34d399" strokeWidth="1.5" strokeDasharray="4 4" />
-            <line x1="240" y1="60" x2="240" y2="200" stroke="#f87171" strokeWidth="1" strokeDasharray="3 3" />
-            <line x1="100" y1="140" x2="380" y2="140" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3 3" />
-            {/* Nodes */}
-            <circle cx="240" cy="60" r="28" fill="none" stroke="#009eda" strokeWidth="2" strokeDasharray="4 4" />
-            <text x="240" y="64" textAnchor="middle" fill="#64748b" fontSize="9" fontWeight="600">Compliance</text>
-            <circle cx="100" cy="140" r="24" fill="none" stroke="#fbbf24" strokeWidth="2" strokeDasharray="4 4" />
-            <text x="100" y="144" textAnchor="middle" fill="#64748b" fontSize="9" fontWeight="600">Financial</text>
-            <circle cx="380" cy="140" r="24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeDasharray="4 4" />
-            <text x="380" y="144" textAnchor="middle" fill="#64748b" fontSize="9" fontWeight="600">Regulatory</text>
-            <circle cx="180" cy="200" r="20" fill="none" stroke="#34d399" strokeWidth="1.5" strokeDasharray="4 4" />
-            <text x="180" y="204" textAnchor="middle" fill="#64748b" fontSize="8" fontWeight="600">Cultural</text>
-            <circle cx="300" cy="200" r="20" fill="none" stroke="#f87171" strokeWidth="1.5" strokeDasharray="4 4" />
-            <text x="300" y="204" textAnchor="middle" fill="#64748b" fontSize="8" fontWeight="600">Brand</text>
-            <circle cx="440" cy="80" r="16" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="4 4" />
-            <text x="440" y="83" textAnchor="middle" fill="#94a3b8" fontSize="7" fontWeight="600">Legal</text>
-          </svg>
-          {/* Center overlay */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-            <Brain size={24} className="text-gray-300 mb-2" />
-            <p className="text-[14px] font-semibold text-gray-400">Your compliance intelligence will grow here</p>
-            <p className="text-[12px] text-gray-300 mt-1">Every analysis makes this smarter</p>
+      {/* ── Org Brain — Pre-seeded Intelligence ── */}
+      <motion.div {...m(fadeUp(0.4))} className="rounded-xl border border-black/[0.08] bg-white overflow-hidden">
+        {/* Header */}
+        <div className="px-6 pt-5 pb-4 border-b border-black/[0.06]">
+          <div className="flex items-center gap-2.5 mb-1">
+            <Brain size={18} className="text-[#009eda]" />
+            <h2 className="text-[15px] font-semibold text-gray-900">Your Org Brain</h2>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-semibold border border-emerald-200">
+              <CheckCircle2 size={10} /> 147 entries pre-loaded
+            </span>
+          </div>
+          <p className="text-[12px] text-gray-500">Industry-standard knowledge bases loaded from your {configuredVertical} configuration. Every analysis adds more.</p>
+        </div>
+
+        {/* Knowledge graph — partially filled nodes */}
+        <div className="px-6 py-6">
+          <div className="flex items-center justify-center">
+            <svg width="480" height="220" viewBox="0 0 480 220" className="max-w-full">
+              {/* Connections — solid for seeded, dashed for growing */}
+              <line x1="240" y1="50" x2="100" y2="130" stroke="#009eda" strokeWidth="1.5" opacity="0.5" />
+              <line x1="240" y1="50" x2="380" y2="130" stroke="#a78bfa" strokeWidth="1.5" opacity="0.5" />
+              <line x1="100" y1="130" x2="180" y2="190" stroke="#fbbf24" strokeWidth="1.5" opacity="0.3" strokeDasharray="4 4" />
+              <line x1="380" y1="130" x2="300" y2="190" stroke="#34d399" strokeWidth="1.5" opacity="0.3" strokeDasharray="4 4" />
+              <line x1="240" y1="50" x2="440" y2="75" stroke="#94a3b8" strokeWidth="1" opacity="0.25" strokeDasharray="3 3" />
+              <line x1="100" y1="130" x2="380" y2="130" stroke="#94a3b8" strokeWidth="1" opacity="0.2" strokeDasharray="3 3" />
+
+              {/* Compliance — partially filled (strongest pre-seed) */}
+              <circle cx="240" cy="50" r="28" fill="#009eda" fillOpacity="0.08" stroke="#009eda" strokeWidth="2" opacity="0.7" />
+              <text x="240" y="46" textAnchor="middle" fill="#009eda" fontSize="9" fontWeight="700">Compliance</text>
+              <text x="240" y="58" textAnchor="middle" fill="#009eda" fontSize="8" opacity="0.6">54 entries</text>
+
+              {/* Financial — partially filled */}
+              <circle cx="100" cy="130" r="24" fill="#fbbf24" fillOpacity="0.08" stroke="#fbbf24" strokeWidth="2" opacity="0.6" />
+              <text x="100" y="127" textAnchor="middle" fill="#92400e" fontSize="9" fontWeight="700">Financial</text>
+              <text x="100" y="138" textAnchor="middle" fill="#92400e" fontSize="8" opacity="0.6">43 entries</text>
+
+              {/* Regulatory — partially filled */}
+              <circle cx="380" cy="130" r="24" fill="#a78bfa" fillOpacity="0.08" stroke="#a78bfa" strokeWidth="2" opacity="0.6" />
+              <text x="380" y="127" textAnchor="middle" fill="#6d28d9" fontSize="9" fontWeight="700">Regulatory</text>
+              <text x="380" y="138" textAnchor="middle" fill="#6d28d9" fontSize="8" opacity="0.6">31 entries</text>
+
+              {/* Cultural — lightly seeded */}
+              <circle cx="180" cy="190" r="20" fill="#34d399" fillOpacity="0.04" stroke="#34d399" strokeWidth="1.5" opacity="0.35" strokeDasharray="4 4" />
+              <text x="180" y="187" textAnchor="middle" fill="#64748b" fontSize="8" fontWeight="600" opacity="0.5">Cultural</text>
+              <text x="180" y="197" textAnchor="middle" fill="#64748b" fontSize="7" opacity="0.4">12 entries</text>
+
+              {/* Brand — lightly seeded */}
+              <circle cx="300" cy="190" r="20" fill="#f87171" fillOpacity="0.04" stroke="#f87171" strokeWidth="1.5" opacity="0.35" strokeDasharray="4 4" />
+              <text x="300" y="187" textAnchor="middle" fill="#64748b" fontSize="8" fontWeight="600" opacity="0.5">Brand</text>
+              <text x="300" y="197" textAnchor="middle" fill="#64748b" fontSize="7" opacity="0.4">7 entries</text>
+
+              {/* Legal — empty, growing */}
+              <circle cx="440" cy="75" r="16" fill="none" stroke="#94a3b8" strokeWidth="1.5" opacity="0.25" strokeDasharray="4 4" />
+              <text x="440" y="78" textAnchor="middle" fill="#94a3b8" fontSize="7" fontWeight="600" opacity="0.4">Legal</text>
+            </svg>
           </div>
         </div>
 
-        {/* Aspirational stats */}
-        <div className="flex items-center justify-center gap-8 mt-4 pt-4 border-t border-black/[0.06]">
+        {/* Pre-seeded intelligence detail */}
+        <div className="px-6 pb-4">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-2">Pre-loaded from {configuredVertical}</p>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { label: 'J-GAAP Terminology', count: 54, icon: '📊' },
+              { label: 'TSE Conventions', count: 43, icon: '🏛️' },
+              { label: 'IFRS Mappings', count: 31, icon: '📋' },
+            ].map(kb => (
+              <div key={kb.label} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 border border-black/[0.06]">
+                <span className="text-[14px]">{kb.icon}</span>
+                <div>
+                  <p className="text-[11px] font-medium text-gray-800">{kb.label}</p>
+                  <p className="text-[10px] text-gray-400">{kb.count} entries</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Stats — pre-seeded baseline */}
+        <div className="flex items-center justify-center gap-8 px-6 py-4 border-t border-black/[0.06] bg-gray-50/40">
           {[
-            { current: 0, target: '1,247', label: 'Knowledge Entries' },
-            { current: 0, target: '342', label: 'Patterns' },
-            { current: 0, target: '47h', label: 'Time Saved' },
+            { current: 147, target: '1,247', label: 'Knowledge Entries' },
+            { current: 12, target: '342', label: 'Patterns' },
+            { current: '0h', target: '47h', label: 'Time Saved' },
           ].map(stat => (
             <div key={stat.label} className="text-center">
-              <p className="text-[18px] font-bold tabular-nums text-gray-200">
-                {stat.current} <span className="text-[11px] font-normal text-gray-300">/ {stat.target}</span>
+              <p className="text-[18px] font-bold tabular-nums text-gray-700">
+                {stat.current} <span className="text-[11px] font-normal text-gray-400">/ {stat.target}</span>
               </p>
               <p className="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">{stat.label}</p>
             </div>
@@ -611,12 +655,12 @@ export default function ColdStartDashboard({
         </div>
 
         {/* CTA */}
-        <div className="flex justify-center mt-5">
+        <div className="flex justify-center px-6 py-5 border-t border-black/[0.06]">
           <button
             onClick={onStartFirstProject}
             className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-straker-600 hover:bg-straker-500 text-white text-[13px] font-semibold transition-colors cursor-pointer"
           >
-            Analyze your first document to start building your Org Brain
+            Analyze your first document to grow your Org Brain
             <ArrowRight size={14} />
           </button>
         </div>
