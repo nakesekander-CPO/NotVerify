@@ -625,7 +625,7 @@ function computeAvgQuality(orgPatterns) {
 /*  Main Component                                                      */
 /* ------------------------------------------------------------------ */
 
-export default function CommandSurface({ onFileAccepted, onFileWithLocales, orgIntelligence, onRerun, onStartPredicted, onOpenTeamDirectory, onOpenOrgBrain, onOpenMarketplace, onOpenAgentStudio, userName, companyName, connectedIntegrations = [], onOpenIntegrations, onStartCampaign, defaultLocales = [] }) {
+export default function CommandSurface({ onFileAccepted, onFileWithLocales, orgIntelligence, onRerun, onStartPredicted, onOpenTeamDirectory, onOpenOrgBrain, onOpenMarketplace, onOpenAgentStudio, userName, companyName, connectedIntegrations = [], onOpenIntegrations, onStartCampaign, onCreateContent, defaultLocales = [] }) {
   const prefersReduced = useReducedMotion()
   const [feedToast, setFeedToast] = useState(null)
   const [showCustomize, setShowCustomize] = useState(false)
@@ -925,6 +925,28 @@ export default function CommandSurface({ onFileAccepted, onFileWithLocales, orgI
               </p>
               <p className="text-[11px] text-gray-400">
                 Multi-document analysis · cross-document patterns · compliance heatmap
+              </p>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#009eda] shrink-0 transition-colors" />
+        </button>
+
+        {/* Create with Org Brain CTA */}
+        <button
+          type="button"
+          onClick={() => onCreateContent?.()}
+          className="w-full max-w-lg flex items-center justify-between gap-3 px-5 py-3.5 rounded-lg border border-black/[0.08] bg-white hover:border-[#009eda]/30 hover:bg-[#009eda]/[0.02] group cursor-pointer transition-all"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-black/[0.03] flex items-center justify-center shrink-0 group-hover:bg-[#009eda]/[0.08] transition-colors">
+              <Brain className="w-4 h-4 text-gray-400 group-hover:text-[#009eda] transition-colors" />
+            </div>
+            <div className="text-left min-w-0">
+              <p className="text-[13px] font-medium text-gray-700 group-hover:text-gray-900 transition-colors">
+                Create new content
+              </p>
+              <p className="text-[11px] text-gray-400">
+                Generate from Org Brain intelligence &middot; on-brand, compliant, locale-ready
               </p>
             </div>
           </div>

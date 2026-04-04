@@ -29,6 +29,7 @@ import ParametersDrawer from './components/ParametersDrawer'
 import CampaignHub from './components/CampaignHub'
 import OperationsControlRoom from './components/OperationsControlRoom'
 import CampaignResultsView from './components/CampaignResultsView'
+import ContentCreator from './components/ContentCreator'
 import useMediaQuery from './hooks/useMediaQuery'
 import useQualityCalculator from './hooks/useQualityCalculator'
 import { generateOrgIntelligence } from './data/orgIntelligence'
@@ -319,6 +320,12 @@ export default function App() {
   }, [phase])
 
   // Entry Point 1a-self: Review Now — skip assignment, go directly to review phase
+  // Create with Org Brain
+  const handleCreateContent = useCallback(() => {
+    setPreviousPhase(phase)
+    setPhase('create')
+  }, [phase])
+
   const handleReviewNow = useCallback(() => {
     setPreviousPhase(phase)
     setHumanReviewMode('review')
@@ -553,6 +560,7 @@ export default function App() {
               configuredVertical={structuredContext.industryVertical || 'Financial Services'}
               onStartFirstProject={() => setPhase('time-jump')}
               onStartCampaign={() => setPhase('campaign-hub')}
+              onCreateContent={handleCreateContent}
               onFileAccepted={handleFileAccepted}
               connectedIntegrations={connectedIntegrations}
               onOpenIntegrations={() => { setPreviousPhase('dashboard'); setPhase('integrations') }}
@@ -578,6 +586,7 @@ export default function App() {
               connectedIntegrations={connectedIntegrations}
               onOpenIntegrations={() => { setPreviousPhase('dashboard'); setPhase('integrations') }}
               onStartCampaign={() => setPhase('campaign-hub')}
+              onCreateContent={handleCreateContent}
             />
           )}
 
@@ -626,6 +635,14 @@ export default function App() {
             <OrgBrain
               onClose={() => setPhase(previousPhase || 'dashboard')}
               onNavigateBack={() => setPhase(previousPhase || 'dashboard')}
+              onCreateContent={handleCreateContent}
+            />
+          )}
+
+          {/* Create with Org Brain */}
+          {phase === 'create' && (
+            <ContentCreator
+              onBack={() => setPhase(previousPhase || 'dashboard')}
             />
           )}
 

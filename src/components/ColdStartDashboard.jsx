@@ -198,6 +198,7 @@ export default function ColdStartDashboard({
   configuredVertical = 'Financial Services',
   onStartFirstProject,
   onStartCampaign,
+  onCreateContent,
   onFileAccepted,
   connectedIntegrations = [],
   onOpenIntegrations,
@@ -553,6 +554,26 @@ export default function ColdStartDashboard({
             <div>
               <p className="text-[13px] font-semibold text-gray-800">Batch intelligence extraction</p>
               <p className="text-[11px] text-gray-400 leading-snug">Multi-document analysis, cross-document patterns, and a compliance heatmap</p>
+            </div>
+          </div>
+          <ChevronRight size={16} className="text-gray-300 group-hover:text-[#009eda] transition-colors shrink-0" />
+        </button>
+      </motion.div>
+
+      {/* ── Create with Org Brain ── */}
+      <motion.div className="mb-6" {...m(fadeUp(0.2))}>
+        <button
+          type="button"
+          onClick={() => onCreateContent?.()}
+          className="w-full flex items-center justify-between gap-4 px-5 py-4 rounded-xl border border-black/[0.08] bg-white hover:border-[#009eda]/30 hover:bg-[#009eda]/[0.02] transition-all group cursor-pointer text-left"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 group-hover:bg-[#009eda]/10 group-hover:text-[#009eda] transition-colors">
+              <Brain size={16} />
+            </div>
+            <div>
+              <p className="text-[13px] font-semibold text-gray-800">Create new content</p>
+              <p className="text-[11px] text-gray-400 leading-snug">Generate reports, memos, and disclosures from Org Brain intelligence</p>
             </div>
           </div>
           <ChevronRight size={16} className="text-gray-300 group-hover:text-[#009eda] transition-colors shrink-0" />

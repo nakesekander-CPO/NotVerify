@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Brain, TrendingUp, ArrowLeft, Search, Plus, X, Archive, Bot, Sparkles } from 'lucide-react'
+import { Brain, TrendingUp, ArrowLeft, Search, Plus, X, Archive, Bot, Sparkles, Pen } from 'lucide-react'
 import useReducedMotion from '../hooks/useReducedMotion'
 
 const SPRING = { type: 'spring', stiffness: 300, damping: 20 }
@@ -886,7 +886,7 @@ function SageWalkthroughPanel({ prefersReducedMotion, onClose }) {
 
 /* ---------- Main Component ---------- */
 
-export default function OrgBrain({ onClose, onNavigateBack }) {
+export default function OrgBrain({ onClose, onNavigateBack, onCreateContent }) {
   const prefersReducedMotion = useReducedMotion()
   const dur = prefersReducedMotion ? 0 : undefined
   const [selectedNodeId, setSelectedNodeId] = useState(null)
@@ -936,6 +936,14 @@ export default function OrgBrain({ onClose, onNavigateBack }) {
             >
               <Sparkles className="w-3.5 h-3.5" />
               Explain with Sage
+            </button>
+            <button
+              onClick={() => onCreateContent?.()}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-black/[0.03] hover:bg-[#009eda]/[0.08] border border-black/[0.12] hover:border-[#009eda]/30 text-[13px] font-medium text-gray-700 hover:text-[#009eda] transition-colors cursor-pointer"
+              aria-label="Create with Org Brain"
+            >
+              <Pen className="w-3.5 h-3.5" />
+              Create
             </button>
             <button
               onClick={onNavigateBack}
