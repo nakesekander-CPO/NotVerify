@@ -3,9 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Brain, ArrowLeft, ArrowRight, CheckCircle2, Sparkles, FileText, Shield,
   Globe, ThumbsUp, ThumbsDown, RefreshCw, BookOpen, AlertTriangle, Loader2,
-  X, Check, ChevronRight, Send, Pen,
+  X, Check, ChevronRight, Send, Pen, Download, ChevronDown, Copy, Link2,
 } from 'lucide-react'
 import useReducedMotion from '../hooks/useReducedMotion'
+import { useContentCreation } from '../context/ContentCreationStore'
+import { useToast } from './ToastProvider'
 
 const SPRING = { type: 'spring', stiffness: 300, damping: 20 }
 
@@ -417,6 +419,10 @@ function ReviewRefine({ config, onAccept, onBack, prefersReduced }) {
   const [showRefine, setShowRefine] = useState(false)
   const [refineText, setRefineText] = useState('')
   const [feedback, setFeedback] = useState(null)
+  const [showExport, setShowExport] = useState(false)
+  const [refinementCount, setRefinementCount] = useState(0)
+  const { addToast } = useToast()
+  const exportRef = useRef(null)
 
   const hasFinancial = config.activeNodes.includes('financial')
   const contentSet = hasFinancial ? MOCK_CONTENT.financial : MOCK_CONTENT.general
@@ -587,8 +593,51 @@ function ReviewRefine({ config, onAccept, onBack, prefersReduced }) {
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-black/[0.08] text-gray-600 text-[12px] font-medium hover:bg-gray-50 cursor-pointer transition-colors">
           <RefreshCw className="w-3 h-3" /> Refine
         </button>
+
+        {/* Export dropdown */}
+        <div className="relative" ref={exportRef}>
+          <button type="button" onClick={() => setShowExport(v => !v)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-black/[0.08] text-gray-600 text-[12px] font-medium hover:bg-gray-50 cursor-pointer transition-colors">
+            <Download className="w-3 h-3" /> Export{contentLocale !== 'en' ? ` (${contentLocale.toUpperCase()})` : ''}
+          </button>
+          <AnimatePresence>
+            {showExport && (
+              <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
+                className="absolute bottom-full left-0 mb-2 w-56 bg-white border border-black/[0.12] rounded-xl shadow-lg overflow-hidden z-20">
+                {[
+                  { id: 'docx', icon: FileText, label: 'Export as .docx', sub: 'Word document', action: true },
+                  { id: 'pdf', icon: FileText, label: 'Export as .pdf', sub: 'PDF document', action: true },
+                  { id: 'clipboard', icon: Copy, label: 'Copy to clipboard', sub: 'Plain text', action: true },
+                ].map(opt => (
+                  <button key={opt.id} type="button" onClick={() => {
+                    const localeLabel = contentLocale !== 'en' ? ` ${contentLocale.toUpperCase()} version` : ''
+                    addToast(`Exported${localeLabel} as .${opt.id === 'clipboard' ? 'txt (copied)' : opt.id}`, 'success', 3000)
+                    setShowExport(false)
+                  }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-gray-50 cursor-pointer transition-colors">
+                    <opt.icon className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                    <div><p className="text-[12px] text-gray-800">{opt.label}</p><p className="text-[10px] text-gray-400">{opt.sub}</p></div>
+                  </button>
+                ))}
+                <div className="border-t border-black/[0.06] my-0.5" />
+                {[
+                  { id: 'slack', label: 'Send to Slack', sub: 'Via integration' },
+                  { id: 'gdrive', label: 'Send to Google Drive', sub: 'Via integration' },
+                ].map(opt => (
+                  <button key={opt.id} type="button" onClick={() => { addToast('Integration coming soon \u2014 connect in Settings', 'info', 3000); setShowExport(false) }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-gray-50 cursor-pointer transition-colors">
+                    <Link2 className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+                    <div className="flex-1"><p className="text-[12px] text-gray-500">{opt.label}</p><p className="text-[10px] text-gray-400">{opt.sub}</p></div>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-400 font-medium">Soon</span>
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
         <div className="flex-1" />
-        <button type="button" onClick={onAccept}
+        <button type="button" onClick={() => onAccept(feedback, refinementCount)}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#009eda] hover:bg-[#0089c4] text-white text-[13px] font-semibold cursor-pointer transition-colors">
           <CheckCircle2 className="w-4 h-4" /> Accept &amp; Save
         </button>
@@ -602,7 +651,8 @@ function ReviewRefine({ config, onAccept, onBack, prefersReduced }) {
               <input type="text" value={refineText} onChange={e => setRefineText(e.target.value)}
                 placeholder="e.g. Make the tone less formal, add more detail about regulatory changes..."
                 className="flex-1 rounded-lg border border-black/[0.08] bg-white px-3 py-2.5 text-[13px] text-gray-800 placeholder:text-gray-400 outline-none focus:border-[#009eda] transition" />
-              <button type="button" className="px-4 py-2.5 rounded-lg bg-gray-900 hover:bg-gray-800 text-white text-[12px] font-semibold cursor-pointer transition-colors">
+              <button type="button" onClick={() => { setRefinementCount(c => c + 1); setShowRefine(false); setRefineText('') }}
+                className="px-4 py-2.5 rounded-lg bg-gray-900 hover:bg-gray-800 text-white text-[12px] font-semibold cursor-pointer transition-colors">
                 <Send className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -621,6 +671,8 @@ export default function ContentCreator({ onBack }) {
   const prefersReduced = useReducedMotion()
   const [step, setStep] = useState('prompt')
   const [config, setConfig] = useState(null)
+  const { saveContent, addLearningEvent, setActiveSession, clearActiveSession } = useContentCreation()
+  const { addToast } = useToast()
 
   const handleGenerate = useCallback((cfg) => {
     setConfig(cfg)
@@ -628,12 +680,63 @@ export default function ContentCreator({ onBack }) {
   }, [])
 
   const handleAssemblyComplete = useCallback(() => setStep('generation'), [])
-  const handleGenerationComplete = useCallback(() => setStep('review'), [])
+  const handleGenerationComplete = useCallback(() => {
+    setStep('review')
+    // Set active session for Sage context-awareness
+    if (config) {
+      const activeNodeDetails = DOMAIN_NODES.filter(n => config.activeNodes.includes(n.id))
+      const hasFinancial = config.activeNodes.includes('financial')
+      const contentData = hasFinancial ? MOCK_CONTENT.financial : MOCK_CONTENT.general
+      setActiveSession({
+        step: 'review',
+        contentTitle: contentData.en.title,
+        entriesUsed: activeNodeDetails.reduce((s, n) => s + n.entries, 0),
+        domainsUsed: activeNodeDetails.map(n => n.label),
+        confidenceScore: 93,
+        complianceNoteCount: 1,
+      })
+    }
+  }, [config, setActiveSession])
 
-  const handleAccept = useCallback(() => {
-    console.log('Content accepted. Learning event recorded:', config)
+  const handleAccept = useCallback((feedback, refinementCount) => {
+    if (!config) return
+    const activeNodeDetails = DOMAIN_NODES.filter(n => config.activeNodes.includes(n.id))
+    const hasFinancial = config.activeNodes.includes('financial')
+    const contentData = hasFinancial ? MOCK_CONTENT.financial : MOCK_CONTENT.general
+    const creditsCost = config.activeNodes.length * 7 + config.locales.length * 3
+
+    // Save to content library
+    saveContent({
+      title: contentData.en.title,
+      contentType: config.selectedType,
+      content: contentData,
+      activatedNodes: activeNodeDetails.map(n => ({ name: n.label, entries: n.entries, patterns: n.patterns })),
+      locales: config.locales,
+      confidenceScore: 93,
+      complianceFlags: [
+        { name: 'J-GAAP terminology', status: 'pass', detail: 'All terms match ASBJ' },
+        { name: 'Brand voice alignment', status: 'pass', detail: 'Consistent with policy' },
+        { name: 'Currency formatting', status: 'warning', detail: 'Minor mixed denomination' },
+      ],
+      creditsUsed: creditsCost,
+      feedbackSignal: feedback || null,
+      refinementCount: refinementCount || 0,
+    })
+
+    // Add learning event
+    const domains = activeNodeDetails.map(n => n.label).join(', ')
+    const typeName = config.selectedType.charAt(0).toUpperCase() + config.selectedType.slice(1)
+    let eventDesc = `${typeName} generated using ${domains} (accepted)`
+    if (refinementCount > 0) eventDesc = `${typeName} generated using ${domains} (accepted, ${refinementCount} refinement${refinementCount > 1 ? 's' : ''})`
+    if (feedback === 'up') eventDesc += ' \u2014 positive signal captured'
+    if (feedback === 'down') eventDesc += ' \u2014 improvement signal captured'
+    addLearningEvent(eventDesc, '#06b6d4', 'creation')
+
+    // Clear session + toast + navigate
+    clearActiveSession()
+    addToast(`Content saved to library \u00b7 ${creditsCost} credits used`, 'success')
     onBack?.()
-  }, [config, onBack])
+  }, [config, saveContent, addLearningEvent, clearActiveSession, addToast, onBack])
 
   return (
     <motion.div

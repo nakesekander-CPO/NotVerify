@@ -1,7 +1,8 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Brain, TrendingUp, ArrowLeft, Search, Plus, X, Archive, Bot, Sparkles, Pen } from 'lucide-react'
+import { Brain, TrendingUp, ArrowLeft, Search, Plus, X, Archive, Bot, Sparkles, Pen, FileText, CheckCircle2, ChevronRight } from 'lucide-react'
 import useReducedMotion from '../hooks/useReducedMotion'
+import { useContentCreation } from '../context/ContentCreationStore'
 
 const SPRING = { type: 'spring', stiffness: 300, damping: 20 }
 
@@ -767,6 +768,8 @@ function DomainModelCard({ model, index, prefersReducedMotion }) {
 
 function LearningTimeline({ prefersReducedMotion }) {
   const dur = prefersReducedMotion ? 0 : undefined
+  const { learningEvents } = useContentCreation()
+  const allEvents = [...learningEvents, ...TIMELINE_EVENTS]
 
   return (
     <div className="w-full rounded-lg bg-[#ffffff]/60 border border-black/[0.12] p-4">
@@ -775,29 +778,77 @@ function LearningTimeline({ prefersReducedMotion }) {
       </p>
 
       <div className="relative ml-3">
-        {/* Vertical line */}
         <div className="absolute left-0 top-1 bottom-1 w-px bg-black/[0.08]" />
 
-        {TIMELINE_EVENTS.map((event, i) => (
+        {allEvents.map((event, i) => (
           <motion.div
-            key={i}
+            key={`${event.date}-${i}`}
             className="relative pl-6 pb-5 last:pb-0"
             initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: dur === 0 ? 0 : 0.15 + i * 0.1, duration: dur ?? 0.4, ...SPRING }}
           >
-            {/* Dot */}
-            <div
-              className="absolute left-0 top-1.5 w-2.5 h-2.5 rounded-full -translate-x-[5px] ring-2 ring-[#ffffff]"
-              style={{ backgroundColor: event.color }}
-            />
-            {/* Content */}
-            <p className="text-[11px] font-['JetBrains_Mono'] font-medium text-gray-400 mb-0.5">
-              {event.date}
-            </p>
+            <div className="absolute left-0 top-1.5 w-2.5 h-2.5 rounded-full -translate-x-[5px] ring-2 ring-[#ffffff]" style={{ backgroundColor: event.color }} />
+            <p className="text-[11px] font-['JetBrains_Mono'] font-medium text-gray-400 mb-0.5">{event.date}</p>
             <p className="text-xs text-gray-700 leading-relaxed">{event.description}</p>
           </motion.div>
         ))}
+      </div>
+    </div>
+  )
+}
+
+/* ---------- Content Library ---------- */
+
+function ContentLibrary({ prefersReducedMotion, onCreateContent }) {
+  const { savedContent } = useContentCreation()
+  const displayItems = savedContent.slice(0, 3)
+
+  if (savedContent.length === 0) {
+    return (
+      <div className="w-full rounded-lg bg-[#ffffff]/60 border border-black/[0.12] p-6">
+        <p className="text-xs font-medium uppercase tracking-wider text-gray-500 mb-4">Content Library</p>
+        <div className="flex flex-col items-center justify-center py-6 text-center">
+          <FileText className="w-6 h-6 text-gray-300 mb-2" />
+          <p className="text-[13px] font-medium text-gray-500">No content created yet</p>
+          <p className="text-[11px] text-gray-400 mt-0.5 mb-3">Use Create with Org Brain to generate your first document</p>
+          <button type="button" onClick={() => onCreateContent?.()} className="flex items-center gap-1.5 text-[12px] text-[#009eda] hover:text-[#007bb5] font-medium cursor-pointer transition-colors">
+            Create content <ChevronRight className="w-3 h-3" />
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="w-full rounded-lg bg-[#ffffff]/60 border border-black/[0.12] p-4">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <p className="text-xs font-medium uppercase tracking-wider text-gray-500">Content Library</p>
+          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-[#009eda]/10 text-[#009eda]">{savedContent.length} item{savedContent.length !== 1 ? 's' : ''}</span>
+        </div>
+      </div>
+      <div className="space-y-2">
+        {displayItems.map(item => {
+          const scoreColor = item.confidenceScore >= 90 ? 'text-emerald-600' : item.confidenceScore >= 80 ? 'text-amber-600' : 'text-red-600'
+          const date = new Date(item.createdAt)
+          const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+          const dateStr = `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`
+          return (
+            <div key={item.id} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-white border border-black/[0.06] hover:border-black/[0.12] transition-colors cursor-pointer">
+              <FileText className="w-4 h-4 text-gray-400 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-semibold text-gray-800 truncate">{item.title}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#009eda]/10 text-[#009eda] font-medium capitalize">{item.contentType}</span>
+                  <span className="text-[10px] text-gray-400">{dateStr}</span>
+                  {item.locales.map(l => <span key={l} className="text-[9px] px-1 py-0.5 rounded bg-blue-50 text-blue-600 font-medium">{l.toUpperCase()}</span>)}
+                  <span className={`text-[11px] font-bold tabular-nums ${scoreColor}`}>{item.confidenceScore}%</span>
+                </div>
+              </div>
+            </div>
+          )
+        })}
       </div>
     </div>
   )
@@ -1023,6 +1074,11 @@ export default function OrgBrain({ onClose, onNavigateBack, onCreateContent }) {
               />
             ))}
           </div>
+        </section>
+
+        {/* Content Library */}
+        <section>
+          <ContentLibrary prefersReducedMotion={prefersReducedMotion} onCreateContent={onCreateContent} />
         </section>
 
         {/* Recent Learning Timeline */}

@@ -9,6 +9,7 @@ import {
 import IntelligenceFeed from './IntelligenceFeed'
 import useReducedMotion from '../hooks/useReducedMotion'
 import { detectDocumentType, estimatePageCount, ENSEMBLE_TEMPLATES } from '../data/campaignModel'
+import { useContentCreation } from '../context/ContentCreationStore'
 
 const SPRING = { type: 'spring', stiffness: 300, damping: 20 }
 
@@ -271,6 +272,32 @@ function LaunchBriefing({ file, defaultLocales, onConfirm, onCancel, prefersRedu
         </button>
       </div>
     </motion.div>
+  )
+}
+
+function RecentlyCreatedMini() {
+  const { savedContent } = useContentCreation()
+  if (savedContent.length === 0) return null
+  const recent = savedContent.slice(0, 2)
+  return (
+    <div className="mb-4">
+      <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-2">Recently created</p>
+      <div className="space-y-1.5">
+        {recent.map(item => {
+          const scoreColor = item.confidenceScore >= 90 ? 'text-emerald-600' : 'text-amber-600'
+          const date = new Date(item.createdAt)
+          const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+          return (
+            <div key={item.id} className="flex items-center gap-3 px-3 py-2 rounded-lg border border-black/[0.06] bg-white hover:border-black/[0.12] transition-colors cursor-pointer">
+              <FileText className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+              <p className="text-[12px] font-medium text-gray-800 truncate flex-1">{item.title}</p>
+              <span className="text-[10px] text-gray-400 shrink-0">{months[date.getMonth()]} {date.getDate()}</span>
+              <span className={`text-[11px] font-bold tabular-nums ${scoreColor} shrink-0`}>{item.confidenceScore}%</span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
@@ -953,6 +980,9 @@ export default function CommandSurface({ onFileAccepted, onFileWithLocales, orgI
           <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#009eda] shrink-0 transition-colors" />
         </button>
       </motion.div>
+
+      {/* ── Recently Created ── */}
+      <RecentlyCreatedMini />
 
       {/* ── Widget Grid ── */}
       <motion.div {...m({ initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { ...SPRING, delay: 0.2 } })}>

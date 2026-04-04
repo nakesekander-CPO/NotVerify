@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Bot, X, Send, Sparkles, ArrowRight, Brain, Shield, BarChart3, MessageSquarePlus, Puzzle } from 'lucide-react'
+import { Bot, X, Send, Sparkles, ArrowRight, Brain, Shield, BarChart3, MessageSquarePlus, Puzzle, Pen, Download, RefreshCw } from 'lucide-react'
 import useReducedMotion from '../hooks/useReducedMotion'
+import { useContentCreation } from '../context/ContentCreationStore'
 
 const ASSISTANT_NAME = 'Sage'
 const SPRING = { type: 'spring', stiffness: 300, damping: 20 }
@@ -18,6 +19,23 @@ const QUICK_ACTIONS = [
 
 /* ── Integration quick action ── */
 const INTEGRATION_ACTION = { id: 'integrations', icon: Puzzle, label: 'What can I automate?', color: 'text-teal-600 bg-teal-50' }
+
+/* ── Creation-aware quick actions ── */
+const CREATION_QUICK_ACTIONS = [
+  { id: 'cr-score', icon: BarChart3, label: 'Why this confidence score?', color: 'text-emerald-600 bg-emerald-50' },
+  { id: 'cr-compliance', icon: Shield, label: 'Improve compliance', color: 'text-amber-600 bg-amber-50' },
+  { id: 'cr-tone', icon: Pen, label: 'Adjust tone or style', color: 'text-violet-600 bg-violet-50' },
+  { id: 'cr-export', icon: Download, label: 'Export options', color: 'text-sky-600 bg-sky-50' },
+  { id: 'cr-regen', icon: RefreshCw, label: 'Regenerate with latest models', color: 'text-teal-600 bg-teal-50' },
+]
+
+const CREATION_RESPONSES = {
+  'cr-score': ['The **93% confidence score** breaks down as: **Terminology accuracy: 96%** (412 J-GAAP entries matched), **Brand voice alignment: 94%** (198 entries), **Regulatory compliance: 91%** (287 TSE entries, 1 minor currency flag), **Cultural adaptation: 89%** (regional conventions verified). The single compliance note about mixed currency formatting is what keeps it from 95%+.'],
+  'cr-compliance': ['I found **1 minor compliance flag**: mixed currency denominations (\u00A5 and JPY) in the Financial Highlights section. To fix this, standardize all currency references to \u00A5 format per TSE filing conventions. This would likely push the confidence score from 93% to **95%**. Want me to apply this fix?'],
+  'cr-tone': ['The current content uses **Formal** tone as configured. I can adjust to: \u2022 **Semi-formal** \u2014 slightly less rigid, suitable for internal distribution \u2022 **Executive** \u2014 more concise, action-oriented phrasing \u2022 **Client-facing** \u2014 warmer while maintaining professionalism. Which direction would you prefer?'],
+  'cr-export': ['Available export formats: \u2022 **Word (.docx)** \u2014 editable document with formatting \u2022 **PDF** \u2014 final distribution format \u2022 **Clipboard** \u2014 plain text copy. You can export the version for any locale (EN, JA, DE, ZH) from the Content tab.'],
+  'cr-regen': ['Your **Brand Voice model** was updated 2 days ago (v1.8 \u2192 v1.9) with 12 new entries from the Q3 compliance review. Regenerating with the latest version would cost **~30 credits** and may improve brand alignment by 2-3 points. Want me to proceed?'],
+}
 
 /* ── Canned responses keyed by quick action ── */
 const CANNED_RESPONSES = {
@@ -112,6 +130,8 @@ function TypingIndicator() {
 /* ── Main component ── */
 
 export default function IntelligenceAssistant({ companyName, userName, currentPhase, connectedIntegrations = [], onOpenIntegrations }) {
+  const { activeSession } = useContentCreation()
+  const isCreationReview = currentPhase === 'create' && activeSession?.step === 'review'
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
@@ -152,8 +172,9 @@ export default function IntelligenceAssistant({ companyName, userName, currentPh
     setOpen(true)
     if (!hasOpened) {
       setHasOpened(true)
-      const phaseContext =
-        currentPhase === 'dashboard'
+      const phaseContext = isCreationReview && activeSession
+        ? ` I just helped generate your ${activeSession.contentTitle || 'document'} using ${activeSession.entriesUsed} knowledge entries across ${activeSession.domainsUsed?.join(', ') || 'multiple domains'}. The confidence score is ${activeSession.confidenceScore}%${activeSession.complianceNoteCount > 0 ? ` with ${activeSession.complianceNoteCount} minor compliance note${activeSession.complianceNoteCount > 1 ? 's' : ''}` : ''}. How can I help you refine it?`
+        : currentPhase === 'dashboard'
           ? connectedIntegrations.length === 0
             ? " You're on the Intelligence Hub. Tip: connect tools like Slack and Google Drive so I can deliver your finished projects automatically."
             : " You're on the Intelligence Hub. Ready to start your first project?"
@@ -170,15 +191,16 @@ export default function IntelligenceAssistant({ companyName, userName, currentPh
         },
       ])
     }
-  }, [hasOpened, userName, companyName, currentPhase, connectedIntegrations])
+  }, [hasOpened, userName, companyName, currentPhase, connectedIntegrations, isCreationReview, activeSession])
 
   // Handle quick action click
   const handleQuickAction = useCallback((action) => {
-    const label = QUICK_ACTIONS.find(a => a.id === action)?.label || action
+    const allActions = [...QUICK_ACTIONS, ...CREATION_QUICK_ACTIONS]
+    const label = allActions.find(a => a.id === action)?.label || action
     setMessages(prev => [...prev, { id: `user-${Date.now()}`, type: 'user', text: label }])
     setTyping(true)
 
-    const responses = CANNED_RESPONSES[action] || CANNED_RESPONSES.default
+    const responses = CREATION_RESPONSES[action] || CANNED_RESPONSES[action] || CANNED_RESPONSES.default
     let delay = 600
     responses.forEach((text, i) => {
       setTimeout(() => {
@@ -323,7 +345,7 @@ export default function IntelligenceAssistant({ companyName, userName, currentPh
                   <p className="text-[10px] uppercase tracking-wider text-gray-300 font-bold px-1 mb-2">
                     Quick Actions
                   </p>
-                  {[...QUICK_ACTIONS, INTEGRATION_ACTION].map((action) => {
+                  {(isCreationReview ? CREATION_QUICK_ACTIONS : [...QUICK_ACTIONS, INTEGRATION_ACTION]).map((action) => {
                     const Icon = action.icon
                     return (
                       <button
