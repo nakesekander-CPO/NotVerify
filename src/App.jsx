@@ -30,6 +30,8 @@ import CampaignHub from './components/CampaignHub'
 import OperationsControlRoom from './components/OperationsControlRoom'
 import CampaignResultsView from './components/CampaignResultsView'
 import ContentCreator from './components/ContentCreator'
+import AnalyticsDashboard from './components/AnalyticsDashboard'
+import GovernanceAudit from './components/GovernanceAudit'
 import useMediaQuery from './hooks/useMediaQuery'
 import useQualityCalculator from './hooks/useQualityCalculator'
 import { generateOrgIntelligence } from './data/orgIntelligence'
@@ -642,6 +644,20 @@ export default function App() {
           {/* Create with Org Brain */}
           {phase === 'create' && (
             <ContentCreator
+              onBack={() => setPhase(previousPhase || 'dashboard')}
+            />
+          )}
+
+          {/* Analytics */}
+          {phase === 'analytics' && (
+            <AnalyticsDashboard
+              onBack={() => setPhase(previousPhase || 'dashboard')}
+            />
+          )}
+
+          {/* Governance */}
+          {phase === 'governance' && (
+            <GovernanceAudit
               onBack={() => setPhase(previousPhase || 'dashboard')}
             />
           )}

@@ -3,8 +3,8 @@ import { Home, Brain, BarChart3, Scale } from 'lucide-react'
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: Home, phases: ['dashboard'] },
   { id: 'org-brain', label: 'Org Brain', icon: Brain, phases: ['org-brain'] },
-  { id: 'analytics', label: 'Analytics', icon: BarChart3, phases: [] },
-  { id: 'governance', label: 'Governance', icon: Scale, phases: [] },
+  { id: 'analytics', label: 'Analytics', icon: BarChart3, phases: ['analytics'] },
+  { id: 'governance', label: 'Governance', icon: Scale, phases: ['governance'] },
 ]
 
 export default function GlobalNav({ currentPhase, onNavigate }) {
