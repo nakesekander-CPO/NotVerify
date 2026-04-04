@@ -47,21 +47,76 @@ const ALL_LOCALES = [
 
 const MOCK_CONTENT = {
   financial: {
-    title: 'Q4 2025 Earnings Disclosure Summary',
-    sections: [
-      { heading: 'Executive Summary', body: 'Meridian Capital reports consolidated revenue of \u00a534.2 billion for the quarter ended December 31, 2025, representing a 12.3% increase year-over-year. Operating income reached \u00a58.7 billion, driven primarily by strong performance in the M&A advisory and wealth management divisions. The Board of Directors has approved a quarterly dividend of \u00a545 per share.' },
-      { heading: 'Financial Highlights', body: 'Total assets under management grew to \u00a52.8 trillion, a 15.4% increase from the prior year period. Net interest income was \u00a512.1 billion, while fee-based income contributed \u00a518.6 billion. The cost-to-income ratio improved to 62.3% from 65.8% in the prior year quarter, reflecting continued operational efficiency gains.' },
-      { heading: 'Regulatory Compliance Note', body: 'This disclosure has been prepared in accordance with J-GAAP standards and TSE listing requirements. All financial figures have been converted using the prescribed ASBJ methodology. Currency denominations follow TSE formatting conventions. This document has been reviewed by the internal compliance committee and approved for public distribution.' },
-      { heading: 'Forward-Looking Statements', body: 'This document contains forward-looking statements based on current expectations and assumptions. Actual results may differ materially due to market conditions, regulatory changes, and other factors described in our annual securities report filed with the Financial Services Agency.' },
-    ],
+    en: {
+      title: 'Q4 2025 Earnings Disclosure Summary',
+      sections: [
+        { heading: 'Executive Summary', body: 'Meridian Capital reports consolidated revenue of \u00a534.2 billion for the quarter ended December 31, 2025, representing a 12.3% increase year-over-year. Operating income reached \u00a58.7 billion, driven primarily by strong performance in the M&A advisory and wealth management divisions. The Board of Directors has approved a quarterly dividend of \u00a545 per share.' },
+        { heading: 'Financial Highlights', body: 'Total assets under management grew to \u00a52.8 trillion, a 15.4% increase from the prior year period. Net interest income was \u00a512.1 billion, while fee-based income contributed \u00a518.6 billion. The cost-to-income ratio improved to 62.3% from 65.8% in the prior year quarter, reflecting continued operational efficiency gains.' },
+        { heading: 'Regulatory Compliance Note', body: 'This disclosure has been prepared in accordance with J-GAAP standards and TSE listing requirements. All financial figures have been converted using the prescribed ASBJ methodology. Currency denominations follow TSE formatting conventions.' },
+        { heading: 'Forward-Looking Statements', body: 'This document contains forward-looking statements based on current expectations and assumptions. Actual results may differ materially due to market conditions, regulatory changes, and other factors described in our annual securities report filed with the Financial Services Agency.' },
+      ],
+    },
+    ja: {
+      title: '2025\u5E74\u7B2C4\u56DB\u534A\u671F \u6C7A\u7B97\u958B\u793A\u6982\u8981',
+      sections: [
+        { heading: '\u7D4C\u55B6\u6982\u6CC1', body: '\u30E1\u30EA\u30C7\u30A3\u30A2\u30F3\u30FB\u30AD\u30E3\u30D4\u30BF\u30EB\u306F\u30012025\u5E7412\u670831\u65E5\u306B\u7D42\u4E86\u3057\u305F\u56DB\u534A\u671F\u306E\u9023\u7D50\u58F2\u4E0A\u9AD8\u304C\u00A5342\u5104\u3067\u3042\u308A\u3001\u524D\u5E74\u540C\u671F\u6BD412.3%\u306E\u5897\u52A0\u3068\u306A\u308A\u307E\u3057\u305F\u3002\u55B6\u696D\u5229\u76CA\u306F\u00A587\u5104\u306B\u9054\u3057\u3001M&A\u30A2\u30C9\u30D0\u30A4\u30B6\u30EA\u30FC\u304A\u3088\u3073\u30A6\u30A7\u30EB\u30B9\u30DE\u30CD\u30B8\u30E1\u30F3\u30C8\u90E8\u9580\u306E\u597D\u8ABF\u306A\u696D\u7E3E\u304C\u4E3B\u306A\u8981\u56E0\u3067\u3059\u3002\u53D6\u7DE0\u5F79\u4F1A\u306F\u00A545\u306E\u56DB\u534A\u671F\u914D\u5F53\u3092\u627F\u8A8D\u3057\u307E\u3057\u305F\u3002' },
+        { heading: '\u8CA1\u52D9\u30CF\u30A4\u30E9\u30A4\u30C8', body: '\u904B\u7528\u8CC7\u7523\u7DCF\u984D\u306F\u00A52.8\u5146\u306B\u62E1\u5927\u3057\u3001\u524D\u5E74\u540C\u671F\u6BD415.4%\u306E\u5897\u52A0\u3068\u306A\u308A\u307E\u3057\u305F\u3002\u7D14\u91D1\u5229\u53CE\u5165\u306F\u00A5121\u5104\u3001\u624B\u6570\u6599\u53CE\u5165\u306F\u00A5186\u5104\u3067\u3057\u305F\u3002\u30B3\u30B9\u30C8\u30FB\u30A4\u30F3\u30AB\u30E0\u30FB\u30EC\u30B7\u30AA\u306F65.8%\u304B\u308962.3%\u306B\u6539\u5584\u3057\u3001\u7D99\u7D9A\u7684\u306A\u696D\u52D9\u52B9\u7387\u5316\u3092\u53CD\u6620\u3057\u3066\u3044\u307E\u3059\u3002' },
+        { heading: '\u898F\u5236\u9075\u5B88\u4E8B\u9805', body: '\u672C\u958B\u793A\u306F\u3001\u4F01\u696D\u4F1A\u8A08\u57FA\u6E96\uFF08J-GAAP\uFF09\u304A\u3088\u3073\u6771\u4EAC\u8A3C\u5238\u53D6\u5F15\u6240\u4E0A\u5834\u898F\u5247\u306B\u57FA\u3065\u304D\u4F5C\u6210\u3055\u308C\u3066\u3044\u307E\u3059\u3002\u3059\u3079\u3066\u306E\u8CA1\u52D9\u6570\u5024\u306F\u3001ASBJ\u6240\u5B9A\u306E\u65B9\u6CD5\u8AD6\u306B\u5F93\u3044\u63DB\u7B97\u3055\u308C\u3066\u3044\u307E\u3059\u3002' },
+        { heading: '\u5C06\u6765\u898B\u901A\u3057\u306B\u95A2\u3059\u308B\u6CE8\u8A18', body: '\u672C\u66F8\u306B\u306F\u3001\u73FE\u6642\u70B9\u306E\u4E88\u60F3\u304A\u3088\u3073\u524D\u63D0\u306B\u57FA\u3065\u304F\u5C06\u6765\u898B\u901A\u3057\u306B\u95A2\u3059\u308B\u8A18\u8FF0\u304C\u542B\u307E\u308C\u3066\u3044\u307E\u3059\u3002\u5B9F\u969B\u306E\u7D50\u679C\u306F\u3001\u5E02\u5834\u74B0\u5883\u3001\u898F\u5236\u5909\u66F4\u3001\u305D\u306E\u4ED6\u306E\u8981\u56E0\u306B\u3088\u308A\u5927\u304D\u304F\u7570\u306A\u308B\u5834\u5408\u304C\u3042\u308A\u307E\u3059\u3002' },
+      ],
+    },
+    de: {
+      title: 'Q4 2025 Ergebnis\u00FCbersicht',
+      sections: [
+        { heading: 'Zusammenfassung', body: 'Meridian Capital verzeichnet einen konsolidierten Umsatz von \u00A534,2 Milliarden f\u00FCr das am 31. Dezember 2025 endende Quartal, was einem Anstieg von 12,3% gegen\u00FCber dem Vorjahr entspricht. Das Betriebsergebnis erreichte \u00A58,7 Milliarden, haupts\u00E4chlich getrieben durch die starke Leistung der M&A-Beratungs- und Verm\u00F6gensverwaltungsbereiche.' },
+        { heading: 'Finanzielle Highlights', body: 'Das verwaltete Gesamtverm\u00F6gen wuchs auf \u00A52,8 Billionen, ein Anstieg von 15,4% gegen\u00FCber dem Vorjahreszeitraum. Der Nettozinsertrag betrug \u00A512,1 Milliarden, w\u00E4hrend die geb\u00FChrenbasierten Ertr\u00E4ge \u00A518,6 Milliarden beitrugen. Die Aufwand-Ertrags-Quote verbesserte sich von 65,8% auf 62,3%.' },
+        { heading: 'Regulatorische Konformit\u00E4t', body: 'Diese Offenlegung wurde in \u00DCbereinstimmung mit den IFRS-Standards und den Anforderungen der lokalen Regulierungsbeh\u00F6rden erstellt. Alle Finanzzahlen wurden gem\u00E4\u00DF der vorgeschriebenen Methodik umgerechnet.' },
+        { heading: 'Zukunftsgerichtete Aussagen', body: 'Dieses Dokument enth\u00E4lt zukunftsgerichtete Aussagen, die auf aktuellen Erwartungen und Annahmen basieren. Die tats\u00E4chlichen Ergebnisse k\u00F6nnen aufgrund von Marktbedingungen und regulatorischen \u00C4nderungen wesentlich abweichen.' },
+      ],
+    },
+    zh: {
+      title: '2025\u5E74\u7B2C\u56DB\u5B63\u5EA6\u4E1A\u7EE9\u62AB\u9732\u6458\u8981',
+      sections: [
+        { heading: '\u6267\u884C\u6458\u8981', body: 'Meridian Capital\u62A5\u544A\u622A\u81F32025\u5E7412\u670831\u65E5\u6B62\u7684\u5B63\u5EA6\u5408\u5E76\u6536\u5165\u4E3A\u00A5342\u4EBF\uFF0C\u540C\u6BD4\u589E\u957F12.3%\u3002\u8425\u4E1A\u5229\u6DA6\u8FBE\u5230\u00A587\u4EBF\uFF0C\u4E3B\u8981\u5F97\u76CA\u4E8E\u5E76\u8D2D\u54A8\u8BE2\u548C\u8D22\u5BCC\u7BA1\u7406\u90E8\u95E8\u7684\u5F3A\u52B2\u8868\u73B0\u3002\u8463\u4E8B\u4F1A\u5DF2\u6279\u51C6\u6BCF\u80A1\u00A545\u7684\u5B63\u5EA6\u80A1\u606F\u3002' },
+        { heading: '\u8D22\u52A1\u4EAE\u70B9', body: '\u7BA1\u7406\u8D44\u4EA7\u603B\u989D\u589E\u957F\u81F3\u00A52.8\u4E07\u4EBF\uFF0C\u540C\u6BD4\u589E\u957F15.4%\u3002\u51C0\u5229\u606F\u6536\u5165\u4E3A\u00A5121\u4EBF\uFF0C\u624B\u7EED\u8D39\u6536\u5165\u8D21\u732E\u4E86\u00A5186\u4EBF\u3002\u6210\u672C\u6536\u5165\u6BD4\u4ECE65.8%\u6539\u5584\u81F362.3%\uFF0C\u53CD\u6620\u4E86\u6301\u7EED\u7684\u8FD0\u8425\u6548\u7387\u63D0\u5347\u3002' },
+        { heading: '\u76D1\u7BA1\u5408\u89C4\u8BF4\u660E', body: '\u672C\u62AB\u9732\u6587\u4EF6\u6839\u636E\u4E2D\u56FD\u4F1A\u8BA1\u51C6\u5219\u548C\u76F8\u5173\u76D1\u7BA1\u8981\u6C42\u7F16\u5236\u3002\u6240\u6709\u8D22\u52A1\u6570\u636E\u5747\u6309\u7167\u89C4\u5B9A\u7684\u65B9\u6CD5\u8FDB\u884C\u4E86\u6362\u7B97\u3002' },
+        { heading: '\u524D\u77BB\u6027\u58F0\u660E', body: '\u672C\u6587\u4EF6\u5305\u542B\u57FA\u4E8E\u5F53\u524D\u9884\u671F\u548C\u5047\u8BBE\u7684\u524D\u77BB\u6027\u58F0\u660E\u3002\u5B9E\u9645\u7ED3\u679C\u53EF\u80FD\u56E0\u5E02\u573A\u6761\u4EF6\u3001\u76D1\u7BA1\u53D8\u5316\u548C\u5176\u4ED6\u56E0\u7D20\u800C\u5B58\u5728\u91CD\u5927\u5DEE\u5F02\u3002' },
+      ],
+    },
   },
   general: {
-    title: 'Internal Policy Update Memorandum',
-    sections: [
-      { heading: 'Purpose', body: 'This memorandum outlines key updates to Meridian Capital\'s operational policies effective Q1 2026. These changes reflect evolving regulatory requirements across our Japan, Germany, and New Zealand operations.' },
-      { heading: 'Key Changes', body: 'Effective immediately, all client-facing documentation must undergo compliance verification before distribution. The quality threshold has been raised from 85% to 90% for regulatory filings. New cultural adaptation guidelines have been implemented for the APAC region.' },
-      { heading: 'Implementation Timeline', body: 'Phase 1 (January): Updated compliance templates deployed. Phase 2 (February): Training sessions for regional leads. Phase 3 (March): Full enforcement across all divisions.' },
-    ],
+    en: {
+      title: 'Internal Policy Update Memorandum',
+      sections: [
+        { heading: 'Purpose', body: 'This memorandum outlines key updates to Meridian Capital\'s operational policies effective Q1 2026. These changes reflect evolving regulatory requirements across our Japan, Germany, and New Zealand operations.' },
+        { heading: 'Key Changes', body: 'Effective immediately, all client-facing documentation must undergo compliance verification before distribution. The quality threshold has been raised from 85% to 90% for regulatory filings. New cultural adaptation guidelines have been implemented for the APAC region.' },
+        { heading: 'Implementation Timeline', body: 'Phase 1 (January): Updated compliance templates deployed. Phase 2 (February): Training sessions for regional leads. Phase 3 (March): Full enforcement across all divisions.' },
+      ],
+    },
+    ja: {
+      title: '\u793E\u5185\u30DD\u30EA\u30B7\u30FC\u66F4\u65B0\u306B\u95A2\u3059\u308B\u89DA\u66F8',
+      sections: [
+        { heading: '\u76EE\u7684', body: '\u672C\u89DA\u66F8\u306F\u30012026\u5E74\u7B2C1\u56DB\u534A\u671F\u304B\u3089\u9069\u7528\u3055\u308C\u308B\u30E1\u30EA\u30C7\u30A3\u30A2\u30F3\u30FB\u30AD\u30E3\u30D4\u30BF\u30EB\u306E\u904B\u55B6\u30DD\u30EA\u30B7\u30FC\u306E\u4E3B\u8981\u306A\u66F4\u65B0\u4E8B\u9805\u3092\u8AAC\u660E\u3057\u307E\u3059\u3002\u3053\u308C\u3089\u306E\u5909\u66F4\u306F\u3001\u65E5\u672C\u3001\u30C9\u30A4\u30C4\u3001\u30CB\u30E5\u30FC\u30B8\u30FC\u30E9\u30F3\u30C9\u306B\u304A\u3051\u308B\u898F\u5236\u8981\u4EF6\u306E\u5909\u5316\u3092\u53CD\u6620\u3057\u3066\u3044\u307E\u3059\u3002' },
+        { heading: '\u4E3B\u8981\u306A\u5909\u66F4\u70B9', body: '\u5373\u6642\u767A\u52B9\uFF1A\u3059\u3079\u3066\u306E\u30AF\u30E9\u30A4\u30A2\u30F3\u30C8\u5411\u3051\u6587\u66F8\u306F\u3001\u914D\u5E03\u524D\u306B\u30B3\u30F3\u30D7\u30E9\u30A4\u30A2\u30F3\u30B9\u691C\u8A3C\u3092\u53D7\u3051\u308B\u5FC5\u8981\u304C\u3042\u308A\u307E\u3059\u3002\u898F\u5236\u5F53\u5C40\u3078\u306E\u63D0\u51FA\u66F8\u985E\u306E\u54C1\u8CEA\u95BE\u5024\u306F85%\u304B\u309090%\u306B\u5F15\u304D\u4E0A\u3052\u3089\u308C\u307E\u3057\u305F\u3002' },
+        { heading: '\u5B9F\u65BD\u30B9\u30B1\u30B8\u30E5\u30FC\u30EB', body: '\u30D5\u30A7\u30FC\u30BA1\uFF081\u6708\uFF09\uFF1A\u66F4\u65B0\u3055\u308C\u305F\u30B3\u30F3\u30D7\u30E9\u30A4\u30A2\u30F3\u30B9\u30C6\u30F3\u30D7\u30EC\u30FC\u30C8\u306E\u5C55\u958B\u3002\u30D5\u30A7\u30FC\u30BA2\uFF082\u6708\uFF09\uFF1A\u5730\u57DF\u30EA\u30FC\u30C0\u30FC\u5411\u3051\u30C8\u30EC\u30FC\u30CB\u30F3\u30B0\u3002\u30D5\u30A7\u30FC\u30BA3\uFF083\u6708\uFF09\uFF1A\u5168\u90E8\u9580\u3067\u306E\u5B8C\u5168\u65BD\u884C\u3002' },
+      ],
+    },
+    de: {
+      title: 'Interne Richtlinienaktualisierung \u2014 Memorandum',
+      sections: [
+        { heading: 'Zweck', body: 'Dieses Memorandum beschreibt die wichtigsten Aktualisierungen der Betriebsrichtlinien von Meridian Capital, die ab Q1 2026 gelten. Diese \u00C4nderungen spiegeln die sich entwickelnden regulatorischen Anforderungen in unseren Niederlassungen in Japan, Deutschland und Neuseeland wider.' },
+        { heading: 'Wesentliche \u00C4nderungen', body: 'Mit sofortiger Wirkung: Alle kundenorientierten Dokumente m\u00FCssen vor der Verteilung eine Compliance-Pr\u00FCfung durchlaufen. Der Qualit\u00E4tsschwellenwert f\u00FCr regulatorische Einreichungen wurde von 85% auf 90% angehoben.' },
+        { heading: 'Umsetzungszeitplan', body: 'Phase 1 (Januar): Aktualisierte Compliance-Vorlagen bereitgestellt. Phase 2 (Februar): Schulungen f\u00FCr regionale Leiter. Phase 3 (M\u00E4rz): Vollst\u00E4ndige Durchsetzung in allen Abteilungen.' },
+      ],
+    },
+    zh: {
+      title: '\u5185\u90E8\u653F\u7B56\u66F4\u65B0\u5907\u5FD8\u5F55',
+      sections: [
+        { heading: '\u76EE\u7684', body: '\u672C\u5907\u5FD8\u5F55\u6982\u8FF0\u4E86Meridian Capital\u81EA2026\u5E74\u7B2C\u4E00\u5B63\u5EA6\u8D77\u751F\u6548\u7684\u8FD0\u8425\u653F\u7B56\u4E3B\u8981\u66F4\u65B0\u3002\u8FD9\u4E9B\u53D8\u66F4\u53CD\u6620\u4E86\u6211\u4EEC\u5728\u65E5\u672C\u3001\u5FB7\u56FD\u548C\u65B0\u897F\u5170\u4E1A\u52A1\u4E2D\u4E0D\u65AD\u53D8\u5316\u7684\u76D1\u7BA1\u8981\u6C42\u3002' },
+        { heading: '\u4E3B\u8981\u53D8\u66F4', body: '\u7ACB\u5373\u751F\u6548\uFF1A\u6240\u6709\u9762\u5411\u5BA2\u6237\u7684\u6587\u6863\u5FC5\u987B\u5728\u5206\u53D1\u524D\u8FDB\u884C\u5408\u89C4\u9A8C\u8BC1\u3002\u76D1\u7BA1\u6587\u4EF6\u7684\u8D28\u91CF\u9608\u503C\u5DF2\u4ECE85%\u63D0\u9AD8\u523090%\u3002' },
+        { heading: '\u5B9E\u65BD\u65F6\u95F4\u8868', body: '\u7B2C\u4E00\u9636\u6BB5\uFF081\u6708\uFF09\uFF1A\u90E8\u7F72\u66F4\u65B0\u7684\u5408\u89C4\u6A21\u677F\u3002\u7B2C\u4E8C\u9636\u6BB5\uFF082\u6708\uFF09\uFF1A\u5730\u533A\u8D1F\u8D23\u4EBA\u57F9\u8BAD\u3002\u7B2C\u4E09\u9636\u6BB5\uFF083\u6708\uFF09\uFF1A\u5168\u90E8\u95E8\u5B8C\u5168\u6267\u884C\u3002' },
+      ],
+    },
   },
 }
 
@@ -354,14 +409,19 @@ function GenerationProgress({ config, onComplete, prefersReduced }) {
    PHASE 4: REVIEW & REFINE
    ═══════════════════════════════════════════════════════════════ */
 
+const LOCALE_LABELS = { en: 'English', ja: '\u65E5\u672C\u8A9E', de: 'Deutsch', zh: '\u4E2D\u6587', fr: 'Fran\u00E7ais', es: 'Espa\u00F1ol', ko: '\uD55C\uAD6D\uC5B4' }
+
 function ReviewRefine({ config, onAccept, onBack, prefersReduced }) {
   const [activeTab, setActiveTab] = useState('content')
+  const [contentLocale, setContentLocale] = useState('en')
   const [showRefine, setShowRefine] = useState(false)
   const [refineText, setRefineText] = useState('')
   const [feedback, setFeedback] = useState(null)
 
   const hasFinancial = config.activeNodes.includes('financial')
-  const content = hasFinancial ? MOCK_CONTENT.financial : MOCK_CONTENT.general
+  const contentSet = hasFinancial ? MOCK_CONTENT.financial : MOCK_CONTENT.general
+  const content = contentSet[contentLocale] || contentSet.en
+  const availableLocales = ['en', ...config.locales.filter(l => contentSet[l])]
   const activeNodeDetails = DOMAIN_NODES.filter(n => config.activeNodes.includes(n.id))
   const totalEntries = activeNodeDetails.reduce((s, n) => s + n.entries, 0)
   const totalPatterns = activeNodeDetails.reduce((s, n) => s + n.patterns, 0)
@@ -429,14 +489,29 @@ function ReviewRefine({ config, onAccept, onBack, prefersReduced }) {
       {activeTab === 'content' && (
         <div className="grid grid-cols-[1fr_280px] gap-5">
           {/* Generated content */}
-          <div className="rounded-xl border border-black/[0.08] bg-white p-6 space-y-5">
-            <h2 className="text-[18px] font-bold text-gray-900">{content.title}</h2>
+          <div className="rounded-xl border border-black/[0.08] bg-white overflow-hidden">
+            {/* Locale tabs */}
+            <div className="flex items-center border-b border-black/[0.06] px-4 pt-3">
+              {availableLocales.map(loc => (
+                <button key={loc} type="button" onClick={() => setContentLocale(loc)}
+                  className={`px-3 pb-2.5 text-[12px] font-medium border-b-2 transition-colors cursor-pointer -mb-px ${
+                    contentLocale === loc
+                      ? 'border-[#009eda] text-[#009eda]'
+                      : 'border-transparent text-gray-400 hover:text-gray-700'
+                  }`}>
+                  {loc === 'en' ? 'EN (Source)' : `${loc.toUpperCase()} \u00b7 ${LOCALE_LABELS[loc] || loc}`}
+                </button>
+              ))}
+            </div>
+            <div className="p-6 space-y-5">
+            <h2 className={`text-[18px] font-bold text-gray-900 ${contentLocale === 'ja' || contentLocale === 'zh' ? '' : ''}`}>{content.title}</h2>
             {content.sections.map((section, i) => (
               <div key={i}>
                 <h3 className="text-[14px] font-semibold text-gray-800 mb-2">{section.heading}</h3>
-                <p className="text-[13px] text-gray-600 leading-relaxed">{section.body}</p>
+                <p className={`text-[13px] text-gray-600 leading-relaxed ${contentLocale === 'ja' || contentLocale === 'zh' ? 'tracking-wide' : ''}`}>{section.body}</p>
               </div>
             ))}
+            </div>
           </div>
           {/* Sources sidebar */}
           <div className="rounded-xl border border-black/[0.08] bg-gray-50 p-4 self-start sticky top-36">
