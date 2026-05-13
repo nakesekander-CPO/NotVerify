@@ -9,7 +9,7 @@
 
 export const TENANTS = [
   { id: 'meridian', name: 'Meridian Capital', plan: 'enterprise', domain: 'meridian-capital.com' },
-  { id: 'straker', name: 'Straker Translations', plan: 'enterprise', domain: 'straker.com' },
+  { id: 'straker', name: 'arbitr', plan: 'enterprise', domain: 'arbitr.com' },
 ];
 
 /* ─── Org Nodes (tree) ───────────────────────────────────────── */
@@ -32,8 +32,8 @@ export const ORG_NODES = [
   { id: 'mc-nz-legal',        tenantId: 'meridian', parentId: 'mc-nz',           name: 'Legal',                 type: 'department' },
   // Global shared
   { id: 'mc-global-risk',     tenantId: 'meridian', parentId: 'mc-root',         name: 'Global Risk',           type: 'department' },
-  // Straker — secondary tenant (minimal)
-  { id: 'straker-root',       tenantId: 'straker', parentId: null,               name: 'Straker Translations',  type: 'tenant' },
+  // arbitr — secondary tenant (minimal)
+  { id: 'straker-root',       tenantId: 'straker', parentId: null,               name: 'arbitr',  type: 'tenant' },
   { id: 'straker-apac',       tenantId: 'straker', parentId: 'straker-root',     name: 'APAC',                  type: 'region' },
   { id: 'straker-emea',       tenantId: 'straker', parentId: 'straker-root',     name: 'EMEA',                  type: 'region' },
 ];
@@ -59,6 +59,21 @@ export const ROLES = [
   { id: 'viewer',           name: 'Viewer',            description: 'Read-only access to resources within scope. Cannot modify or create.',                            level: 'org',      permissions: ['view_resource'],                                                                         internal: false },
   { id: 'approver',         name: 'Approver',          description: 'Review and approve resources. Can accept, reject, or request changes.',                           level: 'org',      permissions: ['view_resource', 'approve_resource', 'reject_resource', 'request_changes'],               internal: false },
   { id: 'support-operator', name: 'Support Operator',  description: 'Internal platform support access. All actions are audited and time-bounded.',                     level: 'platform', permissions: ['view_resource', 'view_audit', 'impersonate'],                                            internal: true },
+
+  /* ─── HITL Vendor Workflow roles ─────────────────────────────── */
+  { id: 'arbitr-global-admin',  name: 'arbitr Global Admin',  description: 'Platform owner. Manages global vendor registry, pools, selection policies, RBAC, and retraining governance.', level: 'platform', permissions: ['*'], internal: true },
+  { id: 'org-admin',            name: 'Org Admin',            description: 'Manage organisation-level vendor pools, selection policies, and members.',                                    level: 'org',      permissions: ['manage_members', 'manage_structure', 'manage_workflows', 'manage_vendor_pool:org', 'manage_selection_policy:org', 'reassign_task', 'view_audit', 'view_resource', 'create_resource', 'edit_resource'], internal: false },
+  { id: 'vendor-manager',       name: 'Vendor Manager',       description: 'Create and edit vendor profiles within scope. Review vendor performance. Approve assignments where permitted.', level: 'org',    permissions: ['manage_vendor:scope', 'review_vendor_performance', 'approve_assignment', 'suspend_vendor:scope', 'reassign_task', 'view_resource'], internal: false },
+  { id: 'project-manager',      name: 'Project Manager',      description: 'Create projects, review recommendations, approve or override assignments, monitor progress.',                  level: 'org',      permissions: ['create_project', 'review_recommendation', 'approve_assignment', 'override_assignment', 'reassign_task', 'escalate', 'view_resource', 'edit_resource'], internal: false },
+  { id: 'internal-reviewer',    name: 'Internal Reviewer',    description: 'Review vendor work. Edit outputs. Verify/Not Verify segments. Request rework. Recommend sign-off.',            level: 'org',      permissions: ['review_vendor_work', 'edit_segment', 'verify_segment', 'request_rework', 'recommend_signoff', 'view_resource'], internal: false },
+  { id: 'final-validator',      name: 'Final Validator',      description: 'Perform final validation and sign-off. Approve corrections for Org Brain / retraining where policy permits.',   level: 'org',      permissions: ['final_validate', 'signoff_output', 'approve_org_brain', 'approve_retraining', 'view_resource'], internal: false },
+  { id: 'compliance-reviewer',  name: 'Compliance Reviewer',  description: 'Review outputs against regulatory and compliance policy.',                                                     level: 'org',      permissions: ['compliance_review', 'verify_segment', 'request_rework', 'view_resource'], internal: false },
+  { id: 'legal-reviewer',       name: 'Legal Reviewer',       description: 'Review outputs against legal policy.',                                                                         level: 'org',      permissions: ['legal_review', 'verify_segment', 'request_rework', 'view_resource'], internal: false },
+  { id: 'vendor-admin',         name: 'Vendor Admin',         description: 'Manage users inside their vendor organisation only. View assigned vendor projects.',                            level: 'vendor',   permissions: ['manage_vendor_users:own', 'view_assigned_projects', 'assign_vendor_user_to_task'], internal: false },
+  { id: 'vendor-user',          name: 'Vendor User',          description: 'Work on assigned tasks only. Edit, comment, verify/not verify, submit work.',                                   level: 'vendor',   permissions: ['view_assigned_task', 'edit_assigned_segment', 'comment_assigned_segment', 'verify_assigned_segment', 'submit_assigned_task'], internal: false },
+  { id: 'client-reviewer',      name: 'Client Reviewer',      description: 'Client-side reviewer with limited verify and sign-off authority on their organisation\'s outputs.',              level: 'org',      permissions: ['verify_segment', 'client_signoff', 'view_resource'], internal: false },
+  { id: 'auditor',              name: 'Auditor',              description: 'Read-only access to audit logs and signed-off records within scope.',                                          level: 'org',      permissions: ['view_audit', 'view_signoff_records', 'view_resource'], internal: false },
+  { id: 'read-only-observer',   name: 'Read-Only Observer',   description: 'Read-only access to projects, dashboards, and analytics within scope.',                                        level: 'org',      permissions: ['view_resource'], internal: false },
 ];
 
 /* ─── Users ──────────────────────────────────────────────────── */
@@ -73,7 +88,13 @@ export const USERS = [
   { id: 'yuki',    name: 'Yuki Nakamura',    initials: 'YN', email: 'yuki.nakamura@meridian-capital.com',status: 'away',    lastActive: '2026-03-31T06:15:00Z' },
   { id: 'lena',    name: 'Lena Crawford',    initials: 'LC', email: 'lena.crawford@meridian-capital.com', status: 'online', lastActive: '2026-03-31T09:00:00Z' },
   { id: 'james',   name: 'James Liu',        initials: 'JL', email: 'james.liu@meridian-capital.com',   status: 'online',  lastActive: '2026-03-31T08:55:00Z' },
-  { id: 'support-bot', name: 'NV Support',   initials: 'NV', email: 'support@notverify.com',            status: 'online',  lastActive: '2026-03-31T09:20:00Z', internal: true },
+  { id: 'support-bot', name: 'arbitr Support',   initials: 'AR', email: 'support@arbitr.com',            status: 'online',  lastActive: '2026-03-31T09:20:00Z', internal: true },
+
+  /* ─── HITL vendor-side users (live in vendor tenants) ────────── */
+  { id: 'hana',    name: 'Hana Ito',         initials: 'HI', email: 'hana.ito@nihon-linguistics.jp',     status: 'online',  lastActive: '2026-03-31T09:00:00Z' },
+  { id: 'ren',     name: 'Ren Suzuki',       initials: 'RS', email: 'ren.suzuki@nihon-linguistics.jp',   status: 'away',    lastActive: '2026-03-31T07:10:00Z' },
+  { id: 'klaus',   name: 'Klaus Berger',     initials: 'KB', email: 'klaus.berger@bonn-legal.de',        status: 'online',  lastActive: '2026-03-31T08:30:00Z' },
+  { id: 'sofia',   name: 'Sofia Romano',     initials: 'SR', email: 'sofia.romano@milano-finance.it',    status: 'offline', lastActive: '2026-03-30T17:45:00Z' },
 ];
 
 /* ─── Tenant Memberships ─────────────────────────────────────── */

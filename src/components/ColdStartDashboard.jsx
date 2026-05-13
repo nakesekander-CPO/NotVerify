@@ -306,7 +306,7 @@ export default function ColdStartDashboard({
             {/* Progress bar */}
             <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
               <motion.div
-                className="h-full rounded-full bg-[#3b5bdb]"
+                className="h-full rounded-full bg-ocean"
                 initial={{ width: 0 }}
                 animate={{ width: `${(missionCompleted / unlockedItems.length) * 100}%` }}
                 transition={spring}
@@ -329,7 +329,7 @@ export default function ColdStartDashboard({
                       }}
                       className="flex w-full items-center gap-2.5 rounded-md px-2 py-2 text-left text-[13px] cursor-pointer text-gray-700 hover:bg-black/[0.03] transition-colors"
                     >
-                      <Icon size={14} className="shrink-0 text-[#3b5bdb]" />
+                      <Icon size={14} className="shrink-0 text-ocean" />
                       <span className="flex-1">{item.label}</span>
                       <ChevronRight size={13} className="shrink-0 text-gray-300" />
                     </button>
@@ -481,10 +481,10 @@ export default function ColdStartDashboard({
           <div className="flex-1 min-w-0">
             <p className="text-[15px] font-semibold text-gray-900 mb-0.5">See intelligence extraction in action</p>
             <p className="text-[13px] text-gray-500 leading-snug">
-              We've loaded a sample Q3 Earnings Report. Watch Not Verify extract compliance intelligence, score quality, and surface risks — no upload required.
+              We've loaded a sample Q3 Earnings Report. Watch arbitr extract compliance intelligence, score quality, and surface risks — no upload required.
             </p>
           </div>
-          <div className="flex items-center gap-1.5 shrink-0 self-center px-4 py-2 rounded-lg bg-straker-600 text-white text-[13px] font-semibold group-hover:bg-straker-700 transition-colors whitespace-nowrap">
+          <div className="flex items-center gap-1.5 shrink-0 self-center px-4 py-2 rounded-lg bg-amber text-white text-[13px] font-semibold group-hover:bg-amber-deep transition-colors whitespace-nowrap">
             Start sample <ChevronRight size={14} />
           </div>
         </button>
@@ -679,7 +679,7 @@ export default function ColdStartDashboard({
         <div className="flex justify-center px-6 py-5 border-t border-black/[0.06]">
           <button
             onClick={onStartFirstProject}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-straker-600 hover:bg-straker-500 text-white text-[13px] font-semibold transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-amber hover:bg-amber-deep text-white text-[13px] font-semibold transition-colors cursor-pointer"
           >
             Analyze your first document to grow your Org Brain
             <ArrowRight size={14} />

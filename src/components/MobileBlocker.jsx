@@ -11,7 +11,7 @@ export default function MobileBlocker() {
           Desktop Recommended
         </h1>
         <p className="text-[14px] text-gray-500 leading-relaxed mb-6">
-          The Not Verify Agentic Orchestrator provides an enterprise-grade analysis experience
+          The arbitr Agentic Orchestrator provides an enterprise-grade analysis experience
           best viewed on a desktop or laptop display.
         </p>
         <div className="flex items-center justify-center gap-2 text-[13px] text-straker-600 font-medium">

@@ -317,7 +317,7 @@ export default function LocaleConstellation({
                     y1={locale.y}
                     x2={locale.x}
                     y2="100"
-                    stroke="#4c6ef5"
+                    stroke="#164D75"
                     strokeOpacity="0.25"
                     strokeWidth="0.35"
                     strokeDasharray="1.5 1"
@@ -372,7 +372,7 @@ export default function LocaleConstellation({
                       <circle
                         r={nodeRadius + 1.5}
                         fill="none"
-                        stroke="#4c6ef5"
+                        stroke="#164D75"
                         strokeOpacity="0.5"
                         strokeWidth="0.4"
                         strokeDasharray="2 2"
@@ -401,12 +401,12 @@ export default function LocaleConstellation({
                     {/* Main circle */}
                     <circle
                       r={nodeRadius}
-                      fill={selected ? '#4c6ef5' : '#e5e7eb'}
+                      fill={selected ? '#164D75' : '#e5e7eb'}
                       stroke={
                         selected
                           ? hovered
                             ? '#91a7ff'
-                            : '#748ffc'
+                            : '#4F94C4'
                           : docRelevant
                             ? '#f59e0b'
                             : hovered
@@ -604,7 +604,7 @@ export default function LocaleConstellation({
                     className={`w-full py-1.5 rounded-lg text-[12px] font-medium transition-colors cursor-pointer ${
                       isSelected(iqLocale.code)
                         ? 'bg-black/[0.04] text-gray-700 hover:bg-black/[0.08]'
-                        : 'bg-straker-600 text-white hover:bg-straker-500'
+                        : 'bg-amber text-white hover:bg-amber-deep'
                     }`}
                   >
                     {isSelected(iqLocale.code) ? 'Deselect' : 'Select'}

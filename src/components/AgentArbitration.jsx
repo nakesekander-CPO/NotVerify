@@ -16,7 +16,7 @@ const DEFAULT_CONFLICTS = [
       id: 'JP-FIN-3',
       name: 'J-GAAP Specialist',
       icon: 'Shield',
-      color: '#5c7cfa',
+      color: '#1B5E8F',
       output: 'のれんの減損損失合計額 ¥630百万を計上しました。',
       reasoning:
         'Used formal financial register per ASBJ standards. "計上しました" (keijō shimashita) is the standard accounting term for recording charges in J-GAAP filings. Currency converted at spot rate.',
@@ -44,7 +44,7 @@ const DEFAULT_CONFLICTS = [
       id: 'JP-FIN-3',
       name: 'J-GAAP Specialist',
       icon: 'Shield',
-      color: '#5c7cfa',
+      color: '#1B5E8F',
       output: '営業利益率は前年同期比3.2ポイント改善しました。',
       reasoning:
         'Standard financial reporting terminology. "前年同期比" is the accepted TSE format for year-over-year comparisons.',
@@ -198,7 +198,7 @@ function ConflictCard({ conflict, index, resolution, onResolve, reducedMotion })
       {/* Card header */}
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="font-mono text-xs font-bold uppercase tracking-widest text-[#5c7cfa]">
+          <span className="font-mono text-xs font-bold uppercase tracking-widest text-[#1B5E8F]">
             Conflict #{index + 1}
           </span>
           <span className="text-xs text-gray-400">—</span>
@@ -269,12 +269,12 @@ function ConflictCard({ conflict, index, resolution, onResolve, reducedMotion })
               value={compromiseText}
               onChange={(e) => setCompromiseText(e.target.value)}
               rows={3}
-              className="w-full rounded-lg border border-black/[0.12] bg-[#ffffff] p-3 font-mono text-sm leading-relaxed text-gray-700 outline-none transition-colors focus:border-[#5c7cfa]/50"
+              className="w-full rounded-lg border border-black/[0.12] bg-[#ffffff] p-3 font-mono text-sm leading-relaxed text-gray-700 outline-none transition-colors focus:border-[#1B5E8F]/50"
             />
             <div className="mt-2 flex items-center gap-2">
               <button
                 onClick={handleApplyCompromise}
-                className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-[#5c7cfa] px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-[#5c7cfa]/80"
+                className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-amber px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-amber-deep"
               >
                 <Check className="h-3 w-3" />
                 Apply Compromise

@@ -359,7 +359,7 @@ function InlineSegmentCard({ segment, resolution, onResolve }) {
           <div className="flex gap-2">
             <button
               onClick={() => { onResolve('edit', { editedText: editText }); setEditing(false) }}
-              className="px-3 py-1.5 rounded-lg bg-straker-600 hover:bg-straker-500 text-white text-[11px] font-semibold transition-colors cursor-pointer"
+              className="px-3 py-1.5 rounded-lg bg-amber hover:bg-amber-deep text-white text-[11px] font-semibold transition-colors cursor-pointer"
             >
               Save & Resolve
             </button>
@@ -623,7 +623,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
                         <p className="text-[10px] text-gray-500 leading-relaxed mb-2">These flags do not block publication but require acknowledgment for audit trail.</p>
                         <button
                           onClick={() => setActiveTab('compliance')}
-                          className="text-[10px] font-medium text-[#5c7cfa] hover:text-[#7b9aff] transition-colors cursor-pointer"
+                          className="text-[10px] font-medium text-[#1B5E8F] hover:text-[#4F94C4] transition-colors cursor-pointer"
                         >
                           View in Review tab →
                         </button>
@@ -664,7 +664,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
                         <p className="text-[10px] text-gray-500 leading-relaxed">Resolve blockers or assign to human review to proceed.</p>
                         <button
                           onClick={() => setActiveTab('compliance')}
-                          className="mt-2 text-[10px] font-medium text-[#5c7cfa] hover:text-[#7b9aff] transition-colors cursor-pointer"
+                          className="mt-2 text-[10px] font-medium text-[#1B5E8F] hover:text-[#4F94C4] transition-colors cursor-pointer"
                         >
                           Resolve on Review tab →
                         </button>
@@ -827,7 +827,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
                 ) : (
                   <button
                     onClick={() => {}}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-straker-600 hover:bg-straker-500 text-white font-semibold text-[13px] transition-all cursor-pointer"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-amber hover:bg-amber-deep text-white font-semibold text-[13px] transition-all cursor-pointer"
                   >
                     <Download className="w-4 h-4" />
                     Download All Files
@@ -998,7 +998,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
                 </div>
                 <button
                   onClick={() => onOpenOrgBrain?.()}
-                  className="group inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-straker-600 hover:bg-straker-500 text-white text-[13px] font-semibold transition-all cursor-pointer"
+                  className="group inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-amber hover:bg-amber-deep text-white text-[13px] font-semibold transition-all cursor-pointer"
                 >
                   Explore Org Brain
                   <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
@@ -1034,7 +1034,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
                     <div className="flex items-center gap-2">
                       <button
                         onClick={onReviewNow}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-straker-600 text-white text-[12px] font-semibold hover:bg-straker-500 transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-amber text-white text-[12px] font-semibold hover:bg-amber-deep transition-colors cursor-pointer"
                       >
                         <ShieldCheck className="w-3.5 h-3.5" />
                         Review Now
@@ -1241,8 +1241,8 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
                                 glossaryAdded
                                   ? 'bg-emerald-50 text-emerald-400'
                                   : glossaryLoading
-                                    ? 'bg-straker-600/50 text-white/70'
-                                    : 'bg-straker-600 hover:bg-straker-500 text-white'
+                                    ? 'bg-amber/50 text-white/70'
+                                    : 'bg-amber hover:bg-amber-deep text-white'
                               }`}
                             >
                               {glossaryLoading ? (

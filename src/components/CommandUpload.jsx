@@ -170,7 +170,7 @@ export default function CommandUpload({
   const priorProjects = 42 // prototype data
 
   const scoreColor = overallScore >= 85 ? 'text-emerald-400' : overallScore >= 65 ? 'text-straker-600' : 'text-red-400'
-  const ringStroke = overallScore >= 85 ? '#34d399' : overallScore >= 65 ? '#748ffc' : '#f87171'
+  const ringStroke = overallScore >= 85 ? '#34d399' : overallScore >= 65 ? '#4F94C4' : '#f87171'
 
   // Score ring SVG
   const ringRadius = 26
@@ -480,8 +480,8 @@ export default function CommandUpload({
             disabled={!launchEnabled}
             className={`w-full flex items-center justify-center gap-2 px-6 py-4 rounded-lg text-[16px] font-semibold transition-all cursor-pointer ${
               launchEnabled
-                ? 'bg-straker-600 hover:bg-straker-500 text-white shadow-sm shadow-straker-600/20'
-                : 'bg-straker-600/40 text-gray-400 cursor-not-allowed'
+                ? 'bg-amber hover:bg-amber-deep text-white shadow-sm shadow-amber/20'
+                : 'bg-amber/40 text-gray-400 cursor-not-allowed'
             }`}
             animate={launchEnabled && !prefersReducedMotion ? { scale: [1, 1.02, 1] } : {}}
             transition={{ duration: 0.3 }}

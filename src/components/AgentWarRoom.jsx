@@ -204,7 +204,7 @@ function AgentCard({ agent, isProcessing, prefersReducedMotion, onViewProfile })
       : 'bg-gray-500'
 
   const borderClass = isActive
-    ? 'border-l-2 border-l-straker-500 shadow-[inset_2px_0_12px_-4px_rgba(92,124,250,0.3)]'
+    ? 'border-l-2 border-l-straker-500 shadow-[inset_2px_0_12px_-4px_rgba(27,94,143,0.3)]'
     : 'border-l-2 border-l-transparent'
 
   return (

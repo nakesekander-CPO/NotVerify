@@ -14,6 +14,7 @@ import QualityNarrative from './components/QualityNarrative'
 import AgentArbitration from './components/AgentArbitration'
 import ColdStartDashboard from './components/ColdStartDashboard'
 import TeamDirectory from './components/TeamDirectory'
+import HITLVendorWorkflow from './components/HITLVendorWorkflow'
 import HumanReview from './components/HumanReview'
 import OrgBrain from './components/OrgBrain'
 import AgentProfile from './components/AgentProfile'
@@ -68,6 +69,7 @@ export default function App() {
   const [showAgentProfile, setShowAgentProfile] = useState(false)
   const [selectedAgent, setSelectedAgent] = useState(null)
   const [showTeamDirectory, setShowTeamDirectory] = useState(false)
+  const [showHitlWorkflow, setShowHitlWorkflow] = useState(false)
   const [teamDirectoryContext, setTeamDirectoryContext] = useState({ itemId: null, itemTitle: '' })
   const [activeAgents, setActiveAgents] = useState([])
   const [hiredMarketplaceAgents, setHiredMarketplaceAgents] = useState([])
@@ -502,7 +504,7 @@ export default function App() {
       <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-straker-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:text-[13px] focus:font-medium">
         Skip to main content
       </a>
-      <Header companyName={onboardingConfig?.orgName || 'Meridian Capital'} onOpenSettings={() => { setPreviousPhase(phase); setPhase('settings') }} onOpenMarketplace={() => setShowMarketplace(true)} onNavigateHome={() => setPhase('dashboard')} />
+      <Header companyName={onboardingConfig?.orgName || 'Meridian Capital'} onOpenSettings={() => { setPreviousPhase(phase); setPhase('settings') }} onOpenMarketplace={() => setShowMarketplace(true)} onOpenHitlWorkflow={() => setShowHitlWorkflow(true)} onNavigateHome={() => setPhase('dashboard')} />
       {phase !== 'settings' && phase !== 'integrations' && phase !== 'onboarding' && phase !== 'agent-assembly' && (
         <GlobalNav
           currentPhase={phase}
@@ -730,7 +732,7 @@ export default function App() {
                     <p className="text-gray-500 text-sm">No project data loaded.</p>
                     <button
                       onClick={() => setPhase('dashboard')}
-                      className="px-4 py-2 rounded-lg bg-straker-600 hover:bg-straker-500 text-white text-sm font-medium transition-colors cursor-pointer"
+                      className="px-4 py-2 rounded-lg bg-amber hover:bg-amber-deep text-white text-sm font-medium transition-colors cursor-pointer"
                     >
                       Return to Dashboard
                     </button>
@@ -822,6 +824,14 @@ export default function App() {
         onDelegate={handleDelegationComplete}
         itemTitle={teamDirectoryContext.itemTitle}
       />
+
+      {/* HITL Vendor Workflow — governed human-in-the-loop module */}
+      {showHitlWorkflow && (
+        <HITLVendorWorkflow
+          currentUserId="alex"
+          onClose={() => setShowHitlWorkflow(false)}
+        />
+      )}
 
       {/* Agent Arbitration Modal — When agents disagree */}
       {showArbitration && (

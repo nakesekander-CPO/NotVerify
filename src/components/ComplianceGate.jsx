@@ -164,7 +164,7 @@ function ReviewerSegmentCard({ segment, resolution, onAccept, onEdit, onReject, 
           <span className="text-gray-400 uppercase text-xs font-semibold tracking-wider">
             Suggested Fix
           </span>
-          <p className="text-[#5c7cfa] mt-1 font-[JetBrains_Mono] text-xs">
+          <p className="text-[#1B5E8F] mt-1 font-[JetBrains_Mono] text-xs">
             {segment.suggestedFix}
           </p>
         </div>
@@ -193,7 +193,7 @@ function ReviewerSegmentCard({ segment, resolution, onAccept, onEdit, onReject, 
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
                   rows={3}
-                  className="w-full bg-[#ffffff] border border-black/[0.12] rounded-md p-3 text-sm text-gray-800 font-[JetBrains_Mono] focus:outline-none focus:ring-2 focus:ring-[#5c7cfa] resize-none"
+                  className="w-full bg-[#ffffff] border border-black/[0.12] rounded-md p-3 text-sm text-gray-800 font-[JetBrains_Mono] focus:outline-none focus:ring-2 focus:ring-[#1B5E8F] resize-none"
                 />
                 <div className="flex gap-2 mt-2">
                   <button
@@ -265,7 +265,7 @@ function ReviewerSegmentCard({ segment, resolution, onAccept, onEdit, onReject, 
                   setEditValue(segment.suggestedFix);
                   setEditMode(true);
                 }}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#5c7cfa]/20 hover:bg-[#5c7cfa]/40 text-[#5c7cfa] text-xs font-semibold rounded-md ring-1 ring-[#5c7cfa]/30 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1B5E8F]/20 hover:bg-[#1B5E8F]/40 text-[#1B5E8F] text-xs font-semibold rounded-md ring-1 ring-[#1B5E8F]/30 transition-colors"
               >
                 <Pencil className="w-3.5 h-3.5" />
                 Edit & Approve
@@ -436,8 +436,8 @@ export default function ComplianceGate({
         {/* Header */}
         <div className="p-6 border-b border-slate-700/60">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-9 h-9 rounded-lg bg-[#5c7cfa]/20 flex items-center justify-center">
-              <ClipboardCheck className="w-5 h-5 text-[#5c7cfa]" />
+            <div className="w-9 h-9 rounded-lg bg-[#1B5E8F]/20 flex items-center justify-center">
+              <ClipboardCheck className="w-5 h-5 text-[#1B5E8F]" />
             </div>
             <div>
               <h2 className="text-lg font-semibold text-gray-900 tracking-tight">
@@ -490,7 +490,7 @@ export default function ComplianceGate({
             </div>
             <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-[#5c7cfa] rounded-full"
+                className="h-full bg-[#1B5E8F] rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${(resolvedCount / totalCount) * 100}%` }}
                 transition={spring}
@@ -502,7 +502,7 @@ export default function ComplianceGate({
             <button
               onClick={handleApproveAll}
               disabled={resolvedCount === totalCount}
-              className="flex items-center gap-1.5 px-4 py-2 bg-[#5c7cfa]/20 hover:bg-[#5c7cfa]/30 text-[#5c7cfa] text-sm font-semibold rounded-lg ring-1 ring-[#5c7cfa]/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-1.5 px-4 py-2 bg-[#1B5E8F]/20 hover:bg-[#1B5E8F]/30 text-[#1B5E8F] text-sm font-semibold rounded-lg ring-1 ring-[#1B5E8F]/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Check className="w-4 h-4" />
               Approve All Suggestions
@@ -580,10 +580,10 @@ export default function ComplianceGate({
 
       {/* Routing Card */}
       <div className="p-6">
-        <div className="rounded-lg bg-[#5c7cfa]/10 border border-[#5c7cfa]/30 p-5">
+        <div className="rounded-lg bg-[#1B5E8F]/10 border border-[#1B5E8F]/30 p-5">
           <div className="flex items-center gap-2 mb-3">
-            <RotateCcw className="w-4 h-4 text-[#5c7cfa]" />
-            <h3 className="text-sm font-semibold text-[#5c7cfa]">
+            <RotateCcw className="w-4 h-4 text-[#1B5E8F]" />
+            <h3 className="text-sm font-semibold text-[#1B5E8F]">
               Routing to Regional Legal Review
             </h3>
           </div>
@@ -606,7 +606,7 @@ export default function ComplianceGate({
           <div className="flex items-center gap-3 mt-4">
             <button
               onClick={() => setShowNoteInput(!showNoteInput)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#5c7cfa]/20 hover:bg-[#5c7cfa]/30 text-[#5c7cfa] text-xs font-semibold rounded-md ring-1 ring-[#5c7cfa]/30 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1B5E8F]/20 hover:bg-[#1B5E8F]/30 text-[#1B5E8F] text-xs font-semibold rounded-md ring-1 ring-[#1B5E8F]/30 transition-colors"
             >
               <MessageSquarePlus className="w-3.5 h-3.5" />
               Add Note for Reviewer
@@ -635,7 +635,7 @@ export default function ComplianceGate({
                     onChange={(e) => setReviewerNote(e.target.value)}
                     rows={2}
                     placeholder="Add context for the reviewer..."
-                    className="w-full bg-[#ffffff] border border-black/[0.12] rounded-md p-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#5c7cfa] resize-none"
+                    className="w-full bg-[#ffffff] border border-black/[0.12] rounded-md p-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#1B5E8F] resize-none"
                   />
                 </div>
               </motion.div>

@@ -70,7 +70,7 @@ function MergeLinkModal({ connector, onConnect, onClose }) {
           {step === 0 && (
             <div>
               <p className="text-[13px] text-gray-700 mb-4">
-                Connect your <strong>{connector.name}</strong> account to allow Not Verify agents to read and write on your behalf.
+                Connect your <strong>{connector.name}</strong> account to allow arbitr agents to read and write on your behalf.
               </p>
               <div className="mb-4">
                 <label className="text-[11px] font-medium text-gray-500 block mb-1">Account email</label>
@@ -92,7 +92,7 @@ function MergeLinkModal({ connector, onConnect, onClose }) {
               {connector.id === 'zendesk' && (
                 <div className="mb-4 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2.5">
                   <p className="text-[12px] text-amber-800 leading-relaxed">
-                    <strong>Please Note</strong> — Zendesk enforces a <strong>60,000 character limit</strong> per API call. Not Verify will automatically chunk large documents to stay within this boundary.
+                    <strong>Please Note</strong> — Zendesk enforces a <strong>60,000 character limit</strong> per API call. arbitr will automatically chunk large documents to stay within this boundary.
                   </p>
                 </div>
               )}

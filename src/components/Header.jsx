@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
-import { ChevronDown, User, Settings, Headphones, LogOut, Store } from 'lucide-react'
+import { ChevronDown, User, Settings, Headphones, LogOut, Store, Workflow } from 'lucide-react'
 import StatusPill from './StatusPill'
 import { USERS, ROLE_ASSIGNMENTS, ROLES, TENANTS } from '../data/rbacModel'
 
 const CURRENT_USER_ID = 'alex'
 
-export default function Header({ companyName, onOpenSettings, onOpenMarketplace, onNavigateHome }) {
+export default function Header({ companyName, onOpenSettings, onOpenMarketplace, onNavigateHome, onOpenHitlWorkflow }) {
   const [accountOpen, setAccountOpen] = useState(false)
   const currentUser = USERS.find(u => u.id === CURRENT_USER_ID)
   const primaryAssignment = ROLE_ASSIGNMENTS.find(a => a.userId === CURRENT_USER_ID && a.scopeType === 'tenant') || ROLE_ASSIGNMENTS.find(a => a.userId === CURRENT_USER_ID)
@@ -36,10 +36,7 @@ export default function Header({ companyName, onOpenSettings, onOpenMarketplace,
           className="flex items-center gap-3 shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
           aria-label="Go to dashboard"
         >
-          <img src="/logo.svg" alt="Not Verify" className="w-8 h-8" />
-          <span className="text-gray-900 font-semibold text-[15px] tracking-tight">
-            Not <span className="text-[#00BFFF]">Verify</span>
-          </span>
+          <img src="/logo.svg" alt="arbitr" className="h-6 w-auto text-ink" style={{ color: 'var(--color-ink)' }} />
           {companyName && (
             <>
               <div className="h-4 w-px bg-black/[0.08]" />
@@ -82,8 +79,9 @@ export default function Header({ companyName, onOpenSettings, onOpenMarketplace,
                   {tenantName && <p className="text-[10px] text-gray-400 mt-0.5">{tenantName}</p>}
                 </div>
                 <DropdownItem icon={Settings} label="Settings" onClick={() => { setAccountOpen(false); onOpenSettings?.() }} />
+                <DropdownItem icon={Workflow} label="HITL Vendor Workflow" onClick={() => { setAccountOpen(false); onOpenHitlWorkflow?.() }} />
                 <DropdownItem icon={Store} label="Agent Marketplace" onClick={() => { setAccountOpen(false); onOpenMarketplace?.() }} />
-                <DropdownItem icon={Headphones} label="Contact Support" onClick={() => { setAccountOpen(false); window.location.href = 'mailto:support@notverify.com' }} />
+                <DropdownItem icon={Headphones} label="Contact Support" onClick={() => { setAccountOpen(false); window.location.href = 'mailto:support@arbitr.com' }} />
                 <div className="border-t border-black/[0.12] my-1.5" />
                 <DropdownItem icon={LogOut} label="Sign Out" onClick={() => { setAccountOpen(false); window.location.reload() }} />
               </div>

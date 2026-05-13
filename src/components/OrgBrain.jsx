@@ -94,7 +94,7 @@ const WALKTHROUGH_MESSAGES = [
   {
     id: 'closing',
     section: 'The Bottom Line',
-    text: "Org Brain is what makes Not Verify a platform that **compounds in value**. Unlike a one-off translation tool, every project you run makes the next one faster, more accurate, and less work for your team. All of this institutional knowledge is protected with **SOC 2 Type II** compliance, **AES-256** encryption, and in-region data storage.",
+    text: "Org Brain is what makes arbitr a platform that **compounds in value**. Unlike a one-off translation tool, every project you run makes the next one faster, more accurate, and less work for your team. All of this institutional knowledge is protected with **SOC 2 Type II** compliance, **AES-256** encryption, and in-region data storage.",
   },
 ]
 
@@ -235,7 +235,7 @@ function KnowledgeGraph({ prefersReducedMotion, onNodeClick, selectedNodeId }) {
                 cy={node.cy}
                 r={node.r + 6}
                 fill="none"
-                stroke="#5c7cfa"
+                stroke="#1B5E8F"
                 strokeWidth={2}
                 strokeDasharray="4 3"
                 opacity={0.7}
@@ -349,7 +349,7 @@ function NodeDetailPanel({ nodeId, prefersReducedMotion }) {
         </div>
         <button
           onClick={() => setShowAddForm((v) => !v)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#5c7cfa]/10 hover:bg-[#5c7cfa]/20 border border-[#5c7cfa]/20 text-[11px] font-medium text-[#5c7cfa] transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1B5E8F]/10 hover:bg-[#1B5E8F]/20 border border-[#1B5E8F]/20 text-[11px] font-medium text-[#1B5E8F] transition-colors"
         >
           <Plus className="w-3 h-3" />
           Add Entry
@@ -372,7 +372,7 @@ function NodeDetailPanel({ nodeId, prefersReducedMotion }) {
                 placeholder="Term"
                 value={newEntry.term}
                 onChange={(e) => setNewEntry((v) => ({ ...v, term: e.target.value }))}
-                className="px-3 py-1.5 rounded-lg bg-[#ffffff] border border-black/[0.12] text-xs text-gray-900 placeholder-gray-500 outline-none focus:border-[#5c7cfa]/40"
+                className="px-3 py-1.5 rounded-lg bg-[#ffffff] border border-black/[0.12] text-xs text-gray-900 placeholder-gray-500 outline-none focus:border-[#1B5E8F]/40"
                 style={{ fontFamily: 'Inter, sans-serif' }}
               />
               <input
@@ -380,13 +380,13 @@ function NodeDetailPanel({ nodeId, prefersReducedMotion }) {
                 placeholder="Translation"
                 value={newEntry.translation}
                 onChange={(e) => setNewEntry((v) => ({ ...v, translation: e.target.value }))}
-                className="px-3 py-1.5 rounded-lg bg-[#ffffff] border border-black/[0.12] text-xs text-gray-900 placeholder-gray-500 outline-none focus:border-[#5c7cfa]/40"
+                className="px-3 py-1.5 rounded-lg bg-[#ffffff] border border-black/[0.12] text-xs text-gray-900 placeholder-gray-500 outline-none focus:border-[#1B5E8F]/40"
                 style={{ fontFamily: 'Inter, sans-serif' }}
               />
               <select
                 value={newEntry.domain}
                 onChange={(e) => setNewEntry((v) => ({ ...v, domain: e.target.value }))}
-                className="px-3 py-1.5 rounded-lg bg-[#ffffff] border border-black/[0.12] text-xs text-gray-900 outline-none focus:border-[#5c7cfa]/40"
+                className="px-3 py-1.5 rounded-lg bg-[#ffffff] border border-black/[0.12] text-xs text-gray-900 outline-none focus:border-[#1B5E8F]/40"
                 style={{ fontFamily: 'Inter, sans-serif' }}
               >
                 {DOMAIN_NODES.map((d) => (
@@ -399,7 +399,7 @@ function NodeDetailPanel({ nodeId, prefersReducedMotion }) {
             <div className="flex items-center gap-2 mt-2">
               <button
                 onClick={handleSaveEntry}
-                className="px-3 py-1.5 rounded-lg bg-[#5c7cfa] hover:bg-[#4c6ef5] text-xs font-medium text-white transition-colors"
+                className="px-3 py-1.5 rounded-lg bg-amber hover:bg-amber-deep text-xs font-medium text-white transition-colors"
               >
                 Save
               </button>
@@ -425,7 +425,7 @@ function NodeDetailPanel({ nodeId, prefersReducedMotion }) {
           placeholder="Search entries..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-8 pr-3 py-2 rounded-lg bg-[#ffffff] border border-black/[0.12] text-xs text-gray-900 placeholder-gray-500 outline-none focus:border-[#5c7cfa]/40"
+          className="w-full pl-8 pr-3 py-2 rounded-lg bg-[#ffffff] border border-black/[0.12] text-xs text-gray-900 placeholder-gray-500 outline-none focus:border-[#1B5E8F]/40"
           style={{ fontFamily: 'Inter, sans-serif' }}
         />
       </div>
@@ -586,7 +586,7 @@ function GrowthChart({ prefersReducedMotion }) {
   return (
     <div className="w-full rounded-lg bg-[#ffffff]/60 border border-black/[0.12] p-4">
       <div className="flex items-center gap-2 mb-3">
-        <TrendingUp className="w-4 h-4 text-[#5c7cfa]" />
+        <TrendingUp className="w-4 h-4 text-[#1B5E8F]" />
         <span className="text-xs font-medium uppercase tracking-wider text-gray-500">
           Knowledge Base Growth
         </span>
@@ -595,8 +595,8 @@ function GrowthChart({ prefersReducedMotion }) {
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full">
         <defs>
           <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#4c6ef5" />
-            <stop offset="100%" stopColor="#748ffc" />
+            <stop offset="0%" stopColor="#164D75" />
+            <stop offset="100%" stopColor="#4F94C4" />
           </linearGradient>
         </defs>
 
@@ -672,7 +672,7 @@ function GrowthChart({ prefersReducedMotion }) {
             cx={p.x}
             cy={p.y}
             r={i === points.length - 1 ? 4 : 2.5}
-            fill={i === points.length - 1 ? '#5c7cfa' : 'rgba(92,124,250,0.6)'}
+            fill={i === points.length - 1 ? '#1B5E8F' : 'rgba(27,94,143,0.6)'}
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: dur === 0 ? 0 : 0.3 + i * 0.06, duration: dur ?? 0.3, ...SPRING }}
@@ -686,7 +686,7 @@ function GrowthChart({ prefersReducedMotion }) {
             cy={lastPoint.y}
             r={4}
             fill="none"
-            stroke="#5c7cfa"
+            stroke="#1B5E8F"
             strokeWidth={1.5}
             initial={{ r: 4, opacity: 0.8 }}
             animate={{ r: 12, opacity: 0 }}
@@ -962,8 +962,8 @@ export default function OrgBrain({ onClose, onNavigateBack, onCreateContent }) {
       <div className="px-6 pt-6 pb-4 border-b border-black/[0.12]">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#5c7cfa]/10 flex items-center justify-center">
-              <Brain className="w-5 h-5 text-[#5c7cfa]" />
+            <div className="w-10 h-10 rounded-lg bg-[#1B5E8F]/10 flex items-center justify-center">
+              <Brain className="w-5 h-5 text-[#1B5E8F]" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-gray-900" style={{ fontFamily: 'Inter, sans-serif' }}>

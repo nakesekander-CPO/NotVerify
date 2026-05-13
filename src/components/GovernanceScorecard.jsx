@@ -15,19 +15,19 @@ import useReducedMotion from '../hooks/useReducedMotion'
 const ICON_MAP = { Shield, Building2, Mic }
 
 const BAR_COLORS = {
-  'JP-FIN-3': 'bg-[#5c7cfa]',
+  'JP-FIN-3': 'bg-[#1B5E8F]',
   'MER-DT-1': 'bg-violet-500',
   'BV-SENT-1': 'bg-amber-500',
 }
 
 const BAR_TEXT_COLORS = {
-  'JP-FIN-3': 'text-[#5c7cfa]',
+  'JP-FIN-3': 'text-[#1B5E8F]',
   'MER-DT-1': 'text-violet-500',
   'BV-SENT-1': 'text-amber-500',
 }
 
 const BADGE_STYLES = {
-  regulatory: 'bg-[#5c7cfa]/20 text-[#5c7cfa]',
+  regulatory: 'bg-[#1B5E8F]/20 text-[#1B5E8F]',
   terminology: 'bg-emerald-500/20 text-emerald-600',
   brand: 'bg-violet-500/20 text-violet-600',
   tone: 'bg-amber-500/20 text-amber-600',
@@ -189,8 +189,8 @@ export default function GovernanceScorecard({
         className="mb-6 flex items-center gap-3"
         {...animateProps(0)}
       >
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#5c7cfa]/20">
-          <BarChart3 className="h-5 w-5 text-[#5c7cfa]" />
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#1B5E8F]/20">
+          <BarChart3 className="h-5 w-5 text-[#1B5E8F]" />
         </div>
         <h2 className="text-xl font-semibold text-gray-900">
           Agent Governance Scorecard
@@ -300,10 +300,10 @@ export default function GovernanceScorecard({
 
               {/* Learn Section - Corrections */}
               {agent.corrections.length > 0 && (
-                <div className="rounded-lg border border-[#5c7cfa]/20 bg-[#ffffff]/40 p-4">
+                <div className="rounded-lg border border-[#1B5E8F]/20 bg-[#ffffff]/40 p-4">
                   <div className="mb-3 flex items-center gap-2">
-                    <BookOpen className="h-4 w-4 text-[#5c7cfa]" />
-                    <span className="text-xs font-semibold uppercase tracking-wider text-[#5c7cfa]">
+                    <BookOpen className="h-4 w-4 text-[#1B5E8F]" />
+                    <span className="text-xs font-semibold uppercase tracking-wider text-[#1B5E8F]">
                       Learn
                     </span>
                   </div>
@@ -335,7 +335,7 @@ export default function GovernanceScorecard({
                           ) : (
                             <button
                               onClick={() => handlePromote(correction)}
-                              className="flex shrink-0 items-center gap-1.5 rounded-md bg-[#5c7cfa]/20 px-3 py-1.5 text-xs font-medium text-[#5c7cfa] transition-colors hover:bg-[#5c7cfa]/30"
+                              className="flex shrink-0 items-center gap-1.5 rounded-md bg-[#1B5E8F]/20 px-3 py-1.5 text-xs font-medium text-[#1B5E8F] transition-colors hover:bg-[#1B5E8F]/30"
                             >
                               <Sparkles className="h-3 w-3" />
                               Promote to Org Knowledge

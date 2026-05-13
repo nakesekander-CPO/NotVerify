@@ -14,7 +14,7 @@ const DEFAULT_AGENTS = [
   {
     id: 'JP-FIN-3',
     name: 'J-GAAP Specialist',
-    color: '#5c7cfa',
+    color: '#1B5E8F',
     icon: 'Shield',
     errorsFound: 14,
     qualityLift: 5,

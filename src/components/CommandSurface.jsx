@@ -259,7 +259,7 @@ function LaunchBriefing({ file, defaultLocales, onConfirm, onCancel, prefersRedu
           type="button"
           onClick={() => onConfirm(file, locales)}
           disabled={locales.length === 0}
-          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-straker-600 hover:bg-straker-500 text-white text-[13px] font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-amber hover:bg-amber-deep text-white text-[13px] font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Begin Governed Analysis <ArrowRight className="w-4 h-4" />
         </button>
@@ -869,7 +869,7 @@ export default function CommandSurface({ onFileAccepted, onFileWithLocales, orgI
 
             <button
               onClick={handleStartPredicted}
-              className="w-full h-10 bg-straker-600 hover:bg-straker-500 text-white font-semibold rounded-lg flex items-center justify-center gap-2 cursor-pointer transition-colors text-[13px]"
+              className="w-full h-10 bg-amber hover:bg-amber-deep text-white font-semibold rounded-lg flex items-center justify-center gap-2 cursor-pointer transition-colors text-[13px]"
             >
               Analyze Q3 Earnings Report
               <ArrowRight className="w-4 h-4" />

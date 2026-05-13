@@ -81,7 +81,7 @@ export default function ParametersDrawer({
         <div className="pt-4 border-t border-black/[0.12]">
           <button
             onClick={handleApply}
-            className="w-full px-4 py-3 rounded-lg bg-straker-600 hover:bg-straker-500 text-white font-semibold text-[13px] transition-all cursor-pointer"
+            className="w-full px-4 py-3 rounded-lg bg-amber hover:bg-amber-deep text-white font-semibold text-[13px] transition-all cursor-pointer"
           >
             Apply Changes
           </button>

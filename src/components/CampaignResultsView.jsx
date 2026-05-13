@@ -152,7 +152,7 @@ function buildBatchIssues(docSummaries) {
 
 const DESTINATION_TYPES = [
   { id: 'reviewer', label: 'Invite reviewer', icon: UserCheck, description: 'They review directly in the platform', primary: true },
-  { id: 'straker', label: 'Send to Straker', icon: Building2, description: 'Professional post-editing service', primary: true, upsell: true },
+  { id: 'straker', label: 'Send to arbitr', icon: Building2, description: 'Professional post-editing service', primary: true, upsell: true },
   { id: 's3', label: 'AWS S3', icon: Database, description: 'Push to an S3 bucket' },
   { id: 'sftp', label: 'SFTP', icon: Globe, description: 'Upload via secure FTP' },
   { id: 'webhook', label: 'Webhook', icon: Webhook, description: 'POST to an API endpoint' },
@@ -469,7 +469,7 @@ export default function CampaignResultsView({ campaign, threshold = 85, onReset,
                       <div><p className="text-[12px] text-gray-700 font-medium">quality_report.pdf</p><p className="text-[10px] text-gray-400">Quality Assessment Report</p></div>
                     </div>
                   </div>
-                  <button type="button" className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-straker-600 hover:bg-straker-500 text-white font-semibold text-[12px] transition-all cursor-pointer">
+                  <button type="button" className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-amber hover:bg-amber-deep text-white font-semibold text-[12px] transition-all cursor-pointer">
                     <Download size={14} /> Download Files
                   </button>
                 </div>
@@ -624,7 +624,7 @@ function DeliverView({ campaign, destinations, addDestination, updateDestination
         />
       )}
 
-      {/* Straker — demoted to text link */}
+      {/* arbitr professional service — demoted to text link */}
       {!hasStraker ? (
         <button type="button" onClick={() => addDestination('straker')}
           className="flex items-center gap-1.5 text-[12px] text-gray-400 hover:text-gray-600 cursor-pointer transition-colors">
@@ -769,7 +769,7 @@ function DeliveryDestinationForm({ dest, onChange, onRemove, onSend }) {
       <div className="px-4 pb-3">
         <button type="button" onClick={() => onSend(dest.id)} disabled={dest.status === 'sending' || dest.status === 'sent'}
           className={`flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 ${dest.type === 'straker' ? 'bg-[#009eda] hover:bg-[#007bb5] text-white' : 'bg-gray-900 hover:bg-gray-800 text-white'}`}>
-          {dest.status === 'sending' ? <><Loader2 size={11} className="animate-spin" /> Sending...</> : dest.status === 'sent' ? <><CheckCheck size={11} /> Sent</> : <><Send size={11} /> {dest.type === 'straker' ? 'Submit to Straker' : 'Deliver'}</>}
+          {dest.status === 'sending' ? <><Loader2 size={11} className="animate-spin" /> Sending...</> : dest.status === 'sent' ? <><CheckCheck size={11} /> Sent</> : <><Send size={11} /> {dest.type === 'straker' ? 'Submit to arbitr' : 'Deliver'}</>}
         </button>
       </div>
     </div>

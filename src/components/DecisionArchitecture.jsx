@@ -294,7 +294,7 @@ export default function DecisionArchitecture({
               {/* CTA */}
               <button
                 onClick={onProceed}
-                className="w-full flex flex-col items-center justify-center gap-0.5 px-6 py-3.5 rounded-lg bg-straker-600 hover:bg-straker-500 text-white font-semibold text-[14px] transition-all shadow-sm cursor-pointer mt-4"
+                className="w-full flex flex-col items-center justify-center gap-0.5 px-6 py-3.5 rounded-lg bg-amber hover:bg-amber-deep text-white font-semibold text-[14px] transition-all shadow-sm cursor-pointer mt-4"
               >
                 <span className="flex items-center gap-2.5"><Play className="w-4 h-4" /> Confirm & Execute</span>
                 <span className="text-[11px] font-normal text-straker-200/60">Full document processing</span>

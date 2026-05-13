@@ -57,7 +57,7 @@ const CANNED_RESPONSES = {
   ],
   feedback: [
     "We'd love to hear from you! Please share your feedback below — whether it's a feature request, a bug report, or general thoughts on your experience.",
-    "Your input helps shape Not Verify's roadmap. Just type your feedback in the chat and I'll log it for the product team. Include as much detail as you'd like!",
+    "Your input helps shape arbitr's roadmap. Just type your feedback in the chat and I'll log it for the product team. Include as much detail as you'd like!",
   ],
   integrations: [
     "You can automate actions across your connected tools at every pipeline step. For example: send a Slack message when a review is approved, create a Jira ticket when compliance flags an issue, or upload the final document to Google Drive automatically.",
@@ -384,7 +384,7 @@ export default function IntelligenceAssistant({ companyName, userName, currentPh
                   disabled={!input.trim()}
                   className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
                     input.trim()
-                      ? 'bg-straker-600 hover:bg-straker-500 text-white'
+                      ? 'bg-amber hover:bg-amber-deep text-white'
                       : 'bg-black/[0.03] text-gray-300'
                   }`}
                   aria-label="Send message"
@@ -393,7 +393,7 @@ export default function IntelligenceAssistant({ companyName, userName, currentPh
                 </button>
               </div>
               <p className="text-[10px] text-gray-300 text-center mt-1.5">
-                Powered by {ASSISTANT_NAME} · Not Verify
+                Powered by {ASSISTANT_NAME} · arbitr
               </p>
             </div>
           </motion.div>

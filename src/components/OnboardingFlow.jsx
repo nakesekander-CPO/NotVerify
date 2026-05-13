@@ -86,9 +86,9 @@ function BotAvatar() {
       className="w-8 h-8 rounded-full bg-straker-50 flex items-center justify-center shrink-0"
       animate={{
         boxShadow: [
-          '0 0 8px rgba(92,124,250,0.1)',
-          '0 0 8px rgba(92,124,250,0.3)',
-          '0 0 8px rgba(92,124,250,0.1)',
+          '0 0 8px rgba(27,94,143,0.1)',
+          '0 0 8px rgba(27,94,143,0.3)',
+          '0 0 8px rgba(27,94,143,0.1)',
         ],
       }}
       transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
@@ -162,7 +162,7 @@ function ContinueButton({ onClick, disabled, label = 'Continue' }) {
       className={`mt-4 h-10 px-6 rounded-lg font-medium text-[14px] flex items-center gap-2 transition-all ${
         disabled
           ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-          : 'bg-[#3b5bdb] hover:bg-[#364fc7] text-white cursor-pointer'
+          : 'bg-amber hover:bg-amber-deep text-white cursor-pointer'
       }`}
     >
       {label} <ArrowRight className="w-4 h-4" />
@@ -850,7 +850,7 @@ export default function OnboardingFlow({ onComplete }) {
                     <div className="mb-3">
                       <p className="text-[12px] uppercase tracking-wider text-gray-500 font-bold mb-1.5">Protected Brand Terms</p>
                       <textarea
-                        placeholder="Terms to preserve as-is (e.g., iPhone, Azure, Not Verify)"
+                        placeholder="Terms to preserve as-is (e.g., iPhone, Azure, arbitr)"
                         value={dntTerms}
                         onChange={(e) => setDntTerms(e.target.value)}
                         rows={2}
@@ -877,9 +877,9 @@ export default function OnboardingFlow({ onComplete }) {
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={handleComplete}
-                    className="w-full h-14 bg-straker-600 hover:bg-straker-500 text-white font-semibold text-[16px] rounded-lg flex items-center justify-center gap-3 cursor-pointer transition-colors"
+                    className="w-full h-14 bg-amber hover:bg-amber-deep text-white font-semibold text-[16px] rounded-lg flex items-center justify-center gap-3 cursor-pointer transition-colors"
                   >
-                    Enter Not Verify
+                    Enter arbitr
                     <ArrowRight className="w-5 h-5" />
                   </motion.button>
                 </InputArea>

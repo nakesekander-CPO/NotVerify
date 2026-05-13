@@ -159,7 +159,7 @@ export default function AgentAssemblyTransition({ agents: _agents, onComplete, o
             animate={{ opacity: 1, y: 0 }}
             transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 300, damping: 20 }}
             onClick={onComplete}
-            className="mt-8 inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-straker-600 hover:bg-straker-500 text-white text-[14px] font-medium transition-colors cursor-pointer"
+            className="mt-8 inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-amber hover:bg-amber-deep text-white text-[14px] font-medium transition-colors cursor-pointer"
             aria-label="Set up your first campaign"
           >
             Set up your first campaign

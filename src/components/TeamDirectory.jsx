@@ -27,7 +27,7 @@ const DEPARTMENTS = [
   },
   {
     label: 'Regional Leads',
-    color: '#5c7cfa', // straker-500
+    color: '#1B5E8F', // straker-500
     members: [
       {
         id: 'kenji',
@@ -444,8 +444,8 @@ export default function TeamDirectory({ isOpen, onClose, onDelegate, itemTitle }
                     <div
                       className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-semibold"
                       style={{
-                        backgroundColor: (selectedMember.deptColor || '#5c7cfa') + '33',
-                        color: selectedMember.deptColor || '#5c7cfa',
+                        backgroundColor: (selectedMember.deptColor || '#1B5E8F') + '33',
+                        color: selectedMember.deptColor || '#1B5E8F',
                       }}
                     >
                       {selectedMember.initials}
@@ -492,7 +492,7 @@ export default function TeamDirectory({ isOpen, onClose, onDelegate, itemTitle }
                   <button
                     type="button"
                     onClick={handleDelegate}
-                    className="w-full py-2.5 rounded-lg bg-straker-600 hover:bg-straker-500 text-white text-[14px] font-semibold transition-colors cursor-pointer"
+                    className="w-full py-2.5 rounded-lg bg-amber hover:bg-amber-deep text-white text-[14px] font-semibold transition-colors cursor-pointer"
                   >
                     Delegate to {selectedMember.name.split(' ')[0]}
                   </button>

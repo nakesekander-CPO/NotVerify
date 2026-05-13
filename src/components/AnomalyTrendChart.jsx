@@ -119,8 +119,8 @@ export default function AnomalyTrendChart({
       >
         <defs>
           <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#5c7cfa" stopOpacity="0.18" />
-            <stop offset="100%" stopColor="#5c7cfa" stopOpacity="0" />
+            <stop offset="0%" stopColor="#1B5E8F" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="#1B5E8F" stopOpacity="0" />
           </linearGradient>
           {/* Pulse animation for anomaly ring */}
           {!prefersReduced && (
@@ -201,7 +201,7 @@ export default function AnomalyTrendChart({
         <path
           d={linePath}
           fill="none"
-          stroke="#5c7cfa"
+          stroke="#1B5E8F"
           strokeWidth="2"
           strokeLinejoin="round"
           strokeLinecap="round"
@@ -304,7 +304,7 @@ export default function AnomalyTrendChart({
               cx={p.x}
               cy={p.y}
               r="3"
-              fill="#5c7cfa"
+              fill="#1B5E8F"
               stroke="#ffffff"
               strokeWidth="1.5"
             />
@@ -399,9 +399,9 @@ export default function AnomalyTrendChart({
                 </p>
                 <button
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] font-medium text-white transition-colors"
-                  style={{ backgroundColor: '#5c7cfa' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#4c6ef5')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#5c7cfa')}
+                  style={{ backgroundColor: '#1B5E8F' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#164D75')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#1B5E8F')}
                 >
                   {meta.action}
                   <ArrowRight className="w-3 h-3" />

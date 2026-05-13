@@ -26,7 +26,7 @@ const LOCALE_META = {
 };
 
 const DEFAULT_AGENTS = [
-  { id: 'JP-FIN-3', name: 'JP-FIN-3', color: '#5c7cfa' },
+  { id: 'JP-FIN-3', name: 'JP-FIN-3', color: '#1B5E8F' },
   { id: 'MER-DT-1', name: 'MER-DT-1', color: '#38bdf8' },
   { id: 'BV-SENT-1', name: 'BV-SENT-1', color: '#a78bfa' },
 ];
@@ -73,7 +73,7 @@ function ProgressHeader({ fileName, progress, totalSegments, elapsed, duration }
   return (
     <div className="sticky top-0 z-20 rounded-lg border border-black/[0.12] bg-[#f5f5f5]/95 px-6 py-5">
       <div className="mb-2 flex items-center gap-2 font-mono text-xs tracking-widest text-gray-500 uppercase">
-        <Radio className="h-3.5 w-3.5 animate-pulse text-[#5c7cfa]" />
+        <Radio className="h-3.5 w-3.5 animate-pulse text-[#1B5E8F]" />
         <span>Processing: {fileName}</span>
       </div>
 
@@ -85,7 +85,7 @@ function ProgressHeader({ fileName, progress, totalSegments, elapsed, duration }
             width: `${pct}%`,
             background: isComplete
               ? 'linear-gradient(90deg, #10b981, #34d399)'
-              : 'linear-gradient(90deg, #5c7cfa, #748ffc)',
+              : 'linear-gradient(90deg, #1B5E8F, #4F94C4)',
           }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
         />
@@ -132,7 +132,7 @@ function SecurityPanel({ phase, elapsed, duration }) {
   return (
     <div className="flex flex-col gap-4 rounded-lg border border-black/[0.12] bg-[#f5f5f5] p-5">
       <div className="flex items-center gap-2 text-xs font-semibold tracking-widest text-gray-700 uppercase">
-        <Shield className="h-4 w-4 text-[#5c7cfa]" />
+        <Shield className="h-4 w-4 text-[#1B5E8F]" />
         Security
       </div>
 
@@ -232,7 +232,7 @@ function RoutingPanel({ locales, phase, progress, reducedMotion }) {
   return (
     <div className="flex flex-col gap-4 rounded-lg border border-black/[0.12] bg-[#f5f5f5] p-5">
       <div className="flex items-center gap-2 text-xs font-semibold tracking-widest text-gray-700 uppercase">
-        <Globe className="h-4 w-4 text-[#5c7cfa]" />
+        <Globe className="h-4 w-4 text-[#1B5E8F]" />
         Routing
       </div>
       <div className="space-y-2">
@@ -300,7 +300,7 @@ function AgentPanel({ agents, agentStates, reducedMotion }) {
   return (
     <div className="flex flex-col gap-4 rounded-lg border border-black/[0.12] bg-[#f5f5f5] p-5">
       <div className="flex items-center gap-2 text-xs font-semibold tracking-widest text-gray-700 uppercase">
-        <Bot className="h-4 w-4 text-[#5c7cfa]" />
+        <Bot className="h-4 w-4 text-[#1B5E8F]" />
         Agent Activity
       </div>
       <div className="space-y-2">
@@ -366,7 +366,7 @@ function ActivityLog({ logLines, reducedMotion }) {
   return (
     <div className="rounded-lg border border-black/[0.12] bg-[#f5f5f5] p-5">
       <div className="mb-3 flex items-center gap-2 text-xs font-semibold tracking-widest text-gray-700 uppercase">
-        <Terminal className="h-4 w-4 text-[#5c7cfa]" />
+        <Terminal className="h-4 w-4 text-[#1B5E8F]" />
         Live Activity Log
       </div>
       <div

@@ -208,7 +208,7 @@ export default function ContextPanel({ context, onChange }) {
                     id="dnt-terms"
                     value={tg.dntTerms || ''}
                     onChange={(e) => updateGuidelines('dntTerms', e.target.value)}
-                    placeholder="e.g., Not Verify, EBITDA, iPhone"
+                    placeholder="e.g., arbitr, EBITDA, iPhone"
                     rows={2}
                     className="w-full bg-gray-100 border border-black/[0.12] rounded-lg px-3 py-2 text-[12px] text-gray-900 placeholder:text-gray-300 focus:outline-none focus:border-straker-500/40 transition-colors resize-none"
                   />
