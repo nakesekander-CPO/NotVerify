@@ -425,14 +425,26 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
     <div className="relative">
       {!isQuick && <ReviewerModeCoachmark />}
       <SectionHeading
-        title={isQuick ? 'Review Workspace' : 'Triangulated Review Workspace'}
+        title={isQuick
+          ? <span className="inline-flex items-center gap-2">
+              <Shield
+                className="w-4 h-4 text-ocean cursor-help"
+                title={`Secure session · watermarked view · downloads disabled · copy/paste restricted · expires when assignment closes · SESSION-${currentUserId?.slice(0, 4) || 'demo'}`}
+              />
+              Review Workspace
+            </span>
+          : 'Triangulated Review Workspace'}
         subtitle={isQuick
           ? `Edit the target, see live QA and glossary, save and move on. Switch to Audit Review for the full cockpit.`
           : `${labelForMode(project.requirements.reviewMode)}. The reviewer decides between agent proposals, captures a structured reason, and commits a decision that becomes training signal. Every keystroke is auditable.`}
         actions={headerActions}
       />
 
-      {/* Project picker + legend */}
+      {/* Project picker + legend + scope toggle + secure banner —
+          AUDIT REVIEW ONLY. In Quick Review the project / scope / task
+          switching lives in the left nav and the secure session
+          collapses to a Lock icon next to the title. */}
+      {!isQuick && (<>
       <div className="flex items-center gap-3 mb-2">
         <WorkflowTabLegend />
       </div>
@@ -453,7 +465,6 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
         ))}
       </div>
 
-      {/* Scope toggle: My Queue vs All */}
       <div className="flex items-center gap-2 mb-4">
         <button
           onClick={() => setScope('all')}
@@ -465,7 +476,6 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
         >My queue ({myTaskIds.size})</button>
       </div>
 
-      {/* Security banner */}
       <div className="bg-pale border border-ocean/20 rounded-md px-4 py-3 mb-5 flex items-center gap-3">
         <Shield className="w-4 h-4 text-ocean shrink-0" />
         <div className="flex-1 text-[12.5px] text-ink">
@@ -473,6 +483,7 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
         </div>
         <span className="text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>SESSION-{currentUserId?.slice(0, 4) || 'demo'}</span>
       </div>
+      </>)}
 
       {isQuick && (
         <QuickReviewWorkspace
@@ -483,6 +494,12 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
           setActiveIdx={setActiveIdx}
           currentUserId={currentUserId}
           currentUserRole={isRole(currentUserId, 'vendor-user', 'vendor-admin') ? 'vendor-user' : isRole(currentUserId, 'client-reviewer') ? 'client-reviewer' : 'internal-reviewer'}
+          activeProjectId={activeProjectId}
+          setActiveProjectId={setActiveProjectId}
+          activeTaskId={effectiveTaskId}
+          setActiveTaskId={setActiveTaskId}
+          scope={scope}
+          setScope={setScope}
           onOpenAudit={() => setCockpitMode('audit')}
         />
       )}

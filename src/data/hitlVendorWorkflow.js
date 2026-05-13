@@ -975,7 +975,63 @@ export const SIGNOFF_RECORDS = [];
    ════════════════════════════════════════════════════════════════ */
 
 export const RETRAINING_CANDIDATES = [];
-export const ORG_BRAIN_UPDATES = [];
+export const ORG_BRAIN_UPDATES = [
+  /* Seed glossary so the Quick Review workspace can render passive
+   * inline highlights on first paint. In production these are produced
+   * by the retraining-gate sign-off path. */
+  {
+    id: 'ob-seed-fwd-looking',
+    candidateId: null,
+    projectId: 'hp-q3-ja-earnings',
+    segmentId: null,
+    domain: 'financial',
+    language: 'ja',
+    sourceFragment: 'Forward-looking statements in this report',
+    approvedFragment: '本報告書における将来予測に関する記述',
+    approvedBy: 'sarah',
+    approvedAt: '2025-11-12T09:00:00Z',
+    contributorFootprint: [{ userId: 'sarah', role: 'final-validator' }],
+  },
+  {
+    id: 'ob-seed-net-revenue',
+    candidateId: null,
+    projectId: 'hp-q3-ja-earnings',
+    segmentId: null,
+    domain: 'financial',
+    language: 'ja',
+    sourceFragment: 'Net revenue for Q3 2026',
+    approvedFragment: '2026年第3四半期の純収益',
+    approvedBy: 'sarah',
+    approvedAt: '2025-10-04T11:30:00Z',
+    contributorFootprint: [{ userId: 'sarah', role: 'final-validator' }],
+  },
+  {
+    id: 'ob-seed-goodwill',
+    candidateId: null,
+    projectId: 'hp-q3-ja-earnings',
+    segmentId: null,
+    domain: 'financial',
+    language: 'ja',
+    sourceFragment: 'Goodwill impairment of',
+    approvedFragment: 'のれん減損',
+    approvedBy: 'yuki',
+    approvedAt: '2025-09-22T15:45:00Z',
+    contributorFootprint: [{ userId: 'yuki', role: 'compliance-reviewer' }],
+  },
+  {
+    id: 'ob-seed-quarterly-dividend',
+    candidateId: null,
+    projectId: 'hp-q3-ja-earnings',
+    segmentId: null,
+    domain: 'financial',
+    language: 'ja',
+    sourceFragment: 'quarterly dividend of',
+    approvedFragment: '四半期配当',
+    approvedBy: 'kenji',
+    approvedAt: '2025-08-15T13:10:00Z',
+    contributorFootprint: [{ userId: 'kenji', role: 'project-manager' }],
+  },
+];
 
 /* ════════════════════════════════════════════════════════════════
    AUDIT + NOTIFICATIONS + ESCALATIONS

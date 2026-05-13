@@ -1,108 +1,192 @@
 /**
  * Quick Review Workspace — reviewer-first cockpit.
  *
- * Replaces the dense Audit Review cockpit with a radically simplified
- * surface optimised for fast in-language editing:
- *
- *   - source segment rendered with inline glossary highlights
- *   - editable target field with autofocus, no Posture lock, no Refine
- *     button, no Accept-as-is panel: directly editable from first paint
- *   - one recommended translation (the highest-confidence agent), with
- *     a single "Regenerate suggestion" affordance — no panel of agents,
- *     no divergence map, no confidence bars
- *   - Live QA recomputes on every keystroke (debounced) and offers
- *     one-click fixes for glossary mismatches
- *   - inline Context strip (prev/next single lines) replaces the
- *     surrounding-segments duplicate of the left nav
- *   - reason note collapsed by default and never blocks Save
- *   - back-translation hidden by default for vendor; collapsible for
- *     client reviewers via the same "Show details" disclosure
- *   - Show details opens the existing Audit Review cockpit in a side
- *     sheet for the rare moment a reviewer needs the full picture
- *
- * Audit / training plumbing is unchanged: commit funnels through the
- * existing decideSegment() so retraining gates, audit logs, and
- * pedigree all behave identically to Audit Review.
+ * Surfaces (this revision):
+ *   - Source pane: read-only, inline glossary highlights using .gloss-mark
+ *     spans. Native title tooltips show the approved rendering + definition.
+ *   - Target pane: contenteditable div with the SAME .gloss-mark inline
+ *     highlights. The user edits the target like a textarea; glossary
+ *     terms render with a soft underline + tint and a hover tooltip.
+ *     Highlights are computed at segment load and intentionally do not
+ *     re-render on every keystroke so the cursor never jumps.
+ *   - Left nav: project switcher + scope toggle + segment list, grouped
+ *     under "Review Workspace". This replaces the canvas-top project /
+ *     scope strips removed from the parent.
+ *   - Right rail: Live QA only. The standalone Glossary card is gone —
+ *     glossary compliance is now passively visible in both panes, plus
+ *     mismatches surface as Live QA issues.
+ *   - Audit / training plumbing unchanged: every commit funnels through
+ *     decideSegment() with inferred posture (accept / refine).
  */
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import {
   Check, RotateCcw, ChevronDown, ChevronRight, ChevronLeft, AlertTriangle,
-  RefreshCcw, BookOpen, ArrowRight, Search,
+  RefreshCcw, ArrowRight,
 } from 'lucide-react'
 import {
-  HITL_SEGMENTS, ORG_BRAIN_UPDATES,
+  HITL_PROJECTS, HITL_TASKS, ORG_BRAIN_UPDATES,
 } from '../../data/hitlVendorWorkflow'
 import { decideSegment } from '../../services/hitl/review'
 import { qaDiff } from '../../services/hitl/cockpit'
+import { listMyTasks } from '../../services/hitl/taskAssignment'
 import { MonoLabel } from './shared'
 
-/* ─── Glossary matching (shared helper) ─────────────────────────
- * For each Org Brain entry in the project's domain whose source
- * fragment overlaps the current segment's source text, return:
- *   { id, term, approved, start, end, definition }
- * `start`/`end` are character offsets into the source string.
- * ───────────────────────────────────────────────────────────── */
-function findGlossaryHits(source, project) {
+/* ─── Glossary matching ─────────────────────────────────────────
+ *
+ * For each Org Brain entry whose domain matches the project AND whose
+ * source-fragment head appears in the segment source, we get a "hit":
+ *   { id, term, approved, definition, sourceStart, sourceEnd, targetStart, targetEnd }
+ *
+ * targetStart/targetEnd are computed by finding the approvedFragment
+ * head in the current target text. If not found, target offsets are null.
+ * ─────────────────────────────────────────────────────────────── */
+function pickHead(text, words = 4, minLen = 6) {
+  return (text || '').split(/\s+/).slice(0, words).join(' ').toLowerCase().trim()
+}
+
+function findGlossaryHits(source, target, project) {
   if (!source || !project) return []
-  const lower = source.toLowerCase()
+  const lowerSrc = source.toLowerCase()
+  const lowerTgt = (target || '').toLowerCase()
   const hits = []
   const seen = new Set()
   for (const o of ORG_BRAIN_UPDATES) {
     if (o.domain !== project.requirements.domain) continue
     if (!o.sourceFragment) continue
-    // Heuristic: pick the first 4 words of the Org Brain source fragment
-    // and look for it in the segment source. Crude but adequate for demo.
-    const head = o.sourceFragment.split(/\s+/).slice(0, 4).join(' ').toLowerCase()
-    if (head.length < 6) continue
-    const idx = lower.indexOf(head)
-    if (idx === -1) continue
-    const key = `${idx}-${head}`
+    const srcHead = pickHead(o.sourceFragment, 4)
+    if (srcHead.length < 6) continue
+    const sIdx = lowerSrc.indexOf(srcHead)
+    if (sIdx === -1) continue
+    const key = `${sIdx}-${srcHead}`
     if (seen.has(key)) continue
     seen.add(key)
+
+    // For target match, try a few head lengths of the approved fragment.
+    let tIdx = -1, tHeadLen = 0
+    if (lowerTgt) {
+      for (const headLen of [12, 8, 6]) {
+        const tHead = o.approvedFragment.slice(0, headLen).toLowerCase()
+        if (tHead.length < 4) continue
+        const idx = lowerTgt.indexOf(tHead)
+        if (idx !== -1) { tIdx = idx; tHeadLen = headLen; break }
+      }
+    }
+
     hits.push({
       id: o.id,
-      term: source.slice(idx, idx + head.length),
-      approved: o.approvedFragment.slice(0, 80),
-      start: idx,
-      end: idx + head.length,
+      term: source.slice(sIdx, sIdx + srcHead.length),
+      approved: o.approvedFragment.slice(0, 120),
       definition: o.sourceFragment.slice(0, 200),
+      usage: `${o.domain} · ${o.language}`,
+      sourceStart: sIdx,
+      sourceEnd: sIdx + srcHead.length,
+      targetStart: tIdx === -1 ? null : tIdx,
+      targetEnd:   tIdx === -1 ? null : tIdx + tHeadLen,
     })
   }
-  hits.sort((a, b) => a.start - b.start)
+  hits.sort((a, b) => a.sourceStart - b.sourceStart)
   return hits
 }
 
-/* Render a string with glossary hits highlighted. */
-function HighlightedSource({ source, hits, onHoverHit }) {
-  if (!hits.length) return <p className="text-[15px] leading-relaxed text-ink">{source}</p>
-  const parts = []
-  let cursor = 0
-  hits.forEach((h, i) => {
-    if (h.start > cursor) parts.push({ kind: 'plain', text: source.slice(cursor, h.start) })
-    parts.push({ kind: 'hit', text: source.slice(h.start, h.end), hit: h, key: i })
-    cursor = h.end
-  })
-  if (cursor < source.length) parts.push({ kind: 'plain', text: source.slice(cursor) })
+/* HTML rendering of a text string with inline glossary spans. The
+ * spans carry data-gloss-id + native title attributes for hover. */
+function escapeHtml(s) {
+  return (s || '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
+function buildHTML(text, intervals) {
+  // intervals: [{ start, end, glossId, title }, …] sorted by start
+  if (!intervals?.length) return escapeHtml(text)
+  let out = '', cursor = 0
+  for (const iv of intervals) {
+    if (iv.start == null || iv.end == null) continue
+    if (iv.start < cursor) continue // skip overlap
+    out += escapeHtml(text.slice(cursor, iv.start))
+    out += `<span class="gloss-mark" data-gloss-id="${iv.glossId}" title="${escapeHtml(iv.title)}">${escapeHtml(text.slice(iv.start, iv.end))}</span>`
+    cursor = iv.end
+  }
+  out += escapeHtml(text.slice(cursor))
+  return out
+}
+
+function tooltipFor(hit) {
+  return `Approved: ${hit.approved}\n${hit.definition}\nUsage: ${hit.usage}`
+}
+
+/* Cross-pane pairing — when hovering a glossary span anywhere in the
+ * cockpit, add `.gloss-active` to every other span with the same id.
+ * Native DOM, no React re-render, no cursor disturbance. */
+function pairHighlights(rootSelectorClass = 'gloss-mark') {
+  document.addEventListener('mouseover', (e) => {
+    const el = e.target.closest?.(`.${rootSelectorClass}`)
+    if (!el || !el.dataset?.glossId) return
+    document.querySelectorAll(`.${rootSelectorClass}[data-gloss-id="${el.dataset.glossId}"]`)
+      .forEach(n => n.classList.add('gloss-active'))
+  }, true)
+  document.addEventListener('mouseout', (e) => {
+    const el = e.target.closest?.(`.${rootSelectorClass}`)
+    if (!el || !el.dataset?.glossId) return
+    document.querySelectorAll(`.${rootSelectorClass}[data-gloss-id="${el.dataset.glossId}"]`)
+      .forEach(n => n.classList.remove('gloss-active'))
+  }, true)
+}
+let _paired = false
+
+/* ─── Contenteditable target with inline highlights ──────────────
+ *
+ * Caller MUST pass `key={segmentId}` so the component remounts per
+ * segment. innerHTML is set exactly once on mount; user keystrokes
+ * after that update parent state via onInput → onChange, but the
+ * contenteditable DOM is left alone so the cursor never jumps.
+ *
+ * Glossary highlights therefore reflect the segment's starting state.
+ * If the reviewer types in the approved rendering during editing, the
+ * highlight refreshes on the next segment navigation. */
+function HighlightedEditable({ initialValue, intervals, onChange, locked, autoFocus }) {
+  const ref = useRef(null)
+  // Capture the initial HTML once. Subsequent renders don't touch the DOM.
+  const initialHTMLRef = useRef(null)
+  if (initialHTMLRef.current === null) {
+    initialHTMLRef.current = buildHTML(initialValue || '', intervals)
+  }
+
+  useEffect(() => {
+    if (!ref.current) return
+    ref.current.innerHTML = initialHTMLRef.current
+    if (autoFocus) {
+      const range = document.createRange()
+      range.selectNodeContents(ref.current)
+      range.collapse(false)
+      const sel = window.getSelection()
+      sel?.removeAllRanges()
+      sel?.addRange(range)
+      ref.current.focus()
+    }
+    // Empty deps — runs once per mount; the parent uses key={segmentId}
+    // to remount per segment.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
-    <p className="text-[15px] leading-relaxed text-ink">
-      {parts.map((p, i) =>
-        p.kind === 'plain'
-          ? <span key={i}>{p.text}</span>
-          : (
-            <span
-              key={i}
-              onMouseEnter={() => onHoverHit?.(p.hit.id)}
-              onMouseLeave={() => onHoverHit?.(null)}
-              className="bg-amber/15 border-b border-amber-deep/50 cursor-help"
-              title={`Glossary · ${p.hit.approved}`}
-            >
-              {p.text}
-            </span>
-          )
-      )}
-    </p>
+    <div
+      ref={ref}
+      contentEditable={!locked}
+      suppressContentEditableWarning
+      onInput={() => onChange?.(ref.current?.innerText || '')}
+      role="textbox"
+      aria-multiline="true"
+      className="w-full text-[15px] leading-relaxed text-ink border border-rule rounded-md p-3 focus:outline-none focus:border-ocean/50 min-h-[120px] whitespace-pre-wrap"
+      style={{ fontFamily: 'inherit' }}
+    />
   )
+}
+
+/* ─── Read-only source with inline glossary highlights ───────── */
+function HighlightedSource({ source, intervals }) {
+  const html = useMemo(() => buildHTML(source, intervals), [source, intervals])
+  return <p className="text-[15px] leading-relaxed text-ink" dangerouslySetInnerHTML={{ __html: html }} />
 }
 
 /* ─── Component ────────────────────────────────────────────────── */
@@ -110,7 +194,10 @@ function HighlightedSource({ source, hits, onHoverHit }) {
 export default function QuickReviewWorkspace({
   project, task, segments, activeIdx, setActiveIdx,
   currentUserId, currentUserRole = 'vendor-user',
-  onOpenAudit,           // toggles parent to Audit Review mode
+  activeProjectId, setActiveProjectId,
+  activeTaskId, setActiveTaskId,
+  scope, setScope,
+  onOpenAudit,
 }) {
   const activeSeg = segments[activeIdx]
   const recommended = useMemo(() => {
@@ -120,66 +207,64 @@ export default function QuickReviewWorkspace({
   }, [activeSeg?.id])
 
   const [target, setTarget] = useState(activeSeg?.editedTarget || recommended)
-  const [note, setNote] = useState('')
-  const [noteOpen, setNoteOpen] = useState(false)
-  const [showBackTranslation, setShowBackTranslation] = useState(false)
   const [savedAt, setSavedAt] = useState(null)
   const [, force] = useState(0)
   const refresh = () => force(n => n + 1)
   const dwellStart = useRef(Date.now())
-  const taRef = useRef(null)
 
   // Reset state when active segment changes.
   useEffect(() => {
     setTarget(activeSeg?.editedTarget || recommended)
-    setNote('')
-    setNoteOpen(false)
-    setShowBackTranslation(false)
     setSavedAt(null)
     dwellStart.current = Date.now()
-    // Focus the target field on segment switch.
-    requestAnimationFrame(() => taRef.current?.focus())
   }, [activeSeg?.id])
 
-  const glossaryHits = useMemo(
-    () => findGlossaryHits(activeSeg?.source || '', project),
-    [activeSeg?.id, project?.id]
-  )
+  // Set up cross-pane pairing once.
+  useEffect(() => {
+    if (_paired) return
+    pairHighlights()
+    _paired = true
+  }, [])
 
-  /* Live QA — uses the existing service. Augment with a glossary check
-   * that fires when source has an approved term that's missing in the
-   * current target text. */
+  /* Compute hits for source + target on the FIRST paint of each segment.
+   * We deliberately don't recompute on every keystroke so the cursor
+   * stays put. Hits refresh whenever the segment changes. */
+  const hits = useMemo(
+    () => findGlossaryHits(activeSeg?.source || '', target || '', project),
+    [activeSeg?.id]
+  )
+  const sourceIntervals = useMemo(() => hits.map(h => ({
+    start: h.sourceStart, end: h.sourceEnd, glossId: h.id, title: tooltipFor(h),
+  })), [hits])
+  const targetIntervals = useMemo(() => hits
+    .filter(h => h.targetStart != null)
+    .map(h => ({ start: h.targetStart, end: h.targetEnd, glossId: h.id, title: tooltipFor(h) })),
+    [hits])
+
+  /* Live QA — text-only issues. Reuses qaDiff and adds a glossary
+   * mismatch issue when an approved rendering is missing in target. */
   const qa = useMemo(() => {
     if (!activeSeg) return []
     const rows = qaDiff(activeSeg.source, target, { dntTerms: activeSeg.dntTerms || [] })
     const failing = rows.filter(r => !r.ok)
-    // Glossary check: each hit whose approved form is missing in target
-    // becomes an actionable issue with a one-click apply.
-    for (const h of glossaryHits) {
+    for (const h of hits) {
       const approvedHead = h.approved.slice(0, Math.max(8, Math.min(20, h.approved.length)))
       if (!target.includes(approvedHead)) {
         failing.push({
           id: `glossary-${h.id}`,
           label: 'Terminology issue',
-          detail: `Approved rendering "${h.approved}" not found in target. Click Apply to splice it in.`,
+          detail: `Source uses an approved term ("${h.term}") whose canonical rendering is missing in the target.`,
           ok: false,
           glossary: h,
         })
       }
     }
     return failing
-  }, [activeSeg?.id, target, glossaryHits])
+  }, [activeSeg?.id, target, hits])
 
   const isDirty = activeSeg && target !== (activeSeg.editedTarget || recommended)
   const isAccepted = activeSeg && target === recommended && !activeSeg.editedTarget
 
-  /* Commit path. Always funnels through decideSegment so audit + retraining
-   * gates behave identically to Audit Review. Posture inferred:
-   *   - unchanged from recommendation → 'accept' / action='verified'
-   *   - edited                        → 'refine' / action='edited'
-   * No rationale tags by default (display-only training). Reviewer can
-   * add a note in the optional collapsed field; the note is stored
-   * verbatim on the decision and does NOT feed training. */
   const commit = useCallback(({ advance = true } = {}) => {
     if (!activeSeg) return
     const inferredPosture = isAccepted ? 'accept' : 'refine'
@@ -194,8 +279,8 @@ export default function QuickReviewWorkspace({
         chosenCandidateId: top?.id || null,
         rejectedCandidateIds: (activeSeg.agentCandidates || []).filter(c => c.id !== top?.id).map(c => c.id),
         rationaleTags: [],
-        reasonNote: note || null,
-        reason: note || null,
+        reasonNote: null,
+        reason: null,
         telemetry: {
           dwellMs: Date.now() - dwellStart.current,
           undoCount: 0, glossaryConsultations: 0, crossRefJumps: 0,
@@ -216,95 +301,139 @@ export default function QuickReviewWorkspace({
     } catch (e) {
       window.alert(`Save failed: ${e.message}`)
     }
-  }, [activeSeg, target, note, isAccepted, segments, activeIdx, currentUserId, setActiveIdx])
+  }, [activeSeg, target, isAccepted, segments, activeIdx, currentUserId, setActiveIdx])
 
   const acceptRecommended = () => {
     setTarget(recommended)
+    // Allow the editable to refresh with new initialValue, then commit.
     requestAnimationFrame(() => commit({ advance: true }))
   }
-
   const reset = () => setTarget(recommended)
-
   const regenerate = () => {
-    // Pick the second-highest candidate as the "alt"; if none, keep recommended.
     const sorted = [...(activeSeg?.agentCandidates || [])].sort((a, b) => b.confidence - a.confidence)
     const alt = sorted[1] || sorted[0]
     if (alt) setTarget(alt.text)
   }
-
-  const next = () => {
-    if (activeIdx < segments.length - 1) setActiveIdx(activeIdx + 1)
-  }
-  const prev = () => {
-    if (activeIdx > 0) setActiveIdx(activeIdx - 1)
-  }
+  const next = () => { if (activeIdx < segments.length - 1) setActiveIdx(activeIdx + 1) }
+  const prev = () => { if (activeIdx > 0) setActiveIdx(activeIdx - 1) }
 
   const applyGlossaryFix = (hit) => {
-    // Cheap demo behaviour: append the approved term at the end if it's missing.
     const approvedHead = hit.approved.slice(0, Math.max(8, Math.min(20, hit.approved.length)))
     if (target.includes(approvedHead)) return
-    // Try to splice at the position of the source hit; otherwise append.
-    setTarget(prev => `${prev}${prev.endsWith('。') || prev.endsWith('.') ? ' ' : '。'}${hit.approved}`)
-    requestAnimationFrame(() => taRef.current?.focus())
+    const trailer = target.match(/[。．\.\s]$/) ? '' : (project?.requirements?.targetLanguages?.[0] === 'ja' ? '。' : '. ')
+    setTarget(prev => `${prev}${trailer}${hit.approved}`)
   }
 
-  /* Keyboard: Cmd/Ctrl+Enter commits + advances, even from the textarea. */
+  /* Cmd/Ctrl+Enter commits + advances from anywhere. */
   useEffect(() => {
     function onKey(e) {
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault(); commit({ advance: true })
-      } else if (e.key === 'Escape') {
-        e.currentTarget?.blur?.()
       }
     }
-    const el = taRef.current
-    if (!el) return
-    el.addEventListener('keydown', onKey)
-    return () => el.removeEventListener('keydown', onKey)
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
   }, [commit])
 
-  // Progress
+  /* Counts for the left nav + progress chip. */
   const totalSeg = segments.length
   const doneSeg = segments.filter(s => ['verified', 'edited', 'accepted'].includes(s.decision)).length
-  const openIssues = segments.filter(s => qaDiff(s.source, s.editedTarget || s.target).some(r => !r.ok)).length
+
+  /* Left-nav project list */
+  const allProjects = HITL_PROJECTS
+  const allTasksForProject = HITL_TASKS.filter(t => t.projectId === project?.id)
+  const myTaskIds = new Set(listMyTasks(currentUserId, { projectId: project?.id }).map(t => t.id))
+  const scopedTasks = scope === 'mine' ? allTasksForProject.filter(t => myTaskIds.has(t.id)) : allTasksForProject
 
   return (
-    <div className="grid grid-cols-[240px_1fr_300px] gap-6 items-start">
-      {/* ── Left nav: clean segment list ─────────────────────────── */}
-      <aside className="bg-white border border-rule rounded-lg overflow-hidden">
-        <div className="px-3 py-2 border-b border-rule flex items-center justify-between">
-          <MonoLabel>Tasks</MonoLabel>
-          <span className="text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{doneSeg}/{totalSeg}</span>
-        </div>
-        <ul className="max-h-[640px] overflow-y-auto">
-          {segments.map((s, i) => {
-            const isActive = i === activeIdx
-            const done = ['verified', 'edited', 'accepted'].includes(s.decision)
-            const hasOpen = !done && qaDiff(s.source, s.editedTarget || s.target).some(r => !r.ok)
-            return (
-              <li key={s.id}>
+    <div className="grid grid-cols-[260px_1fr_300px] gap-6 items-start">
+      {/* ── Left nav: projects → tasks → segments ──────────────── */}
+      <aside className="space-y-3">
+        <section className="bg-white border border-rule rounded-lg overflow-hidden">
+          <div className="px-3 py-2 border-b border-rule">
+            <MonoLabel>Projects</MonoLabel>
+          </div>
+          <ul>
+            {allProjects.map(p => (
+              <li key={p.id}>
                 <button
-                  onClick={() => setActiveIdx(i)}
-                  className={`w-full text-left px-3 py-2 flex items-center gap-2 text-[12.5px] cursor-pointer ${
-                    isActive ? 'bg-ocean/10 text-ink' : 'hover:bg-pale/40 text-slate'
+                  onClick={() => { setActiveProjectId?.(p.id); setActiveIdx(0) }}
+                  className={`w-full text-left px-3 py-2 text-[12.5px] cursor-pointer ${
+                    p.id === project?.id ? 'bg-ocean/10 text-ink' : 'hover:bg-pale/40 text-slate'
                   }`}
                 >
-                  <span className="shrink-0 w-3.5 inline-flex justify-center">
-                    {done && <Check className="w-3.5 h-3.5 text-teal" />}
-                    {!done && hasOpen && <AlertTriangle className="w-3.5 h-3.5 text-amber-deep" />}
-                  </span>
-                  <span className="font-mono text-mist w-6 text-right" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{i + 1}</span>
-                  <span className="truncate">{s.source.slice(0, 60)}{s.source.length > 60 ? '…' : ''}</span>
+                  <p className="truncate">{p.name}</p>
+                  <p className="text-[10.5px] text-mist mt-0.5" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                    {p.requirements.reviewMode === 'external-vendor'  ? 'External Review' :
+                     p.requirements.reviewMode === 'internal-single'  ? 'Internal Review 1' :
+                                                                        'Internal Final Review'}
+                  </p>
                 </button>
               </li>
-            )
-          })}
-        </ul>
+            ))}
+          </ul>
+        </section>
+
+        {scopedTasks.length > 1 && (
+          <section className="bg-white border border-rule rounded-lg overflow-hidden">
+            <div className="px-3 py-2 border-b border-rule flex items-center justify-between">
+              <MonoLabel>Tasks</MonoLabel>
+              <div className="inline-flex items-center text-[10.5px] rounded-full border border-rule overflow-hidden" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                <button onClick={() => setScope?.('all')}  className={`px-2 py-0.5 cursor-pointer ${scope === 'all'  ? 'bg-ocean text-white' : 'text-slate hover:bg-pale'}`}>ALL</button>
+                <button onClick={() => setScope?.('mine')} className={`px-2 py-0.5 cursor-pointer ${scope === 'mine' ? 'bg-ocean text-white' : 'text-slate hover:bg-pale'}`}>MINE</button>
+              </div>
+            </div>
+            <ul>
+              {scopedTasks.map(t => (
+                <li key={t.id}>
+                  <button
+                    onClick={() => { setActiveTaskId?.(t.id); setActiveIdx(0) }}
+                    className={`w-full text-left px-3 py-1.5 text-[12px] cursor-pointer truncate ${
+                      t.id === task?.id ? 'bg-ocean/10 text-ink' : 'hover:bg-pale/40 text-slate'
+                    }`}
+                  >
+                    {t.title}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        <section className="bg-white border border-rule rounded-lg overflow-hidden">
+          <div className="px-3 py-2 border-b border-rule flex items-center justify-between">
+            <MonoLabel>Segments</MonoLabel>
+            <span className="text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{doneSeg}/{totalSeg}</span>
+          </div>
+          <ul className="max-h-[520px] overflow-y-auto">
+            {segments.map((s, i) => {
+              const isActive = i === activeIdx
+              const done = ['verified', 'edited', 'accepted'].includes(s.decision)
+              const hasOpen = !done && qaDiff(s.source, s.editedTarget || s.target).some(r => !r.ok)
+              return (
+                <li key={s.id}>
+                  <button
+                    onClick={() => setActiveIdx(i)}
+                    className={`w-full text-left px-3 py-2 flex items-center gap-2 text-[12.5px] cursor-pointer ${
+                      isActive ? 'bg-ocean/10 text-ink' : 'hover:bg-pale/40 text-slate'
+                    }`}
+                  >
+                    <span className="shrink-0 w-3.5 inline-flex justify-center">
+                      {done && <Check className="w-3.5 h-3.5 text-teal" />}
+                      {!done && hasOpen && <AlertTriangle className="w-3.5 h-3.5 text-amber-deep" />}
+                    </span>
+                    <span className="font-mono text-mist w-6 text-right" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{i + 1}</span>
+                    <span className="truncate">{s.source.slice(0, 60)}{s.source.length > 60 ? '…' : ''}</span>
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
       </aside>
 
-      {/* ── Main editor: wide, calm ─────────────────────────────── */}
+      {/* ── Main editor ─────────────────────────────────────────── */}
       <main className="bg-white border border-rule rounded-lg p-7">
-        {/* Lightweight header */}
         <div className="flex items-center justify-between mb-5">
           <div>
             <MonoLabel>Segment {activeIdx + 1} of {totalSeg}</MonoLabel>
@@ -326,15 +455,13 @@ export default function QuickReviewWorkspace({
           <p className="text-mist">No segment selected.</p>
         ) : (
           <>
-            {/* Source */}
             <section className="mb-6">
               <MonoLabel>Source · {project?.requirements.sourceLanguage?.toUpperCase()}</MonoLabel>
               <div className="mt-2">
-                <HighlightedSource source={activeSeg.source} hits={glossaryHits} />
+                <HighlightedSource source={activeSeg.source} intervals={sourceIntervals} />
               </div>
             </section>
 
-            {/* Target — editable, autofocus, no mode */}
             <section className="mb-3">
               <div className="flex items-center justify-between mb-2">
                 <MonoLabel>Target · {project?.requirements.targetLanguages?.[0]?.toUpperCase()}</MonoLabel>
@@ -346,14 +473,13 @@ export default function QuickReviewWorkspace({
                   <RefreshCcw className="w-3 h-3" /> Regenerate suggestion
                 </button>
               </div>
-              <textarea
-                ref={taRef}
-                value={target}
-                onChange={e => setTarget(e.target.value)}
-                disabled={activeSeg.locked}
-                rows={Math.max(3, Math.min(8, Math.ceil(target.length / 60)))}
-                placeholder="Type or paste the translation here. Press ⌘↩ to save & continue."
-                className="w-full text-[15px] leading-relaxed text-ink border border-rule rounded-md p-3 focus:border-ocean/50 focus:outline-none"
+              <HighlightedEditable
+                key={activeSeg.id /* force remount per segment so initialValue applies */}
+                initialValue={target}
+                intervals={targetIntervals}
+                onChange={setTarget}
+                locked={activeSeg.locked}
+                autoFocus
               />
               <div className="flex items-center justify-between mt-1.5">
                 <p className="text-[11px] text-mist">
@@ -367,7 +493,7 @@ export default function QuickReviewWorkspace({
               </div>
             </section>
 
-            {/* Inline context — collapsed by default to one line per side */}
+            {/* Inline prev/next context */}
             <section className="mb-5 text-[12px] text-slate">
               {activeIdx > 0 && (
                 <p className="truncate">
@@ -383,26 +509,6 @@ export default function QuickReviewWorkspace({
               )}
             </section>
 
-            {/* Optional note — collapsed by default, never blocks save */}
-            <section className="mb-5">
-              <button
-                onClick={() => setNoteOpen(o => !o)}
-                className="inline-flex items-center gap-1 text-[12px] text-slate hover:text-ink cursor-pointer"
-              >
-                {noteOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                Add note (optional)
-              </button>
-              {noteOpen && (
-                <input
-                  value={note}
-                  onChange={e => setNote(e.target.value)}
-                  placeholder="Context for the next reviewer. Does not feed training."
-                  className="mt-2 w-full text-[13px] border border-rule rounded-md p-2"
-                />
-              )}
-            </section>
-
-            {/* Primary action row */}
             <div className="flex items-center gap-2 pt-4 border-t border-rule">
               <button
                 onClick={() => commit({ advance: true })}
@@ -437,9 +543,8 @@ export default function QuickReviewWorkspace({
         )}
       </main>
 
-      {/* ── Right aide: Live QA + Glossary ──────────────────────── */}
+      {/* ── Right rail: Live QA only ────────────────────────────── */}
       <aside className="space-y-3">
-        {/* Live QA */}
         <div className="bg-white border border-rule rounded-lg overflow-hidden">
           <div className="px-3 py-2 border-b border-rule flex items-center justify-between">
             <MonoLabel>Live QA · {qa.length} issue{qa.length === 1 ? '' : 's'}</MonoLabel>
@@ -472,24 +577,6 @@ export default function QuickReviewWorkspace({
           )}
         </div>
 
-        {/* Glossary terms in this segment */}
-        {glossaryHits.length > 0 && (
-          <div className="bg-white border border-rule rounded-lg overflow-hidden">
-            <div className="px-3 py-2 border-b border-rule">
-              <MonoLabel>Glossary · {glossaryHits.length} term{glossaryHits.length === 1 ? '' : 's'}</MonoLabel>
-            </div>
-            <ul className="divide-y divide-rule">
-              {glossaryHits.map(h => (
-                <li key={h.id} className="px-3 py-2.5 text-[12px]">
-                  <p className="text-ink"><BookOpen className="inline w-3 h-3 mr-1 text-amber-deep" />{h.term}</p>
-                  <p className="text-mist mt-0.5 text-[11px]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>→ {h.approved}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Client-only: optional back-translation, collapsed */}
         {currentUserRole === 'client-reviewer' && (
           <details className="bg-white border border-rule rounded-lg">
             <summary className="px-3 py-2 cursor-pointer text-[12px] text-slate hover:text-ink list-none flex items-center justify-between">
@@ -500,7 +587,6 @@ export default function QuickReviewWorkspace({
           </details>
         )}
 
-        {/* Show details → Audit Review */}
         <button
           onClick={onOpenAudit}
           className="w-full text-left bg-cream border border-rule rounded-lg px-3 py-2.5 hover:border-ocean/30 cursor-pointer"
@@ -508,11 +594,6 @@ export default function QuickReviewWorkspace({
           <p className="text-[12px] text-ink font-semibold">Show details</p>
           <p className="text-[11px] text-mist mt-0.5">Open Audit Review for agent panel, trust score, pedigree, posture history.</p>
         </button>
-
-        {/* Progress hint */}
-        <div className="px-3 py-2 text-[11px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-          {doneSeg}/{totalSeg} done · {openIssues} segment{openIssues === 1 ? '' : 's'} with open issues
-        </div>
       </aside>
     </div>
   )

@@ -97,4 +97,19 @@
       transition-duration: 0.01ms !important;
     }
   }
+
+  /* Glossary inline highlights — identical treatment in source and
+     target panes so reviewers can visually pair the two. */
+  .gloss-mark {
+    background-color: rgba(212, 134, 10, 0.14); /* amber/15 */
+    border-bottom: 1px solid rgba(181, 114, 10, 0.5); /* amber-deep/50 */
+    border-radius: 2px;
+    padding: 0 1px;
+    transition: background-color 120ms ease;
+  }
+  .gloss-active,
+  .gloss-mark:hover,
+  .gloss-mark.gloss-active {
+    background-color: rgba(212, 134, 10, 0.32);
+  }
 }
