@@ -19,6 +19,7 @@ import {
   ShortcutHintFooter, ReviewerModeCoachmark,
 } from './cockpit'
 import { isRole } from '../../services/hitl/rbac'
+import QuickReviewWorkspace from './QuickReviewWorkspace'
 
 export default function SecureVendorWorkspace({ activeProjectId, setActiveProjectId, currentUserId }) {
   const project = HITL_PROJECTS.find(p => p.id === activeProjectId) || HITL_PROJECTS[0]
@@ -96,7 +97,9 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
     }
   }, [activeSeg?.id])
 
-  /* ─── Cockpit state: Reviewer Mode (default) vs Compact View ──── */
+  /* ─── Cockpit-level mode: Quick Review (default) vs Audit Review ── */
+  const [cockpitMode, setCockpitMode] = useState('quick') // 'quick' | 'audit'
+  /* ─── Audit-cockpit sub-mode: Reviewer Mode vs Compact View ────── */
   const [mode, setMode] = useState('reviewer')      // 'reviewer' (default) | 'compact'
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [forceOpenPanel, setForceOpenPanel] = useState(null)
@@ -104,6 +107,7 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
   const [edgeCasesOpen, setEdgeCasesOpen] = useState(false)
   const isCompact = mode === 'compact'
   const isReviewer = !isCompact  // for legacy reference sites below
+  const isQuick = cockpitMode === 'quick'
 
   // Helper: record a posture transition (audit-grade telemetry).
   const setPostureWithTrace = (next) => {
@@ -409,13 +413,23 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
     return 'Your decision'
   }, [currentUserId])
 
+  // Compose the cockpit-mode chip + (in Audit) the Reviewer/Compact toggle.
+  const headerActions = (
+    <div className="inline-flex items-center gap-2">
+      <CockpitModeChip mode={cockpitMode} onChange={setCockpitMode} />
+      {!isQuick && <ReviewerModeToggle mode={mode} onToggle={() => setMode(m => m === 'compact' ? 'reviewer' : 'compact')} onOpenShortcuts={() => setShowShortcuts(true)} />}
+    </div>
+  )
+
   return (
     <div className="relative">
-      <ReviewerModeCoachmark />
+      {!isQuick && <ReviewerModeCoachmark />}
       <SectionHeading
-        title="Triangulated Review Workspace"
-        subtitle={`${labelForMode(project.requirements.reviewMode)}. The reviewer decides between agent proposals, captures a structured reason, and commits a decision that becomes training signal. Every keystroke is auditable.`}
-        actions={<ReviewerModeToggle mode={mode} onToggle={() => setMode(m => m === 'compact' ? 'reviewer' : 'compact')} onOpenShortcuts={() => setShowShortcuts(true)} />}
+        title={isQuick ? 'Review Workspace' : 'Triangulated Review Workspace'}
+        subtitle={isQuick
+          ? `Edit the target, see live QA and glossary, save and move on. Switch to Audit Review for the full cockpit.`
+          : `${labelForMode(project.requirements.reviewMode)}. The reviewer decides between agent proposals, captures a structured reason, and commits a decision that becomes training signal. Every keystroke is auditable.`}
+        actions={headerActions}
       />
 
       {/* Project picker + legend */}
@@ -460,6 +474,21 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
         <span className="text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>SESSION-{currentUserId?.slice(0, 4) || 'demo'}</span>
       </div>
 
+      {isQuick && (
+        <QuickReviewWorkspace
+          project={project}
+          task={activeTask}
+          segments={segments}
+          activeIdx={activeIdx}
+          setActiveIdx={setActiveIdx}
+          currentUserId={currentUserId}
+          currentUserRole={isRole(currentUserId, 'vendor-user', 'vendor-admin') ? 'vendor-user' : isRole(currentUserId, 'client-reviewer') ? 'client-reviewer' : 'internal-reviewer'}
+          onOpenAudit={() => setCockpitMode('audit')}
+        />
+      )}
+
+      {!isQuick && (
+      <>
       <div className="grid grid-cols-3 gap-4 mb-6">
         <Stat label="Verified" value={`${tally.verified} / ${tally.total}`} />
         <Stat label="Not verified" value={tally.notVerified} />
@@ -800,15 +829,17 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
           currentUserId={currentUserId}
         />
       </div>
+      </>
+      )}
 
       {/* Keyboard cheat sheet */}
       {showShortcuts && <KeyboardShortcutOverlay onClose={() => setShowShortcuts(false)} />}
 
       {/* Edge Cases panel */}
-      <EdgeCasesPanel segment={activeSeg} open={edgeCasesOpen} onClose={() => setEdgeCasesOpen(false)} />
+      {!isQuick && <EdgeCasesPanel segment={activeSeg} open={edgeCasesOpen} onClose={() => setEdgeCasesOpen(false)} />}
 
-      {/* Persistent shortcut hint footer */}
-      <ShortcutHintFooter savedAgo={null} mode={mode} />
+      {/* Persistent shortcut hint footer — Audit Review only */}
+      {!isQuick && <ShortcutHintFooter savedAgo={null} mode={mode} />}
     </div>
   )
 }
@@ -833,6 +864,24 @@ function Field({ label, children, right }) {
         {right}
       </div>
       {children}
+    </div>
+  )
+}
+
+/* Quick Review · Audit Review chip — the cockpit-level mode switch. */
+function CockpitModeChip({ mode, onChange }) {
+  return (
+    <div className="inline-flex items-center rounded-full border border-rule bg-white overflow-hidden text-[11.5px]">
+      <button
+        onClick={() => onChange('quick')}
+        className={`px-3 py-1 cursor-pointer transition-colors ${mode === 'quick' ? 'bg-ocean text-white' : 'text-slate hover:bg-pale'}`}
+        title="Quick Review · reviewer-first cockpit"
+      >Quick Review</button>
+      <button
+        onClick={() => onChange('audit')}
+        className={`px-3 py-1 cursor-pointer transition-colors ${mode === 'audit' ? 'bg-ocean text-white' : 'text-slate hover:bg-pale'}`}
+        title="Audit Review · full triangulated cockpit with agent panel, pedigree, posture"
+      >Audit Review</button>
     </div>
   )
 }
