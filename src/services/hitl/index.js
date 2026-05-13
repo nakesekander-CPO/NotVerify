@@ -15,3 +15,4 @@ export * from './retrainingGate';
 export * from './taskAssignment';
 export * from './pedigree';
 export * from './cockpit';
+export * from './tm';

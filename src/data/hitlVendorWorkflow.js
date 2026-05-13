@@ -975,6 +975,72 @@ export const SIGNOFF_RECORDS = [];
    ════════════════════════════════════════════════════════════════ */
 
 export const RETRAINING_CANDIDATES = [];
+/* ─── Translation Memory store ─────────────────────────────────
+ *
+ * Prior committed translations that the live-TM panel matches against.
+ * In production this comes from a TM database; for the prototype we
+ * seed a handful of plausible JA financial-domain prior translations.
+ * Each entry is { id, source, target, domain, language, vendorId,
+ * createdAt }. Match scoring is a Jaccard token-set ratio computed
+ * by services/hitl/tm.js.
+ * ─────────────────────────────────────────────────────────────── */
+export const TM_ENTRIES = [
+  /* Forward-looking statement boilerplate — recurs across JFSA filings. */
+  {
+    id: 'tm-fls-canonical',
+    source: 'Forward-looking statements in this report are subject to risks and uncertainties.',
+    target: '本報告書における将来予測に関する記述は、リスクおよび不確実性の影響を受けます。',
+    domain: 'financial', language: 'ja', vendorId: 'v-nihon-linguistics',
+    createdAt: '2025-08-15T10:00:00Z',
+  },
+  {
+    id: 'tm-fls-extended',
+    source: 'Forward-looking statements are subject to risks and uncertainties that could cause actual results to differ.',
+    target: '将来予測に関する記述は、実際の結果に相違をもたらす可能性のあるリスクおよび不確実性の影響を受けます。',
+    domain: 'financial', language: 'ja', vendorId: 'v-nihon-linguistics',
+    createdAt: '2025-09-22T14:00:00Z',
+  },
+  /* Quarterly revenue language. */
+  {
+    id: 'tm-q-revenue',
+    source: 'Net revenue for the quarter increased by year-over-year.',
+    target: '当四半期の純収益は、前年同期比で増加しました。',
+    domain: 'financial', language: 'ja', vendorId: 'v-nihon-linguistics',
+    createdAt: '2025-10-04T11:00:00Z',
+  },
+  {
+    id: 'tm-revenue-driver',
+    source: 'Revenue increase was driven primarily by strong performance in our investment banking division.',
+    target: '収益の増加は、主に投資銀行部門の好調な業績によるものです。',
+    domain: 'financial', language: 'ja', vendorId: 'v-internal-reviewers',
+    createdAt: '2025-11-01T09:30:00Z',
+  },
+  /* Goodwill impairment. */
+  {
+    id: 'tm-goodwill',
+    source: 'Goodwill impairment was recorded in the wealth management segment.',
+    target: 'ウェルスマネジメント部門でのれん減損を計上しました。',
+    domain: 'financial', language: 'ja', vendorId: 'v-nihon-linguistics',
+    createdAt: '2025-11-12T13:20:00Z',
+  },
+  /* Dividend boilerplate. */
+  {
+    id: 'tm-dividend',
+    source: 'The Board approved a quarterly dividend per share, payable on a future date.',
+    target: '取締役会は、今後の支払日に支払予定の1株当たりの四半期配当を承認しました。',
+    domain: 'financial', language: 'ja', vendorId: 'v-internal-reviewers',
+    createdAt: '2025-09-18T16:00:00Z',
+  },
+  /* EBITDA margin. */
+  {
+    id: 'tm-ebitda',
+    source: 'EBITDA margin expanded year-over-year.',
+    target: 'EBITDAマージンは前年同期比で拡大しました。',
+    domain: 'financial', language: 'ja', vendorId: 'v-internal-reviewers',
+    createdAt: '2025-08-30T10:45:00Z',
+  },
+];
+
 export const ORG_BRAIN_UPDATES = [
   /* Seed glossary so the Quick Review workspace can render passive
    * inline highlights on first paint. In production these are produced
