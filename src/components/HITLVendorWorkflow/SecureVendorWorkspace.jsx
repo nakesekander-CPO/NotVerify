@@ -413,32 +413,31 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
     return 'Your decision'
   }, [currentUserId])
 
-  // Compose the cockpit-mode chip + (in Audit) the Reviewer/Compact toggle.
-  const headerActions = (
-    <div className="inline-flex items-center gap-2">
-      <CockpitModeChip mode={cockpitMode} onChange={setCockpitMode} />
-      {!isQuick && <ReviewerModeToggle mode={mode} onToggle={() => setMode(m => m === 'compact' ? 'reviewer' : 'compact')} onOpenShortcuts={() => setShowShortcuts(true)} />}
-    </div>
-  )
+  // In Audit, show the Quick/Audit chip + Reviewer/Compact toggle.
+  // In Quick, the Quick/Audit chip lives inside the QuickReview top bar
+  // so all task-level controls are in one horizontal band — no
+  // disconnected upper-right cluster.
+  const headerActions = isQuick
+    ? null
+    : (
+      <div className="inline-flex items-center gap-2">
+        <CockpitModeChip mode={cockpitMode} onChange={setCockpitMode} />
+        <ReviewerModeToggle mode={mode} onToggle={() => setMode(m => m === 'compact' ? 'reviewer' : 'compact')} onOpenShortcuts={() => setShowShortcuts(true)} />
+      </div>
+    )
 
   return (
     <div className="relative">
       {!isQuick && <ReviewerModeCoachmark />}
-      <SectionHeading
-        title={isQuick
-          ? <span className="inline-flex items-center gap-2">
-              <Shield
-                className="w-4 h-4 text-ocean cursor-help"
-                title={`Secure session · watermarked view · downloads disabled · copy/paste restricted · expires when assignment closes · SESSION-${currentUserId?.slice(0, 4) || 'demo'}`}
-              />
-              Review Workspace
-            </span>
-          : 'Triangulated Review Workspace'}
-        subtitle={isQuick
-          ? `Edit the target, see live QA and glossary, save and move on. Switch to Audit Review for the full cockpit.`
-          : `${labelForMode(project.requirements.reviewMode)}. The reviewer decides between agent proposals, captures a structured reason, and commits a decision that becomes training signal. Every keystroke is auditable.`}
-        actions={headerActions}
-      />
+      {/* In Quick mode the top task bar in QuickReviewWorkspace is the
+          page heading. In Audit mode we keep the full SectionHeading. */}
+      {!isQuick && (
+        <SectionHeading
+          title="Triangulated Review Workspace"
+          subtitle={`${labelForMode(project.requirements.reviewMode)}. The reviewer decides between agent proposals, captures a structured reason, and commits a decision that becomes training signal. Every keystroke is auditable.`}
+          actions={headerActions}
+        />
+      )}
 
       {/* Project picker + legend + scope toggle + secure banner —
           AUDIT REVIEW ONLY. In Quick Review the project / scope / task
@@ -494,13 +493,8 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
           setActiveIdx={setActiveIdx}
           currentUserId={currentUserId}
           currentUserRole={isRole(currentUserId, 'vendor-user', 'vendor-admin') ? 'vendor-user' : isRole(currentUserId, 'client-reviewer') ? 'client-reviewer' : 'internal-reviewer'}
-          activeProjectId={activeProjectId}
-          setActiveProjectId={setActiveProjectId}
-          activeTaskId={effectiveTaskId}
-          setActiveTaskId={setActiveTaskId}
-          scope={scope}
-          setScope={setScope}
-          onOpenAudit={() => setCockpitMode('audit')}
+          cockpitMode={cockpitMode}
+          setCockpitMode={setCockpitMode}
         />
       )}
 

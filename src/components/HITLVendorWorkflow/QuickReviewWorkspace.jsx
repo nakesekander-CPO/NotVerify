@@ -3,39 +3,39 @@
  *
  * Layout
  *   ─────────────────────────────────────────────────────────────
- *   TOP BAR    Document name · ◀ Segment X of Y ▶ · ⏱ task timer
+ *   TOP TASK BAR  doc · ◀ [ Segment X of Y ] ▶ · mode · ⏱timer · ?
  *   ─────────────────────────────────────────────────────────────
- *   LEFT       CENTER                              RIGHT
- *   Document   Source                              Live TM
- *   context    Editable target                     Live TB (glossary)
- *   (±5 segs)  Issues line                         Live QA
- *              Save · Accept · Skip
+ *   LEFT          CENTER                            RIGHT STACK
+ *   Document      Source                            Live TM
+ *   context       Editable target                   Live TB
+ *   (±5 segs)     Action row                        Live QA
  *   ─────────────────────────────────────────────────────────────
  *
- * Project + task switching are removed entirely. Switching happens on
- * the Project Cockpit / Task Assignment screens; the reviewer arrives
- * here with a fixed task and stays focused on it.
+ * Project + task switching are not part of this screen — the global
+ * sidebar is hidden by the parent (HITLVendorWorkflow) when active is
+ * 'workspace'. The reviewer's only escape is "Exit Review" / Shift+E.
  *
  * Keyboard
- *   J / K / ↓ / ↑       prev / next segment (also Enter from center)
- *   ⌘↩ / Ctrl+↩          Save & Next (works inside the editable)
- *   A                   Accept suggestion (when target is untouched)
- *   T                   Apply best TM match
- *   B                   Focus glossary panel
- *   Q                   Focus QA panel
- *   ?                   Open shortcut sheet (parent)
+ *   [ / ←     prev segment             T          apply top TM match,
+ *   ] / →     next segment                        focus TM panel
+ *   ⌘↩ / Ctrl+↩  Save & Next            B          focus Live TB panel
+ *   A         accept (when untouched)   Q          focus Live QA panel
+ *   ?         shortcut overlay         Esc         release panel focus
+ *   In a focused panel: J/K (or ↓/↑) move, Enter applies, Esc releases.
  *
- * Task timer: persistent across segments, pauses after 2 minutes of
- * inactivity, pauses when the tab is hidden, resumes on activity.
+ * Task timer
+ *   Persistent across segments. Pauses on tab-hidden OR after 2 min of
+ *   inactivity. Visible state: running / paused-idle / paused-hidden /
+ *   resumed (briefly flashes for 2s after pause→running transition).
+ *   Activity = keydown · mousedown · scroll.
  *
- * Audit + retraining plumbing unchanged: every commit still funnels
- * through decideSegment() with inferred posture (accept / refine).
+ * Audit + retraining plumbing unchanged.
  */
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import {
   Check, RotateCcw, ChevronLeft, ChevronRight, AlertTriangle, RefreshCcw,
-  ArrowRight, Clock, BookOpen, FileText, Stethoscope, ChevronDown,
+  ArrowRight, Clock, Pause, BookOpen, FileText, Stethoscope, ChevronDown, Keyboard, X,
 } from 'lucide-react'
 import { ORG_BRAIN_UPDATES } from '../../data/hitlVendorWorkflow'
 import { decideSegment } from '../../services/hitl/review'
@@ -43,8 +43,19 @@ import { qaDiff } from '../../services/hitl/cockpit'
 import { findTMMatches } from '../../services/hitl/tm'
 import { MonoLabel } from './shared'
 
-/* ─── Glossary matching ─────────────────────────────────────────
- * (Unchanged from previous revision.) */
+/* ─── Tiny key-cap visual ─────────────────────────────────────── */
+function Kbd({ children, className = '' }) {
+  return (
+    <kbd
+      className={`inline-flex items-center px-1.5 py-0.5 bg-cream border border-rule rounded text-[10px] text-mist ${className}`}
+      style={{ fontFamily: "'IBM Plex Mono', monospace" }}
+    >
+      {children}
+    </kbd>
+  )
+}
+
+/* ─── Glossary matching ─────────────────────────────────────── */
 function pickHead(text, words = 4) {
   return (text || '').split(/\s+/).slice(0, words).join(' ').toLowerCase().trim()
 }
@@ -107,7 +118,6 @@ function tooltipFor(hit) {
   return `Approved: ${hit.approved}\n${hit.definition}\nUsage: ${hit.usage}`
 }
 
-/* Cross-pane glossary pairing (DOM-level, no React). */
 let _paired = false
 function pairHighlights() {
   document.addEventListener('mouseover', (e) => {
@@ -124,8 +134,8 @@ function pairHighlights() {
   }, true)
 }
 
-/* ─── Editable target with inline glossary spans ─────────────── */
-function HighlightedEditable({ initialValue, intervals, onChange, locked, autoFocus }) {
+/* ─── Editable target ─────────────────────────────────────────── */
+function HighlightedEditable({ initialValue, intervals, onChange, locked, autoFocus, editorRef }) {
   const ref = useRef(null)
   const initialHTMLRef = useRef(null)
   if (initialHTMLRef.current === null) {
@@ -134,6 +144,7 @@ function HighlightedEditable({ initialValue, intervals, onChange, locked, autoFo
   useEffect(() => {
     if (!ref.current) return
     ref.current.innerHTML = initialHTMLRef.current
+    if (editorRef) editorRef.current = ref.current
     if (autoFocus) {
       const range = document.createRange()
       range.selectNodeContents(ref.current)
@@ -171,23 +182,22 @@ function HighlightedSource({ source, intervals }) {
   return <p className="text-[15px] leading-relaxed text-ink" dangerouslySetInnerHTML={{ __html: html }} />
 }
 
-/* ─── Task timer hook ────────────────────────────────────────────
- * Persistent for the active task. Pauses on 2-min inactivity OR tab
- * hidden. Resumes on activity. Timer accumulates monotonically. */
+/* ─── Task timer hook ────────────────────────────────────────── */
 function useTaskTimer(taskId) {
   const [elapsed, setElapsed] = useState(0)
-  const [paused, setPaused] = useState(false)
+  const [pauseReason, setPauseReason] = useState(null)   // null | 'idle' | 'hidden'
+  const [resumedAt, setResumedAt] = useState(null)
   const lastActivity = useRef(Date.now())
   const lastTickWall = useRef(Date.now())
   const elapsedRef = useRef(0)
+  const prevPauseRef = useRef(null)
 
-  // Reset accumulator when the task changes.
   useEffect(() => {
     elapsedRef.current = 0
     lastActivity.current = Date.now()
     lastTickWall.current = Date.now()
-    setElapsed(0)
-    setPaused(false)
+    prevPauseRef.current = null
+    setElapsed(0); setPauseReason(null); setResumedAt(null)
   }, [taskId])
 
   useEffect(() => {
@@ -195,22 +205,26 @@ function useTaskTimer(taskId) {
     window.addEventListener('keydown', bumpActivity)
     window.addEventListener('mousedown', bumpActivity)
     window.addEventListener('scroll', bumpActivity, true)
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) lastActivity.current = Date.now()
-    })
+    function onVisibility() { if (!document.hidden) lastActivity.current = Date.now() }
+    document.addEventListener('visibilitychange', onVisibility)
 
     const tick = setInterval(() => {
       const now = Date.now()
-      const idleMs = now - lastActivity.current
-      const isPaused = idleMs > 2 * 60 * 1000 || document.hidden
-      if (!isPaused) {
-        // Add wall-clock delta since last tick (not always exactly 1s).
+      const idle = now - lastActivity.current > 2 * 60 * 1000
+      const reason = document.hidden ? 'hidden' : (idle ? 'idle' : null)
+      // Resumed transition: previous tick was paused, this tick is running.
+      if (prevPauseRef.current && !reason) {
+        setResumedAt(now)
+        setTimeout(() => setResumedAt((rt) => rt === now ? null : rt), 2000)
+      }
+      prevPauseRef.current = reason
+      if (!reason) {
         const delta = Math.min(now - lastTickWall.current, 2000)
         elapsedRef.current += delta
         setElapsed(elapsedRef.current)
       }
       lastTickWall.current = now
-      setPaused(isPaused)
+      setPauseReason(reason)
     }, 1000)
 
     return () => {
@@ -218,10 +232,11 @@ function useTaskTimer(taskId) {
       window.removeEventListener('keydown', bumpActivity)
       window.removeEventListener('mousedown', bumpActivity)
       window.removeEventListener('scroll', bumpActivity, true)
+      document.removeEventListener('visibilitychange', onVisibility)
     }
   }, [taskId])
 
-  return { elapsed, paused }
+  return { elapsed, pauseReason, resumedAt }
 }
 
 function fmtTime(ms) {
@@ -233,11 +248,79 @@ function fmtTime(ms) {
   return h > 0 ? `${h}:${pad(m)}:${pad(sec)}` : `${pad(m)}:${pad(sec)}`
 }
 
+/* ─── Shortcut overlay ───────────────────────────────────────── */
+function ShortcutOverlay({ onClose }) {
+  const groups = [
+    { name: 'Navigation', items: [
+      ['[ · ←', 'Previous segment'], [`] · →`, 'Next segment'],
+      ['J · ↓', 'Next segment (alt)'], ['K · ↑', 'Previous segment (alt)'],
+    ]},
+    { name: 'Editor', items: [
+      ['⌘↩ · Ctrl↩', 'Save & Next (works inside the editable)'],
+      ['A', 'Accept suggestion (when target is untouched)'],
+    ]},
+    { name: 'Live TM', items: [
+      ['T', 'Apply top match · focus TM panel'],
+      ['J / K · ↓ / ↑', 'Move within TM panel (after T)'],
+      ['Enter', 'Apply selected TM match'],
+      ['Esc', 'Release TM panel focus'],
+    ]},
+    { name: 'Live TB', items: [
+      ['B', 'Focus glossary panel'],
+      ['J / K', 'Move between terms'],
+      ['Enter', 'Apply approved rendering'],
+    ]},
+    { name: 'Live QA', items: [
+      ['Q', 'Focus QA panel'],
+      ['J / K', 'Move between issues'],
+      ['Enter', 'Jump to issue in target / apply fix'],
+    ]},
+    { name: 'Mode', items: [
+      ['Shift+E', 'Exit Review Mode'],
+      ['?', 'Show this overlay'],
+    ]},
+  ]
+  return (
+    <div className="fixed inset-0 z-[60] bg-ink/40 flex items-center justify-center" onClick={onClose}>
+      <div className="w-full max-w-[640px] bg-white rounded-lg border border-rule overflow-hidden m-4" onClick={e => e.stopPropagation()}>
+        <header className="px-5 py-3 border-b border-rule flex items-center justify-between bg-cream/60">
+          <div className="inline-flex items-center gap-2">
+            <Keyboard className="w-4 h-4 text-ocean" />
+            <p className="text-[13px] font-semibold text-ink">Quick Review · keyboard shortcuts</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-md hover:bg-pale cursor-pointer">
+            <X className="w-4 h-4 text-slate" />
+          </button>
+        </header>
+        <div className="grid grid-cols-2 gap-x-8 gap-y-4 p-5">
+          {groups.map(g => (
+            <div key={g.name}>
+              <p className="text-[10.5px] uppercase tracking-wider text-mist mb-2" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{g.name}</p>
+              <ul className="space-y-1.5">
+                {g.items.map(([keys, desc]) => (
+                  <li key={keys} className="flex items-center justify-between text-[12px]">
+                    <span className="text-slate">{desc}</span>
+                    <Kbd className="!text-ink">{keys}</Kbd>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <div className="px-5 py-2 border-t border-rule text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+          Shortcuts pause inside text fields, except Cmd/Ctrl+Enter.
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ─── Component ────────────────────────────────────────────────── */
 
 export default function QuickReviewWorkspace({
   project, task, segments, activeIdx, setActiveIdx,
   currentUserId, currentUserRole = 'vendor-user',
+  cockpitMode, setCockpitMode,
 }) {
   const activeSeg = segments[activeIdx]
   const recommended = useMemo(() => {
@@ -248,12 +331,19 @@ export default function QuickReviewWorkspace({
 
   const [target, setTarget] = useState(activeSeg?.editedTarget || recommended)
   const [savedAt, setSavedAt] = useState(null)
+  const [showShortcuts, setShowShortcuts] = useState(false)
   const [, force] = useState(0)
   const refresh = () => force(n => n + 1)
+  const editorRef = useRef(null)
+
+  /* Focused-panel state machine — null when editor is focused */
+  const [focusedPanel, setFocusedPanel] = useState(null) // null | 'tm' | 'tb' | 'qa'
+  const [focusedIdx, setFocusedIdx] = useState(0)
 
   useEffect(() => {
     setTarget(activeSeg?.editedTarget || recommended)
     setSavedAt(null)
+    setFocusedPanel(null); setFocusedIdx(0)
   }, [activeSeg?.id])
 
   useEffect(() => {
@@ -303,10 +393,8 @@ export default function QuickReviewWorkspace({
   const dwellStart = useRef(Date.now())
   useEffect(() => { dwellStart.current = Date.now() }, [activeSeg?.id])
 
-  /* Task timer */
-  const { elapsed, paused } = useTaskTimer(task?.id)
+  const { elapsed, pauseReason, resumedAt } = useTaskTimer(task?.id)
 
-  /* Commit path — unchanged audit/training plumbing */
   const commit = useCallback(({ advance = true } = {}) => {
     if (!activeSeg) return
     const inferredPosture = isAccepted ? 'accept' : 'refine'
@@ -314,33 +402,26 @@ export default function QuickReviewWorkspace({
     const top = [...(activeSeg.agentCandidates || [])].sort((a, b) => b.confidence - a.confidence)[0]
     try {
       decideSegment({
-        segmentId: activeSeg.id,
-        actorId: currentUserId,
-        action,
+        segmentId: activeSeg.id, actorId: currentUserId, action,
         newValue: isAccepted ? null : target,
         chosenCandidateId: top?.id || null,
         rejectedCandidateIds: (activeSeg.agentCandidates || []).filter(c => c.id !== top?.id).map(c => c.id),
-        rationaleTags: [],
-        reasonNote: null, reason: null,
+        rationaleTags: [], reasonNote: null, reason: null,
         telemetry: {
           dwellMs: Date.now() - dwellStart.current,
           undoCount: 0, glossaryConsultations: 0, crossRefJumps: 0,
           candidateHoverSeq: [],
           posture: inferredPosture,
           postureTransitions: [{ from: null, to: inferredPosture, at: Date.now(), viaShortcut: false }],
-          preferencePairs: [], summonedSecondOpinion: false,
-          quickReview: true,
+          preferencePairs: [], summonedSecondOpinion: false, quickReview: true,
         },
       })
-      setSavedAt(Date.now())
-      refresh()
+      setSavedAt(Date.now()); refresh()
       if (advance) {
         const nextIdx = segments.findIndex((_, i) => i > activeIdx && !segments[i].locked)
         if (nextIdx !== -1) setActiveIdx(nextIdx)
       }
-    } catch (e) {
-      window.alert(`Save failed: ${e.message}`)
-    }
+    } catch (e) { window.alert(`Save failed: ${e.message}`) }
   }, [activeSeg, target, isAccepted, segments, activeIdx, currentUserId, setActiveIdx])
 
   const acceptRecommended = () => {
@@ -356,10 +437,7 @@ export default function QuickReviewWorkspace({
   const next = () => { if (activeIdx < segments.length - 1) setActiveIdx(activeIdx + 1) }
   const prev = () => { if (activeIdx > 0) setActiveIdx(activeIdx - 1) }
 
-  const applyTM = (entry) => {
-    if (!entry?.target) return
-    setTarget(entry.target)
-  }
+  const applyTM = (entry) => { if (entry?.target) setTarget(entry.target) }
   const applyGlossaryFix = (hit) => {
     const approvedHead = hit.approved.slice(0, Math.max(8, Math.min(20, hit.approved.length)))
     if (target.includes(approvedHead)) return
@@ -367,9 +445,25 @@ export default function QuickReviewWorkspace({
     setTarget(prev => `${prev}${trailer}${hit.approved}`)
   }
 
-  /* Keyboard layer — Quick Review native shortcuts */
-  const tmRef = useRef(null), tbRef = useRef(null), qaRef = useRef(null)
+  /* Apply currently focused row when Enter pressed in panel-focus mode. */
+  const applyFocusedRow = () => {
+    if (focusedPanel === 'tm' && tmMatches[focusedIdx]) {
+      applyTM(tmMatches[focusedIdx])
+    } else if (focusedPanel === 'tb' && hits[focusedIdx]) {
+      applyGlossaryFix(hits[focusedIdx])
+    } else if (focusedPanel === 'qa' && qa[focusedIdx]) {
+      const issue = qa[focusedIdx]
+      if (issue.glossary) {
+        applyGlossaryFix(issue.glossary)
+      } else {
+        // Other issues: return focus to the editor so the reviewer can fix.
+        editorRef.current?.focus()
+        setFocusedPanel(null)
+      }
+    }
+  }
 
+  /* Keyboard layer */
   useEffect(() => {
     function isTextField(el) {
       if (!el) return false
@@ -378,16 +472,42 @@ export default function QuickReviewWorkspace({
       return el.isContentEditable
     }
     function onKey(e) {
-      const inText = isTextField(e.target)
-      // Always-on:
+      // Always-on: Cmd/Ctrl+Enter
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault(); commit({ advance: true }); return
       }
-      // While inside the editor we still allow ⌘/Ctrl+Enter (above) but
-      // suppress single-letter shortcuts.
+      // ? overlay always available
+      if (e.key === '?' && !isTextField(e.target)) {
+        e.preventDefault(); setShowShortcuts(true); return
+      }
+      // Esc — release panel focus, or close overlay
+      if (e.key === 'Escape') {
+        if (showShortcuts) { e.preventDefault(); setShowShortcuts(false); return }
+        if (focusedPanel)  { e.preventDefault(); setFocusedPanel(null); editorRef.current?.focus(); return }
+      }
+
+      const inText = isTextField(e.target)
+      // When inside the editor, only the always-on shortcuts apply.
       if (inText) return
 
+      // Panel-focus mode: J/K/Enter/Esc act on the focused panel.
+      if (focusedPanel) {
+        if (e.key === 'j' || e.key === 'J' || e.key === 'ArrowDown') {
+          const max = focusedPanel === 'tm' ? tmMatches.length : focusedPanel === 'tb' ? hits.length : qa.length
+          if (max === 0) return
+          setFocusedIdx(i => Math.min(max - 1, i + 1)); e.preventDefault(); return
+        }
+        if (e.key === 'k' || e.key === 'K' || e.key === 'ArrowUp') {
+          setFocusedIdx(i => Math.max(0, i - 1)); e.preventDefault(); return
+        }
+        if (e.key === 'Enter') { e.preventDefault(); applyFocusedRow(); return }
+      }
+
       switch (e.key) {
+        case '[': case 'ArrowLeft':
+          e.preventDefault(); prev(); return
+        case ']': case 'ArrowRight':
+          e.preventDefault(); next(); return
         case 'j': case 'J': case 'ArrowDown':
           e.preventDefault(); next(); return
         case 'k': case 'K': case 'ArrowUp':
@@ -396,20 +516,21 @@ export default function QuickReviewWorkspace({
           if (isAccepted) { e.preventDefault(); acceptRecommended() }
           return
         case 't': case 'T':
-          if (tmMatches[0]) { e.preventDefault(); applyTM(tmMatches[0]) }
-          return
+          // Apply top TM match immediately AND focus the panel so J/K/Enter work for others.
+          if (tmMatches[0]) applyTM(tmMatches[0])
+          setFocusedPanel('tm'); setFocusedIdx(0); e.preventDefault(); return
         case 'b': case 'B':
-          tbRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }); e.preventDefault(); return
+          setFocusedPanel('tb'); setFocusedIdx(0); e.preventDefault(); return
         case 'q': case 'Q':
-          qaRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }); e.preventDefault(); return
+          setFocusedPanel('qa'); setFocusedIdx(0); e.preventDefault(); return
         default: return
       }
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [commit, next, prev, isAccepted, tmMatches])
+  }, [commit, next, prev, isAccepted, tmMatches, hits, qa, focusedPanel, focusedIdx, showShortcuts])
 
-  /* Document context: ±5 segments around the active one */
+  /* Document context: ±5 segments */
   const contextWindow = useMemo(() => {
     const start = Math.max(0, activeIdx - 5)
     const end = Math.min(segments.length, activeIdx + 6)
@@ -419,10 +540,23 @@ export default function QuickReviewWorkspace({
   const totalSeg = segments.length
   const doneSeg = segments.filter(s => ['verified', 'edited', 'accepted'].includes(s.decision)).length
 
+  /* Timer visuals */
+  const timerPalette =
+    pauseReason
+      ? 'border-mist text-mist bg-rule/40'
+      : (resumedAt ? 'border-teal/60 text-teal bg-teal/15 animate-pulse' : 'border-teal/30 text-teal bg-teal/5')
+  const timerIcon = pauseReason ? Pause : Clock
+  const TimerIcon = timerIcon
+  const timerLabel = pauseReason === 'idle'
+    ? 'Paused — idle'
+    : pauseReason === 'hidden'
+      ? 'Paused — tab hidden'
+      : (resumedAt ? 'Resumed' : null)
+
   return (
     <div className="space-y-4">
-      {/* ── TOP BAR: doc + segment nav + timer ────────────────── */}
-      <header className="bg-white border border-rule rounded-lg px-4 py-2.5 flex items-center justify-between gap-4">
+      {/* ── TOP TASK BAR ──────────────────────────────────────── */}
+      <header className="bg-white border border-rule rounded-lg px-4 py-2.5 flex items-center justify-between gap-3 flex-wrap">
         <div className="min-w-0 flex items-center gap-3">
           <FileText className="w-4 h-4 text-ocean shrink-0" />
           <div className="min-w-0">
@@ -433,14 +567,16 @@ export default function QuickReviewWorkspace({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Segment nav with shortcut hints */}
+        <div className="inline-flex items-center gap-2">
           <button
             onClick={prev}
             disabled={activeIdx === 0}
-            title="Previous segment (K · ↑)"
-            className="p-1.5 rounded-md border border-rule hover:bg-pale cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            title="Previous segment ([ · ←)"
+            className="inline-flex items-center gap-1 p-1.5 rounded-md border border-rule hover:bg-pale cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <ChevronLeft className="w-4 h-4 text-slate" />
+            <Kbd>[</Kbd>
           </button>
           <span className="text-[12.5px] text-ink min-w-[110px] text-center font-mono" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
             Segment {activeIdx + 1} of {totalSeg}
@@ -448,29 +584,51 @@ export default function QuickReviewWorkspace({
           <button
             onClick={next}
             disabled={activeIdx === totalSeg - 1}
-            title="Next segment (J · ↓)"
-            className="p-1.5 rounded-md border border-rule hover:bg-pale cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            title="Next segment (] · →)"
+            className="inline-flex items-center gap-1 p-1.5 rounded-md border border-rule hover:bg-pale cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
+            <Kbd>]</Kbd>
             <ChevronRight className="w-4 h-4 text-slate" />
           </button>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[12px] ${paused ? 'border-mist text-mist bg-rule/40' : 'border-teal/30 text-teal bg-teal/5'}`}
-            title={paused ? 'Timer paused — no activity for 2 minutes or tab hidden' : 'Task timer running'}
-          >
-            <Clock className="w-3.5 h-3.5" />
-            <span className="font-mono" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{fmtTime(elapsed)}</span>
-            {paused && <span className="text-[10px] uppercase tracking-wider">paused</span>}
+        {/* Mode toggle (was top-right of section heading; now inline in the task bar) */}
+        {setCockpitMode && (
+          <div className="inline-flex items-center rounded-full border border-rule bg-white overflow-hidden text-[11.5px]">
+            <button
+              onClick={() => setCockpitMode('quick')}
+              className={`px-2.5 py-1 cursor-pointer ${cockpitMode === 'quick' ? 'bg-ocean text-white' : 'text-slate hover:bg-pale'}`}
+            >Quick</button>
+            <button
+              onClick={() => setCockpitMode('audit')}
+              className={`px-2.5 py-1 cursor-pointer ${cockpitMode === 'audit' ? 'bg-ocean text-white' : 'text-slate hover:bg-pale'}`}
+            >Audit</button>
           </div>
+        )}
+
+        {/* Timer */}
+        <div
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[12px] transition-colors ${timerPalette}`}
+          title={pauseReason ? `Timer paused (${pauseReason})` : 'Task timer running'}
+        >
+          <TimerIcon className="w-3.5 h-3.5" />
+          <span className="font-mono" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{fmtTime(elapsed)}</span>
+          {timerLabel && <span className="text-[10px] uppercase tracking-wider">{timerLabel}</span>}
         </div>
+
+        {/* ? + (parent renders Exit Review in the outer header) */}
+        <button
+          onClick={() => setShowShortcuts(true)}
+          title="Show keyboard shortcuts (?)"
+          className="px-2 py-1 rounded-md border border-rule bg-white text-[11px] text-slate hover:border-ocean/30 cursor-pointer"
+          style={{ fontFamily: "'IBM Plex Mono', monospace" }}
+        >?</button>
       </header>
 
-      {/* ── 3-COLUMN BODY: doc / editor / live panels ─────────── */}
+      {/* ── 3-COLUMN BODY ─────────────────────────────────────── */}
       <div className="grid grid-cols-[260px_1fr_320px] gap-4 items-start">
 
-        {/* LEFT: Document context (±5 segments around active) */}
+        {/* LEFT: Document context */}
         <aside className="bg-white border border-rule rounded-lg overflow-hidden">
           <div className="px-3 py-2 border-b border-rule">
             <MonoLabel>Document</MonoLabel>
@@ -501,7 +659,7 @@ export default function QuickReviewWorkspace({
           </ul>
         </aside>
 
-        {/* CENTER: focused editor */}
+        {/* CENTER: editor */}
         <main className="bg-white border border-rule rounded-lg p-6">
           {!activeSeg ? (
             <p className="text-mist">No segment selected.</p>
@@ -532,6 +690,7 @@ export default function QuickReviewWorkspace({
                   onChange={setTarget}
                   locked={activeSeg.locked}
                   autoFocus
+                  editorRef={editorRef}
                 />
                 <div className="flex items-center justify-between mt-1.5">
                   <p className="text-[11px] text-mist">
@@ -545,7 +704,6 @@ export default function QuickReviewWorkspace({
                 </div>
               </section>
 
-              {/* Action row */}
               <div className="flex items-center gap-3 pt-4 mt-4 border-t border-rule">
                 <button
                   onClick={() => commit({ advance: true })}
@@ -554,7 +712,7 @@ export default function QuickReviewWorkspace({
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-[13.5px] font-semibold transition-colors bg-amber hover:bg-amber-deep text-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-sm"
                 >
                   Save & Next
-                  <kbd className="ml-1 px-1.5 py-0.5 bg-white/20 rounded text-[10px]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>⌘↩</kbd>
+                  <Kbd className="!bg-white/20 !border-white/20 !text-white">⌘↩</Kbd>
                 </button>
                 {isAccepted && !activeSeg.locked && (
                   <button
@@ -563,7 +721,7 @@ export default function QuickReviewWorkspace({
                     title="Accept (A)"
                   >
                     <Check className="w-3.5 h-3.5" /> Accept suggestion
-                    <kbd className="ml-1 px-1 py-0.5 bg-rule/60 rounded text-[10px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>A</kbd>
+                    <Kbd>A</Kbd>
                   </button>
                 )}
                 {isDirty && !activeSeg.locked && (
@@ -583,120 +741,95 @@ export default function QuickReviewWorkspace({
                   onClick={next}
                   disabled={activeIdx === totalSeg - 1}
                   className="ml-auto inline-flex items-center gap-1 px-2 py-1 text-[12px] text-mist hover:text-slate cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                  title="Skip (J)"
+                  title="Skip (])"
                 >
-                  Skip <ArrowRight className="w-3.5 h-3.5" />
+                  Skip <Kbd>]</Kbd>
                 </button>
               </div>
             </>
           )}
         </main>
 
-        {/* RIGHT: Live TM / TB / QA stack */}
+        {/* RIGHT: Live TM / TB / QA */}
         <aside className="space-y-3">
           {/* Live TM */}
-          <section className="bg-white border border-rule rounded-lg overflow-hidden">
-            <div className="px-3 py-2 border-b border-rule flex items-center justify-between">
-              <span className="inline-flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-ocean" />
-                <MonoLabel>Live TM · {tmMatches.length} match{tmMatches.length === 1 ? '' : 'es'}</MonoLabel>
-              </span>
-              {tmMatches[0] && (
-                <button
-                  onClick={() => applyTM(tmMatches[0])}
-                  className="inline-flex items-center gap-1 text-[10.5px] text-ocean hover:text-ocean-deep cursor-pointer"
-                  title="Apply best match (T)"
-                >
-                  Apply <kbd className="px-1 py-0.5 bg-cream border border-rule rounded text-[9px]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>T</kbd>
-                </button>
-              )}
-            </div>
-            {tmMatches.length === 0 ? (
-              <p className="px-3 py-3 text-[12px] text-mist">No translation memory matches above 15%.</p>
-            ) : (
-              <ul className="divide-y divide-rule">
-                {tmMatches.map((m, i) => (
-                  <li key={m.id} className="px-3 py-2.5">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className={`text-[11px] font-mono px-1.5 py-0.5 rounded ${m.matchRatio >= 0.75 ? 'bg-teal/10 text-teal' : m.matchRatio >= 0.4 ? 'bg-ocean/10 text-ocean' : 'bg-amber/10 text-amber-deep'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-                        {(m.matchRatio * 100).toFixed(0)}%
-                      </span>
-                      <button
-                        onClick={() => applyTM(m)}
-                        className="text-[10.5px] text-ocean hover:text-ocean-deep cursor-pointer"
-                      >
-                        Apply
-                      </button>
-                    </div>
-                    <p className="text-[11.5px] text-slate leading-snug">{m.source}</p>
-                    <p className="text-[12px] text-ink leading-snug mt-1 font-medium">{m.target}</p>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+          <Panel
+            id="tm"
+            icon={FileText}
+            iconClass="text-ocean"
+            title={`Live TM · ${tmMatches.length} match${tmMatches.length === 1 ? '' : 'es'}`}
+            shortcut={<><Kbd>T</Kbd> apply top match</>}
+            isFocused={focusedPanel === 'tm'}
+            empty="No translation memory matches above 15%."
+            footerHint="J/K to move · Enter to apply · Esc to release"
+          >
+            {tmMatches.map((m, i) => (
+              <PanelRow key={m.id} active={focusedPanel === 'tm' && i === focusedIdx} onClick={() => applyTM(m)}>
+                <div className="flex items-center justify-between mb-1">
+                  <span className={`text-[11px] font-mono px-1.5 py-0.5 rounded ${m.matchRatio >= 0.75 ? 'bg-teal/10 text-teal' : m.matchRatio >= 0.4 ? 'bg-ocean/10 text-ocean' : 'bg-amber/10 text-amber-deep'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                    {(m.matchRatio * 100).toFixed(0)}%
+                  </span>
+                  <button onClick={(e) => { e.stopPropagation(); applyTM(m) }} className="text-[10.5px] text-ocean hover:text-ocean-deep cursor-pointer">Apply</button>
+                </div>
+                <p className="text-[11.5px] text-slate leading-snug">{m.source}</p>
+                <p className="text-[12px] text-ink leading-snug mt-1 font-medium">{m.target}</p>
+              </PanelRow>
+            ))}
+          </Panel>
 
-          {/* Live TB (Glossary) */}
-          <section ref={tbRef} className="bg-white border border-rule rounded-lg overflow-hidden">
-            <div className="px-3 py-2 border-b border-rule flex items-center justify-between">
-              <span className="inline-flex items-center gap-1.5">
-                <BookOpen className="w-3.5 h-3.5 text-amber-deep" />
-                <MonoLabel>Live TB · {hits.length} term{hits.length === 1 ? '' : 's'}</MonoLabel>
-              </span>
-              <kbd className="px-1 py-0.5 bg-cream border border-rule rounded text-[9px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>B</kbd>
-            </div>
-            {hits.length === 0 ? (
-              <p className="px-3 py-3 text-[12px] text-mist">No glossary terms in this segment.</p>
-            ) : (
-              <ul className="divide-y divide-rule">
-                {hits.map(h => (
-                  <li key={h.id} className="px-3 py-2.5">
-                    <p className="text-[11.5px] text-slate leading-snug"><span className="gloss-mark inline-block">{h.term}</span></p>
-                    <p className="text-[12px] text-ink leading-snug mt-1 font-medium">→ {h.approved}</p>
-                    <p className="text-[10.5px] text-mist mt-1" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-                      {h.usage} · {target.includes(h.approved.slice(0, 8)) ? 'in target' : 'not yet in target'}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+          {/* Live TB */}
+          <Panel
+            id="tb"
+            icon={BookOpen}
+            iconClass="text-amber-deep"
+            title={`Live TB · ${hits.length} term${hits.length === 1 ? '' : 's'}`}
+            shortcut={<Kbd>B</Kbd>}
+            isFocused={focusedPanel === 'tb'}
+            empty="No glossary terms in this segment."
+            footerHint="J/K to move · Enter to apply approved rendering · Esc to release"
+          >
+            {hits.map((h, i) => (
+              <PanelRow key={h.id} active={focusedPanel === 'tb' && i === focusedIdx} onClick={() => applyGlossaryFix(h)}>
+                <p className="text-[11.5px] text-slate leading-snug"><span className="gloss-mark inline-block">{h.term}</span></p>
+                <p className="text-[12px] text-ink leading-snug mt-1 font-medium">→ {h.approved}</p>
+                <p className="text-[10.5px] text-mist mt-1" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                  {h.usage} · {target.includes(h.approved.slice(0, 8)) ? 'in target' : 'not yet in target'}
+                </p>
+              </PanelRow>
+            ))}
+          </Panel>
 
           {/* Live QA */}
-          <section ref={qaRef} className="bg-white border border-rule rounded-lg overflow-hidden">
-            <div className="px-3 py-2 border-b border-rule flex items-center justify-between">
-              <span className="inline-flex items-center gap-1.5">
-                <Stethoscope className="w-3.5 h-3.5 text-error" />
-                <MonoLabel>Live QA · {qa.length} issue{qa.length === 1 ? '' : 's'}</MonoLabel>
-              </span>
-              <kbd className="px-1 py-0.5 bg-cream border border-rule rounded text-[9px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>Q</kbd>
-            </div>
-            {qa.length === 0 ? (
-              <p className="px-3 py-3 text-[12px] text-mist inline-flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-teal" /> No issues detected.</p>
-            ) : (
-              <ul className="divide-y divide-rule">
-                {qa.map(issue => (
-                  <li key={issue.id} className="px-3 py-2.5">
-                    <div className="flex items-start gap-2">
-                      <AlertTriangle className="w-3.5 h-3.5 text-amber-deep shrink-0 mt-0.5" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[12px] font-semibold text-ink">{issue.label}</p>
-                        <p className="text-[11.5px] text-slate mt-0.5 leading-relaxed">{issue.detail}</p>
-                        {issue.glossary && (
-                          <button
-                            onClick={() => applyGlossaryFix(issue.glossary)}
-                            className="mt-1.5 inline-flex items-center gap-1 text-[11px] text-ocean hover:text-ocean-deep cursor-pointer"
-                          >
-                            <Check className="w-3 h-3" /> Apply approved rendering
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+          <Panel
+            id="qa"
+            icon={Stethoscope}
+            iconClass="text-error"
+            title={`Live QA · ${qa.length} issue${qa.length === 1 ? '' : 's'}`}
+            shortcut={<Kbd>Q</Kbd>}
+            isFocused={focusedPanel === 'qa'}
+            empty={<span className="inline-flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-teal" /> No issues detected.</span>}
+            footerHint="J/K to move · Enter to jump or apply · Esc to release"
+          >
+            {qa.map((issue, i) => (
+              <PanelRow key={issue.id} active={focusedPanel === 'qa' && i === focusedIdx} onClick={() => { if (issue.glossary) applyGlossaryFix(issue.glossary); else editorRef.current?.focus() }}>
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-deep shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[12px] font-semibold text-ink">{issue.label}</p>
+                    <p className="text-[11.5px] text-slate mt-0.5 leading-relaxed">{issue.detail}</p>
+                    {issue.glossary && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); applyGlossaryFix(issue.glossary) }}
+                        className="mt-1.5 inline-flex items-center gap-1 text-[11px] text-ocean hover:text-ocean-deep cursor-pointer"
+                      >
+                        <Check className="w-3 h-3" /> Apply approved rendering
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </PanelRow>
+            ))}
+          </Panel>
 
           {currentUserRole === 'client-reviewer' && (
             <details className="bg-white border border-rule rounded-lg">
@@ -709,6 +842,45 @@ export default function QuickReviewWorkspace({
           )}
         </aside>
       </div>
+
+      {showShortcuts && <ShortcutOverlay onClose={() => setShowShortcuts(false)} />}
     </div>
+  )
+}
+
+/* ─── Panel + PanelRow primitives — keyboard-focus-aware ───────── */
+function Panel({ icon: Icon, iconClass, title, shortcut, isFocused, empty, footerHint, children }) {
+  const items = Array.isArray(children) ? children : (children ? [children] : [])
+  return (
+    <section className={`bg-white rounded-lg overflow-hidden border ${isFocused ? 'border-ocean' : 'border-rule'}`}>
+      <div className="px-3 py-2 border-b border-rule flex items-center justify-between">
+        <span className="inline-flex items-center gap-1.5">
+          <Icon className={`w-3.5 h-3.5 ${iconClass}`} />
+          <MonoLabel>{title}</MonoLabel>
+        </span>
+        <span className="text-[11px] text-slate inline-flex items-center gap-1">{shortcut}</span>
+      </div>
+      {items.length === 0 ? (
+        <p className="px-3 py-3 text-[12px] text-mist">{empty}</p>
+      ) : (
+        <ul className="divide-y divide-rule">{items}</ul>
+      )}
+      {isFocused && items.length > 0 && (
+        <div className="px-3 py-1.5 border-t border-rule bg-pale/40 text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+          {footerHint}
+        </div>
+      )}
+    </section>
+  )
+}
+
+function PanelRow({ active, onClick, children }) {
+  return (
+    <li
+      onClick={onClick}
+      className={`px-3 py-2.5 cursor-pointer border-l-2 ${active ? 'border-l-ocean bg-ocean/5' : 'border-l-transparent hover:bg-pale/40'}`}
+    >
+      {children}
+    </li>
   )
 }

@@ -6,11 +6,11 @@
  * shows everything available to the demo current user.
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   LayoutDashboard, Users, FolderTree, ScrollText, Workflow, BadgeCheck,
   CheckSquare, ClipboardList, GraduationCap, Activity, ShieldCheck, FileSpreadsheet, X,
-  UsersRound, Award,
+  UsersRound, Award, LogOut,
 } from 'lucide-react'
 
 import WorkflowOverview from './WorkflowOverview'
@@ -69,6 +69,26 @@ export default function HITLVendorWorkflow({ currentUserId, onClose }) {
   const [activeProjectId, setActiveProjectId] = useState('hp-q3-ja-earnings')
   const Screen = SCREENS[active] || WorkflowOverview
 
+  /* Review Mode = on the Review Workspace, the global app sidebar is
+   * hidden so the reviewer can't bounce between projects, tasks, or
+   * other governance screens mid-review. The only escape is the
+   * explicit Exit Review control or Shift+E. */
+  const inReviewMode = active === 'workspace'
+  const exitReview = () => setActive('assignments')
+
+  useEffect(() => {
+    if (!inReviewMode) return
+    function onKey(e) {
+      if (e.key === 'E' && e.shiftKey && !e.metaKey && !e.ctrlKey) {
+        const tag = (e.target?.tagName || '').toUpperCase()
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return
+        e.preventDefault(); exitReview()
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [inReviewMode])
+
   return (
     <div className="fixed inset-0 z-40 bg-cream flex flex-col">
       {/* top bar */}
@@ -76,17 +96,37 @@ export default function HITLVendorWorkflow({ currentUserId, onClose }) {
         <div className="flex items-center gap-3">
           <Workflow className="w-5 h-5 text-ocean" />
           <div>
-            <p className="text-[14px] font-semibold text-ink leading-tight">HITL Vendor Workflow</p>
-            <p className="text-[11px] text-mist leading-tight" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>arbitr · governed human-in-the-loop control plane</p>
+            <p className="text-[14px] font-semibold text-ink leading-tight">
+              {inReviewMode ? 'Review Mode' : 'HITL Vendor Workflow'}
+            </p>
+            <p className="text-[11px] text-mist leading-tight" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+              {inReviewMode
+                ? 'arbitr · navigation hidden · Shift+E to exit'
+                : 'arbitr · governed human-in-the-loop control plane'}
+            </p>
           </div>
         </div>
-        <button onClick={onClose} className="p-2 rounded-md hover:bg-pale text-slate cursor-pointer" aria-label="Close">
-          <X className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-2">
+          {inReviewMode && (
+            <button
+              onClick={exitReview}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-rule-strong bg-white hover:bg-pale text-[12px] text-ink cursor-pointer"
+              title="Exit Review (Shift+E)"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              Exit Review
+              <kbd className="ml-1 px-1 py-0.5 bg-cream border border-rule rounded text-[9.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>⇧E</kbd>
+            </button>
+          )}
+          <button onClick={onClose} className="p-2 rounded-md hover:bg-pale text-slate cursor-pointer" aria-label="Close">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
       </header>
 
       <div className="flex-1 min-h-0 flex">
-        {/* sidebar */}
+        {/* sidebar — hidden in Review Mode */}
+        {!inReviewMode && (
         <aside className="w-64 shrink-0 border-r border-rule bg-white overflow-y-auto">
           <nav className="px-2 py-4 space-y-4">
             {GROUPS.map(group => (
@@ -117,10 +157,11 @@ export default function HITLVendorWorkflow({ currentUserId, onClose }) {
             ))}
           </nav>
         </aside>
+        )}
 
         {/* content */}
         <main className="flex-1 min-w-0 overflow-y-auto">
-          <div className="max-w-[1280px] mx-auto px-8 py-8">
+          <div className={inReviewMode ? 'max-w-[1480px] mx-auto px-6 py-6' : 'max-w-[1280px] mx-auto px-8 py-8'}>
             <Screen
               currentUserId={currentUserId}
               activeProjectId={activeProjectId}
