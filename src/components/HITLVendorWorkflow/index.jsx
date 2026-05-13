@@ -10,7 +10,7 @@ import { useState, useEffect } from 'react'
 import {
   LayoutDashboard, Users, FolderTree, ScrollText, Workflow, BadgeCheck,
   CheckSquare, ClipboardList, GraduationCap, Activity, ShieldCheck, FileSpreadsheet, X,
-  UsersRound, Award, LogOut,
+  UsersRound, Award,
 } from 'lucide-react'
 
 import WorkflowOverview from './WorkflowOverview'
@@ -107,17 +107,9 @@ export default function HITLVendorWorkflow({ currentUserId, onClose }) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {inReviewMode && (
-            <button
-              onClick={exitReview}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-rule-strong bg-white hover:bg-pale text-[12px] text-ink cursor-pointer"
-              title="Exit Review (Shift+E)"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              Exit Review
-              <kbd className="ml-1 px-1 py-0.5 bg-cream border border-rule rounded text-[9.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>⇧E</kbd>
-            </button>
-          )}
+          {/* Exit Review now lives inside the inner top task bar in
+              QuickReviewWorkspace, so all task-level controls are in
+              one horizontal band. Shift+E shortcut still active here. */}
           <button onClick={onClose} className="p-2 rounded-md hover:bg-pale text-slate cursor-pointer" aria-label="Close">
             <X className="w-4 h-4" />
           </button>
@@ -167,6 +159,7 @@ export default function HITLVendorWorkflow({ currentUserId, onClose }) {
               activeProjectId={activeProjectId}
               setActiveProjectId={setActiveProjectId}
               navigate={setActive}
+              onExitReview={exitReview}
             />
           </div>
         </main>

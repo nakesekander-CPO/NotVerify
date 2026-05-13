@@ -36,6 +36,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import {
   Check, RotateCcw, ChevronLeft, ChevronRight, AlertTriangle, RefreshCcw,
   ArrowRight, Clock, Pause, BookOpen, FileText, Stethoscope, ChevronDown, Keyboard, X,
+  LogOut,
 } from 'lucide-react'
 import { ORG_BRAIN_UPDATES } from '../../data/hitlVendorWorkflow'
 import { decideSegment } from '../../services/hitl/review'
@@ -260,10 +261,11 @@ function ShortcutOverlay({ onClose }) {
       ['A', 'Accept suggestion (when target is untouched)'],
     ]},
     { name: 'Live TM', items: [
-      ['T', 'Apply top match · focus TM panel'],
-      ['J / K · ↓ / ↑', 'Move within TM panel (after T)'],
-      ['Enter', 'Apply selected TM match'],
-      ['Esc', 'Release TM panel focus'],
+      ['T',        'Apply top TM match immediately'],
+      ['⇧T',       'Focus TM panel to browse'],
+      ['J / K · ↓ / ↑', 'Move within TM panel'],
+      ['Enter',    'Apply selected TM match'],
+      ['Esc',      'Release TM panel focus'],
     ]},
     { name: 'Live TB', items: [
       ['B', 'Focus glossary panel'],
@@ -321,6 +323,7 @@ export default function QuickReviewWorkspace({
   project, task, segments, activeIdx, setActiveIdx,
   currentUserId, currentUserRole = 'vendor-user',
   cockpitMode, setCockpitMode,
+  onExitReview,
 }) {
   const activeSeg = segments[activeIdx]
   const recommended = useMemo(() => {
@@ -516,9 +519,13 @@ export default function QuickReviewWorkspace({
           if (isAccepted) { e.preventDefault(); acceptRecommended() }
           return
         case 't': case 'T':
-          // Apply top TM match immediately AND focus the panel so J/K/Enter work for others.
-          if (tmMatches[0]) applyTM(tmMatches[0])
-          setFocusedPanel('tm'); setFocusedIdx(0); e.preventDefault(); return
+          // T plain → apply top TM match. Shift+T → focus panel for browsing.
+          if (e.shiftKey) {
+            setFocusedPanel('tm'); setFocusedIdx(0)
+          } else if (tmMatches[0]) {
+            applyTM(tmMatches[0])
+          }
+          e.preventDefault(); return
         case 'b': case 'B':
           setFocusedPanel('tb'); setFocusedIdx(0); e.preventDefault(); return
         case 'q': case 'Q':
@@ -616,13 +623,28 @@ export default function QuickReviewWorkspace({
           {timerLabel && <span className="text-[10px] uppercase tracking-wider">{timerLabel}</span>}
         </div>
 
-        {/* ? + (parent renders Exit Review in the outer header) */}
         <button
           onClick={() => setShowShortcuts(true)}
           title="Show keyboard shortcuts (?)"
           className="px-2 py-1 rounded-md border border-rule bg-white text-[11px] text-slate hover:border-ocean/30 cursor-pointer"
           style={{ fontFamily: "'IBM Plex Mono', monospace" }}
         >?</button>
+
+        {/* Exit Review — relocated from the outer HITL header into the
+            single top task bar so every task-level control lives in
+            one horizontal band. Shift+E shortcut is registered by the
+            parent HITLVendorWorkflow. */}
+        {onExitReview && (
+          <button
+            onClick={onExitReview}
+            title="Exit Review (Shift+E)"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-rule-strong bg-white hover:bg-pale text-[12px] text-ink cursor-pointer"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            Exit Review
+            <Kbd>⇧E</Kbd>
+          </button>
+        )}
       </header>
 
       {/* ── 3-COLUMN BODY ─────────────────────────────────────── */}
@@ -758,7 +780,7 @@ export default function QuickReviewWorkspace({
             icon={FileText}
             iconClass="text-ocean"
             title={`Live TM · ${tmMatches.length} match${tmMatches.length === 1 ? '' : 'es'}`}
-            shortcut={<><Kbd>T</Kbd> apply top match</>}
+            shortcut={<><Kbd>T</Kbd> apply top · <Kbd>⇧T</Kbd> browse</>}
             isFocused={focusedPanel === 'tm'}
             empty="No translation memory matches above 15%."
             footerHint="J/K to move · Enter to apply · Esc to release"
@@ -766,8 +788,15 @@ export default function QuickReviewWorkspace({
             {tmMatches.map((m, i) => (
               <PanelRow key={m.id} active={focusedPanel === 'tm' && i === focusedIdx} onClick={() => applyTM(m)}>
                 <div className="flex items-center justify-between mb-1">
-                  <span className={`text-[11px] font-mono px-1.5 py-0.5 rounded ${m.matchRatio >= 0.75 ? 'bg-teal/10 text-teal' : m.matchRatio >= 0.4 ? 'bg-ocean/10 text-ocean' : 'bg-amber/10 text-amber-deep'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-                    {(m.matchRatio * 100).toFixed(0)}%
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className={`text-[11px] font-mono px-1.5 py-0.5 rounded ${m.matchRatio >= 0.75 ? 'bg-teal/10 text-teal' : m.matchRatio >= 0.4 ? 'bg-ocean/10 text-ocean' : 'bg-amber/10 text-amber-deep'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                      {(m.matchRatio * 100).toFixed(0)}%
+                    </span>
+                    {i === 0 && (
+                      <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-ocean text-white font-semibold" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                        Top · T
+                      </span>
+                    )}
                   </span>
                   <button onClick={(e) => { e.stopPropagation(); applyTM(m) }} className="text-[10.5px] text-ocean hover:text-ocean-deep cursor-pointer">Apply</button>
                 </div>

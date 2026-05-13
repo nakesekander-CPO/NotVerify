@@ -21,7 +21,7 @@ import {
 import { isRole } from '../../services/hitl/rbac'
 import QuickReviewWorkspace from './QuickReviewWorkspace'
 
-export default function SecureVendorWorkspace({ activeProjectId, setActiveProjectId, currentUserId }) {
+export default function SecureVendorWorkspace({ activeProjectId, setActiveProjectId, currentUserId, onExitReview }) {
   const project = HITL_PROJECTS.find(p => p.id === activeProjectId) || HITL_PROJECTS[0]
   const [scope, setScope] = useState('all') // 'all' | 'mine'
   const allTasks = HITL_TASKS.filter(t => t.projectId === project.id)
@@ -495,6 +495,7 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
           currentUserRole={isRole(currentUserId, 'vendor-user', 'vendor-admin') ? 'vendor-user' : isRole(currentUserId, 'client-reviewer') ? 'client-reviewer' : 'internal-reviewer'}
           cockpitMode={cockpitMode}
           setCockpitMode={setCockpitMode}
+          onExitReview={onExitReview}
         />
       )}
 
