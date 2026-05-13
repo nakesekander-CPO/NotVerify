@@ -177,7 +177,18 @@ function HighlightedEditable({ initialValue, intervals, onChange, locked, autoFo
       onInput={() => onChange?.(ref.current?.innerText || '')}
       role="textbox"
       aria-multiline="true"
-      className="w-full text-[15px] leading-relaxed text-ink border border-rule rounded-md p-3 focus:outline-none focus:border-ocean/50 min-h-[120px] whitespace-pre-wrap"
+      /* Suppress third-party writing / translation overlays inside this
+       * secure editable surface. Grammarly, LanguageTool, and Google
+       * Translate all watch for these attributes. */
+      spellCheck={false}
+      translate="no"
+      autoCorrect="off"
+      autoCapitalize="off"
+      data-gramm="false"
+      data-gramm_editor="false"
+      data-enable-grammarly="false"
+      data-lt-active="false"
+      className="w-full text-[15px] leading-relaxed text-ink border border-rule rounded-md p-3 focus:outline-none focus:border-ocean/50 min-h-[120px] whitespace-pre-wrap notranslate"
       style={{ fontFamily: 'inherit' }}
     />
   )
@@ -509,34 +520,53 @@ export default function QuickReviewWorkspace({
               )}
             </section>
 
-            <div className="flex items-center gap-2 pt-4 border-t border-rule">
+            {/* Action row — Save & Next is dominant. Contextual actions
+                appear only when relevant. Skip is a quiet text link. */}
+            <div className="flex items-center gap-3 pt-4 border-t border-rule">
               <button
                 onClick={() => commit({ advance: true })}
-                disabled={activeSeg.locked || (!isDirty && !isAccepted)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-semibold transition-colors bg-amber hover:bg-amber-deep text-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                disabled={activeSeg.locked || !target.trim() || (!isDirty && !isAccepted)}
+                title={!target.trim() ? 'Target is empty' : ''}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-[13.5px] font-semibold transition-colors bg-amber hover:bg-amber-deep text-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-sm"
               >
-                Save & Next <kbd className="ml-1 px-1 py-0.5 bg-white/20 rounded text-[10px]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>⌘↩</kbd>
+                Save & Next
+                <kbd className="ml-1 px-1.5 py-0.5 bg-white/20 rounded text-[10px]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>⌘↩</kbd>
               </button>
-              <button
-                onClick={acceptRecommended}
-                disabled={activeSeg.locked}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13px] font-medium border border-rule-strong bg-white hover:bg-pale text-ink cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <Check className="w-3.5 h-3.5" /> Accept suggestion
-              </button>
-              <button
-                onClick={reset}
-                disabled={!isDirty}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13px] font-medium border border-rule-strong bg-white hover:bg-pale text-ink cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <RotateCcw className="w-3.5 h-3.5" /> Reset to suggestion
-              </button>
+
+              {/* Untouched: offer one-click Accept */}
+              {isAccepted && !activeSeg.locked && (
+                <button
+                  onClick={acceptRecommended}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[12.5px] text-slate hover:text-ink hover:bg-pale cursor-pointer"
+                >
+                  <Check className="w-3.5 h-3.5" /> Accept suggestion
+                </button>
+              )}
+
+              {/* Edited: offer Reset */}
+              {isDirty && !activeSeg.locked && (
+                <button
+                  onClick={reset}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[12.5px] text-slate hover:text-ink hover:bg-pale cursor-pointer"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" /> Reset to suggestion
+                </button>
+              )}
+
+              {/* Empty target — explicit warning, no Accept (nothing to accept) */}
+              {!target.trim() && (
+                <span className="inline-flex items-center gap-1.5 text-[12px] text-amber-deep">
+                  <AlertTriangle className="w-3.5 h-3.5" /> Target is empty
+                </span>
+              )}
+
+              {/* Skip — quiet, always last */}
               <button
                 onClick={next}
                 disabled={activeIdx === totalSeg - 1}
-                className="ml-auto inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] text-slate hover:bg-pale cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                className="ml-auto inline-flex items-center gap-1 px-2 py-1 text-[12px] text-mist hover:text-slate cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                Skip · Next <ArrowRight className="w-3.5 h-3.5" />
+                Skip <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </>
@@ -587,13 +617,6 @@ export default function QuickReviewWorkspace({
           </details>
         )}
 
-        <button
-          onClick={onOpenAudit}
-          className="w-full text-left bg-cream border border-rule rounded-lg px-3 py-2.5 hover:border-ocean/30 cursor-pointer"
-        >
-          <p className="text-[12px] text-ink font-semibold">Show details</p>
-          <p className="text-[11px] text-mist mt-0.5">Open Audit Review for agent panel, trust score, pedigree, posture history.</p>
-        </button>
       </aside>
     </div>
   )

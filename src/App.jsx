@@ -761,14 +761,19 @@ export default function App() {
       </main>
       <Footer />
 
-      {/* Persistent Intelligence Assistant — available on all post-onboarding screens */}
-      <IntelligenceAssistant
-        userName={onboardingConfig?.userName || 'Alex'}
-        companyName={onboardingConfig?.orgName || 'Meridian Capital'}
-        currentPhase={phase}
-        connectedIntegrations={connectedIntegrations}
-        onOpenIntegrations={() => { setPreviousPhase(phase); setPhase('integrations') }}
-      />
+      {/* Persistent Intelligence Assistant — available on all post-onboarding screens,
+          except while the HITL Vendor Workflow overlay is open (Quick Review is a
+          secure focused-edit surface and the Sage FAB introduces a competing AI entry
+          point + visual noise that conflicts with the workspace's secure-session promise). */}
+      {!showHitlWorkflow && (
+        <IntelligenceAssistant
+          userName={onboardingConfig?.userName || 'Alex'}
+          companyName={onboardingConfig?.orgName || 'Meridian Capital'}
+          currentPhase={phase}
+          connectedIntegrations={connectedIntegrations}
+          onOpenIntegrations={() => { setPreviousPhase(phase); setPhase('integrations') }}
+        />
+      )}
 
       {/* Intelligence Marketplace — full-page overlay */}
       <IntelligenceMarketplace
