@@ -9,8 +9,11 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "build:pages": "GITHUB_PAGES=1 vite build",
+    "deploy": "npm run build:pages && gh-pages -d dist -b gh-pages -m \"Deploy from feat/hitl-vendor-workflow\""
   },
+  "homepage": "https://nakesekander-cpo.github.io/NotVerify/",
   "dependencies": {
     "framer-motion": "^12.38.0",
     "lucide-react": "^0.577.0",
@@ -26,6 +29,7 @@
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
+    "gh-pages": "^6.3.0",
     "globals": "^17.4.0",
     "tailwindcss": "^4.2.2",
     "vite": "^8.0.1",
