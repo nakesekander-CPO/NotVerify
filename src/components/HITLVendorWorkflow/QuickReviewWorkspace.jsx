@@ -36,7 +36,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import {
   Check, RotateCcw, ChevronLeft, ChevronRight, AlertTriangle, RefreshCcw,
   Clock, Pause, BookOpen, FileText, Stethoscope, ChevronDown, Keyboard, X,
-  LogOut, Flag, Sparkles, Search, Replace, Eye, EyeOff,
+  LogOut, Flag, Sparkles, Search, Replace, Eye, EyeOff, BadgeCheck,
 } from 'lucide-react'
 import { ORG_BRAIN_UPDATES, FLAG_CATEGORIES } from '../../data/hitlVendorWorkflow'
 import { decideSegment } from '../../services/hitl/review'
@@ -386,7 +386,7 @@ export default function QuickReviewWorkspace({
   project, task, segments, activeIdx, setActiveIdx,
   currentUserId, currentUserRole = 'vendor-user',
   cockpitMode, setCockpitMode,
-  onExitReview,
+  onExitReview, onGoToSignoff,
 }) {
   const activeSeg = segments[activeIdx]
   const recommended = useMemo(() => {
@@ -665,14 +665,23 @@ export default function QuickReviewWorkspace({
     function isTextField(el) {
       if (!el) return false
       const tag = (el.tagName || '').toUpperCase()
-      if (tag === 'INPUT' || tag === 'TEXTAREA') return true
-      return el.isContentEditable
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true
+      if (el.isContentEditable) return true
+      // Belt-and-suspenders: some editors / browsers fail to set
+      // isContentEditable on descendants. Walk up looking for the attr.
+      const ce = el.closest?.('[contenteditable="true"], [contenteditable=""], [role="textbox"]')
+      return !!ce
     }
     function onKey(e) {
+      // ── IME safeguard (highest priority) ──────────────────────
+      // Never fire shortcuts while a composition (IME) session is
+      // active. Critical for JA/ZH reviewers — Enter during IME
+      // composition must commit the candidate, not the segment.
+      if (e.isComposing || e.keyCode === 229 || composingRef.current) return
+
       // ── Always-on shortcuts (work in any zone) ────────────────
       // Cmd/Ctrl+Enter — confirm & advance to next segment (any).
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-        if (composingRef.current) return // safety; should already be handled by editor
         e.preventDefault(); commit({ advance: 'any' }); return
       }
       // Cmd/Ctrl+F — find & replace
@@ -888,6 +897,44 @@ export default function QuickReviewWorkspace({
           className="px-2 py-1 rounded-md border border-rule bg-white text-[11px] text-slate hover:border-ocean/30 cursor-pointer"
           style={{ fontFamily: "'IBM Plex Mono', monospace" }}
         >?</button>
+
+        {/* Signoff — workflow-forward action. Distinct from Exit Review:
+            "Exit" leaves the workspace; "Signoff" advances the task to
+            the sign-off screen with current context preserved. Disabled
+            until every flagged segment is resolved so reviewers can't
+            sign off on incomplete work. */}
+        {onGoToSignoff && (() => {
+          const blockedBy = totalFlagged - flaggedDone
+          const ready = blockedBy === 0
+          const label = ready
+            ? 'Go to Signoff'
+            : `Resolve ${blockedBy} flagged ${blockedBy === 1 ? 'segment' : 'segments'} before signoff`
+          return (
+            <button
+              onClick={() => {
+                if (!ready) return
+                if (savedAt === false || (target && target !== (activeSeg?.editedTarget || recommended))) {
+                  // Unsaved edit — offer a quick save before navigating.
+                  if (confirm('You have unsaved edits in the active segment. Save before continuing to Signoff?')) {
+                    commit({ advance: 'none' })
+                  }
+                }
+                onGoToSignoff()
+              }}
+              disabled={!ready}
+              title={label}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] cursor-pointer transition-colors ${
+                ready
+                  ? 'bg-ocean text-white border border-ocean hover:bg-ocean/90'
+                  : 'bg-pale text-mist border border-rule cursor-not-allowed'
+              }`}
+            >
+              <BadgeCheck className="w-3.5 h-3.5" />
+              Signoff
+              {!ready && <span className="ml-0.5 px-1.5 py-0.5 rounded-full bg-white/20 text-[9.5px] font-mono" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{blockedBy}</span>}
+            </button>
+          )
+        })()}
 
         {/* Exit Review — relocated from the outer HITL header into the
             single top task bar so every task-level control lives in

@@ -160,6 +160,7 @@ export default function HITLVendorWorkflow({ currentUserId, onClose }) {
               setActiveProjectId={setActiveProjectId}
               navigate={setActive}
               onExitReview={exitReview}
+              onGoToSignoff={() => setActive('signoff')}
             />
           </div>
         </main>
