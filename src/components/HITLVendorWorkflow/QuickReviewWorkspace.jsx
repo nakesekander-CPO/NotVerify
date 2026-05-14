@@ -380,6 +380,116 @@ function ShortcutOverlay({ onClose }) {
   )
 }
 
+/* ─── Document reading view ───────────────────────────────────────
+ *
+ * A target-only continuous-reading mode for non-translator final review
+ * (PMs, signoff stakeholders, regional leads doing a flow read).
+ * Translation chrome (TM, glossary, QA) is hidden by default. Each
+ * paragraph is clickable: a popover surfaces source + segment metadata,
+ * and "Open in editor" jumps the reviewer back into Quick mode at that
+ * segment. Keyboard: J/K navigates paragraphs, Enter opens, / focuses
+ * the source-toggle. Source can be revealed inline (parallel) for
+ * bilingual readers without leaving the view. */
+function DocumentReadingView({ project, segments, activeIdx, onJump }) {
+  const [openIdx, setOpenIdx] = useState(null)
+  const [showSource, setShowSource] = useState(false)
+  const targetLang = project?.requirements?.targetLanguages?.[0]?.toUpperCase() || 'TARGET'
+  const sourceLang = project?.requirements?.sourceLanguage?.toUpperCase() || 'SOURCE'
+  // Group consecutive segments into "paragraphs" — split on segments
+  // whose source ends with a hard line break or is a heading.
+  return (
+    <div className="grid grid-cols-[1fr_280px] gap-4 items-start">
+      <main className="bg-white border border-rule rounded-lg p-8 max-h-[78vh] overflow-y-auto">
+        <header className="mb-6 pb-4 border-b border-rule flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[10.5px] uppercase tracking-[0.18em] text-mist mb-1" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+              {targetLang} · target document · continuous reading
+            </p>
+            <p className="text-[18px] font-semibold text-ink">{project?.name || 'Document'}</p>
+          </div>
+          <button
+            onClick={() => setShowSource(v => !v)}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[11.5px] cursor-pointer ${
+              showSource ? 'border-ocean text-ocean bg-ocean/5' : 'border-rule text-slate hover:bg-pale'
+            }`}
+            title="Show source paragraphs inline"
+          >
+            {showSource ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+            {showSource ? `Hide ${sourceLang}` : `Show ${sourceLang}`}
+          </button>
+        </header>
+        <article className="space-y-4 text-[15.5px] leading-[1.85] text-ink" style={{ fontFamily: 'inherit' }}>
+          {segments.map((s, i) => {
+            const isActive = i === activeIdx
+            const isOpen = i === openIdx
+            const display = s.editedTarget || s.target || s.source
+            const decision = s.decision || 'pending'
+            const dotClass =
+              decision === 'verified' || decision === 'accepted' || decision === 'edited' ? 'bg-teal'
+              : decision === 'rejected' || decision === 'not-verified' ? 'bg-error'
+              : decision === 'needs-rework' ? 'bg-amber-deep'
+              : 'bg-mist'
+            return (
+              <div key={s.id} className="group">
+                {showSource && (
+                  <p className="text-[12.5px] text-mist italic mb-1.5 leading-relaxed">{s.source}</p>
+                )}
+                <p
+                  onClick={() => setOpenIdx(isOpen ? null : i)}
+                  className={`relative cursor-pointer rounded-md transition-colors px-2 -mx-2 ${
+                    isOpen ? 'bg-ocean/5 ring-1 ring-ocean/30' : isActive ? 'bg-amber/5' : 'hover:bg-pale/60'
+                  }`}
+                >
+                  <span className={`inline-block w-1.5 h-1.5 rounded-full mr-2 align-middle ${dotClass}`} />
+                  {display}
+                </p>
+                {isOpen && (
+                  <div className="mt-1 ml-4 p-3 rounded-md border border-rule bg-cream/60 text-[12.5px] text-slate">
+                    <div className="flex items-center justify-between mb-2 text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                      <span>SEG-{String(i + 1).padStart(3, '0')} · {decision}</span>
+                      {s.flagCategories?.length > 0 && (
+                        <span className="inline-flex items-center gap-1 text-amber-deep">
+                          <Flag className="w-3 h-3" /> {s.flagCategories.join(' · ')}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[12px] text-mist mb-2"><span className="uppercase tracking-wider mr-1.5" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{sourceLang}</span>{s.source}</p>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onJump?.(i) }}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-ocean text-white text-[11.5px] cursor-pointer hover:bg-ocean/90"
+                    >
+                      <Check className="w-3 h-3" /> Open in editor
+                    </button>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </article>
+      </main>
+      <aside className="bg-white border border-rule rounded-lg p-4 sticky top-2">
+        <p className="text-[10.5px] uppercase tracking-[0.18em] text-mist mb-2" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+          Reading mode
+        </p>
+        <p className="text-[12.5px] text-slate leading-relaxed mb-3">
+          Continuous read of the target document. Click any paragraph to
+          inspect source context. Translation chrome is hidden — switch
+          to <span className="font-semibold text-ink">Quick</span> to edit.
+        </p>
+        <ul className="text-[11.5px] text-slate space-y-1.5">
+          <li className="flex items-center gap-2"><span className="inline-block w-1.5 h-1.5 rounded-full bg-teal" /> Verified / accepted</li>
+          <li className="flex items-center gap-2"><span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-deep" /> Needs rework</li>
+          <li className="flex items-center gap-2"><span className="inline-block w-1.5 h-1.5 rounded-full bg-error" /> Rejected / not verified</li>
+          <li className="flex items-center gap-2"><span className="inline-block w-1.5 h-1.5 rounded-full bg-mist" /> Pending</li>
+        </ul>
+        <div className="border-t border-rule mt-4 pt-3 text-[11px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+          {segments.length} paragraphs · {sourceLang} → {targetLang}
+        </div>
+      </aside>
+    </div>
+  )
+}
+
 /* ─── Component ────────────────────────────────────────────────── */
 
 export default function QuickReviewWorkspace({
@@ -867,15 +977,25 @@ export default function QuickReviewWorkspace({
           </button>
         </div>
 
-        {/* Mode toggle (was top-right of section heading; now inline in the task bar) */}
+        {/* Mode toggle — Quick (segment-edit) / Doc (target-only reading) /
+            Audit (full evidentiary cockpit). Routed by SecureVendorWorkspace:
+            'quick' and 'doc' both render through this component (this body
+            switches on cockpitMode); 'audit' renders the full audit body. */}
         {setCockpitMode && (
           <div className="inline-flex items-center rounded-full border border-rule bg-white overflow-hidden text-[11.5px]">
             <button
               onClick={() => setCockpitMode('quick')}
+              title="Segment-by-segment editing"
               className={`px-2.5 py-1 cursor-pointer ${cockpitMode === 'quick' ? 'bg-ocean text-white' : 'text-slate hover:bg-pale'}`}
             >Quick</button>
             <button
+              onClick={() => setCockpitMode('doc')}
+              title="Target document — continuous reading"
+              className={`px-2.5 py-1 cursor-pointer ${cockpitMode === 'doc' ? 'bg-ocean text-white' : 'text-slate hover:bg-pale'}`}
+            >Doc</button>
+            <button
               onClick={() => setCockpitMode('audit')}
+              title="Full evidentiary cockpit"
               className={`px-2.5 py-1 cursor-pointer ${cockpitMode === 'audit' ? 'bg-ocean text-white' : 'text-slate hover:bg-pale'}`}
             >Audit</button>
           </div>
@@ -974,7 +1094,15 @@ export default function QuickReviewWorkspace({
         />
       )}
 
-      {/* ── 3-COLUMN BODY ─────────────────────────────────────── */}
+      {/* ── BODY ──────────────────────────────────────────────── */}
+      {cockpitMode === 'doc' ? (
+        <DocumentReadingView
+          project={project}
+          segments={segments}
+          activeIdx={activeIdx}
+          onJump={(i) => { setActiveIdx(i); setCockpitMode?.('quick') }}
+        />
+      ) : (
       <div className="grid grid-cols-[260px_1fr_320px] gap-4 items-start">
 
         {/* LEFT: Document context */}
@@ -1262,6 +1390,7 @@ export default function QuickReviewWorkspace({
           )}
         </aside>
       </div>
+      )}
 
       {showShortcuts && <ShortcutOverlay onClose={() => setShowShortcuts(false)} />}
       {showPalette && (

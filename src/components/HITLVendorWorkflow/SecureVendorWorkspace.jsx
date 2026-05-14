@@ -97,8 +97,8 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
     }
   }, [activeSeg?.id])
 
-  /* ─── Cockpit-level mode: Quick Review (default) vs Audit Review ── */
-  const [cockpitMode, setCockpitMode] = useState('quick') // 'quick' | 'audit'
+  /* ─── Cockpit-level mode: Quick Review (default), Document view, vs Audit Review ── */
+  const [cockpitMode, setCockpitMode] = useState('quick') // 'quick' | 'doc' | 'audit'
   /* ─── Audit-cockpit sub-mode: Reviewer Mode vs Compact View ────── */
   const [mode, setMode] = useState('reviewer')      // 'reviewer' (default) | 'compact'
   const [showShortcuts, setShowShortcuts] = useState(false)
@@ -107,7 +107,10 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
   const [edgeCasesOpen, setEdgeCasesOpen] = useState(false)
   const isCompact = mode === 'compact'
   const isReviewer = !isCompact  // for legacy reference sites below
-  const isQuick = cockpitMode === 'quick'
+  // 'doc' (target-only reading view) routes through the QuickReviewWorkspace
+  // shell — the workspace component switches its body based on cockpitMode
+  // so the top task bar, flag strip, and right rail stay consistent.
+  const isQuick = cockpitMode === 'quick' || cockpitMode === 'doc'
 
   // Helper: record a posture transition (audit-grade telemetry).
   const setPostureWithTrace = (next) => {
