@@ -35,14 +35,31 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import {
   Check, RotateCcw, ChevronLeft, ChevronRight, AlertTriangle, RefreshCcw,
-  ArrowRight, Clock, Pause, BookOpen, FileText, Stethoscope, ChevronDown, Keyboard, X,
-  LogOut,
+  Clock, Pause, BookOpen, FileText, Stethoscope, ChevronDown, Keyboard, X,
+  LogOut, Flag, Sparkles, Search, Replace, Eye, EyeOff,
 } from 'lucide-react'
-import { ORG_BRAIN_UPDATES } from '../../data/hitlVendorWorkflow'
+import { ORG_BRAIN_UPDATES, FLAG_CATEGORIES } from '../../data/hitlVendorWorkflow'
 import { decideSegment } from '../../services/hitl/review'
 import { qaDiff } from '../../services/hitl/cockpit'
 import { findTMMatches } from '../../services/hitl/tm'
 import { MonoLabel } from './shared'
+import CommandPalette from './CommandPalette'
+
+/* Roles that see compliance metadata (J-GAAP / TSE / ASBJ) by default. */
+const COMPLIANCE_VISIBLE_ROLES = new Set([
+  'final-validator', 'compliance-reviewer', 'legal-reviewer', 'internal-reviewer',
+  'project-manager', 'org-admin', 'tenant-admin', 'arbitr-global-admin',
+])
+
+/* Heuristic: does a QA / glossary item carry regulatory weight that
+ * should be hidden from non-compliance roles by default? */
+function isComplianceItem(item) {
+  if (!item) return false
+  if (item.glossary?.sourceTermbase && /j-gaap|tse|asbj|compliance|legal/i.test(item.glossary.sourceTermbase)) return true
+  if (item.label && /regulator|compliance|j-gaap|asbj|tse|filing/i.test(item.label)) return true
+  if (item.detail && /j-gaap|asbj|tse|filing/i.test(item.detail)) return true
+  return false
+}
 
 /* ─── Tiny key-cap visual ─────────────────────────────────────── */
 function Kbd({ children, className = '' }) {
@@ -85,12 +102,20 @@ function findGlossaryHits(source, target, project) {
         if (idx !== -1) { tIdx = idx; tHeadLen = headLen; break }
       }
     }
+    const status = o.status || 'preferred'
+    // "Required missing" promotes the source-side mark to the required tone
+    // when the approved rendering is absent from the target.
+    const renderedStatus =
+      status === 'required' && tIdx === -1 ? 'required' : status
     hits.push({
       id: o.id,
       term: source.slice(sIdx, sIdx + srcHead.length),
       approved: o.approvedFragment.slice(0, 120),
       definition: o.sourceFragment.slice(0, 200),
       usage: `${o.domain} · ${o.language}`,
+      sourceTermbase: o.sourceTermbase || null,
+      usageNote: o.usageNote || null,
+      status: renderedStatus,
       sourceStart: sIdx, sourceEnd: sIdx + srcHead.length,
       targetStart: tIdx === -1 ? null : tIdx,
       targetEnd:   tIdx === -1 ? null : tIdx + tHeadLen,
@@ -98,6 +123,17 @@ function findGlossaryHits(source, target, project) {
   }
   hits.sort((a, b) => a.sourceStart - b.sourceStart)
   return hits
+}
+
+/* Pretty label for a glossary status. */
+function glossStatusLabel(status) {
+  switch (status) {
+    case 'required':  return 'Required'
+    case 'forbidden': return 'Forbidden'
+    case 'dnt':       return 'Do not translate'
+    case 'preferred': return 'Preferred'
+    default:          return 'Optional'
+  }
 }
 
 function escapeHtml(s) {
@@ -109,14 +145,18 @@ function buildHTML(text, intervals) {
   for (const iv of intervals) {
     if (iv.start == null || iv.end == null || iv.start < cursor) continue
     out += escapeHtml(text.slice(cursor, iv.start))
-    out += `<span class="gloss-mark" data-gloss-id="${iv.glossId}" title="${escapeHtml(iv.title)}">${escapeHtml(text.slice(iv.start, iv.end))}</span>`
+    const stateClass = iv.status ? `gloss-${iv.status}` : 'gloss-preferred'
+    out += `<span class="gloss-mark ${stateClass}" data-gloss-id="${iv.glossId}" data-gloss-status="${iv.status || 'preferred'}" title="${escapeHtml(iv.title)}">${escapeHtml(text.slice(iv.start, iv.end))}</span>`
     cursor = iv.end
   }
   out += escapeHtml(text.slice(cursor))
   return out
 }
 function tooltipFor(hit) {
-  return `Approved: ${hit.approved}\n${hit.definition}\nUsage: ${hit.usage}`
+  const status = glossStatusLabel(hit.status)
+  const tb = hit.sourceTermbase ? ` · ${hit.sourceTermbase}` : ''
+  const note = hit.usageNote ? `\n${hit.usageNote}` : ''
+  return `[${status}${tb}]\nApproved: ${hit.approved}\n${hit.definition}${note}`
 }
 
 let _paired = false
@@ -136,7 +176,10 @@ function pairHighlights() {
 }
 
 /* ─── Editable target ─────────────────────────────────────────── */
-function HighlightedEditable({ initialValue, intervals, onChange, locked, autoFocus, editorRef }) {
+function HighlightedEditable({
+  initialValue, intervals, onChange, locked, autoFocus,
+  editorRef, composingRef, onEditorKeyDown,
+}) {
   const ref = useRef(null)
   const initialHTMLRef = useRef(null)
   if (initialHTMLRef.current === null) {
@@ -162,6 +205,13 @@ function HighlightedEditable({ initialValue, intervals, onChange, locked, autoFo
       contentEditable={!locked}
       suppressContentEditableWarning
       onInput={() => onChange?.(ref.current?.innerText || '')}
+      onKeyDown={onEditorKeyDown}
+      onCompositionStart={() => { if (composingRef) composingRef.current = true }}
+      onCompositionEnd={() => {
+        if (composingRef) composingRef.current = false
+        // Mirror the post-composition text upstream so React state catches up.
+        onChange?.(ref.current?.innerText || '')
+      }}
       role="textbox"
       aria-multiline="true"
       spellCheck={false}
@@ -253,33 +303,46 @@ function fmtTime(ms) {
 function ShortcutOverlay({ onClose }) {
   const groups = [
     { name: 'Navigation', items: [
-      ['[ · ←', 'Previous segment'], [`] · →`, 'Next segment'],
-      ['J · ↓', 'Next segment (alt)'], ['K · ↑', 'Previous segment (alt)'],
+      ['Ctrl+↓', 'Next segment'],
+      ['Ctrl+↑', 'Previous segment'],
+      ['Ctrl+⇧↓', 'Next flagged segment'],
+      ['Ctrl+⇧↑', 'Previous flagged segment'],
+      ['[ · ]', 'Prev / Next (alt)'],
+      ['J · K', 'Prev / Next (alt, outside editor)'],
     ]},
-    { name: 'Editor', items: [
-      ['⌘↩ · Ctrl↩', 'Save & Next (works inside the editable)'],
-      ['A', 'Accept suggestion (when target is untouched)'],
+    { name: 'Editing', items: [
+      ['↩',           'Confirm and move to next flagged'],
+      ['⌘↩ · Ctrl↩',  'Confirm and move to next segment'],
+      ['⇧↩',          'Insert line break'],
+      ['Esc',         'Revert unsaved edit · release focus'],
+      ['⌘Z · Ctrl+Z', 'Undo'],
+      ['⌘⇧U · Ctrl⇧U','Copy source to target'],
+      ['A',           'Accept suggestion (when target is untouched)'],
     ]},
     { name: 'Live TM', items: [
-      ['T',        'Apply top TM match immediately'],
+      ['T',        'Apply top TM match'],
       ['⇧T',       'Focus TM panel to browse'],
       ['J / K · ↓ / ↑', 'Move within TM panel'],
       ['Enter',    'Apply selected TM match'],
-      ['Esc',      'Release TM panel focus'],
     ]},
-    { name: 'Live TB', items: [
-      ['B', 'Focus glossary panel'],
-      ['J / K', 'Move between terms'],
-      ['Enter', 'Apply approved rendering'],
+    { name: 'Glossary', items: [
+      ['G',        'Focus glossary panel'],
+      ['⇧G',       'Jump caret to next glossary term'],
+      ['⌘1..9',    'Apply glossary term 1–9'],
+      ['Enter',    'Apply approved rendering'],
     ]},
     { name: 'Live QA', items: [
-      ['Q', 'Focus QA panel'],
-      ['J / K', 'Move between issues'],
-      ['Enter', 'Jump to issue in target / apply fix'],
+      ['Q',        'Focus QA panel'],
+      ['J / K',    'Move between issues'],
+      ['Enter',    'Jump to issue · apply fix'],
+      ['A',        'Accept suggested fix'],
+      ['R',        'Toggle compliance items (role-gated)'],
     ]},
-    { name: 'Mode', items: [
-      ['Shift+E', 'Exit Review Mode'],
-      ['?', 'Show this overlay'],
+    { name: 'Search & tools', items: [
+      ['⌘F · Ctrl+F', 'Find & Replace'],
+      ['/',           'Command palette'],
+      ['?',           'Open / close shortcuts'],
+      ['⇧E',          'Exit Review Mode'],
     ]},
   ]
   return (
@@ -335,9 +398,16 @@ export default function QuickReviewWorkspace({
   const [target, setTarget] = useState(activeSeg?.editedTarget || recommended)
   const [savedAt, setSavedAt] = useState(null)
   const [showShortcuts, setShowShortcuts] = useState(false)
+  const [showPalette, setShowPalette] = useState(false)
+  const [showFind, setShowFind] = useState(false)
+  const [showSage, setShowSage] = useState(false)
+  const [revealCompliance, setRevealCompliance] = useState(false)
+  const [escArmed, setEscArmed] = useState(false)
   const [, force] = useState(0)
   const refresh = () => force(n => n + 1)
   const editorRef = useRef(null)
+  const composingRef = useRef(false)
+  const escTimerRef = useRef(null)
 
   /* Focused-panel state machine — null when editor is focused */
   const [focusedPanel, setFocusedPanel] = useState(null) // null | 'tm' | 'tb' | 'qa'
@@ -347,7 +417,13 @@ export default function QuickReviewWorkspace({
     setTarget(activeSeg?.editedTarget || recommended)
     setSavedAt(null)
     setFocusedPanel(null); setFocusedIdx(0)
+    setEscArmed(false)
+    if (escTimerRef.current) { clearTimeout(escTimerRef.current); escTimerRef.current = null }
   }, [activeSeg?.id])
+
+  /* Compliance visibility — defaults from role; reviewer can override per-session with R. */
+  const complianceDefault = COMPLIANCE_VISIBLE_ROLES.has(currentUserRole)
+  const showCompliance = complianceDefault || revealCompliance
 
   useEffect(() => {
     if (_paired) return
@@ -360,11 +436,17 @@ export default function QuickReviewWorkspace({
     [activeSeg?.id]
   )
   const sourceIntervals = useMemo(() => hits.map(h => ({
-    start: h.sourceStart, end: h.sourceEnd, glossId: h.id, title: tooltipFor(h),
+    start: h.sourceStart, end: h.sourceEnd, glossId: h.id, status: h.status, title: tooltipFor(h),
   })), [hits])
   const targetIntervals = useMemo(() => hits
     .filter(h => h.targetStart != null)
-    .map(h => ({ start: h.targetStart, end: h.targetEnd, glossId: h.id, title: tooltipFor(h) })),
+    .map(h => ({
+      start: h.targetStart, end: h.targetEnd, glossId: h.id,
+      // In the target, "required" loses its missing-cue (the term *is* present),
+      // so we render with the preferred tone unless the term is forbidden / DNT.
+      status: h.status === 'required' ? 'preferred' : h.status,
+      title: tooltipFor(h),
+    })),
     [hits])
 
   const tmMatches = useMemo(
@@ -398,7 +480,24 @@ export default function QuickReviewWorkspace({
 
   const { elapsed, pauseReason, resumedAt } = useTaskTimer(task?.id)
 
-  const commit = useCallback(({ advance = true } = {}) => {
+  /* Flagged-segment helpers — a flagged segment is one with at least one
+   * flagCategories entry that the reviewer has not yet verified/edited. */
+  const isFlaggedAndOpen = (s) =>
+    (s?.flagCategories?.length > 0) &&
+    !['verified', 'edited', 'accepted'].includes(s?.decision)
+
+  const findNextOpenFlagged = (from, dir = 1) => {
+    const n = segments.length
+    if (n === 0) return -1
+    let i = from + dir
+    while (i >= 0 && i < n) {
+      if (isFlaggedAndOpen(segments[i]) && !segments[i].locked) return i
+      i += dir
+    }
+    return -1
+  }
+
+  const commit = useCallback(({ advance = 'any' } = {}) => {
     if (!activeSeg) return
     const inferredPosture = isAccepted ? 'accept' : 'refine'
     const action = isAccepted ? 'verified' : 'edited'
@@ -421,15 +520,23 @@ export default function QuickReviewWorkspace({
       })
       setSavedAt(Date.now()); refresh()
       if (advance) {
-        const nextIdx = segments.findIndex((_, i) => i > activeIdx && !segments[i].locked)
+        let nextIdx = -1
+        if (advance === 'flagged') {
+          nextIdx = findNextOpenFlagged(activeIdx, +1)
+        }
+        if (nextIdx === -1) {
+          // Fall through to next unlocked segment.
+          nextIdx = segments.findIndex((_, i) => i > activeIdx && !segments[i].locked)
+        }
         if (nextIdx !== -1) setActiveIdx(nextIdx)
       }
     } catch (e) { window.alert(`Save failed: ${e.message}`) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSeg, target, isAccepted, segments, activeIdx, currentUserId, setActiveIdx])
 
   const acceptRecommended = () => {
     setTarget(recommended)
-    requestAnimationFrame(() => commit({ advance: true }))
+    requestAnimationFrame(() => commit({ advance: 'flagged' }))
   }
   const reset = () => setTarget(recommended)
   const regenerate = () => {
@@ -439,6 +546,15 @@ export default function QuickReviewWorkspace({
   }
   const next = () => { if (activeIdx < segments.length - 1) setActiveIdx(activeIdx + 1) }
   const prev = () => { if (activeIdx > 0) setActiveIdx(activeIdx - 1) }
+  const jumpFlagged = (dir = 1) => {
+    const idx = findNextOpenFlagged(activeIdx, dir)
+    if (idx !== -1) setActiveIdx(idx)
+  }
+  const copySourceToTarget = () => {
+    if (!activeSeg?.source) return
+    setTarget(activeSeg.source)
+    requestAnimationFrame(() => editorRef.current?.focus())
+  }
 
   const applyTM = (entry) => { if (entry?.target) setTarget(entry.target) }
   const applyGlossaryFix = (hit) => {
@@ -446,6 +562,68 @@ export default function QuickReviewWorkspace({
     if (target.includes(approvedHead)) return
     const trailer = target.match(/[。．\.\s]$/) ? '' : (project?.requirements?.targetLanguages?.[0] === 'ja' ? '。' : '. ')
     setTarget(prev => `${prev}${trailer}${hit.approved}`)
+  }
+  const applyGlossaryByIndex = (n) => {
+    const hit = hits[n]
+    if (hit) applyGlossaryFix(hit)
+  }
+  /* Move the caret in the editor to the start of the next glossary span
+   * after (or wrapping around past) the current selection. Used by Shift+G. */
+  const jumpToNextGlossaryInTarget = () => {
+    const editor = editorRef.current
+    if (!editor) return
+    const marks = Array.from(editor.querySelectorAll('.gloss-mark'))
+    if (marks.length === 0) return
+    editor.focus()
+    const sel = window.getSelection()
+    let cursorOffsetTop = -Infinity
+    if (sel?.rangeCount) {
+      const r = sel.getRangeAt(0)
+      const node = r.startContainer.nodeType === 1 ? r.startContainer : r.startContainer.parentElement
+      cursorOffsetTop = node?.getBoundingClientRect?.().top ?? -Infinity
+    }
+    const target = marks.find(m => m.getBoundingClientRect().top > cursorOffsetTop) || marks[0]
+    const range = document.createRange()
+    range.selectNodeContents(target)
+    range.collapse(true)
+    sel?.removeAllRanges(); sel?.addRange(range)
+    target.classList.add('gloss-active')
+    setTimeout(() => target.classList.remove('gloss-active'), 1200)
+  }
+
+  /* Editor-local key handling — runs before the document handler.
+   * Enter (no modifier, no IME): confirm + jump to next flagged.
+   * Cmd/Ctrl+Enter:              confirm + advance to next segment (any).
+   * Shift+Enter:                  default contenteditable behavior (line break).
+   * Esc:                          dirty → press twice to discard. Clean → release focus.
+   */
+  const onEditorKeyDown = (e) => {
+    // Cmd/Ctrl+Enter is also wired at the doc level, but handle here too
+    // so we can early-exit while the IME is composing.
+    if (e.key === 'Enter') {
+      if (composingRef.current) return                  // IME safety
+      if (e.shiftKey) return                            // line break
+      if (e.metaKey || e.ctrlKey) {
+        e.preventDefault(); commit({ advance: 'any' }); return
+      }
+      e.preventDefault(); commit({ advance: 'flagged' }); return
+    }
+    if (e.key === 'Escape') {
+      if (!isDirty) { e.preventDefault(); editorRef.current?.blur(); return }
+      if (escArmed) {
+        // Second Esc within 2s — discard.
+        e.preventDefault()
+        setTarget(activeSeg?.editedTarget || recommended)
+        setEscArmed(false)
+        if (escTimerRef.current) { clearTimeout(escTimerRef.current); escTimerRef.current = null }
+        return
+      }
+      // First Esc — arm discard for 2s.
+      e.preventDefault()
+      setEscArmed(true)
+      if (escTimerRef.current) clearTimeout(escTimerRef.current)
+      escTimerRef.current = setTimeout(() => setEscArmed(false), 2000)
+    }
   }
 
   /* Apply currently focused row when Enter pressed in panel-focus mode. */
@@ -466,7 +644,23 @@ export default function QuickReviewWorkspace({
     }
   }
 
-  /* Keyboard layer */
+  /* Keyboard layer
+   *
+   * Three execution zones:
+   *   1. Modal overlays (palette, find, shortcuts) — handle Esc.
+   *   2. Inside the editor (contenteditable / input / textarea) — only
+   *      "global" shortcuts run. Plain letter keys are reserved for typing.
+   *      The editor's own onKeyDown handles Enter / Cmd+Enter / Cmd+Shift+U
+   *      with IME-composition awareness.
+   *   3. Outside text fields — full keyboard model is active.
+   *
+   * Always-on shortcuts work in any zone:
+   *   Ctrl+↓ / Ctrl+↑       — segment nav
+   *   Ctrl+⇧↓ / Ctrl+⇧↑     — flagged-segment nav
+   *   Cmd/Ctrl+F            — find & replace
+   *   Cmd/Ctrl+Enter        — confirm and advance to next segment
+   *   ? · /                 — overlays (only when not in a text field)
+   */
   useEffect(() => {
     function isTextField(el) {
       if (!el) return false
@@ -475,25 +669,58 @@ export default function QuickReviewWorkspace({
       return el.isContentEditable
     }
     function onKey(e) {
-      // Always-on: Cmd/Ctrl+Enter
+      // ── Always-on shortcuts (work in any zone) ────────────────
+      // Cmd/Ctrl+Enter — confirm & advance to next segment (any).
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-        e.preventDefault(); commit({ advance: true }); return
+        if (composingRef.current) return // safety; should already be handled by editor
+        e.preventDefault(); commit({ advance: 'any' }); return
       }
-      // ? overlay always available
-      if (e.key === '?' && !isTextField(e.target)) {
-        e.preventDefault(); setShowShortcuts(true); return
+      // Cmd/Ctrl+F — find & replace
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'f' || e.key === 'F') && !e.shiftKey && !e.altKey) {
+        e.preventDefault(); setShowFind(true); return
       }
-      // Esc — release panel focus, or close overlay
+      // Ctrl+arrow segment nav (works inside editor too).
+      if (e.ctrlKey && !e.metaKey && !e.altKey) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault()
+          if (e.shiftKey) jumpFlagged(+1); else next()
+          return
+        }
+        if (e.key === 'ArrowUp') {
+          e.preventDefault()
+          if (e.shiftKey) jumpFlagged(-1); else prev()
+          return
+        }
+      }
+      // Cmd/Ctrl+Shift+U — copy source to target (any zone).
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === 'u' || e.key === 'U')) {
+        e.preventDefault(); copySourceToTarget(); return
+      }
+      // Cmd/Ctrl+1..9 — apply glossary term n
+      if ((e.metaKey || e.ctrlKey) && /^[1-9]$/.test(e.key) && !e.shiftKey && !e.altKey) {
+        const n = parseInt(e.key, 10) - 1
+        if (hits[n]) { e.preventDefault(); applyGlossaryByIndex(n); return }
+      }
+
+      // ── Modal-aware Esc / overlay opens ───────────────────────
       if (e.key === 'Escape') {
+        if (showPalette)   { e.preventDefault(); setShowPalette(false); return }
+        if (showFind)      { e.preventDefault(); setShowFind(false); return }
         if (showShortcuts) { e.preventDefault(); setShowShortcuts(false); return }
         if (focusedPanel)  { e.preventDefault(); setFocusedPanel(null); editorRef.current?.focus(); return }
       }
-
       const inText = isTextField(e.target)
-      // When inside the editor, only the always-on shortcuts apply.
+      if (e.key === '?' && !inText) {
+        e.preventDefault(); setShowShortcuts(true); return
+      }
+      if (e.key === '/' && !inText) {
+        e.preventDefault(); setShowPalette(true); return
+      }
+
+      // ── Editor zone — let plain typing through ────────────────
       if (inText) return
 
-      // Panel-focus mode: J/K/Enter/Esc act on the focused panel.
+      // ── Panel-focus mode: J/K/Enter act on the focused panel ──
       if (focusedPanel) {
         if (e.key === 'j' || e.key === 'J' || e.key === 'ArrowDown') {
           const max = focusedPanel === 'tm' ? tmMatches.length : focusedPanel === 'tb' ? hits.length : qa.length
@@ -504,12 +731,22 @@ export default function QuickReviewWorkspace({
           setFocusedIdx(i => Math.max(0, i - 1)); e.preventDefault(); return
         }
         if (e.key === 'Enter') { e.preventDefault(); applyFocusedRow(); return }
+        if ((e.key === 'a' || e.key === 'A') && focusedPanel === 'qa') {
+          e.preventDefault()
+          const issue = qa[focusedIdx]
+          if (issue?.glossary) applyGlossaryFix(issue.glossary)
+          return
+        }
       }
 
       switch (e.key) {
-        case '[': case 'ArrowLeft':
+        case '[':
           e.preventDefault(); prev(); return
-        case ']': case 'ArrowRight':
+        case ']':
+          e.preventDefault(); next(); return
+        case 'ArrowLeft':
+          e.preventDefault(); prev(); return
+        case 'ArrowRight':
           e.preventDefault(); next(); return
         case 'j': case 'J': case 'ArrowDown':
           e.preventDefault(); next(); return
@@ -526,16 +763,29 @@ export default function QuickReviewWorkspace({
             applyTM(tmMatches[0])
           }
           e.preventDefault(); return
+        case 'g': case 'G':
+          // G focus glossary. Shift+G jump caret to next glossary in target.
+          if (e.shiftKey) {
+            jumpToNextGlossaryInTarget()
+          } else {
+            setFocusedPanel('tb'); setFocusedIdx(0)
+          }
+          e.preventDefault(); return
         case 'b': case 'B':
+          // Legacy alias for G — keeps existing muscle memory.
           setFocusedPanel('tb'); setFocusedIdx(0); e.preventDefault(); return
         case 'q': case 'Q':
           setFocusedPanel('qa'); setFocusedIdx(0); e.preventDefault(); return
+        case 'r': case 'R':
+          // Toggle compliance items visibility (only meaningful when role hides them).
+          if (!complianceDefault) { setRevealCompliance(v => !v); e.preventDefault() }
+          return
         default: return
       }
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [commit, next, prev, isAccepted, tmMatches, hits, qa, focusedPanel, focusedIdx, showShortcuts])
+  }, [commit, next, prev, isAccepted, tmMatches, hits, qa, focusedPanel, focusedIdx, showShortcuts, showPalette, showFind, complianceDefault])
 
   /* Document context: ±5 segments */
   const contextWindow = useMemo(() => {
@@ -546,6 +796,13 @@ export default function QuickReviewWorkspace({
 
   const totalSeg = segments.length
   const doneSeg = segments.filter(s => ['verified', 'edited', 'accepted'].includes(s.decision)).length
+  /* Flagged-segment counts for the compact progress + flag strip. */
+  const flaggedAll = useMemo(
+    () => segments.filter(s => s.flagCategories?.length > 0),
+    [segments]
+  )
+  const totalFlagged = flaggedAll.length
+  const flaggedDone = flaggedAll.filter(s => ['verified', 'edited', 'accepted'].includes(s.decision)).length
 
   /* Timer visuals */
   const timerPalette =
@@ -569,7 +826,9 @@ export default function QuickReviewWorkspace({
           <div className="min-w-0">
             <p className="text-[13px] font-semibold text-ink truncate">{task?.title || project?.name}</p>
             <p className="text-[10.5px] text-mist truncate" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-              {project?.requirements.sourceLanguage?.toUpperCase()} → {project?.requirements.targetLanguages?.[0]?.toUpperCase()} · {doneSeg}/{totalSeg} done
+              {project?.requirements.sourceLanguage?.toUpperCase()} → {project?.requirements.targetLanguages?.[0]?.toUpperCase()}
+              {totalFlagged > 0 && <> · <span className={flaggedDone === totalFlagged ? 'text-teal' : 'text-amber-deep'}>{flaggedDone} of {totalFlagged} flagged resolved</span></>}
+              {' · '}{doneSeg}/{totalSeg} verified
             </p>
           </div>
         </div>
@@ -647,6 +906,27 @@ export default function QuickReviewWorkspace({
         )}
       </header>
 
+      {/* ── FLAG STRIP ───────────────────────────────────────── */}
+      {totalFlagged > 0 && (
+        <FlagStrip
+          flagged={flaggedAll}
+          activeIdx={activeIdx}
+          segments={segments}
+          onJump={(i) => setActiveIdx(i)}
+          onPrev={() => jumpFlagged(-1)}
+          onNext={() => jumpFlagged(+1)}
+        />
+      )}
+
+      {/* ── FIND & REPLACE ───────────────────────────────────── */}
+      {showFind && (
+        <FindReplaceBar
+          segments={segments}
+          currentUserRole={currentUserRole}
+          onClose={() => setShowFind(false)}
+        />
+      )}
+
       {/* ── 3-COLUMN BODY ─────────────────────────────────────── */}
       <div className="grid grid-cols-[260px_1fr_320px] gap-4 items-start">
 
@@ -713,14 +993,18 @@ export default function QuickReviewWorkspace({
                   locked={activeSeg.locked}
                   autoFocus
                   editorRef={editorRef}
+                  composingRef={composingRef}
+                  onEditorKeyDown={onEditorKeyDown}
                 />
-                <div className="flex items-center justify-between mt-1.5">
+                <div className="flex items-center justify-between mt-1.5 gap-2">
                   <p className="text-[11px] text-mist">
-                    {qa.length > 0
-                      ? <><span className="text-amber-deep">{qa.length} issue{qa.length === 1 ? '' : 's'}</span> · see Live QA →</>
-                      : isDirty
-                        ? <>Edited · ready to save (⌘↩)</>
-                        : <>No issues detected · accept to confirm</>}
+                    {escArmed
+                      ? <span className="text-amber-deep">Press Esc again to discard edits</span>
+                      : qa.length > 0
+                        ? <><span className="text-amber-deep">{qa.length} issue{qa.length === 1 ? '' : 's'}</span> · see Live QA →</>
+                        : isDirty
+                          ? <>Edited · ↩ save flagged · ⌘↩ save next</>
+                          : <>No issues detected · accept to confirm</>}
                   </p>
                   {savedAt && <p className="text-[11px] text-teal">Saved · advancing</p>}
                 </div>
@@ -728,13 +1012,22 @@ export default function QuickReviewWorkspace({
 
               <div className="flex items-center gap-3 pt-4 mt-4 border-t border-rule">
                 <button
-                  onClick={() => commit({ advance: true })}
+                  onClick={() => commit({ advance: 'flagged' })}
                   disabled={activeSeg.locked || !target.trim() || (!isDirty && !isAccepted)}
-                  title={!target.trim() ? 'Target is empty' : ''}
+                  title={!target.trim() ? 'Target is empty' : 'Save and jump to next flagged segment (Enter)'}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-[13.5px] font-semibold transition-colors bg-amber hover:bg-amber-deep text-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-sm"
                 >
+                  Save & Next flagged
+                  <Kbd className="!bg-white/20 !border-white/20 !text-white">↩</Kbd>
+                </button>
+                <button
+                  onClick={() => commit({ advance: 'any' })}
+                  disabled={activeSeg.locked || !target.trim() || (!isDirty && !isAccepted)}
+                  title="Save and move to next segment regardless of flag (⌘↩)"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[12.5px] text-slate hover:text-ink hover:bg-pale cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                >
                   Save & Next
-                  <Kbd className="!bg-white/20 !border-white/20 !text-white">⌘↩</Kbd>
+                  <Kbd>⌘↩</Kbd>
                 </button>
                 {isAccepted && !activeSeg.locked && (
                   <button
@@ -812,53 +1105,104 @@ export default function QuickReviewWorkspace({
             icon={BookOpen}
             iconClass="text-amber-deep"
             title={`Live TB · ${hits.length} term${hits.length === 1 ? '' : 's'}`}
-            shortcut={<Kbd>B</Kbd>}
+            shortcut={<><Kbd>G</Kbd> focus · <Kbd>⇧G</Kbd> next · <Kbd>⌘1..9</Kbd> apply</>}
             isFocused={focusedPanel === 'tb'}
             empty="No glossary terms in this segment."
-            footerHint="J/K to move · Enter to apply approved rendering · Esc to release"
+            footerHint="J/K to move · Enter to apply · Esc to release"
           >
-            {hits.map((h, i) => (
-              <PanelRow key={h.id} active={focusedPanel === 'tb' && i === focusedIdx} onClick={() => applyGlossaryFix(h)}>
-                <p className="text-[11.5px] text-slate leading-snug"><span className="gloss-mark inline-block">{h.term}</span></p>
-                <p className="text-[12px] text-ink leading-snug mt-1 font-medium">→ {h.approved}</p>
-                <p className="text-[10.5px] text-mist mt-1" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-                  {h.usage} · {target.includes(h.approved.slice(0, 8)) ? 'in target' : 'not yet in target'}
-                </p>
-              </PanelRow>
-            ))}
+            {hits.map((h, i) => {
+              const inTarget = target.includes(h.approved.slice(0, 8))
+              return (
+                <PanelRow key={h.id} active={focusedPanel === 'tb' && i === focusedIdx} onClick={() => applyGlossaryFix(h)}>
+                  <div className="flex items-center justify-between mb-1 gap-2">
+                    <span className={`inline-flex items-center gap-1 text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded font-semibold ${glossPillClass(h.status)}`}
+                      style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                      {glossStatusLabel(h.status)}
+                    </span>
+                    <span className="text-[10px] text-mist font-mono" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                      {h.sourceTermbase || h.usage} · ⌘{i + 1}
+                    </span>
+                  </div>
+                  <p className="text-[11.5px] text-slate leading-snug"><span className={`gloss-mark gloss-${h.status} inline-block`}>{h.term}</span></p>
+                  <p className="text-[12px] text-ink leading-snug mt-1 font-medium">→ {h.approved}</p>
+                  {h.usageNote && (
+                    <p className="text-[10.5px] text-mist mt-1 italic">{h.usageNote}</p>
+                  )}
+                  <p className={`text-[10.5px] mt-1 ${inTarget ? 'text-teal' : 'text-amber-deep'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                    {inTarget ? 'in target' : 'not yet in target'}
+                  </p>
+                </PanelRow>
+              )
+            })}
           </Panel>
 
-          {/* Live QA */}
-          <Panel
-            id="qa"
-            icon={Stethoscope}
-            iconClass="text-error"
-            title={`Live QA · ${qa.length} issue${qa.length === 1 ? '' : 's'}`}
-            shortcut={<Kbd>Q</Kbd>}
-            isFocused={focusedPanel === 'qa'}
-            empty={<span className="inline-flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-teal" /> No issues detected.</span>}
-            footerHint="J/K to move · Enter to jump or apply · Esc to release"
-          >
-            {qa.map((issue, i) => (
-              <PanelRow key={issue.id} active={focusedPanel === 'qa' && i === focusedIdx} onClick={() => { if (issue.glossary) applyGlossaryFix(issue.glossary); else editorRef.current?.focus() }}>
-                <div className="flex items-start gap-2">
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-deep shrink-0 mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-semibold text-ink">{issue.label}</p>
-                    <p className="text-[11.5px] text-slate mt-0.5 leading-relaxed">{issue.detail}</p>
-                    {issue.glossary && (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); applyGlossaryFix(issue.glossary) }}
-                        className="mt-1.5 inline-flex items-center gap-1 text-[11px] text-ocean hover:text-ocean-deep cursor-pointer"
-                      >
-                        <Check className="w-3 h-3" /> Apply approved rendering
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </PanelRow>
-            ))}
-          </Panel>
+          {/* Live QA — compliance items hidden by default for non-compliance roles. */}
+          {(() => {
+            const visibleQa = showCompliance ? qa : qa.filter(i => !isComplianceItem(i))
+            const hiddenCount = qa.length - visibleQa.length
+            return (
+              <Panel
+                id="qa"
+                icon={Stethoscope}
+                iconClass="text-error"
+                title={`Live QA · ${qa.length} issue${qa.length === 1 ? '' : 's'}`}
+                shortcut={<><Kbd>Q</Kbd> focus · <Kbd>A</Kbd> accept</>}
+                isFocused={focusedPanel === 'qa'}
+                empty={<span className="inline-flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-teal" /> No issues detected.</span>}
+                footerHint="J/K move · Enter jump · A accept · Esc release"
+              >
+                {visibleQa.map((issue, i) => (
+                  <PanelRow key={issue.id} active={focusedPanel === 'qa' && i === focusedIdx} onClick={() => { if (issue.glossary) applyGlossaryFix(issue.glossary); else editorRef.current?.focus() }}>
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-deep shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[12px] font-semibold text-ink">{issue.label}</p>
+                        <p className="text-[11.5px] text-slate mt-0.5 leading-relaxed">{issue.detail}</p>
+                        {issue.glossary?.sourceTermbase && (
+                          <p className="text-[10.5px] text-mist mt-1" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                            {issue.glossary.sourceTermbase}
+                          </p>
+                        )}
+                        {issue.glossary && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); applyGlossaryFix(issue.glossary) }}
+                            className="mt-1.5 inline-flex items-center gap-1 text-[11px] text-ocean hover:text-ocean-deep cursor-pointer"
+                          >
+                            <Check className="w-3 h-3" /> Apply approved rendering
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </PanelRow>
+                ))}
+                {hiddenCount > 0 && (
+                  <li className="px-3 py-2 border-t border-rule bg-pale/40 text-[11px] text-slate flex items-center justify-between gap-2">
+                    <span className="inline-flex items-center gap-1.5">
+                      <EyeOff className="w-3.5 h-3.5 text-mist" />
+                      Compliance · {hiddenCount} item{hiddenCount === 1 ? '' : 's'} hidden
+                    </span>
+                    <button
+                      onClick={() => setRevealCompliance(true)}
+                      className="inline-flex items-center gap-1 text-ocean hover:text-ocean-deep cursor-pointer"
+                    >
+                      <Eye className="w-3 h-3" /> Reveal <Kbd>R</Kbd>
+                    </button>
+                  </li>
+                )}
+                {hiddenCount === 0 && !complianceDefault && qa.some(isComplianceItem) && (
+                  <li className="px-3 py-1.5 border-t border-rule bg-pale/40 text-[10.5px] text-mist flex items-center justify-between gap-2" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                    <span>Compliance items revealed for this session</span>
+                    <button
+                      onClick={() => setRevealCompliance(false)}
+                      className="text-slate hover:text-ink cursor-pointer"
+                    >
+                      Hide <Kbd>R</Kbd>
+                    </button>
+                  </li>
+                )}
+              </Panel>
+            )
+          })()}
 
           {currentUserRole === 'client-reviewer' && (
             <details className="bg-white border border-rule rounded-lg">
@@ -873,8 +1217,237 @@ export default function QuickReviewWorkspace({
       </div>
 
       {showShortcuts && <ShortcutOverlay onClose={() => setShowShortcuts(false)} />}
+      {showPalette && (
+        <CommandPalette
+          onClose={() => setShowPalette(false)}
+          onAction={(id) => {
+            switch (id) {
+              case 'find-in-document':
+              case 'find-in-corpus':
+                setShowFind(true); return
+              case 'open-glossary':
+                setFocusedPanel('tb'); setFocusedIdx(0); return
+              case 'open-tm-search':
+                setFocusedPanel('tm'); setFocusedIdx(0); return
+              case 'show-shortcuts':
+                setShowShortcuts(true); return
+              case 'ask-sage':
+                setShowSage(true); return
+              case 'intelligence-search':
+              case 'knowledge-graph':
+                // Demo stubs — surface a hint via the savedAt slot.
+                setSavedAt(Date.now())
+                setTimeout(() => setSavedAt(null), 1500)
+                return
+              default: return
+            }
+          }}
+        />
+      )}
+      {/* Sage FAB — always present, never default-open, never steals focus. */}
+      <SageFab open={showSage} onOpen={() => setShowSage(true)} onClose={() => setShowSage(false)} />
     </div>
   )
+}
+
+/* ─── FlagStrip — horizontal worklist of open flagged segments ─── */
+function FlagStrip({ flagged, segments, activeIdx, onJump, onPrev, onNext }) {
+  const tone = (cat) => FLAG_CATEGORIES[cat]?.tone || 'mist'
+  const dotClass = {
+    error: 'bg-error',
+    amber: 'bg-amber',
+    ocean: 'bg-ocean',
+    mist:  'bg-mist',
+  }
+  return (
+    <nav
+      className="sticky top-0 z-20 bg-white/95 backdrop-blur border border-rule rounded-lg px-3 py-2 flex items-center gap-2 overflow-x-auto"
+      aria-label="Flagged segments"
+    >
+      <span className="inline-flex items-center gap-1.5 text-[11px] text-mist shrink-0" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+        <Flag className="w-3.5 h-3.5 text-amber-deep" />
+        Flags
+      </span>
+      <button
+        onClick={onPrev}
+        title="Previous flagged segment (Ctrl+⇧↑)"
+        className="p-1 rounded hover:bg-pale text-slate cursor-pointer shrink-0"
+      >
+        <ChevronLeft className="w-3.5 h-3.5" />
+      </button>
+      <ul className="flex items-center gap-1.5 min-w-0">
+        {flagged.map(seg => {
+          const idx = segments.indexOf(seg)
+          const isActive = idx === activeIdx
+          const done = ['verified', 'edited', 'accepted'].includes(seg.decision)
+          // Pick the highest-tone severity for the dot.
+          const tones = (seg.flagCategories || []).map(tone)
+          const top =
+            tones.includes('error') ? 'error'
+            : tones.includes('amber') ? 'amber'
+            : tones.includes('ocean') ? 'ocean'
+            : 'mist'
+          const sev =
+            top === 'error' ? 'Critical'
+            : top === 'amber' ? 'Major'
+            : top === 'ocean' ? 'Notice'
+            : 'Minor'
+          return (
+            <li key={seg.id}>
+              <button
+                onClick={() => onJump(idx)}
+                title={`SEG-${String(seg.segmentNumber).padStart(3, '0')} · ${(seg.flagCategories || []).map(c => FLAG_CATEGORIES[c]?.label || c).join(', ')}`}
+                className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full border text-[11px] cursor-pointer transition-colors ${
+                  isActive
+                    ? 'border-ocean bg-ocean/10 text-ink font-semibold'
+                    : done
+                      ? 'border-rule text-mist line-through hover:bg-pale/40'
+                      : 'border-rule text-slate hover:bg-pale/40'
+                }`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${dotClass[top]}`} />
+                <span style={{ fontFamily: "'IBM Plex Mono', monospace" }}>SEG-{String(seg.segmentNumber).padStart(3, '0')}</span>
+                <span className="text-[10px] uppercase tracking-wider text-mist">{sev}</span>
+                {done && <Check className="w-3 h-3 text-teal" />}
+              </button>
+            </li>
+          )
+        })}
+      </ul>
+      <button
+        onClick={onNext}
+        title="Next flagged segment (Ctrl+⇧↓)"
+        className="p-1 rounded hover:bg-pale text-slate cursor-pointer shrink-0 ml-auto"
+      >
+        <ChevronRight className="w-3.5 h-3.5" />
+      </button>
+    </nav>
+  )
+}
+
+/* ─── Find & Replace — slide-down toolbar, Cmd+F ───────────────── */
+function FindReplaceBar({ segments, currentUserRole, onClose }) {
+  const [find, setFind] = useState('')
+  const [replace, setReplace] = useState('')
+  const [scope, setScope] = useState('document')         // 'document' | 'corpus'
+  const [includeVerified, setIncludeVerified] = useState(false)
+  const findRef = useRef(null)
+  useEffect(() => { findRef.current?.focus() }, [])
+
+  // Vendor-user is gated out of overwriting verified work.
+  const canOverwriteVerified =
+    !['vendor-user', 'client-reviewer'].includes(currentUserRole)
+
+  const matches = useMemo(() => {
+    if (!find) return { count: 0, segs: 0 }
+    const list = segments.filter(s => includeVerified || !['verified', 'edited', 'accepted'].includes(s.decision))
+    let count = 0, segs = 0
+    for (const s of list) {
+      const hay = (s.editedTarget || s.target || '')
+      const c = hay.split(find).length - 1
+      if (c > 0) { count += c; segs += 1 }
+    }
+    return { count, segs }
+  }, [find, segments, includeVerified])
+
+  return (
+    <section className="bg-white border border-rule rounded-lg px-3 py-2 flex items-center gap-2 flex-wrap">
+      <Search className="w-4 h-4 text-mist shrink-0" />
+      <input
+        ref={findRef}
+        value={find}
+        onChange={e => setFind(e.target.value)}
+        placeholder="Find"
+        className="flex-1 min-w-[160px] text-[13px] text-ink placeholder:text-mist border border-rule rounded px-2 py-1 focus:outline-none focus:border-ocean/50"
+        spellCheck={false}
+      />
+      <Replace className="w-4 h-4 text-mist shrink-0" />
+      <input
+        value={replace}
+        onChange={e => setReplace(e.target.value)}
+        placeholder="Replace"
+        className="flex-1 min-w-[160px] text-[13px] text-ink placeholder:text-mist border border-rule rounded px-2 py-1 focus:outline-none focus:border-ocean/50"
+        spellCheck={false}
+      />
+      <div className="inline-flex items-center rounded-full border border-rule bg-white overflow-hidden text-[11px] shrink-0">
+        <button
+          onClick={() => setScope('document')}
+          className={`px-2.5 py-1 cursor-pointer ${scope === 'document' ? 'bg-ocean text-white' : 'text-slate hover:bg-pale'}`}
+        >This document</button>
+        <button
+          onClick={() => setScope('corpus')}
+          className={`px-2.5 py-1 cursor-pointer ${scope === 'corpus' ? 'bg-ocean text-white' : 'text-slate hover:bg-pale'}`}
+        >Entire corpus</button>
+      </div>
+      <label className="inline-flex items-center gap-1.5 text-[11.5px] text-slate cursor-pointer shrink-0" title={canOverwriteVerified ? 'Include already-verified segments' : 'Locked — your role cannot overwrite verified segments'}>
+        <input
+          type="checkbox"
+          checked={includeVerified}
+          disabled={!canOverwriteVerified}
+          onChange={e => setIncludeVerified(e.target.checked)}
+          className="accent-ocean"
+        />
+        Include verified
+      </label>
+      <span className="text-[11px] text-mist shrink-0" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+        {find ? `${matches.count} occurrence${matches.count === 1 ? '' : 's'} in ${matches.segs} segment${matches.segs === 1 ? '' : 's'}` : '—'}
+      </span>
+      <button
+        onClick={onClose}
+        title="Close (Esc)"
+        className="p-1 rounded-md hover:bg-pale text-slate cursor-pointer shrink-0"
+      >
+        <X className="w-4 h-4" />
+      </button>
+    </section>
+  )
+}
+
+/* ─── Sage FAB — small floating button, never default-open ─────── */
+function SageFab({ open, onOpen, onClose }) {
+  return (
+    <>
+      {!open && (
+        <button
+          onClick={onOpen}
+          title="Ask Sage — optional assistant"
+          aria-label="Open Sage assistant"
+          className="fixed bottom-5 right-5 z-30 w-11 h-11 rounded-full bg-white border border-rule-strong shadow-lg flex items-center justify-center hover:border-ocean cursor-pointer"
+        >
+          <Sparkles className="w-5 h-5 text-ocean" />
+        </button>
+      )}
+      {open && (
+        <div className="fixed bottom-5 right-5 z-30 w-[320px] bg-white border border-rule rounded-lg shadow-xl overflow-hidden">
+          <header className="px-3 py-2 border-b border-rule flex items-center justify-between bg-cream/60">
+            <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-ink">
+              <Sparkles className="w-4 h-4 text-ocean" /> Sage
+            </span>
+            <button onClick={onClose} aria-label="Close" className="p-1 rounded hover:bg-pale cursor-pointer">
+              <X className="w-3.5 h-3.5 text-slate" />
+            </button>
+          </header>
+          <div className="px-3 py-3 text-[12px] text-slate space-y-2">
+            <p>Optional assistant. Ask about a segment, a glossary term, or a compliance rule.</p>
+            <p className="text-mist text-[11px]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+              Sage never edits the target on its own. Your decisions stay yours.
+            </p>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
+/* ─── Glossary status pill colors ──────────────────────────────── */
+function glossPillClass(status) {
+  switch (status) {
+    case 'forbidden': return 'bg-error/10 text-error border border-error/30'
+    case 'required':  return 'bg-amber/15 text-amber-deep border border-amber/40'
+    case 'dnt':       return 'bg-slate/10 text-slate border border-slate/30'
+    case 'preferred': return 'bg-ocean/10 text-ocean border border-ocean/30'
+    default:          return 'bg-pale text-mist border border-rule'
+  }
 }
 
 /* ─── Panel + PanelRow primitives — keyboard-focus-aware ───────── */

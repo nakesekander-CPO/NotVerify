@@ -1057,6 +1057,9 @@ export const ORG_BRAIN_UPDATES = [
     approvedBy: 'sarah',
     approvedAt: '2025-11-12T09:00:00Z',
     contributorFootprint: [{ userId: 'sarah', role: 'final-validator' }],
+    status: 'required',                                   // J-GAAP boilerplate must use this rendering
+    sourceTermbase: 'J-GAAP',
+    usageNote: 'Required ASBJ disclosure phrasing — do not paraphrase.',
   },
   {
     id: 'ob-seed-net-revenue',
@@ -1070,6 +1073,9 @@ export const ORG_BRAIN_UPDATES = [
     approvedBy: 'sarah',
     approvedAt: '2025-10-04T11:30:00Z',
     contributorFootprint: [{ userId: 'sarah', role: 'final-validator' }],
+    status: 'preferred',
+    sourceTermbase: 'Org Brain',
+    usageNote: 'Preferred rendering aligned with prior earnings releases.',
   },
   {
     id: 'ob-seed-goodwill',
@@ -1083,6 +1089,9 @@ export const ORG_BRAIN_UPDATES = [
     approvedBy: 'yuki',
     approvedAt: '2025-09-22T15:45:00Z',
     contributorFootprint: [{ userId: 'yuki', role: 'compliance-reviewer' }],
+    status: 'preferred',
+    sourceTermbase: 'J-GAAP',
+    usageNote: 'ASBJ-aligned term for impairment of goodwill.',
   },
   {
     id: 'ob-seed-quarterly-dividend',
@@ -1096,6 +1105,41 @@ export const ORG_BRAIN_UPDATES = [
     approvedBy: 'kenji',
     approvedAt: '2025-08-15T13:10:00Z',
     contributorFootprint: [{ userId: 'kenji', role: 'project-manager' }],
+    status: 'preferred',
+    sourceTermbase: 'TSE',
+    usageNote: 'TSE-aligned dividend disclosure phrasing.',
+  },
+  {
+    id: 'ob-seed-ebitda-dnt',
+    candidateId: null,
+    projectId: 'hp-q3-ja-earnings',
+    segmentId: null,
+    domain: 'financial',
+    language: 'ja',
+    sourceFragment: 'EBITDA',
+    approvedFragment: 'EBITDA',
+    approvedBy: 'sarah',
+    approvedAt: '2025-08-01T09:00:00Z',
+    contributorFootprint: [{ userId: 'sarah', role: 'final-validator' }],
+    status: 'dnt',                                        // do-not-translate — leave EBITDA verbatim
+    sourceTermbase: 'Brand Voice',
+    usageNote: 'Do not translate — leave EBITDA in Latin script.',
+  },
+  {
+    id: 'ob-seed-forbidden-non-gaap',
+    candidateId: null,
+    projectId: 'hp-q3-ja-earnings',
+    segmentId: null,
+    domain: 'financial',
+    language: 'ja',
+    sourceFragment: 'non-GAAP',
+    approvedFragment: '非会計基準',
+    approvedBy: 'yuki',
+    approvedAt: '2025-07-12T11:00:00Z',
+    contributorFootprint: [{ userId: 'yuki', role: 'compliance-reviewer' }],
+    status: 'forbidden',                                  // surface in source if reviewer drafts using this term
+    sourceTermbase: 'Compliance',
+    usageNote: 'Forbidden in J-GAAP filings — use the J-GAAP-aligned alternative provided by Compliance.',
   },
 ];
 

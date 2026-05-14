@@ -99,17 +99,48 @@
   }
 
   /* Glossary inline highlights — identical treatment in source and
-     target panes so reviewers can visually pair the two. */
+     target panes so reviewers can visually pair the two. State colors
+     stay subtle: a single-pixel underline + ~14% bg tint. The hover/
+     active state is the same color, just stronger, so the cross-pane
+     highlight pairing reads as "same term", not "different state". */
   .gloss-mark {
-    background-color: rgba(212, 134, 10, 0.14); /* amber/15 */
-    border-bottom: 1px solid rgba(181, 114, 10, 0.5); /* amber-deep/50 */
     border-radius: 2px;
     padding: 0 1px;
     transition: background-color 120ms ease;
+    /* default = preferred, ocean palette */
+    background-color: rgba(27, 94, 143, 0.10);
+    border-bottom: 1px solid rgba(27, 94, 143, 0.55);
   }
+  .gloss-mark.gloss-preferred {
+    background-color: rgba(27, 94, 143, 0.10);
+    border-bottom: 1px solid rgba(27, 94, 143, 0.55);
+  }
+  .gloss-mark.gloss-required {
+    background-color: rgba(212, 134, 10, 0.14);
+    border-bottom: 1px dashed rgba(181, 114, 10, 0.85);
+  }
+  .gloss-mark.gloss-forbidden {
+    background-color: rgba(176, 56, 51, 0.10);
+    border-bottom: 1px dotted rgba(176, 56, 51, 0.85);
+    color: rgb(118, 38, 35);
+  }
+  .gloss-mark.gloss-dnt {
+    background-color: rgba(82, 100, 120, 0.10);
+    border-bottom: 1px solid rgba(82, 100, 120, 0.7);
+    font-feature-settings: "tnum";
+  }
+  /* Cross-pane pair highlight — neutral darken so all states pair clearly. */
   .gloss-active,
   .gloss-mark:hover,
   .gloss-mark.gloss-active {
-    background-color: rgba(212, 134, 10, 0.32);
+    filter: brightness(0.92) saturate(1.2);
   }
+  .gloss-mark.gloss-preferred:hover,
+  .gloss-mark.gloss-preferred.gloss-active { background-color: rgba(27, 94, 143, 0.22); }
+  .gloss-mark.gloss-required:hover,
+  .gloss-mark.gloss-required.gloss-active  { background-color: rgba(212, 134, 10, 0.30); }
+  .gloss-mark.gloss-forbidden:hover,
+  .gloss-mark.gloss-forbidden.gloss-active { background-color: rgba(176, 56, 51, 0.22); }
+  .gloss-mark.gloss-dnt:hover,
+  .gloss-mark.gloss-dnt.gloss-active       { background-color: rgba(82, 100, 120, 0.22); }
 }
