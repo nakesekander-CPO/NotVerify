@@ -24,7 +24,7 @@ export default function ProjectCockpit({ activeProjectId, setActiveProjectId, na
         />
 
         <div className="flex-1 min-w-0">
-      <div className="grid grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-5">
         <Card>
           <MonoLabel>Project</MonoLabel>
           <p className="mt-2 text-[16px] font-semibold text-ink">{project.name}</p>
@@ -71,7 +71,7 @@ export default function ProjectCockpit({ activeProjectId, setActiveProjectId, na
         </Card>
       </div>
 
-      <div className="grid grid-cols-2 gap-6 mt-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <Card padding="p-0">
           <div className="px-5 py-3 border-b border-rule flex items-center gap-2">
             <Layers className="w-4 h-4 text-ocean" />
@@ -280,7 +280,7 @@ function TaskBreakdown({ projectId, navigate }) {
           const primary = USERS.find(u => u.id === t.primaryReviewerId)
           const collabs = (t.collaboratorIds || []).map(id => USERS.find(u => u.id === id)).filter(Boolean)
           return (
-            <li key={t.id} className="py-3 border-b border-rule last:border-b-0 grid grid-cols-[2fr_1.5fr_1fr_auto] gap-3 items-center">
+            <li key={t.id} className="py-3 border-b border-rule last:border-b-0 grid grid-cols-1 lg:grid-cols-[2fr_1.5fr_1fr_auto] gap-3 lg:items-center">
               <div className="min-w-0">
                 <p className="text-[13px] font-medium text-ink truncate">{t.title}</p>
                 <p className="text-[10.5px] text-mist mt-0.5">{t.wordCount.toLocaleString()}w · due {new Date(t.dueAt).toLocaleDateString()} · <span className="font-mono" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{(t.assignmentMode || 'single').toUpperCase()}</span></p>
