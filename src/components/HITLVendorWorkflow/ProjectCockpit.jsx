@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Calendar, Layers, Shield, Brain, Users } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { Calendar, Layers, Shield, Brain, Users, Search, X } from 'lucide-react'
 import { HITL_PROJECTS, HITL_TASKS, VENDOR_ASSIGNMENTS, getVendorById } from '../../data/hitlVendorWorkflow'
 import { USERS } from '../../data/rbacModel'
 import { projectReviewProgress } from '../../services/hitl/taskAssignment'
@@ -17,18 +17,13 @@ export default function ProjectCockpit({ activeProjectId, setActiveProjectId, na
         actions={<PrimaryButton onClick={() => navigate('recommendation')}>Re-run vendor selection</PrimaryButton>}
       />
 
-      <div className="flex gap-3 mb-5">
-        {HITL_PROJECTS.map(p => (
-          <button
-            key={p.id}
-            onClick={() => setActiveProjectId(p.id)}
-            className={`px-3.5 py-2 rounded-md border text-[12.5px] transition-colors cursor-pointer ${project.id === p.id ? 'bg-ocean text-white border-ocean' : 'bg-white border-rule text-ink hover:border-ocean/40'}`}
-          >
-            {p.name}
-          </button>
-        ))}
-      </div>
+      <div className="flex gap-5 items-start">
+        <ProjectNavigator
+          activeProjectId={project.id}
+          onSelect={setActiveProjectId}
+        />
 
+        <div className="flex-1 min-w-0">
       <div className="grid grid-cols-3 gap-5">
         <Card>
           <MonoLabel>Project</MonoLabel>
@@ -126,7 +121,139 @@ export default function ProjectCockpit({ activeProjectId, setActiveProjectId, na
         <SecondaryButton onClick={() => navigate('signoff')}>Go to sign-off</SecondaryButton>
         <SecondaryButton onClick={() => navigate('audit')}>View audit log</SecondaryButton>
       </div>
+        </div>
+      </div>
     </div>
+  )
+}
+
+/* ─── Project navigator — scalable searchable master list ─────────
+ * Replaces the horizontal pill row, which broke down past a handful
+ * of projects. Search by name / id / domain / language / status,
+ * filter by status, and scan each project's status + key facts +
+ * review progress in a scrollable list that scales to any count. */
+function ProjectNavigator({ activeProjectId, onSelect }) {
+  const [query, setQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+
+  const statuses = useMemo(() => {
+    const set = new Set(HITL_PROJECTS.map(p => p.status).filter(Boolean))
+    return ['all', ...Array.from(set)]
+  }, [])
+
+  const rows = useMemo(() => {
+    return HITL_PROJECTS.map(p => {
+      let progress = { avgProgress: 0, tasks: 0, complete: 0 }
+      try { progress = projectReviewProgress(p.id) } catch {}
+      return { p, progress }
+    })
+  }, [])
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    return rows.filter(({ p }) => {
+      if (statusFilter !== 'all' && p.status !== statusFilter) return false
+      if (!q) return true
+      const hay = [
+        p.name, p.id, p.status, p.requirements?.domain,
+        p.requirements?.sourceLanguage,
+        ...(p.requirements?.targetLanguages || []),
+        p.clientTenantId,
+      ].filter(Boolean).join(' ').toLowerCase()
+      return hay.includes(q)
+    })
+  }, [rows, query, statusFilter])
+
+  return (
+    <aside className="w-[320px] shrink-0 bg-white border border-rule rounded-lg overflow-hidden self-stretch flex flex-col max-h-[78vh]">
+      <div className="px-3 py-2.5 border-b border-rule">
+        <div className="flex items-center justify-between mb-2">
+          <MonoLabel>Projects</MonoLabel>
+          <span className="text-[11px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+            {filtered.length}/{HITL_PROJECTS.length}
+          </span>
+        </div>
+        <div className="relative">
+          <Search className="w-3.5 h-3.5 text-mist absolute left-2.5 top-1/2 -translate-y-1/2" />
+          <input
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search name, domain, language…"
+            className="w-full text-[12.5px] border border-rule rounded-md pl-8 pr-7 py-1.5 focus:outline-none focus:border-ocean/50"
+          />
+          {query && (
+            <button
+              onClick={() => setQuery('')}
+              aria-label="Clear search"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-pale text-mist cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-1 mt-2">
+          {statuses.map(s => (
+            <button
+              key={s}
+              onClick={() => setStatusFilter(s)}
+              className={`px-2 py-0.5 rounded-full text-[10.5px] border cursor-pointer transition-colors ${
+                statusFilter === s
+                  ? 'bg-ocean text-white border-ocean'
+                  : 'bg-white border-rule text-slate hover:border-ocean/40'
+              }`}
+              style={{ fontFamily: "'IBM Plex Mono', monospace" }}
+            >
+              {s === 'all' ? 'All' : s}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <ul className="overflow-y-auto flex-1">
+        {filtered.length === 0 && (
+          <li className="px-3 py-6 text-center text-[12px] text-mist">No projects match.</li>
+        )}
+        {filtered.map(({ p, progress }) => {
+          const isActive = p.id === activeProjectId
+          const tgt = (p.requirements?.targetLanguages || []).join(', ')
+          return (
+            <li key={p.id}>
+              <button
+                onClick={() => onSelect(p.id)}
+                className={`w-full text-left px-3 py-2.5 cursor-pointer border-l-2 transition-colors ${
+                  isActive
+                    ? 'border-l-ocean bg-ocean/5'
+                    : 'border-l-transparent hover:bg-pale/50'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <p className={`text-[12.5px] leading-snug ${isActive ? 'font-semibold text-ink' : 'text-ink'}`}>{p.name}</p>
+                  <StatusBadge status={p.status} />
+                </div>
+                <p className="text-[10px] text-mist mt-1" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                  {p.requirements?.sourceLanguage} → {tgt} · {p.requirements?.domain}
+                </p>
+                <div className="flex items-center justify-between mt-1.5 gap-2">
+                  <span className="text-[10px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                    {p.estimatedWordCount?.toLocaleString()}w · due {new Date(p.requirements?.deadline).toLocaleDateString()}
+                  </span>
+                  {progress.tasks > 0 && (
+                    <span className="text-[10px] text-slate shrink-0" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                      {progress.avgProgress}%
+                    </span>
+                  )}
+                </div>
+                {progress.tasks > 0 && (
+                  <div className="mt-1.5">
+                    <ScoreBar value={progress.avgProgress} color="teal" />
+                  </div>
+                )}
+              </button>
+            </li>
+          )
+        })}
+      </ul>
+    </aside>
   )
 }
 
