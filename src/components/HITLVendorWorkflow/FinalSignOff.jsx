@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { BadgeCheck, FileCheck2, AlertTriangle } from 'lucide-react'
+import { BadgeCheck, FileCheck2, AlertTriangle, ArrowRight } from 'lucide-react'
 import { HITL_PROJECTS, HITL_SEGMENTS, SIGNOFF_RECORDS } from '../../data/hitlVendorWorkflow'
 import { signOff, buildValidationReport } from '../../services/hitl/signOff'
 import { queueRetrainingCandidates } from '../../services/hitl/retrainingGate'
@@ -8,9 +8,28 @@ import { DocumentPedigreeCard } from './PedigreeCard'
 import { SectionHeading, Card, MonoLabel, StatusBadge, PrimaryButton, SecondaryButton, KeyValueRow, ScoreBar } from './shared'
 import { EmptyStateStat, RiskMitigationSummary } from './cockpit'
 
-export default function FinalSignOff({ activeProjectId, currentUserId, navigate }) {
+export default function FinalSignOff({ activeProjectId, currentUserId, navigate, setReviewFocus }) {
   const project = HITL_PROJECTS.find(p => p.id === activeProjectId) || HITL_PROJECTS[0]
   const segments = HITL_SEGMENTS.filter(s => s.projectId === project.id)
+
+  /* Jump to the review workspace focused on a specific segment.
+   * Prefers the first still-open (pending) match so the reviewer
+   * lands on something to correct; falls back to the first match. */
+  const isOpen = (s) => !s.decision || s.decision === 'pending'
+  const focusSegment = (predicate) => {
+    if (segments.length === 0) return
+    const target = segments.find(s => predicate(s) && isOpen(s)) || segments.find(predicate)
+    if (!target) return
+    setReviewFocus?.({ segmentId: target.id })
+    navigate('workspace')
+  }
+  const decisionMatchers = {
+    verified:   s => ['verified', 'accepted'].includes(s.decision),
+    edited:     s => s.decision === 'edited',
+    notVerified:s => ['not-verified', 'rejected'].includes(s.decision),
+    needsRework:s => s.decision === 'needs-rework',
+    escalated:  s => s.decision === 'escalated',
+  }
   const signOffs = SIGNOFF_RECORDS.filter(r => r.projectId === project.id)
   const [statement, setStatement] = useState('')
   const [canPublish, setCanPublish] = useState(true)
@@ -58,8 +77,12 @@ export default function FinalSignOff({ activeProjectId, currentUserId, navigate 
         <DocumentPedigreeCard pedigree={pedigree} />
       </div>
 
-      {/* Risk mitigation summary — what arbitr caught */}
-      <RiskMitigationSummary projectId={project.id} />
+      {/* Risk mitigation summary — what arbitr caught (each line jumps
+          into the workspace at the first matching / open segment). */}
+      <RiskMitigationSummary
+        projectId={project.id}
+        onPick={(key) => focusSegment(s => (s.flagCategories || []).includes(key))}
+      />
 
       <div className="grid grid-cols-3 gap-4 mt-6 mb-6">
         <EmptyStateStat
@@ -67,18 +90,28 @@ export default function FinalSignOff({ activeProjectId, currentUserId, navigate 
           status={!report || segments.length === 0 ? 'not-started' : (report.openIssues.length === 0 ? 'passed' : (report.validationScore >= 90 ? 'in-progress' : 'failed'))}
           value={report && segments.length > 0 ? `${report.validationScore}%` : null}
           detail={report && segments.length > 0 ? `${report.counts.verified} of ${report.counts.total} segments verified` : undefined}
+          actionHint="First unverified"
+          onClick={segments.length ? () => focusSegment(s => !decisionMatchers.verified(s)) : undefined}
         />
         <EmptyStateStat
           label="Quality score"
           status={!report || segments.length === 0 ? 'not-started' : (report.qualityScore >= 90 ? 'passed' : 'in-progress')}
           value={report && segments.length > 0 ? `${report.qualityScore}%` : null}
           detail={report && segments.length > 0 ? 'Composite of accepted agent confidence' : undefined}
+          actionHint="Open workspace"
+          onClick={segments.length ? () => focusSegment(() => true) : undefined}
         />
         <EmptyStateStat
           label="Open issues"
           status={!report || segments.length === 0 ? 'not-started' : (report.openIssues.length === 0 ? 'passed' : 'failed')}
           value={report && segments.length > 0 ? report.openIssues.length : null}
           detail={report && segments.length > 0 ? (report.openIssues.length === 0 ? 'No open issues detected after review' : 'Awaiting resolution') : 'No issues assessed yet'}
+          actionHint="First open"
+          onClick={report?.openIssues?.length ? () => {
+            const firstOpen = report.openIssues[0]
+            if (firstOpen?.segmentId) { setReviewFocus?.({ segmentId: firstOpen.segmentId }); navigate('workspace') }
+            else focusSegment(isOpen)
+          } : undefined}
         />
       </div>
 
@@ -88,12 +121,12 @@ export default function FinalSignOff({ activeProjectId, currentUserId, navigate 
             <FileCheck2 className="w-4 h-4 text-ocean" />
             <p className="text-[13px] font-semibold text-ink">Segment summary</p>
           </div>
-          <ul className="px-5 py-3 text-[12.5px] space-y-2">
-            <Row label="Verified" value={report?.counts.verified ?? 0} tone="teal" />
-            <Row label="Edited (kept)" value={segments.filter(s => s.decision === 'edited').length} tone="ocean" />
-            <Row label="Not verified" value={report?.counts.notVerified ?? 0} tone="error" />
-            <Row label="Needs rework" value={report?.counts.needsRework ?? 0} tone="amber" />
-            <Row label="Escalated" value={report?.counts.escalated ?? 0} tone="amber" />
+          <ul className="px-5 py-3 text-[12.5px] space-y-1">
+            <Row label="Verified" value={report?.counts.verified ?? 0} tone="teal" onJump={() => focusSegment(decisionMatchers.verified)} />
+            <Row label="Edited (kept)" value={segments.filter(s => s.decision === 'edited').length} tone="ocean" onJump={() => focusSegment(decisionMatchers.edited)} />
+            <Row label="Not verified" value={report?.counts.notVerified ?? 0} tone="error" onJump={() => focusSegment(decisionMatchers.notVerified)} />
+            <Row label="Needs rework" value={report?.counts.needsRework ?? 0} tone="amber" onJump={() => focusSegment(decisionMatchers.needsRework)} />
+            <Row label="Escalated" value={report?.counts.escalated ?? 0} tone="amber" onJump={() => focusSegment(decisionMatchers.escalated)} />
           </ul>
           {report && (
             <div className="px-5 py-3 border-t border-rule">
@@ -101,9 +134,23 @@ export default function FinalSignOff({ activeProjectId, currentUserId, navigate 
               {report.openIssues.length === 0 ? (
                 <p className="text-[12px] text-teal mt-2">All segments resolved.</p>
               ) : (
-                <ul className="mt-2 text-[12px] space-y-1.5">
+                <ul className="mt-2 text-[12px] space-y-0.5">
                   {report.openIssues.map((o, i) => (
-                    <li key={i} className="flex items-center gap-2"><AlertTriangle className="w-3.5 h-3.5 text-amber" /><span className="font-mono text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{o.segmentId}</span><span className="text-slate">{o.decision}</span></li>
+                    <li key={i}>
+                      <button
+                        type="button"
+                        onClick={() => { if (o.segmentId) { setReviewFocus?.({ segmentId: o.segmentId }); navigate('workspace') } }}
+                        title={`Open ${o.segmentId} in the review workspace`}
+                        className="group w-full flex items-center gap-2 rounded-md px-2 py-1 -mx-2 cursor-pointer hover:bg-pale/70 focus:outline-none focus:ring-2 focus:ring-ocean/30 transition-colors"
+                      >
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber shrink-0" />
+                        <span className="font-mono text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{o.segmentId}</span>
+                        <span className="text-slate">{o.decision}</span>
+                        <span className="ml-auto inline-flex items-center gap-1 text-[10.5px] text-ocean opacity-0 group-hover:opacity-100 transition-opacity" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                          Resolve <ArrowRight className="w-3 h-3" />
+                        </span>
+                      </button>
+                    </li>
                   ))}
                 </ul>
               )}
@@ -171,12 +218,28 @@ export default function FinalSignOff({ activeProjectId, currentUserId, navigate 
   )
 }
 
-function Row({ label, value, tone }) {
+function Row({ label, value, tone, onJump }) {
   const palette = { teal: 'text-teal', ocean: 'text-ocean', error: 'text-error', amber: 'text-amber-deep', mist: 'text-mist' }
+  const clickable = typeof onJump === 'function' && value > 0
   return (
-    <li className="flex items-center justify-between">
-      <span className="text-ink">{label}</span>
-      <span className={`font-semibold ${palette[tone] || 'text-ink'}`} style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{value}</span>
+    <li>
+      <button
+        type="button"
+        onClick={clickable ? onJump : undefined}
+        disabled={!clickable}
+        title={clickable ? `Jump to the first “${label}” segment` : `No ${label.toLowerCase()} segments`}
+        className={`group w-full flex items-center justify-between rounded-md px-2 py-1 -mx-2 transition-colors ${
+          clickable ? 'cursor-pointer hover:bg-pale/70 focus:outline-none focus:ring-2 focus:ring-ocean/30' : 'cursor-default'
+        }`}
+      >
+        <span className="inline-flex items-center gap-1.5 text-ink">
+          {label}
+          {clickable && (
+            <ArrowRight className="w-3 h-3 text-ocean opacity-0 group-hover:opacity-100 transition-opacity" />
+          )}
+        </span>
+        <span className={`font-semibold ${palette[tone] || 'text-ink'}`} style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{value}</span>
+      </button>
     </li>
   )
 }

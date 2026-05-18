@@ -21,7 +21,7 @@ import {
 import { isRole } from '../../services/hitl/rbac'
 import QuickReviewWorkspace from './QuickReviewWorkspace'
 
-export default function SecureVendorWorkspace({ activeProjectId, setActiveProjectId, currentUserId, onExitReview, onGoToSignoff }) {
+export default function SecureVendorWorkspace({ activeProjectId, setActiveProjectId, currentUserId, onExitReview, onGoToSignoff, reviewFocus, setReviewFocus }) {
   const project = HITL_PROJECTS.find(p => p.id === activeProjectId) || HITL_PROJECTS[0]
   const [scope, setScope] = useState('all') // 'all' | 'mine'
   const allTasks = HITL_TASKS.filter(t => t.projectId === project.id)
@@ -111,6 +111,24 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
   // shell — the workspace component switches its body based on cockpitMode
   // so the top task bar, flag strip, and right rail stay consistent.
   const isQuick = cockpitMode === 'quick' || cockpitMode === 'doc'
+
+  /* Consume a cross-screen jump request from Final Sign-Off. Resolves
+   * the target segment to its owning task + in-task index, makes sure
+   * the task is in scope, forces the editable Quick body, then clears
+   * the channel so it fires exactly once. */
+  useEffect(() => {
+    if (!reviewFocus?.segmentId) return
+    const seg = HITL_SEGMENTS.find(s => s.id === reviewFocus.segmentId)
+    if (!seg) { setReviewFocus?.(null); return }
+    if (scope === 'mine' && !myTaskIds.has(seg.taskId)) setScope('all')
+    setActiveTaskId(seg.taskId)
+    const taskSegs = HITL_SEGMENTS.filter(s => s.taskId === seg.taskId)
+    const idx = taskSegs.findIndex(s => s.id === seg.id)
+    if (idx >= 0) setActiveIdx(idx)
+    setCockpitMode('quick')
+    setReviewFocus?.(null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reviewFocus])
 
   // Helper: record a posture transition (audit-grade telemetry).
   const setPostureWithTrace = (next) => {

@@ -14,7 +14,7 @@
  * the component falls back to the legacy <Stat /> visual.
  */
 
-import { Check, X, Pause, Slash, Clock, Minus } from 'lucide-react'
+import { Check, X, Pause, Slash, Clock, Minus, ArrowRight } from 'lucide-react'
 
 const STATES = {
   'not-started': { bg: 'bg-rule',       border: 'border-rule-strong', text: 'text-mist',       icon: Clock, copy: 'Not started' },
@@ -25,12 +25,20 @@ const STATES = {
   'n/a':         { bg: 'bg-rule/50',    border: 'border-rule',        text: 'text-mist',       icon: Slash, copy: 'Not applicable' },
 }
 
-export default function EmptyStateStat({ label, status = 'not-started', value, detail }) {
+export default function EmptyStateStat({ label, status = 'not-started', value, detail, onClick, actionHint }) {
   const s = STATES[status] || STATES['not-started']
   const Icon = s.icon
-  return (
-    <div className={`rounded-md p-3 border ${s.bg} ${s.border}`}>
-      <p className="text-[10.5px] uppercase tracking-wider text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{label}</p>
+  const interactive = typeof onClick === 'function'
+  const body = (
+    <>
+      <div className="flex items-center justify-between">
+        <p className="text-[10.5px] uppercase tracking-wider text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{label}</p>
+        {interactive && (
+          <span className="inline-flex items-center gap-1 text-[10px] text-ocean opacity-0 group-hover:opacity-100 transition-opacity" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+            {actionHint || 'Open'} <ArrowRight className="w-3 h-3" />
+          </span>
+        )}
+      </div>
       {value != null ? (
         <p className="text-[22px] font-semibold text-ink mt-0.5" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{value}</p>
       ) : (
@@ -39,6 +47,22 @@ export default function EmptyStateStat({ label, status = 'not-started', value, d
         </p>
       )}
       {detail && <p className="text-[11px] text-slate mt-1">{detail}</p>}
+    </>
+  )
+  if (interactive) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={`group text-left w-full rounded-md p-3 border ${s.bg} ${s.border} cursor-pointer transition-shadow hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-ocean/30`}
+      >
+        {body}
+      </button>
+    )
+  }
+  return (
+    <div className={`rounded-md p-3 border ${s.bg} ${s.border}`}>
+      {body}
     </div>
   )
 }

@@ -4,12 +4,12 @@
  * the line the client puts in front of an auditor.
  */
 
-import { ShieldCheck, AlertTriangle, Check } from 'lucide-react'
+import { ShieldCheck, AlertTriangle, Check, ArrowRight } from 'lucide-react'
 import { FLAG_CATEGORIES } from '../../../data/hitlVendorWorkflow'
 import { documentRiskSummary } from '../../../services/hitl/cockpit'
 import { MonoLabel } from '../shared'
 
-export default function RiskMitigationSummary({ projectId }) {
+export default function RiskMitigationSummary({ projectId, onPick }) {
   const summary = documentRiskSummary(projectId)
   if (!summary) return null
   // Categories that actually appear in this document.
@@ -28,7 +28,7 @@ export default function RiskMitigationSummary({ projectId }) {
         <ShieldCheck className="w-4 h-4 text-teal" />
         <MonoLabel>Risk mitigation · what arbitr caught</MonoLabel>
       </div>
-      <ul className="space-y-1.5">
+      <ul className="space-y-0.5">
         {appearing.map(([key, total]) => {
           const meta = FLAG_CATEGORIES[key]
           if (!meta) return null
@@ -36,20 +36,37 @@ export default function RiskMitigationSummary({ projectId }) {
           const open   = summary.open[key]   || 0
           const allCaught = open === 0
           return (
-            <li key={key} className="flex items-center justify-between text-[12.5px]">
-              <span className="inline-flex items-center gap-2">
-                {allCaught
-                  ? <Check className="w-3.5 h-3.5 text-teal" />
-                  : <AlertTriangle className="w-3.5 h-3.5 text-amber-deep" />}
-                <span className="text-ink">{caught} of {total} · {meta.label}</span>
-              </span>
-              {open > 0 && (
-                <span className="text-amber-deep text-[11px]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{open} OPEN</span>
-              )}
+            <li key={key}>
+              <button
+                type="button"
+                onClick={() => onPick?.(key, { open })}
+                title={open > 0
+                  ? `${open} segment${open === 1 ? '' : 's'} still open — jump to the first to resolve`
+                  : `Reviewed — jump to the first ${meta.label} segment in the document`}
+                className="group w-full flex items-center justify-between gap-3 text-[12.5px] rounded-md px-2 py-1.5 -mx-2 cursor-pointer hover:bg-pale/70 focus:outline-none focus:ring-2 focus:ring-ocean/30 transition-colors"
+              >
+                <span className="inline-flex items-center gap-2 min-w-0">
+                  {allCaught
+                    ? <Check className="w-3.5 h-3.5 text-teal shrink-0" />
+                    : <AlertTriangle className="w-3.5 h-3.5 text-amber-deep shrink-0" />}
+                  <span className="text-ink truncate">{caught} of {total} · {meta.label}</span>
+                </span>
+                <span className="inline-flex items-center gap-2 shrink-0">
+                  {open > 0
+                    ? <span className="text-amber-deep text-[11px]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{open} OPEN</span>
+                    : <span className="text-teal text-[11px]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>CLEARED</span>}
+                  <span className="inline-flex items-center gap-1 text-[10.5px] text-ocean opacity-0 group-hover:opacity-100 transition-opacity" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                    {open > 0 ? 'Resolve' : 'Review'} <ArrowRight className="w-3 h-3" />
+                  </span>
+                </span>
+              </button>
             </li>
           )
         })}
       </ul>
+      <p className="mt-2 pt-2 border-t border-rule text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+        Click any line to open that finding in the review workspace.
+      </p>
     </div>
   )
 }

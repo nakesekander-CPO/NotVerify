@@ -66,6 +66,11 @@ const GROUPS = ['Operations', 'Governance', 'Admin']
 
 export default function HITLVendorWorkflow({ currentUserId, onClose }) {
   const [active, setActive] = useState('overview')
+  /* Cross-screen jump channel. Final Sign-Off sets this (e.g.
+   * { segmentId } / { decision } / { flagCategory }) then navigates to
+   * the workspace; SecureVendorWorkspace consumes it on mount, focuses
+   * the matching segment, and clears it. */
+  const [reviewFocus, setReviewFocus] = useState(null)
   const [activeProjectId, setActiveProjectId] = useState('hp-q3-ja-earnings')
   const Screen = SCREENS[active] || WorkflowOverview
 
@@ -161,6 +166,8 @@ export default function HITLVendorWorkflow({ currentUserId, onClose }) {
               navigate={setActive}
               onExitReview={exitReview}
               onGoToSignoff={() => setActive('signoff')}
+              reviewFocus={reviewFocus}
+              setReviewFocus={setReviewFocus}
             />
           </div>
         </main>
