@@ -37,6 +37,7 @@ import {
   Check, RotateCcw, ChevronLeft, ChevronRight, AlertTriangle, RefreshCcw,
   Clock, Pause, BookOpen, FileText, Stethoscope, ChevronDown, Keyboard, X,
   LogOut, Flag, Sparkles, Search, Replace, Eye, EyeOff, BadgeCheck,
+  PanelLeftClose, PanelLeftOpen,
 } from 'lucide-react'
 import { ORG_BRAIN_UPDATES, FLAG_CATEGORIES } from '../../data/hitlVendorWorkflow'
 import { decideSegment } from '../../services/hitl/review'
@@ -513,6 +514,8 @@ export default function QuickReviewWorkspace({
   const [showSage, setShowSage] = useState(false)
   const [revealCompliance, setRevealCompliance] = useState(false)
   const [escArmed, setEscArmed] = useState(false)
+  /* Left Document panel — collapsible to free real estate for the editor. */
+  const [docOpen, setDocOpen] = useState(true)
   const [, force] = useState(0)
   const refresh = () => force(n => n + 1)
   const editorRef = useRef(null)
@@ -1092,37 +1095,67 @@ export default function QuickReviewWorkspace({
           onJump={(i) => { setActiveIdx(i); setCockpitMode?.('quick') }}
         />
       ) : (
-      <div className="grid grid-cols-[260px_1fr_320px] gap-4 items-start">
+      <div
+        className="grid gap-4 items-start transition-[grid-template-columns] duration-300 ease-in-out"
+        style={{ gridTemplateColumns: docOpen ? '260px 1fr 320px' : '40px 1fr 320px' }}
+      >
 
-        {/* LEFT: Document context */}
-        <aside className="bg-white border border-rule rounded-lg overflow-hidden">
-          <div className="px-3 py-2 border-b border-rule">
-            <MonoLabel>Document</MonoLabel>
-          </div>
-          <ul className="max-h-[640px] overflow-y-auto py-1">
-            {contextWindow.map(({ s, i }) => {
-              const isActive = i === activeIdx
-              const done = ['verified', 'edited', 'accepted'].includes(s.decision)
-              const hasOpen = !done && qaDiff(s.source, s.editedTarget || s.target).some(r => !r.ok)
-              return (
-                <li key={s.id}>
-                  <button
-                    onClick={() => setActiveIdx(i)}
-                    className={`w-full text-left px-3 py-2 text-[12.5px] cursor-pointer flex items-start gap-2 border-l-2 ${
-                      isActive ? 'border-l-amber bg-amber/5 text-ink' : 'border-l-transparent hover:bg-pale/40 text-slate'
-                    }`}
-                  >
-                    <span className="shrink-0 w-3.5 inline-flex justify-center mt-0.5">
-                      {done && <Check className="w-3.5 h-3.5 text-teal" />}
-                      {!done && hasOpen && <AlertTriangle className="w-3.5 h-3.5 text-amber-deep" />}
-                    </span>
-                    <span className="font-mono text-mist w-6 text-right shrink-0" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{i + 1}</span>
-                    <span className="leading-snug">{s.source.slice(0, 110)}{s.source.length > 110 ? '…' : ''}</span>
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
+        {/* LEFT: Document context — collapsible for more editor real estate */}
+        <aside className="bg-white border border-rule rounded-lg overflow-hidden self-stretch">
+          {docOpen ? (
+            <>
+              <div className="px-3 py-2 border-b border-rule flex items-center justify-between">
+                <MonoLabel>Document</MonoLabel>
+                <button
+                  onClick={() => setDocOpen(false)}
+                  title="Collapse document panel"
+                  aria-label="Collapse document panel"
+                  className="p-1 rounded hover:bg-pale text-slate cursor-pointer"
+                >
+                  <PanelLeftClose className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <ul className="max-h-[640px] overflow-y-auto py-1">
+                {contextWindow.map(({ s, i }) => {
+                  const isActive = i === activeIdx
+                  const done = ['verified', 'edited', 'accepted'].includes(s.decision)
+                  const hasOpen = !done && qaDiff(s.source, s.editedTarget || s.target).some(r => !r.ok)
+                  return (
+                    <li key={s.id}>
+                      <button
+                        onClick={() => setActiveIdx(i)}
+                        className={`w-full text-left px-3 py-2 text-[12.5px] cursor-pointer flex items-start gap-2 border-l-2 ${
+                          isActive ? 'border-l-amber bg-amber/5 text-ink' : 'border-l-transparent hover:bg-pale/40 text-slate'
+                        }`}
+                      >
+                        <span className="shrink-0 w-3.5 inline-flex justify-center mt-0.5">
+                          {done && <Check className="w-3.5 h-3.5 text-teal" />}
+                          {!done && hasOpen && <AlertTriangle className="w-3.5 h-3.5 text-amber-deep" />}
+                        </span>
+                        <span className="font-mono text-mist w-6 text-right shrink-0" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{i + 1}</span>
+                        <span className="leading-snug">{s.source.slice(0, 110)}{s.source.length > 110 ? '…' : ''}</span>
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+            </>
+          ) : (
+            <button
+              onClick={() => setDocOpen(true)}
+              title="Expand document panel"
+              aria-label="Expand document panel"
+              className="h-full w-full flex flex-col items-center gap-3 py-3 cursor-pointer hover:bg-pale/40 transition-colors"
+            >
+              <PanelLeftOpen className="w-4 h-4 text-slate" />
+              <span
+                className="text-[10px] uppercase tracking-[0.2em] text-mist"
+                style={{ fontFamily: "'IBM Plex Mono', monospace", writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
+              >
+                Document
+              </span>
+            </button>
+          )}
         </aside>
 
         {/* CENTER: editor */}
