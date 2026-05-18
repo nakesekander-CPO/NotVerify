@@ -1073,17 +1073,6 @@ export default function QuickReviewWorkspace({
         )}
       </header>
 
-      {/* ── FLAG STRIP ───────────────────────────────────────── */}
-      {totalFlagged > 0 && (
-        <FlagStrip
-          flagged={flaggedAll}
-          activeIdx={activeIdx}
-          segments={segments}
-          onJump={(i) => setActiveIdx(i)}
-          onPrev={() => jumpFlagged(-1)}
-          onNext={() => jumpFlagged(+1)}
-        />
-      )}
 
       {/* ── FIND & REPLACE ───────────────────────────────────── */}
       {showFind && (
@@ -1423,81 +1412,6 @@ export default function QuickReviewWorkspace({
       {/* Sage FAB — always present, never default-open, never steals focus. */}
       <SageFab open={showSage} onOpen={() => setShowSage(true)} onClose={() => setShowSage(false)} />
     </div>
-  )
-}
-
-/* ─── FlagStrip — horizontal worklist of open flagged segments ─── */
-function FlagStrip({ flagged, segments, activeIdx, onJump, onPrev, onNext }) {
-  const tone = (cat) => FLAG_CATEGORIES[cat]?.tone || 'mist'
-  const dotClass = {
-    error: 'bg-error',
-    amber: 'bg-amber',
-    ocean: 'bg-ocean',
-    mist:  'bg-mist',
-  }
-  return (
-    <nav
-      className="sticky top-0 z-20 bg-white/95 backdrop-blur border border-rule rounded-lg px-3 py-2 flex items-center gap-2 overflow-x-auto"
-      aria-label="Flagged segments"
-    >
-      <span className="inline-flex items-center gap-1.5 text-[11px] text-mist shrink-0" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-        <Flag className="w-3.5 h-3.5 text-amber-deep" />
-        Flags
-      </span>
-      <button
-        onClick={onPrev}
-        title="Previous flagged segment (Ctrl+⇧↑)"
-        className="p-1 rounded hover:bg-pale text-slate cursor-pointer shrink-0"
-      >
-        <ChevronLeft className="w-3.5 h-3.5" />
-      </button>
-      <ul className="flex items-center gap-1.5 min-w-0">
-        {flagged.map(seg => {
-          const idx = segments.indexOf(seg)
-          const isActive = idx === activeIdx
-          const done = ['verified', 'edited', 'accepted'].includes(seg.decision)
-          // Pick the highest-tone severity for the dot.
-          const tones = (seg.flagCategories || []).map(tone)
-          const top =
-            tones.includes('error') ? 'error'
-            : tones.includes('amber') ? 'amber'
-            : tones.includes('ocean') ? 'ocean'
-            : 'mist'
-          const sev =
-            top === 'error' ? 'Critical'
-            : top === 'amber' ? 'Major'
-            : top === 'ocean' ? 'Notice'
-            : 'Minor'
-          return (
-            <li key={seg.id}>
-              <button
-                onClick={() => onJump(idx)}
-                title={`SEG-${String(seg.segmentNumber).padStart(3, '0')} · ${(seg.flagCategories || []).map(c => FLAG_CATEGORIES[c]?.label || c).join(', ')}`}
-                className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full border text-[11px] cursor-pointer transition-colors ${
-                  isActive
-                    ? 'border-ocean bg-ocean/10 text-ink font-semibold'
-                    : done
-                      ? 'border-rule text-mist line-through hover:bg-pale/40'
-                      : 'border-rule text-slate hover:bg-pale/40'
-                }`}
-              >
-                <span className={`w-1.5 h-1.5 rounded-full ${dotClass[top]}`} />
-                <span style={{ fontFamily: "'IBM Plex Mono', monospace" }}>SEG-{String(seg.segmentNumber).padStart(3, '0')}</span>
-                <span className="text-[10px] uppercase tracking-wider text-mist">{sev}</span>
-                {done && <Check className="w-3 h-3 text-teal" />}
-              </button>
-            </li>
-          )
-        })}
-      </ul>
-      <button
-        onClick={onNext}
-        title="Next flagged segment (Ctrl+⇧↓)"
-        className="p-1 rounded hover:bg-pale text-slate cursor-pointer shrink-0 ml-auto"
-      >
-        <ChevronRight className="w-3.5 h-3.5" />
-      </button>
-    </nav>
   )
 }
 
