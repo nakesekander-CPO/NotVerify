@@ -10,7 +10,7 @@ import { useState, useEffect } from 'react'
 import {
   LayoutDashboard, Users, FolderTree, ScrollText, Workflow, BadgeCheck,
   CheckSquare, ClipboardList, GraduationCap, Activity, ShieldCheck, FileSpreadsheet, X,
-  UsersRound, Award,
+  UsersRound, Award, Trophy,
 } from 'lucide-react'
 
 import WorkflowOverview from './WorkflowOverview'
@@ -26,6 +26,7 @@ import RetrainingQueue from './RetrainingQueue'
 import TrainerProfile from './TrainerProfile'
 import AuditLogViewer from './AuditLogViewer'
 import VendorAnalytics from './VendorAnalytics'
+import EngagementHub from './EngagementHub'
 import GlobalAdminSettings from './GlobalAdminSettings'
 
 const NAV = [
@@ -39,6 +40,7 @@ const NAV = [
   { id: 'trainer', label: 'Trainer Profile', icon: Award, group: 'Governance' },
   { id: 'audit', label: 'Audit Log', icon: ScrollText, group: 'Governance' },
   { id: 'analytics', label: 'Vendor Analytics', icon: Activity, group: 'Governance' },
+  { id: 'engagement', label: 'Engagement Hub', icon: Trophy, group: 'Governance' },
   { id: 'vendors', label: 'Vendor Registry', icon: Users, group: 'Admin' },
   { id: 'pools', label: 'Vendor Pools', icon: FolderTree, group: 'Admin' },
   { id: 'policies', label: 'Selection Policies', icon: FileSpreadsheet, group: 'Admin' },
@@ -56,6 +58,7 @@ const SCREENS = {
   trainer: TrainerProfile,
   audit: AuditLogViewer,
   analytics: VendorAnalytics,
+  engagement: EngagementHub,
   vendors: VendorRegistry,
   pools: VendorPoolManager,
   policies: SelectionPolicyBuilder,
