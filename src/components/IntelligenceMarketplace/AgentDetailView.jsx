@@ -6,6 +6,7 @@ import {
   FileText, Globe, Activity, Briefcase, Landmark, Languages, Gavel,
   Star, Users, Clock, CheckCircle2, Lock, Eye, Zap, BarChart3,
   GitBranch, ShieldCheck, MapPin, Brain, BookOpen,
+  PenTool, Repeat, Sparkles, Gauge, Video, Workflow, Bot, FileSearch,
 } from 'lucide-react'
 import useFocusTrap from '../../hooks/useFocusTrap'
 import TrustScoreBadge from './TrustScoreBadge'
@@ -15,6 +16,7 @@ import { MOCK_REVIEWS } from './data/marketplaceAgents'
 const ICON_MAP = {
   Shield, Building2, Mic, Megaphone, Scale, Code, Heart, FileText,
   Globe, Activity, Briefcase, Landmark, Languages, Gavel,
+  PenTool, Repeat, Sparkles, Gauge, BookOpen, Video, Workflow, Bot, FileSearch,
   Stethoscope: Heart,
 }
 

@@ -2,7 +2,8 @@ import { motion } from 'framer-motion'
 import {
   Shield, Building2, Mic, Megaphone, Scale, Code, Heart, FileText,
   Globe, Activity, Briefcase, Landmark, Languages, Gavel, Star, Users,
-  Eye, Zap,
+  Eye, Zap, PenTool, Repeat, Sparkles, Gauge, BookOpen, Video,
+  Workflow, Bot, FileSearch,
 } from 'lucide-react'
 import { TYPE_COLORS, ICON_COLOR_MAP } from './data/marketplaceCategories'
 import TrustScoreBadge from './TrustScoreBadge'
@@ -10,6 +11,7 @@ import TrustScoreBadge from './TrustScoreBadge'
 const ICON_MAP = {
   Shield, Building2, Mic, Megaphone, Scale, Code, Heart, FileText,
   Globe, Activity, Briefcase, Landmark, Languages, Gavel,
+  PenTool, Repeat, Sparkles, Gauge, BookOpen, Video, Workflow, Bot, FileSearch,
   Stethoscope: Heart,
 }
 

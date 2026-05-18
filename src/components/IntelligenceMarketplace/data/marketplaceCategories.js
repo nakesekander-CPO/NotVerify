@@ -8,6 +8,8 @@ export const INDUSTRIES = [
   { value: 'technical', label: 'Technical & Engineering' },
   { value: 'ecommerce', label: 'E-Commerce & Retail' },
   { value: 'regional', label: 'Regional Specialist' },
+  { value: 'content', label: 'Content Creation' },
+  { value: 'governance', label: 'Governance & Ops' },
 ]
 
 export const LANGUAGES = [
@@ -22,6 +24,21 @@ export const LANGUAGES = [
   { value: 'it', label: 'Italian' },
   { value: 'nl', label: 'Dutch' },
   { value: 'en', label: 'English' },
+  { value: 'hi', label: 'Hindi' },
+  { value: 'ta', label: 'Tamil' },
+  { value: 'bn', label: 'Bengali' },
+  { value: 'th', label: 'Thai' },
+  { value: 'vi', label: 'Vietnamese' },
+  { value: 'id', label: 'Indonesian' },
+  { value: 'ms', label: 'Malay' },
+  { value: 'pl', label: 'Polish' },
+  { value: 'cs', label: 'Czech' },
+  { value: 'hu', label: 'Hungarian' },
+  { value: 'ro', label: 'Romanian' },
+  { value: 'sv', label: 'Swedish' },
+  { value: 'da', label: 'Danish' },
+  { value: 'no', label: 'Norwegian' },
+  { value: 'fi', label: 'Finnish' },
 ]
 
 export const COMPLIANCE_FILTERS = ['Any', 'SOC 2', 'HIPAA', 'GDPR', 'ISO 27001']
@@ -57,4 +74,13 @@ export const ICON_COLOR_MAP = {
   Landmark: '#6366f1',
   Languages: '#0ea5e9',
   Gavel: '#64748b',
+  PenTool: '#d4860a',
+  Repeat: '#0ea5e9',
+  Sparkles: '#f59e0b',
+  Gauge: '#ec4899',
+  BookOpen: '#6366f1',
+  Video: '#ef4444',
+  Workflow: '#1B5E8F',
+  Bot: '#8b5cf6',
+  FileSearch: '#64748b',
 }
