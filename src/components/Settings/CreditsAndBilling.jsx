@@ -10,14 +10,14 @@ import {
 // ── Mock data ─────────────────────────────────────────────────────────────────
 
 const CURRENT_PLAN = {
-  name: 'Pro',
+  name: 'Team',
   tier: 1,
   renewsDate: 'Apr 13, 2026',
   features: [
     '5,000 Intelligence Credits / month',
+    'All AI features (Translation + Agent)',
     '2 Trust Credits / month',
-    'Credit rollovers',
-    'Usage-based Cloud + AI',
+    'Priority processing & Rollovers',
   ],
 }
 
@@ -31,11 +31,9 @@ const BURN = {
   tc: { daily: 0.2, weekly: 1.4, projectedEOM: 0.4 },
 }
 
-const PRO_TIERS = [
-  { tier: 1, price: 100, annualPrice: 90, ic: 5000, tc: 2 },
-  { tier: 2, price: 190, annualPrice: 171, ic: 10000, tc: 4 },
-  { tier: 3, price: 280, annualPrice: 252, ic: 15000, tc: 6 },
-]
+// Single-priced Team tier (was a 3-step Pro dropdown; consolidated to one
+// price-point per the simplified plan structure).
+const TEAM_TIER = { price: 100, annualPrice: 90, ic: 5000, tc: 2 }
 
 const IC_THRESHOLDS = [
   { value: 250, label: '250 IC' },
@@ -114,8 +112,8 @@ const INVOICES = [
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export default function CreditsAndBilling({ tier = 'pro' }) {
-  const [selectedProTier, setSelectedProTier] = useState(1)
   const [annualPro, setAnnualPro] = useState(false)
+  const [annualPlus, setAnnualPlus] = useState(false)
   const [annualStandard, setAnnualStandard] = useState(false)
 
   // PO / reference (Pro + Enterprise)
@@ -135,9 +133,6 @@ export default function CreditsAndBilling({ tier = 'pro' }) {
 
   // Invoice history
   const [showAllInvoices, setShowAllInvoices] = useState(false)
-
-  const proTierData = PRO_TIERS.find(t => t.tier === selectedProTier)
-  const isCurrentTier = selectedProTier === CURRENT_PLAN.tier
 
   const icRemaining = CREDIT_BALANCE.intelligence.total - CREDIT_BALANCE.intelligence.used
   const tcRemaining = CREDIT_BALANCE.trust.total - CREDIT_BALANCE.trust.used
@@ -183,7 +178,7 @@ export default function CreditsAndBilling({ tier = 'pro' }) {
           <div className="flex items-center gap-2 mb-1">
             <div className="w-2 h-2 rounded-full bg-[#009eda]" />
             <span className="text-[13px] font-semibold text-gray-900">
-              {tier === 'standard' ? 'Standard Plan' : tier === 'enterprise' ? 'Enterprise Plan' : 'Pro Plan'}
+              {tier === 'standard' ? 'Standard Plan' : tier === 'plus' ? 'Plus Plan' : tier === 'enterprise' ? 'Enterprise Plan' : 'Team Plan'}
             </span>
             <span className="ml-auto text-[11px] font-medium px-2 py-0.5 rounded-full bg-[#009eda]/10 text-[#009eda]">Current</span>
           </div>
@@ -468,7 +463,7 @@ export default function CreditsAndBilling({ tier = 'pro' }) {
       {/* ── Zone C: Plan comparison ────────────────────────────────────────────── */}
       <div>
         <h4 className="text-[13px] font-semibold text-gray-900 mb-4">All plans</h4>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <PlanCard
             name="Standard"
             tagline="Fast AI intelligence for everyday work."
@@ -479,79 +474,49 @@ export default function CreditsAndBilling({ tier = 'pro' }) {
             onToggleAnnual={() => setAnnualStandard(v => !v)}
             isCurrent={tier === 'standard'}
             features={[
-              '1,000 Intelligence Credits / month',
-              '300,000 words of AI translation',
+              '1,000 Intelligence Credits',
+              'Standard AI Translation',
             ]}
-            caveat="Human review: $40 flat fee per request"
             cta={tier === 'standard' ? null : 'Upgrade to Standard'}
             ctaVariant="outline"
           />
 
-          <div className={`rounded-xl bg-white p-5 flex flex-col gap-4 relative ${
-            isPro ? 'border-2 border-[#009eda]' : 'border border-black/[0.12]'
-          }`}>
-            {isPro && (
-              <div className="absolute -top-3 left-4">
-                <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#009eda] text-white">Current Plan</span>
-              </div>
-            )}
-            <div>
-              <p className="text-[14px] font-bold text-gray-900 mb-0.5">Pro / Team</p>
-              <p className="text-[11px] text-gray-500 leading-relaxed">Default to AI speed. Escalate to trusted review on outputs that matter most.</p>
-            </div>
-            <div className="relative">
-              <select
-                value={selectedProTier}
-                onChange={e => setSelectedProTier(Number(e.target.value))}
-                className="w-full appearance-none pl-3 pr-8 py-2 rounded-lg border border-black/[0.12] text-[12px] text-gray-700 bg-white cursor-pointer focus:outline-none focus:border-[#009eda]"
-              >
-                {PRO_TIERS.map(t => (
-                  <option key={t.tier} value={t.tier}>
-                    ${annualPro ? t.annualPrice : t.price}/mo — {t.ic.toLocaleString()} IC + {t.tc} TC
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-            </div>
-            <div className="text-center">
-              <span className="text-[28px] font-bold text-gray-900">${annualPro ? proTierData.annualPrice : proTierData.price}</span>
-              <span className="text-[12px] text-gray-500 ml-1">per month</span>
-              <p className="text-[10px] text-gray-400 mt-0.5">incl. VAT · shared across unlimited users</p>
-            </div>
-            <label className="flex items-center gap-2 cursor-pointer select-none">
-              <div
-                className="relative rounded-full transition-colors"
-                style={{ height: '18px', width: '32px', backgroundColor: annualPro ? '#009eda' : '#e5e7eb' }}
-                onClick={() => setAnnualPro(v => !v)}
-              >
-                <div className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform ${annualPro ? 'translate-x-4' : 'translate-x-0.5'}`} />
-              </div>
-              <span className="text-[11px] text-gray-500">Annual {annualPro && <span className="text-emerald-600 font-medium">(save 10%)</span>}</span>
-            </label>
-            <ul className="space-y-1.5">
-              {[
-                `${proTierData.ic.toLocaleString()} Intelligence Credits / month`,
-                `${proTierData.tc} Trust Credits / month`,
-                'Credit rollovers',
-                'Priority processing',
-              ].map(f => (
-                <li key={f} className="flex items-start gap-2 text-[12px] text-gray-700">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <button
-              disabled={isPro && isCurrentTier}
-              className={`mt-auto w-full px-4 py-2.5 rounded-lg text-[13px] font-semibold transition-colors ${
-                isPro && isCurrentTier
-                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-default'
-                  : 'bg-[#009eda] text-white hover:bg-[#0089c4] cursor-pointer'
-              }`}
-            >
-              {isPro && isCurrentTier ? 'Current Plan' : tier === 'standard' ? 'Upgrade to Pro' : `Upgrade to Tier ${selectedProTier}`}
-            </button>
-          </div>
+          <PlanCard
+            name="Plus / Pro Individual"
+            tagline="More credits and Specialty Verification for power users."
+            price={annualPlus ? 31 : 35}
+            priceNote="per month"
+            inclVat
+            annual={annualPlus}
+            onToggleAnnual={() => setAnnualPlus(v => !v)}
+            isCurrent={tier === 'plus'}
+            features={[
+              '2,000 Intelligence Credits',
+              'Standard AI Translation',
+              'Unlocked: AI Agent Specialty Verification',
+            ]}
+            cta={tier === 'plus' ? null : 'Upgrade to Plus'}
+            ctaVariant="outline"
+          />
+
+          <PlanCard
+            name="Team"
+            tagline="Full platform — every AI feature plus Trust Credits and priority."
+            price={annualPro ? TEAM_TIER.annualPrice : TEAM_TIER.price}
+            priceNote="per month"
+            inclVat
+            annual={annualPro}
+            onToggleAnnual={() => setAnnualPro(v => !v)}
+            isCurrent={isPro}
+            features={[
+              '5,000 Intelligence Credits',
+              'All AI features (Translation + Agent)',
+              '2 Trust Credits',
+              'Priority processing & Rollovers',
+            ]}
+            cta={isPro ? null : 'Upgrade to Team'}
+            ctaVariant="primary"
+          />
 
           <PlanCard
             name="Enterprise"
