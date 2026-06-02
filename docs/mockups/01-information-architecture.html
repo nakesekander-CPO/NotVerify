@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>arbitr — Governed HITL mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+ *{box-sizing:border-box;margin:0;padding:0}
+ body{font-family:'Inter',system-ui,sans-serif;background:#f5f5f7;color:#1d1d1f;line-height:1.5;padding:2rem;max-width:1140px;margin:0 auto}
+ h2{font-size:1.5rem;font-weight:700;margin-bottom:.5rem;font-family:'Plus Jakarta Sans',sans-serif}
+ h3{font-size:1.1rem;font-weight:600;margin-bottom:.25rem}
+ .subtitle{color:#86868b;margin-bottom:1.5rem}
+ .label{font-size:.7rem;color:#86868b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem}
+ .options{display:flex;flex-direction:column;gap:.75rem;margin-top:1rem}
+ .option{background:#fff;border:2px solid #d1d1d6;border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:1rem}
+ .option .letter{background:#e5e5e7;color:#86868b;width:1.75rem;height:1.75rem;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:.85rem;flex-shrink:0}
+ .option .content{flex:1}.option .content h3{font-size:.95rem;margin-bottom:.15rem}.option .content p{color:#86868b;font-size:.85rem;margin:0}
+ .mockup-note{background:#fff8e6;border:1px solid #f0d99a;border-radius:8px;padding:.6rem .9rem;font-size:.8rem;color:#7a5a12;margin-bottom:1.25rem}
+ .mockup-note a{color:#1B5E8F}
+</style>
+</head><body>
+<div class="mockup-note">📐 Static design mockup — arbitr Governed-HITL redesign, Slice 1 (brainstorming phase). Interactive selection is disabled in this static view. <a href="./index.html">← All mockups</a></div>
+<style>
+  .ia-wrap { --ocean:#1B5E8F; --ocean-deep:#164D75; --ink:#0F1419; --mist:#94A3B8;
+    --cream:#FAF8F3; --pale:#E8F2F9; --amber:#D4860A; --sage:#2F7A5C; --slate:#2A3F52;
+    font-family:'Inter',system-ui,sans-serif; color:var(--ink); }
+  .ia-wrap h2 { font-family:'Plus Jakarta Sans',sans-serif; }
+  .legend { display:flex; gap:18px; flex-wrap:wrap; margin:8px 0 22px; font-size:13px; }
+  .legend span { display:inline-flex; align-items:center; gap:6px; }
+  .dot { width:10px; height:10px; border-radius:3px; display:inline-block; }
+  .d-exist{background:#cbd5e1;} .d-redo{background:var(--amber);} .d-new{background:var(--sage);}
+  .ring{box-shadow:0 0 0 2px var(--ocean);}
+  .topbar { display:flex; align-items:center; gap:10px; background:var(--ink); color:#fff;
+    border-radius:10px; padding:11px 16px; font-size:13px; margin-bottom:18px; flex-wrap:wrap;}
+  .topbar .brand{font-family:'Plus Jakarta Sans';font-weight:700;letter-spacing:.5px;}
+  .pill{padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;}
+  .pill-mode{background:#1A7A5E;color:#fff;}
+  .pill-role{background:#27384a;color:#cfe3f2;border:1px solid #3a516a;}
+  .pill-ghost{background:#22303f;color:#9fb6c9;}
+  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .col { background:#fff; border:1px solid #e6e2d8; border-radius:12px; padding:14px 14px 16px;}
+  .col h3 { margin:0 0 4px; font-size:12px; letter-spacing:1.4px; text-transform:uppercase;
+    color:var(--ocean-deep); font-weight:700;}
+  .col .who{font-size:11px;color:var(--mist);margin:0 0 12px;}
+  .item { display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:8px;
+    background:var(--cream); margin-bottom:7px; font-size:13.5px; font-weight:500;}
+  .item small{margin-left:auto;font-size:10px;color:var(--mist);font-weight:600;text-transform:uppercase;letter-spacing:.4px;}
+  .item.new{background:#eef6f1;}
+  .item.s1{box-shadow:0 0 0 2px var(--ocean); background:var(--pale);}
+  .persist{margin-top:18px;background:var(--pale);border:1px dashed #9cc0db;border-radius:12px;padding:12px 16px;font-size:13px;}
+  .persist b{color:var(--ocean-deep);}
+  .s1note{margin-top:14px;font-size:13px;color:var(--slate);}
+  .s1note b{color:var(--ocean);}
+</style>
+
+<div class="ia-wrap">
+  <h2>arbitr — Proposed Information Architecture</h2>
+  <p class="subtitle">Reorganized around the governance model. Six nav groups by job-to-be-done + persona. The blue ring = built in <b>Slice 1</b>.</p>
+
+  <div class="legend">
+    <span><i class="dot d-exist"></i> Exists today</span>
+    <span><i class="dot d-redo"></i> Redesigned</span>
+    <span><i class="dot d-new"></i> Net-new</span>
+    <span><i class="dot ring" style="background:#fff"></i> In Slice 1</span>
+  </div>
+
+  <div class="topbar">
+    <span class="brand">arbitr</span>
+    <span class="pill pill-ghost">Meridian Capital</span>
+    <span style="margin-left:auto"></span>
+    <span class="pill pill-mode">● Supervised</span>
+    <span class="pill pill-role">Viewing as: Production ▾</span>
+    <span class="pill pill-ghost">✦ Sage</span>
+  </div>
+  <p style="font-size:11.5px;color:#94A3B8;margin:-8px 0 18px;">↑ Persistent global bar: system <b>mode indicator</b> + <b>view-as-role</b> switcher + Sage. Both net-new, both in Slice 1.</p>
+
+  <div class="grid">
+    <div class="col">
+      <h3>① Operate</h3>
+      <p class="who">Production · Vendor Mgr</p>
+      <div class="item">Dashboard <small style="color:#D4860A">redesign</small></div>
+      <div class="item new">Command Centre <small style="color:#2F7A5C">new</small></div>
+      <div class="item s1">Review Workspace <small style="color:#1B5E8F">slice 1</small></div>
+      <div class="item s1">Task Assignment <small style="color:#1B5E8F">slice 1</small></div>
+      <div class="item new">Project Intake <small style="color:#2F7A5C">new</small></div>
+    </div>
+
+    <div class="col">
+      <h3>② Govern</h3>
+      <p class="who">Compliance · Admin</p>
+      <div class="item s1">Autonomy &amp; Modes <small style="color:#1B5E8F">slice 1 · new</small></div>
+      <div class="item s1">Audit Log <small style="color:#1B5E8F">slice 1</small></div>
+      <div class="item">RBAC &amp; Roles <small style="color:#D4860A">redesign</small></div>
+      <div class="item">Retraining Queue <small>exists</small></div>
+    </div>
+
+    <div class="col">
+      <h3>③ Vendors</h3>
+      <p class="who">Vendor Manager</p>
+      <div class="item">Vendor Registry <small>exists</small></div>
+      <div class="item">Vendor Pools <small>exists</small></div>
+      <div class="item">Vendor Analytics <small>exists</small></div>
+      <div class="item">Recommendation <small>exists</small></div>
+    </div>
+
+    <div class="col">
+      <h3>④ Agents</h3>
+      <p class="who">Production · Admin</p>
+      <div class="item">Custom Agents <small>exists</small></div>
+      <div class="item">Agent Marketplace <small>exists</small></div>
+      <div class="item">Train Agent <small>exists</small></div>
+    </div>
+
+    <div class="col">
+      <h3>⑤ Finance</h3>
+      <p class="who">Finance / Revenue</p>
+      <div class="item new">Budgets &amp; Allocations <small style="color:#2F7A5C">new home</small></div>
+      <div class="item new">POs &amp; Invoicing <small style="color:#2F7A5C">new</small></div>
+      <div class="item">Credits &amp; Billing <small>exists</small></div>
+    </div>
+
+    <div class="col">
+      <h3>⑥ Settings</h3>
+      <p class="who">Admin</p>
+      <div class="item">Autonomy thresholds <small style="color:#D4860A">→ Govern</small></div>
+      <div class="item">RBAC roles <small>exists</small></div>
+      <div class="item">Data residency <small>exists</small></div>
+      <div class="item">Selection policies <small>exists</small></div>
+    </div>
+  </div>
+
+  <div class="persist">
+    <b>Always-on, every screen:</b> the global <b>mode indicator</b> (Autonomous / Supervised / Paused + Manual override), the <b>view-as-role</b> switcher, the live <b>confidence/gate badge</b> wherever content appears, and the persistent context-aware <b>Sage</b> assistant.
+  </div>
+
+  <p class="s1note">★ <b>Slice 1</b> builds: the global mode indicator + role switcher, the <b>Autonomy &amp; Modes</b> config screen, the redesigned <b>Review Workspace</b> across all 3 modes (with live score + gate + sign-off), <b>Task Assignment</b>, and the <b>audit-native</b> treatment. Everything else stays as-is until its slice.</p>
+</div>
+<script>function toggleSelect(el){el.classList.toggle('selected')}</script>
+</body></html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>arbitr — Governed HITL mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+ *{box-sizing:border-box;margin:0;padding:0}
+ body{font-family:'Inter',system-ui,sans-serif;background:#f5f5f7;color:#1d1d1f;line-height:1.5;padding:2rem;max-width:1140px;margin:0 auto}
+ h2{font-size:1.5rem;font-weight:700;margin-bottom:.5rem;font-family:'Plus Jakarta Sans',sans-serif}
+ h3{font-size:1.1rem;font-weight:600;margin-bottom:.25rem}
+ .subtitle{color:#86868b;margin-bottom:1.5rem}
+ .label{font-size:.7rem;color:#86868b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem}
+ .options{display:flex;flex-direction:column;gap:.75rem;margin-top:1rem}
+ .option{background:#fff;border:2px solid #d1d1d6;border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:1rem}
+ .option .letter{background:#e5e5e7;color:#86868b;width:1.75rem;height:1.75rem;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:.85rem;flex-shrink:0}
+ .option .content{flex:1}.option .content h3{font-size:.95rem;margin-bottom:.15rem}.option .content p{color:#86868b;font-size:.85rem;margin:0}
+ .mockup-note{background:#fff8e6;border:1px solid #f0d99a;border-radius:8px;padding:.6rem .9rem;font-size:.8rem;color:#7a5a12;margin-bottom:1.25rem}
+ .mockup-note a{color:#1B5E8F}
+</style>
+</head><body>
+<div class="mockup-note">📐 Static design mockup — arbitr Governed-HITL redesign, Slice 1 (brainstorming phase). Interactive selection is disabled in this static view. <a href="./index.html">← All mockups</a></div>
+<style>
+  .cw { --ocean:#1B5E8F; --ocean-deep:#164D75; --ink:#0F1419; --mist:#94A3B8;
+    --cream:#FAF8F3; --pale:#E8F2F9; --amber:#D4860A; --sage:#2F7A5C; --error:#B00020;
+    --slate:#2A3F52; font-family:'Inter',system-ui,sans-serif; color:var(--ink); }
+  .cw h2,.cw h3{font-family:'Plus Jakarta Sans',sans-serif;}
+  .panel{background:#fff;border:1px solid #e6e2d8;border-radius:14px;padding:18px 20px;margin-bottom:18px;}
+  .panel > h3{margin:0 0 3px;font-size:15px;}
+  .panel > .cap{margin:0 0 16px;font-size:12.5px;color:var(--mist);}
+  .row{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .lbl{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--mist);font-weight:600;margin-bottom:7px;}
+
+  /* gate badge */
+  .gate{display:inline-flex;flex-direction:column;gap:7px;border-radius:11px;padding:11px 13px;min-width:170px;border:1px solid;}
+  .gate .top{display:flex;align-items:baseline;gap:8px;}
+  .gate .score{font-size:24px;font-weight:800;line-height:1;font-family:'Plus Jakarta Sans';}
+  .gate .gname{font-size:12px;font-weight:700;}
+  .gate .sub{font-size:11px;color:var(--slate);opacity:.85;}
+  .gate .track{position:relative;height:6px;border-radius:4px;background:#e8e8e8;overflow:hidden;}
+  .gate .fill{position:absolute;left:0;top:0;bottom:0;border-radius:4px;}
+  .gate .t-lo,.gate .t-hi{position:absolute;top:-2px;width:2px;height:10px;background:#33415580;}
+  .g-pub{background:#eef6f1;border-color:#bcdfcd;color:var(--sage);}
+  .g-rev{background:#fbf2e2;border-color:#ecd3a3;color:#a9690a;}
+  .g-esc{background:#fbe9ec;border-color:#edbcc6;color:var(--error);}
+
+  /* mode indicator */
+  .mode{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;border:1px solid;}
+  .m-auto{background:#102a3f;color:#cfe3f2;border-color:#1f4straight;}
+  .m-auto{background:#0F1419;color:#7fd4a6;border-color:#234;}
+  .m-sup{background:#11402f;color:#7fe0b3;border-color:#1c5b43;}
+  .m-pause{background:#3a2410;color:#f0b366;border-color:#5e3c16;}
+  .m-dot{width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 0 3px currentColor;opacity:1;}
+  .m-dot.s{box-shadow:0 0 0 3px rgba(127,224,179,.25);}
+  .ovr{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700;background:#fff;border:1.5px dashed var(--ocean);color:var(--ocean-deep);}
+
+  /* signoff */
+  .signoff{border:1px solid #e6e2d8;border-radius:12px;padding:14px;min-width:300px;background:var(--cream);}
+  .signoff .pre{font-size:12px;color:var(--slate);margin-bottom:10px;line-height:1.5;}
+  .signoff .pre b{color:var(--ink);}
+  .btn{display:inline-flex;align-items:center;gap:8px;border-radius:9px;padding:10px 16px;font-size:13.5px;font-weight:700;border:none;cursor:pointer;}
+  .btn-go{background:var(--ocean);color:#fff;}
+  .btn-block{background:#f1ede4;color:#9aa6b2;cursor:not-allowed;border:1px solid #ddd6c8;}
+  .blockmsg{margin-top:10px;display:flex;gap:8px;align-items:flex-start;background:#fbe9ec;border:1px solid #edbcc6;border-radius:9px;padding:9px 11px;font-size:12px;color:var(--error);}
+  .rolechk{font-size:11px;margin-top:9px;color:var(--mist);}
+  .rolechk b{color:var(--sage);}
+
+  /* audit */
+  .audit{width:100%;border:1px solid #e6e2d8;border-radius:12px;overflow:hidden;}
+  .arow{display:grid;grid-template-columns:128px 124px 1fr 96px;gap:12px;padding:10px 14px;font-size:12.5px;border-top:1px solid #eee;align-items:center;}
+  .arow:first-child{border-top:none;background:var(--ink);color:#cfe3f2;font-size:10px;letter-spacing:.5px;text-transform:uppercase;}
+  .arow .act{font-weight:700;}
+  .a-sign{color:var(--sage);} .a-block{color:var(--error);} .a-assign{color:var(--ocean);} .a-mode{color:#a9690a;}
+  .badge-role{display:inline-block;background:var(--pale);color:var(--ocean-deep);border-radius:5px;padding:1px 7px;font-size:11px;font-weight:600;}
+</style>
+
+<div class="cw">
+  <h2>Governance component patterns</h2>
+  <p class="subtitle">The four reusable primitives. Everything bigger is assembled from these.</p>
+
+  <div class="panel">
+    <h3>1 · Confidence / Gate badge</h3>
+    <p class="cap">Live score + which autonomy gate the content is sitting at. Appears anywhere content appears. Thresholds shown: escalate&lt;75 · review&lt;92 · auto-publish≥92.</p>
+    <div class="row">
+      <div>
+        <div class="lbl">Auto-publish</div>
+        <div class="gate g-pub">
+          <div class="top"><span class="score">96</span><span class="gname">AUTO-PUBLISH</span></div>
+          <div class="track"><div class="fill" style="width:96%;background:#2F7A5C"></div><div class="t-lo" style="left:75%"></div><div class="t-hi" style="left:92%"></div></div>
+          <div class="sub">Above threshold — ships with no human review</div>
+        </div>
+      </div>
+      <div>
+        <div class="lbl">Reviewer required</div>
+        <div class="gate g-rev">
+          <div class="top"><span class="score">84</span><span class="gname">REVIEW REQUIRED</span></div>
+          <div class="track"><div class="fill" style="width:84%;background:#D4860A"></div><div class="t-lo" style="left:75%"></div><div class="t-hi" style="left:92%"></div></div>
+          <div class="sub">Assignment forced before publish</div>
+        </div>
+      </div>
+      <div>
+        <div class="lbl">Escalate to senior</div>
+        <div class="gate g-esc">
+          <div class="top"><span class="score">61</span><span class="gname">ESCALATE</span></div>
+          <div class="track"><div class="fill" style="width:61%;background:#B00020"></div><div class="t-lo" style="left:75%"></div><div class="t-hi" style="left:92%"></div></div>
+          <div class="sub">Second-reviewer escalation fired</div>
+        </div>
+      </div>
+      <div>
+        <div class="lbl">Compact (inline)</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="display:inline-flex;align-items:center;gap:6px;background:#eef6f1;border:1px solid #bcdfcd;color:#2F7A5C;border-radius:7px;padding:4px 9px;font-size:12px;font-weight:700">96 ● Auto</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;background:#fbf2e2;border:1px solid #ecd3a3;color:#a9690a;border-radius:7px;padding:4px 9px;font-size:12px;font-weight:700">84 ● Review</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;background:#fbe9ec;border:1px solid #edbcc6;color:#B00020;border-radius:7px;padding:4px 9px;font-size:12px;font-weight:700">61 ● Escalate</span>
+        </div>
+      </div>
+    </div>
+    <p style="font-size:11.5px;color:#94A3B8;margin:14px 0 0">Hover/click opens the 4-axis "why" explainer (model · verification depth · domain · provenance) — already computed in the codebase.</p>
+  </div>
+
+  <div class="panel">
+    <h3>2 · System mode indicator</h3>
+    <p class="cap">Global, unmistakable at a glance. Three system modes + a persistent Manual/HITL override. Lives in the top bar; click opens the mode-control panel (RBAC-gated).</p>
+    <div class="row" style="align-items:center">
+      <span class="mode m-auto"><span class="m-dot"></span>Autonomous</span>
+      <span class="mode m-sup"><span class="m-dot s"></span>Supervised</span>
+      <span class="mode m-pause"><span class="m-dot"></span>Paused</span>
+      <span style="color:#94A3B8">＋</span>
+      <span class="ovr">✋ Manual override · ON</span>
+    </div>
+    <p style="font-size:11.5px;color:#94A3B8;margin:14px 0 0">Autonomous = auto-publish gate active · Supervised = all publishes routed to review · Paused = nothing ships. Manual override pins a piece/project to human regardless of score.</p>
+  </div>
+
+  <div class="panel">
+    <h3>3 · Sign-off control (with role-blocked state)</h3>
+    <p class="cap">Every irreversible action shows a pre-state + role check + audit note. The blocked state is designed, not just the happy path.</p>
+    <div class="row">
+      <div class="signoff">
+        <div class="lbl" style="color:#2F7A5C">Allowed · Compliance</div>
+        <div class="pre">Signing off <b>Q3 Earnings · JA</b> — 247 segments, 3 escalated &amp; resolved. This publishes to production.</div>
+        <button class="btn btn-go">✓ Approve &amp; publish</button>
+        <div class="rolechk">Role check: <b>Compliance ✓ Can approve &amp; publish</b></div>
+      </div>
+      <div class="signoff">
+        <div class="lbl" style="color:#B00020">Blocked · Production</div>
+        <div class="pre">Signing off <b>Q3 Earnings · JA</b> — 247 segments, 3 escalated &amp; resolved. This publishes to production.</div>
+        <button class="btn btn-block" disabled>✓ Approve &amp; publish</button>
+        <div class="blockmsg">⊘ <span><b>Sign-off requires role: Compliance.</b> You have "Can review &amp; comment". Request sign-off or escalate to a Compliance reviewer.</span></div>
+      </div>
+      <div style="min-width:150px">
+        <div class="lbl">Capability tiers</div>
+        <div style="display:flex;flex-direction:column;gap:7px;font-size:12px">
+          <span style="background:#eef6f1;border:1px solid #bcdfcd;border-radius:7px;padding:6px 9px"><b>Approve &amp; publish</b></span>
+          <span style="background:#fbf2e2;border:1px solid #ecd3a3;border-radius:7px;padding:6px 9px"><b>Review &amp; comment</b></span>
+          <span style="background:#eef1f4;border:1px solid #d3dbe3;border-radius:7px;padding:6px 9px"><b>View only</b></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>4 · Audit entry</h3>
+    <p class="cap">Native, monospace, glanceable. The same row renders in the Audit Log and inline wherever an action happened. Every sign-off, role change, mode switch, and resource access.</p>
+    <div class="audit mono">
+      <div class="arow"><span>Time</span><span>Actor · role</span><span>Action</span><span>Score→Gate</span></div>
+      <div class="arow"><span>14:32:07</span><span>A. Reyes <span class="badge-role">Compliance</span></span><span class="act a-sign">Signed off Q3 Earnings · JA</span><span>91 → publish</span></div>
+      <div class="arow"><span>14:30:55</span><span>M. Tan <span class="badge-role">Production</span></span><span class="act a-block">Sign-off blocked — role mismatch</span><span>91 → review</span></div>
+      <div class="arow"><span>14:28:10</span><span>M. Tan <span class="badge-role">Production</span></span><span class="act a-assign">Assigned seg 44–61 to ext. vendor LinguaJP</span><span>—</span></div>
+      <div class="arow"><span>14:21:02</span><span>System <span class="badge-role">Sage</span></span><span class="act a-mode">Mode → Supervised (drift detected)</span><span>—</span></div>
+    </div>
+  </div>
+
+  <div class="options" data-multiselect style="margin-top:8px">
+    <div class="option" data-choice="badge" onclick="toggleSelect(this)"><div class="letter">1</div><div class="content"><h3>Gate badge</h3><p>Score + gate + threshold track works</p></div></div>
+    <div class="option" data-choice="mode" onclick="toggleSelect(this)"><div class="letter">2</div><div class="content"><h3>Mode indicator</h3><p>Three modes + manual override</p></div></div>
+    <div class="option" data-choice="signoff" onclick="toggleSelect(this)"><div class="letter">3</div><div class="content"><h3>Sign-off + blocked</h3><p>Role-blocked state reads clearly</p></div></div>
+    <div class="option" data-choice="audit" onclick="toggleSelect(this)"><div class="letter">4</div><div class="content"><h3>Audit entry</h3><p>Monospace row, native feel</p></div></div>
+  </div>
+</div>
+<script>function toggleSelect(el){el.classList.toggle('selected')}</script>
+</body></html>

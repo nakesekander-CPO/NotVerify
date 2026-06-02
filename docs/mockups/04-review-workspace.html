@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>arbitr — Governed HITL mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+ *{box-sizing:border-box;margin:0;padding:0}
+ body{font-family:'Inter',system-ui,sans-serif;background:#f5f5f7;color:#1d1d1f;line-height:1.5;padding:2rem;max-width:1140px;margin:0 auto}
+ h2{font-size:1.5rem;font-weight:700;margin-bottom:.5rem;font-family:'Plus Jakarta Sans',sans-serif}
+ h3{font-size:1.1rem;font-weight:600;margin-bottom:.25rem}
+ .subtitle{color:#86868b;margin-bottom:1.5rem}
+ .label{font-size:.7rem;color:#86868b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem}
+ .options{display:flex;flex-direction:column;gap:.75rem;margin-top:1rem}
+ .option{background:#fff;border:2px solid #d1d1d6;border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:1rem}
+ .option .letter{background:#e5e5e7;color:#86868b;width:1.75rem;height:1.75rem;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:.85rem;flex-shrink:0}
+ .option .content{flex:1}.option .content h3{font-size:.95rem;margin-bottom:.15rem}.option .content p{color:#86868b;font-size:.85rem;margin:0}
+ .mockup-note{background:#fff8e6;border:1px solid #f0d99a;border-radius:8px;padding:.6rem .9rem;font-size:.8rem;color:#7a5a12;margin-bottom:1.25rem}
+ .mockup-note a{color:#1B5E8F}
+</style>
+</head><body>
+<div class="mockup-note">📐 Static design mockup — arbitr Governed-HITL redesign, Slice 1 (brainstorming phase). Interactive selection is disabled in this static view. <a href="./index.html">← All mockups</a></div>
+<style>
+  .rw{--ocean:#1B5E8F;--ocean-deep:#164D75;--ink:#0F1419;--mist:#94A3B8;--cream:#FAF8F3;
+    --pale:#E8F2F9;--amber:#D4860A;--sage:#2F7A5C;--error:#B00020;--slate:#2A3F52;
+    font-family:'Inter',system-ui,sans-serif;color:var(--ink);}
+  .rw h2,.rw h3{font-family:'Plus Jakarta Sans',sans-serif;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  /* chrome */
+  .chrome{background:var(--ink);color:#dce8f1;border-radius:12px 12px 0 0;padding:11px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .chrome .proj{font-weight:700;font-size:14px;color:#fff;}
+  .chrome .loc{font-size:11px;background:#27384a;border-radius:5px;padding:2px 8px;}
+  .modesw{display:flex;background:#1c2a38;border-radius:8px;padding:3px;gap:2px;}
+  .modesw button{border:none;background:transparent;color:#9fb6c9;font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:6px;cursor:pointer;font-family:inherit;}
+  .modesw button.on{background:var(--ocean);color:#fff;}
+  .docgate{margin-left:auto;display:flex;align-items:center;gap:8px;background:#11402f;border:1px solid #1c5b43;border-radius:8px;padding:5px 11px;}
+  .docgate .s{font-size:18px;font-weight:800;color:#7fe0b3;font-family:'Plus Jakarta Sans';}
+  .docgate .t{font-size:10px;color:#9fe3c1;line-height:1.2;}
+  .roleq{font-size:11px;background:#27384a;border:1px solid #3a516a;border-radius:999px;padding:5px 11px;color:#cfe3f2;font-weight:600;}
+  .signoff-top{border:none;border-radius:8px;padding:8px 14px;font-weight:700;font-size:12.5px;cursor:pointer;background:var(--sage);color:#fff;}
+
+  /* body grid */
+  .body{display:grid;grid-template-columns:188px 1fr 224px;gap:0;border:1px solid #e6e2d8;border-top:none;border-radius:0 0 12px 12px;overflow:hidden;background:#fff;}
+  .col{padding:13px;}
+  .left{background:var(--cream);border-right:1px solid #ece8de;}
+  .right{background:#fbfaf6;border-left:1px solid #ece8de;}
+  .lbl{font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--mist);font-weight:700;margin-bottom:8px;}
+
+  /* segment list */
+  .seg{display:flex;align-items:center;gap:7px;padding:6px 7px;border-radius:7px;font-size:11.5px;margin-bottom:3px;cursor:pointer;}
+  .seg.cur{background:var(--pale);font-weight:700;}
+  .gdot{width:8px;height:8px;border-radius:50%;flex:none;}
+  .g-p{background:var(--sage);} .g-r{background:var(--amber);} .g-e{background:var(--error);}
+  .seg .n{color:var(--slate);} .seg .txt{color:var(--mist);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .jump{margin-top:10px;font-size:11px;color:var(--ocean);font-weight:700;cursor:pointer;}
+
+  /* center segment */
+  .segcard{border:1px solid #e6e2d8;border-radius:11px;overflow:hidden;}
+  .pane{padding:12px 14px;}
+  .src{background:#f6f3ec;border-bottom:1px solid #ece8de;}
+  .src .t{font-size:14px;line-height:1.6;}
+  .hl{background:#e8f2f9;border-bottom:1.5px solid #1B5E8F;padding:0 1px;}
+  .cand{border-bottom:1px solid #f0ece2;}
+  .cand:last-child{border-bottom:none;}
+  .cand .meta{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+  .agtag{font-size:10px;background:#eef1f4;border-radius:5px;padding:1px 7px;color:var(--slate);font-weight:600;}
+  .cscore{font-size:10.5px;font-weight:800;margin-left:auto;}
+  .cand .t{font-size:13.5px;line-height:1.55;}
+  .chosen{background:#f3f8f4;}
+  .ins{background:#d6efe0;} .del{background:#f6d3da;text-decoration:line-through;color:#9a3a48;}
+
+  /* per-seg gate + actions */
+  .segfoot{display:flex;align-items:center;gap:10px;padding:11px 14px;background:#fbfaf6;border-top:1px solid #ece8de;flex-wrap:wrap;}
+  .gbadge{display:inline-flex;align-items:center;gap:6px;border-radius:7px;padding:4px 10px;font-size:12px;font-weight:800;}
+  .gb-r{background:#fbf2e2;border:1px solid #ecd3a3;color:#a9690a;}
+  .why{font-size:11px;color:var(--ocean);font-weight:700;cursor:pointer;}
+  .acts{display:flex;gap:6px;margin-left:auto;}
+  .act{border:1px solid #d8d2c6;background:#fff;border-radius:7px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;}
+  .act.acc{background:var(--sage);color:#fff;border-color:var(--sage);}
+  .act.rej{color:var(--error);}
+  .kbd{font-size:10px;color:var(--mist);} .kbd b{background:#eee;border-radius:3px;padding:0 4px;font-family:monospace;}
+
+  /* chips */
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+  .chip{font-size:10.5px;border-radius:999px;padding:3px 9px;font-weight:600;}
+  .chip-flag{background:#fbe9ec;color:#B00020;}
+  .chip-guard{background:#eef6f1;color:#2F7A5C;}
+  .chip-rat{background:#eef1f4;color:var(--slate);border:1px dashed #c7cfd8;}
+
+  /* right rail mode panel */
+  .modebox{border:1px solid #d6e3ee;background:var(--pale);border-radius:10px;padding:11px;margin-bottom:12px;}
+  .modebox h4{margin:0 0 5px;font-size:12px;color:var(--ocean-deep);font-family:'Plus Jakarta Sans';}
+  .modebox p{margin:0;font-size:11px;color:var(--slate);line-height:1.5;}
+  .reviewers{display:flex;gap:-6px;margin-top:7px;}
+  .av{width:24px;height:24px;border-radius:50%;background:var(--ocean);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #fff;margin-right:-6px;}
+  .guard{font-size:11px;color:var(--slate);line-height:1.5;margin-bottom:6px;}
+
+  /* mode comparison */
+  .cmp{margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .cmpcard{border:1px solid #e6e2d8;border-radius:12px;padding:14px;}
+  .cmpcard.act{box-shadow:0 0 0 2px var(--ocean);}
+  .cmpcard h3{margin:0 0 8px;font-size:13px;display:flex;align-items:center;gap:7px;}
+  .cmpcard .meta{font-size:11px;color:var(--slate);line-height:1.55;}
+  .cmpcard .meta b{color:var(--ink);}
+  .so{margin-top:9px;font-size:11px;border-radius:7px;padding:6px 9px;font-weight:700;}
+  .so-ok{background:#eef6f1;color:#2F7A5C;} .so-block{background:#fbe9ec;color:#B00020;} .so-lock{background:#eef1f4;color:#64748b;}
+</style>
+
+<div class="rw">
+  <h2>Review Workspace</h2>
+  <p class="subtitle">One shell, three modes. Live score + gate state on every segment and on the document. Shown in <b>Internal Review 1</b> as <b>Production</b>.</p>
+
+  <!-- chrome -->
+  <div class="chrome">
+    <span class="proj">Q3 Earnings Pack</span><span class="loc mono">JA · ja-JP</span>
+    <div class="modesw">
+      <button class="on">Internal Review 1</button>
+      <button>Internal Final</button>
+      <button>External</button>
+    </div>
+    <div class="docgate"><span class="s">88</span><div class="t">DOC GATE<br><b>Review required</b></div></div>
+    <span class="roleq">Viewing as: Production ▾</span>
+    <button class="signoff-top">Request sign-off →</button>
+  </div>
+
+  <!-- body -->
+  <div class="body">
+    <div class="col left">
+      <div class="lbl">Segments · 12 / 247</div>
+      <div class="seg"><span class="gdot g-p"></span><span class="n mono">41</span><span class="txt">Operating margin…</span></div>
+      <div class="seg"><span class="gdot g-p"></span><span class="n mono">42</span><span class="txt">Net revenue rose…</span></div>
+      <div class="seg cur"><span class="gdot g-r"></span><span class="n mono">43</span><span class="txt">Forward-looking…</span></div>
+      <div class="seg"><span class="gdot g-e"></span><span class="n mono">44</span><span class="txt">¥ guidance figure…</span></div>
+      <div class="seg"><span class="gdot g-p"></span><span class="n mono">45</span><span class="txt">The board has…</span></div>
+      <div class="seg"><span class="gdot g-r"></span><span class="n mono">46</span><span class="txt">Risk factors…</span></div>
+      <div class="jump">↓ Jump to next flagged (44)</div>
+    </div>
+
+    <div class="col" style="background:#fff">
+      <div class="lbl">Segment 43 · source ↔ target</div>
+      <div class="segcard">
+        <div class="pane src"><div class="t">Management's <span class="hl">forward-looking</span> statements regarding fiscal guidance are subject to risk.</div></div>
+        <div class="pane cand chosen">
+          <div class="meta"><span class="agtag">JP-FIN-3</span><span style="font-size:10px;color:#2F7A5C;font-weight:700">chosen</span><span class="cscore" style="color:#a9690a">conf 0.84</span></div>
+          <div class="t mono">経営陣の<span class="ins">将来見通しに関する</span>業績ガイダンスは、リスクを伴います。</div>
+        </div>
+        <div class="pane cand">
+          <div class="meta"><span class="agtag">MER-DT-1</span><span class="cscore" style="color:#94A3B8">conf 0.71</span></div>
+          <div class="t mono">経営陣の業績見通しは<span class="del">リスクがあります</span>。</div>
+        </div>
+        <div class="segfoot">
+          <span class="gbadge gb-r">84 ● Review required</span>
+          <span class="why">why this segment ▾</span>
+          <div class="acts">
+            <button class="act acc">✓ Accept <span class="kbd"><b>T</b></span></button>
+            <button class="act">Refine <span class="kbd"><b>R</b></span></button>
+            <button class="act rej">Reject</button>
+          </div>
+        </div>
+      </div>
+      <div class="chips">
+        <span class="chip chip-flag">⚑ regulatory-sensitivity</span>
+        <span class="chip chip-flag">⚑ agent-disagreement 31%</span>
+        <span class="chip chip-guard">✓ J-GAAP term match</span>
+      </div>
+      <div style="margin-top:10px"><div class="lbl">Rationale on accept (feeds retraining)</div>
+        <div class="chips"><span class="chip chip-rat">+ register-formal</span><span class="chip chip-rat">+ JFSA-disclosure</span><span class="chip chip-rat">+ glossary-match</span></div>
+      </div>
+    </div>
+
+    <div class="col right">
+      <div class="lbl">This mode</div>
+      <div class="modebox">
+        <h4>You own this project</h4>
+        <p>Single-reviewer fast lane. You review all 247 segments, then route to Compliance for sign-off. No parallel reviewers.</p>
+      </div>
+      <div class="lbl">Localization guardrails</div>
+      <div class="guard">• J-GAAP terminology enforced</div>
+      <div class="guard">• TSE disclosure format</div>
+      <div class="guard">• Forward-looking → honorific register</div>
+      <div class="lbl" style="margin-top:12px">Edge cases · 3</div>
+      <div class="guard" style="color:#B00020">⚑ Seg 44 — ¥ figure not in source</div>
+      <div class="guard" style="color:#a9690a">⚑ Seg 46 — 2 agents disagree</div>
+    </div>
+  </div>
+
+  <!-- mode comparison -->
+  <h3 style="margin:22px 0 4px;font-size:15px">How the shell adapts across the three modes</h3>
+  <p class="subtitle" style="margin-top:0">Same segment editor — ownership, parallelism, and sign-off authority change.</p>
+  <div class="cmp">
+    <div class="cmpcard act">
+      <h3><span class="gdot g-p" style="width:9px;height:9px"></span>Internal Review 1</h3>
+      <div class="meta"><b>One reviewer</b> owns the whole project. Fast lane for low-volume / high-stakes.<br>No Task Assignment split.</div>
+      <div class="so so-ok">Sign-off: you review → Compliance approves &amp; publishes</div>
+    </div>
+    <div class="cmpcard">
+      <h3><span class="gdot g-r" style="width:9px;height:9px"></span>Internal Final</h3>
+      <div class="meta"><b>Many reviewers</b> in parallel, segment ranges split via Task Assignment.
+        <div class="reviewers"><span class="av">MT</span><span class="av" style="background:#2F7A5C">AR</span><span class="av" style="background:#D4860A">KS</span></div></div>
+      <div class="so so-ok">Sign-off: Final Validator consolidates → Compliance signs</div>
+    </div>
+    <div class="cmpcard">
+      <h3><span class="gdot g-e" style="width:9px;height:9px"></span>External (vendor cockpit)</h3>
+      <div class="meta"><b>External linguist</b> — scoped, watermarked, source locked. Submits back for internal review.</div>
+      <div class="so so-lock">🔒 Cannot publish — "Submit for internal review" only</div>
+    </div>
+  </div>
+
+  <!-- blocked signoff -->
+  <div style="margin-top:16px;display:flex;gap:14px;flex-wrap:wrap">
+    <div style="flex:1;min-width:280px;border:1px solid #edbcc6;background:#fbe9ec;border-radius:11px;padding:13px 15px">
+      <div class="lbl" style="color:#B00020">Sign-off blocked · current role</div>
+      <p style="margin:4px 0 9px;font-size:12.5px;color:#2A3F52">As <b>Production</b> you can review &amp; comment, but not publish. The top-bar button reads <b>"Request sign-off"</b>, and a direct publish attempt is blocked:</p>
+      <div style="background:#fff;border:1px solid #edbcc6;border-radius:8px;padding:9px 11px;font-size:12px;color:#B00020">⊘ <b>Sign-off requires role: Compliance.</b> Routed to A. Reyes · logged to audit.</div>
+    </div>
+    <div style="flex:1;min-width:280px;border:1px solid #bcdfcd;background:#eef6f1;border-radius:11px;padding:13px 15px">
+      <div class="lbl" style="color:#2F7A5C">Switch role → Compliance</div>
+      <p style="margin:4px 0 9px;font-size:12.5px;color:#2A3F52">Use the view-as-role switcher. Now the same button unlocks and the pre-state shows what's about to publish:</p>
+      <button class="signoff-top" style="background:var(--sage)">✓ Approve &amp; publish · 247 seg</button>
+    </div>
+  </div>
+
+  <div class="options" style="margin-top:20px">
+    <div class="option" data-choice="ship" onclick="toggleSelect(this)"><div class="letter">A</div><div class="content"><h3>This is the shell</h3><p>Layout + governance instrumentation + 3-mode adaptation all work</p></div></div>
+    <div class="option" data-choice="tweak" onclick="toggleSelect(this)"><div class="letter">B</div><div class="content"><h3>Right idea, tweaks</h3><p>I'll note layout/element changes</p></div></div>
+    <div class="option" data-choice="rethink" onclick="toggleSelect(this)"><div class="letter">C</div><div class="content"><h3>Rethink a mode</h3><p>One of the three modes is off</p></div></div>
+  </div>
+</div>
+<script>function toggleSelect(el){el.classList.toggle('selected')}</script>
+</body></html>

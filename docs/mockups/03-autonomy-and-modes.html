@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>arbitr — Governed HITL mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+ *{box-sizing:border-box;margin:0;padding:0}
+ body{font-family:'Inter',system-ui,sans-serif;background:#f5f5f7;color:#1d1d1f;line-height:1.5;padding:2rem;max-width:1140px;margin:0 auto}
+ h2{font-size:1.5rem;font-weight:700;margin-bottom:.5rem;font-family:'Plus Jakarta Sans',sans-serif}
+ h3{font-size:1.1rem;font-weight:600;margin-bottom:.25rem}
+ .subtitle{color:#86868b;margin-bottom:1.5rem}
+ .label{font-size:.7rem;color:#86868b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem}
+ .options{display:flex;flex-direction:column;gap:.75rem;margin-top:1rem}
+ .option{background:#fff;border:2px solid #d1d1d6;border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:1rem}
+ .option .letter{background:#e5e5e7;color:#86868b;width:1.75rem;height:1.75rem;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:.85rem;flex-shrink:0}
+ .option .content{flex:1}.option .content h3{font-size:.95rem;margin-bottom:.15rem}.option .content p{color:#86868b;font-size:.85rem;margin:0}
+ .mockup-note{background:#fff8e6;border:1px solid #f0d99a;border-radius:8px;padding:.6rem .9rem;font-size:.8rem;color:#7a5a12;margin-bottom:1.25rem}
+ .mockup-note a{color:#1B5E8F}
+</style>
+</head><body>
+<div class="mockup-note">📐 Static design mockup — arbitr Governed-HITL redesign, Slice 1 (brainstorming phase). Interactive selection is disabled in this static view. <a href="./index.html">← All mockups</a></div>
+<style>
+  .aw { --ocean:#1B5E8F; --ocean-deep:#164D75; --ink:#0F1419; --mist:#94A3B8;
+    --cream:#FAF8F3; --pale:#E8F2F9; --amber:#D4860A; --sage:#2F7A5C; --error:#B00020;
+    --slate:#2A3F52; font-family:'Inter',system-ui,sans-serif; color:var(--ink); }
+  .aw h2,.aw h3{font-family:'Plus Jakarta Sans',sans-serif;}
+  .panel{background:#fff;border:1px solid #e6e2d8;border-radius:14px;padding:18px 20px;margin-bottom:16px;}
+  .panel h3{margin:0 0 3px;font-size:14px;}
+  .panel .cap{margin:0 0 16px;font-size:12px;color:var(--mist);}
+  .lbl{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--mist);font-weight:600;}
+
+  /* mode control */
+  .modes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .mc{border:1.5px solid #e2ddd2;border-radius:11px;padding:13px;cursor:pointer;background:var(--cream);}
+  .mc.on{border-color:var(--sage);background:#eef6f1;box-shadow:0 0 0 1px var(--sage);}
+  .mc .nm{font-weight:800;font-size:14px;display:flex;align-items:center;gap:7px;}
+  .mc .ds{font-size:11.5px;color:var(--slate);margin-top:5px;line-height:1.45;}
+  .mc .dot{width:9px;height:9px;border-radius:50%;}
+  .d-on{background:var(--sage);} .d-off{background:#c3ccd4;}
+  .ovrbar{display:flex;align-items:center;gap:10px;margin-top:13px;background:#fff;border:1.5px dashed var(--ocean);border-radius:10px;padding:10px 13px;}
+  .switch{width:38px;height:22px;border-radius:999px;background:var(--ocean);position:relative;flex:none;}
+  .switch::after{content:'';position:absolute;right:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;}
+
+  /* threshold track */
+  .track-wrap{padding:30px 6px 8px;}
+  .track{position:relative;height:14px;border-radius:8px;overflow:hidden;display:flex;}
+  .seg-esc{background:#f3c0ca;} .seg-rev{background:#f0d49a;} .seg-pub{background:#aed8c1;}
+  .mk{position:absolute;top:-26px;transform:translateX(-50%);text-align:center;}
+  .mk .v{font-family:'Plus Jakarta Sans';font-weight:800;font-size:15px;}
+  .mk .h{width:2px;height:30px;background:var(--slate);margin:2px auto 0;}
+  .scale{display:flex;justify-content:space-between;font-size:10px;color:var(--mist);margin-top:6px;}
+  .bands{display:flex;gap:10px;margin-top:16px;font-size:12px;}
+  .band{flex:1;border-radius:9px;padding:9px 11px;border:1px solid;}
+  .b-esc{background:#fbe9ec;border-color:#edbcc6;} .b-rev{background:#fbf2e2;border-color:#ecd3a3;} .b-pub{background:#eef6f1;border-color:#bcdfcd;}
+  .band b{display:block;font-size:12.5px;margin-bottom:2px;}
+  .band span{color:var(--slate);}
+
+  /* domain overrides */
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th{text-align:left;font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--mist);padding:8px 10px;border-bottom:1px solid #e6e2d8;font-weight:600;}
+  td{padding:9px 10px;border-bottom:1px solid #f0ece2;}
+  .mini{display:inline-block;border-radius:6px;padding:2px 8px;font-weight:700;font-size:11.5px;}
+  .mini-e{background:#fbe9ec;color:#B00020;} .mini-r{background:#fbf2e2;color:#a9690a;} .mini-p{background:#eef6f1;color:#2F7A5C;}
+  .ovr-tag{font-size:10px;color:var(--ocean);font-weight:700;}
+  .inherit{color:var(--mist);font-style:italic;}
+
+  .rbacnote{display:flex;gap:9px;align-items:flex-start;background:var(--pale);border:1px solid #bcd8ea;border-radius:10px;padding:11px 13px;font-size:12px;color:var(--ocean-deep);margin-top:4px;}
+  .savebar{display:flex;align-items:center;gap:12px;margin-top:14px;}
+  .btn{border:none;border-radius:9px;padding:10px 18px;font-weight:700;font-size:13px;cursor:pointer;}
+  .btn-go{background:var(--ocean);color:#fff;} .btn-gh{background:#fff;border:1px solid #d8d2c6;color:var(--slate);}
+  .mono{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--mist);}
+</style>
+
+<div class="aw">
+  <h2>Autonomy &amp; Modes</h2>
+  <p class="subtitle">Govern ▸ first-class config. Scope: <b>Project — Q3 Earnings Pack</b> · inherits org defaults unless overridden.</p>
+
+  <div class="panel">
+    <h3>System mode</h3>
+    <p class="cap">Controls how this project's content flows. Unmistakable everywhere via the global indicator.</p>
+    <div class="modes">
+      <div class="mc"><div class="nm"><span class="dot d-off"></span>Autonomous</div><div class="ds">Content at/above the auto-publish gate ships with no human review.</div></div>
+      <div class="mc on"><div class="nm"><span class="dot d-on"></span>Supervised</div><div class="ds">Every publish routes through review, regardless of score. <b>Current.</b></div></div>
+      <div class="mc"><div class="nm"><span class="dot d-off"></span>Paused</div><div class="ds">Nothing ships. All output held pending an explicit resume.</div></div>
+    </div>
+    <div class="ovrbar"><div class="switch"></div><div><b style="font-size:13px">Manual / HITL override</b> <span style="font-size:11.5px;color:#2A3F52">— pin this project to human review even in Autonomous mode. On.</span></div></div>
+  </div>
+
+  <div class="panel">
+    <h3>Confidence-score autonomy thresholds</h3>
+    <p class="cap">Drag to set the gates. The live score of every piece of content is measured against these.</p>
+    <div class="track-wrap">
+      <div style="position:relative;height:44px">
+        <div class="mk" style="left:25%"><div class="v" style="color:#B00020">75</div><div class="h"></div></div>
+        <div class="mk" style="left:92%"><div class="v" style="color:#2F7A5C">92</div><div class="h"></div></div>
+      </div>
+      <div class="track">
+        <div class="seg-esc" style="width:25%"></div>
+        <div class="seg-rev" style="width:67%"></div>
+        <div class="seg-pub" style="width:8%"></div>
+      </div>
+      <div class="scale"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
+    </div>
+    <div class="bands">
+      <div class="band b-esc"><b>Below 75 → Escalate to senior</b><span>Second-reviewer escalation fires automatically.</span></div>
+      <div class="band b-rev"><b>75–92 → Reviewer required</b><span>Assignment is forced before publish.</span></div>
+      <div class="band b-pub"><b>92+ → Auto-publish</b><span>Ships with no human review (Autonomous mode).</span></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Per-domain overrides</h3>
+    <p class="cap">Stricter or looser gates by content domain. Regulated domains tighten; low-stakes loosen.</p>
+    <table>
+      <tr><th>Domain</th><th>Escalate &lt;</th><th>Review &lt;</th><th>Auto-publish ≥</th><th></th></tr>
+      <tr><td><b>Financial / Earnings</b></td><td><span class="mini mini-e">82</span></td><td><span class="mini mini-r">95</span></td><td><span class="mini mini-p">98</span></td><td><span class="ovr-tag">OVERRIDE ↑ strict</span></td></tr>
+      <tr><td><b>Legal / Compliance</b></td><td><span class="mini mini-e">85</span></td><td><span class="mini mini-r">96</span></td><td><span class="mini mini-p">99</span></td><td><span class="ovr-tag">OVERRIDE ↑ strict</span></td></tr>
+      <tr><td><b>Marketing</b></td><td><span class="mini mini-e">68</span></td><td><span class="mini mini-r">85</span></td><td><span class="mini mini-p">90</span></td><td><span class="ovr-tag">OVERRIDE ↓ loose</span></td></tr>
+      <tr><td><span class="inherit">Internal comms</span></td><td colspan="3" class="inherit">Inherits project defaults · 75 / 92 / 92</td><td><span style="color:#94A3B8;font-size:10px">DEFAULT</span></td></tr>
+    </table>
+  </div>
+
+  <div class="rbacnote">🔒 <span><b>Role-gated.</b> Changing thresholds or system mode requires <b>Admin</b> or <b>Compliance</b>. As <b>Production</b> you have view-only here — controls are locked. Every change is written to the Audit Log.</span></div>
+
+  <div class="savebar">
+    <button class="btn btn-go">Save &amp; record to audit</button>
+    <button class="btn btn-gh">Reset to org defaults</button>
+    <span class="mono">last change: A. Reyes · Compliance · 09:14 · escalate 75→82 (Financial)</span>
+  </div>
+
+  <div class="options" style="margin-top:18px">
+    <div class="option" data-choice="good" onclick="toggleSelect(this)"><div class="letter">A</div><div class="content"><h3>This works</h3><p>Thresholds + mode + per-domain overrides as shown</p></div></div>
+    <div class="option" data-choice="simpler" onclick="toggleSelect(this)"><div class="letter">B</div><div class="content"><h3>Too dense</h3><p>Drop per-domain overrides from slice 1, add later</p></div></div>
+    <div class="option" data-choice="more" onclick="toggleSelect(this)"><div class="letter">C</div><div class="content"><h3>Want changes</h3><p>I'll tell you what to adjust</p></div></div>
+  </div>
+</div>
+<script>function toggleSelect(el){el.classList.toggle('selected')}</script>
+</body></html>

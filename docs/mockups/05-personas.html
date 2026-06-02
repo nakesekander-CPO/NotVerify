@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>arbitr — Governed HITL mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+ *{box-sizing:border-box;margin:0;padding:0}
+ body{font-family:'Inter',system-ui,sans-serif;background:#f5f5f7;color:#1d1d1f;line-height:1.5;padding:2rem;max-width:1140px;margin:0 auto}
+ h2{font-size:1.5rem;font-weight:700;margin-bottom:.5rem;font-family:'Plus Jakarta Sans',sans-serif}
+ h3{font-size:1.1rem;font-weight:600;margin-bottom:.25rem}
+ .subtitle{color:#86868b;margin-bottom:1.5rem}
+ .label{font-size:.7rem;color:#86868b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem}
+ .options{display:flex;flex-direction:column;gap:.75rem;margin-top:1rem}
+ .option{background:#fff;border:2px solid #d1d1d6;border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:1rem}
+ .option .letter{background:#e5e5e7;color:#86868b;width:1.75rem;height:1.75rem;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:.85rem;flex-shrink:0}
+ .option .content{flex:1}.option .content h3{font-size:.95rem;margin-bottom:.15rem}.option .content p{color:#86868b;font-size:.85rem;margin:0}
+ .mockup-note{background:#fff8e6;border:1px solid #f0d99a;border-radius:8px;padding:.6rem .9rem;font-size:.8rem;color:#7a5a12;margin-bottom:1.25rem}
+ .mockup-note a{color:#1B5E8F}
+</style>
+</head><body>
+<div class="mockup-note">📐 Static design mockup — arbitr Governed-HITL redesign, Slice 1 (brainstorming phase). Interactive selection is disabled in this static view. <a href="./index.html">← All mockups</a></div>
+<style>
+  .pw{--ocean:#1B5E8F;--ocean-deep:#164D75;--ink:#0F1419;--mist:#94A3B8;--cream:#FAF8F3;
+    --pale:#E8F2F9;--amber:#D4860A;--sage:#2F7A5C;--error:#B00020;--slate:#2A3F52;
+    font-family:'Inter',system-ui,sans-serif;color:var(--ink);}
+  .pw h2,.pw h3{font-family:'Plus Jakarta Sans',sans-serif;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  .switcher{display:flex;align-items:center;gap:8px;background:var(--ink);border-radius:10px;padding:9px 13px;margin-bottom:18px;flex-wrap:wrap;}
+  .switcher .lab{color:#9fb6c9;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+  .rolepill{font-size:11.5px;border-radius:999px;padding:5px 11px;font-weight:700;background:#27384a;color:#cfe3f2;border:1px solid #3a516a;}
+  .rolepill.on{background:var(--ocean);color:#fff;border-color:var(--ocean);}
+
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  .pcard{border:1px solid #e6e2d8;border-radius:13px;overflow:hidden;background:#fff;display:flex;flex-direction:column;}
+  .phead{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #f0ece2;}
+  .pav{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;flex:none;}
+  .pname{font-weight:800;font-size:14px;}
+  .psub{font-size:11px;color:var(--mist);}
+  .tier{margin-left:auto;font-size:10px;font-weight:800;border-radius:6px;padding:3px 8px;}
+  .t-pub{background:#eef6f1;color:#2F7A5C;} .t-rev{background:#fbf2e2;color:#a9690a;}
+  .t-view{background:#eef1f4;color:#64748b;} .t-sub{background:#e8f2f9;color:#1B5E8F;}
+
+  .pbody{padding:12px 14px;display:flex;flex-direction:column;gap:9px;flex:1;}
+  .kv{font-size:12px;line-height:1.5;}
+  .kv .k{font-size:9.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--mist);font-weight:700;display:block;margin-bottom:1px;}
+  .kv .v{color:var(--slate);} .kv .v b{color:var(--ink);}
+  .mockstrip{display:flex;gap:5px;background:var(--cream);border:1px solid #ece8de;border-radius:8px;padding:7px;margin-top:2px;}
+  .mbox{flex:1;height:34px;border-radius:5px;background:#fff;border:1px solid #e6e2d8;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--mist);text-align:center;padding:2px;}
+  .mbox.hot{background:var(--pale);border-color:#bcd8ea;color:var(--ocean-deep);font-weight:700;}
+  .mbox.lock{background:#f5f1ea;color:#b9b1a3;}
+  .locks{font-size:11px;color:var(--error);} .opens{font-size:11px;color:var(--sage);}
+  .future{opacity:.96;border-style:dashed;}
+  .ftag{font-size:9px;font-weight:800;color:var(--ocean);letter-spacing:.5px;}
+</style>
+
+<div class="pw">
+  <h2>One product, six personas</h2>
+  <p class="subtitle">Flip the <b>view-as-role</b> switcher and the whole surface re-scopes — home screen, capability tier, what's editable, and what's locked. Sage rides along for everyone.</p>
+
+  <div class="switcher">
+    <span class="lab">Viewing as</span>
+    <span class="rolepill">Production</span>
+    <span class="rolepill on">Compliance</span>
+    <span class="rolepill">Vendor Manager</span>
+    <span class="rolepill">External Linguist</span>
+    <span class="rolepill">Client Editor</span>
+    <span class="rolepill">Finance</span>
+  </div>
+
+  <div class="grid">
+
+    <!-- Production -->
+    <div class="pcard">
+      <div class="phead"><div class="pav" style="background:#1B5E8F">PR</div>
+        <div><div class="pname">Production</div><div class="psub">Runs jobs · reviews · resolves exceptions</div></div>
+        <span class="tier t-rev">REVIEW &amp; COMMENT</span></div>
+      <div class="pbody">
+        <div class="kv"><span class="k">Home</span><span class="v">Review queue + flagged segments across active projects</span></div>
+        <div class="kv"><span class="k">In the workspace</span><span class="v">Edits segments, accepts/refines, adds rationale chips. <b>Requests</b> sign-off.</span></div>
+        <div class="mockstrip"><div class="mbox hot">Review queue</div><div class="mbox">Workspace</div><div class="mbox lock">🔒 Publish</div></div>
+        <div class="locks">⊘ Cannot approve &amp; publish — routes to Compliance</div>
+      </div>
+    </div>
+
+    <!-- Compliance -->
+    <div class="pcard">
+      <div class="phead"><div class="pav" style="background:#2F7A5C">CO</div>
+        <div><div class="pname">Compliance (VP)</div><div class="psub">Sign-off authority · audit</div></div>
+        <span class="tier t-pub">APPROVE &amp; PUBLISH</span></div>
+      <div class="pbody">
+        <div class="kv"><span class="k">Home</span><span class="v">Sign-off queue + Audit Log, front and centre</span></div>
+        <div class="kv"><span class="k">In the workspace</span><span class="v">Sees pre-state (what's about to ship), escalations resolved, then <b>approves &amp; publishes</b>.</span></div>
+        <div class="mockstrip"><div class="mbox hot">Sign-off queue</div><div class="mbox hot">Audit Log</div><div class="mbox">Workspace</div></div>
+        <div class="opens">✓ Only role that can publish + change autonomy thresholds</div>
+      </div>
+    </div>
+
+    <!-- Vendor Manager -->
+    <div class="pcard">
+      <div class="phead"><div class="pav" style="background:#164D75">VM</div>
+        <div><div class="pname">Vendor Manager</div><div class="psub">Pools · capacity · assignment</div></div>
+        <span class="tier t-rev">REVIEW &amp; COMMENT</span></div>
+      <div class="pbody">
+        <div class="kv"><span class="k">Home</span><span class="v">Task Assignment board + Vendor Pools / capacity</span></div>
+        <div class="kv"><span class="k">In the workspace</span><span class="v">Splits segment ranges to reviewers/vendors by <b>trust score</b>; monitors, doesn't usually edit.</span></div>
+        <div class="mockstrip"><div class="mbox hot">Task board</div><div class="mbox hot">Vendor pools</div><div class="mbox">Capacity</div></div>
+        <div class="opens">✓ Drives auto-assignment eligibility (slice 4)</div>
+      </div>
+    </div>
+
+    <!-- External Linguist -->
+    <div class="pcard">
+      <div class="phead"><div class="pav" style="background:#D4860A">EL</div>
+        <div><div class="pname">External Linguist</div><div class="psub">Vendor cockpit · external</div></div>
+        <span class="tier t-sub">SUBMIT ONLY</span></div>
+      <div class="pbody">
+        <div class="kv"><span class="k">Home</span><span class="v">Only their assigned tasks — scoped, watermarked</span></div>
+        <div class="kv"><span class="k">In the workspace</span><span class="v">External Review mode: source locked, no glossary export, <b>"Submit for internal review"</b> not publish.</span></div>
+        <div class="mockstrip"><div class="mbox hot">My tasks</div><div class="mbox">Editor</div><div class="mbox lock">🔒 Source / export</div></div>
+        <div class="locks">⊘ No publish · no audit log · no other projects</div>
+      </div>
+    </div>
+
+    <!-- Client Editor -->
+    <div class="pcard">
+      <div class="phead"><div class="pav" style="background:#8E9AAA">CE</div>
+        <div><div class="pname">Client Editor</div><div class="psub">Reviews/approves own content</div></div>
+        <span class="tier t-view">VIEW + APPROVE OWN</span></div>
+      <div class="pbody">
+        <div class="kv"><span class="k">Home</span><span class="v">Their organisation's content only — legible, low-density</span></div>
+        <div class="kv"><span class="k">In the workspace</span><span class="v">Light read-only view of their items with an <b>approve own content</b> action; governance shown, not editable.</span></div>
+        <div class="mockstrip"><div class="mbox hot">My content</div><div class="mbox">Approve own</div><div class="mbox lock">🔒 Other orgs</div></div>
+        <div class="locks">⊘ No agent config · no vendor data · no thresholds</div>
+      </div>
+    </div>
+
+    <!-- Finance -->
+    <div class="pcard future">
+      <div class="phead"><div class="pav" style="background:#2A3F52">FI</div>
+        <div><div class="pname">Finance / Revenue</div><div class="psub">POs · invoicing · budgets</div></div>
+        <span class="tier t-view">VIEW + APPROVE $$</span></div>
+      <div class="pbody">
+        <div class="kv"><span class="k">Home</span><span class="v">Budgets &amp; Allocations, Vendor/Internal POs, invoicing <span class="ftag">— SLICE 5</span></span></div>
+        <div class="kv"><span class="k">In the workspace</span><span class="v">Sees cost-per-segment + budget burn on the project, not the linguistic content.</span></div>
+        <div class="mockstrip"><div class="mbox hot">Budgets</div><div class="mbox hot">POs</div><div class="mbox hot">Invoicing</div></div>
+        <div class="opens">✦ First-class persona home — designed in the money-loop slice</div>
+      </div>
+    </div>
+
+  </div>
+
+  <p style="font-size:11.5px;color:#94A3B8;margin-top:14px">✦ <b>Sage</b> is present for every persona — context-aware to the role: it nudges Production about escalations, Compliance about pending sign-offs, the Vendor Manager about capacity gaps, Finance about budget burn.</p>
+
+  <div class="options" data-multiselect style="margin-top:8px">
+    <div class="option" data-choice="all" onclick="toggleSelect(this)"><div class="letter">A</div><div class="content"><h3>All six read right</h3><p>Capability tiers + homes + locks land</p></div></div>
+    <div class="option" data-choice="prod" onclick="toggleSelect(this)"><div class="letter">P</div><div class="content"><h3>Adjust a persona</h3><p>Tell me which one to change</p></div></div>
+    <div class="option" data-choice="spec" onclick="toggleSelect(this)"><div class="letter">→</div><div class="content"><h3>Ready for the spec</h3><p>Write up slice 1 and move to build</p></div></div>
+  </div>
+</div>
+<script>function toggleSelect(el){el.classList.toggle('selected')}</script>
+</body></html>
