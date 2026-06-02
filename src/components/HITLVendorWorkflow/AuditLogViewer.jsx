@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { ScrollText, Filter, Download } from 'lucide-react'
 import { HITL_AUDIT_LOG, HITL_PROJECTS } from '../../data/hitlVendorWorkflow'
 import { SectionHeading, Card, MonoLabel, EmptyState, SecondaryButton } from './shared'
+import AuditEntry from './governance/AuditEntry'
 
 const EVENT_TYPE_TONE = {
   'vendor.recommended': 'bg-pale text-ocean',
@@ -26,6 +27,13 @@ const EVENT_TYPE_TONE = {
   'policy.violation': 'bg-error/15 text-error',
   'segment.access-denied': 'bg-error/15 text-error',
   'segment.write-on-locked-rejected': 'bg-error/15 text-error',
+  'rbac.view_as': 'bg-slate/10 text-slate',
+  'mode.change': 'bg-amber/15 text-amber-deep',
+  'mode.manual_override': 'bg-amber/15 text-amber-deep',
+  'autonomy.threshold_change': 'bg-amber/15 text-amber-deep',
+  'signoff.approved': 'bg-teal/10 text-teal',
+  'signoff.blocked': 'bg-error/10 text-error',
+  'signoff.requested': 'bg-pale text-ocean',
 }
 
 export default function AuditLogViewer({ activeProjectId }) {
@@ -69,38 +77,26 @@ export default function AuditLogViewer({ activeProjectId }) {
         <EmptyState title="No audit events match your filters." icon={ScrollText} />
       ) : (
         <Card padding="p-0">
-          <table className="w-full text-[12.5px]">
-            <thead className="bg-cream border-b border-rule">
-              <tr>
-                <Th>When</Th><Th>Actor</Th><Th>Role</Th><Th>Event</Th><Th>Project</Th><Th>Before → After</Th><Th>Reason / policy</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {list.slice(0, 100).map(e => (
-                <tr key={e.id} className="border-b border-rule last:border-b-0">
-                  <Td mono>{new Date(e.timestamp).toLocaleString()}</Td>
-                  <Td>{e.actorId}</Td>
-                  <Td mono>{e.actorRole || '—'}</Td>
-                  <Td>
-                    <span className={`px-2 py-0.5 rounded-full text-[10.5px] ${EVENT_TYPE_TONE[e.eventType] || 'bg-rule text-slate'}`}>{e.eventType}</span>
-                  </Td>
-                  <Td mono>{e.projectId || '—'}</Td>
-                  <Td>
-                    <div className="text-[11px] text-slate truncate max-w-xs">
-                      {e.beforeValue != null && <span className="text-mist">{JSON.stringify(e.beforeValue)}</span>}
-                      {e.beforeValue != null && e.afterValue != null && <span className="mx-1">→</span>}
-                      {e.afterValue != null && <span className="text-ink">{JSON.stringify(e.afterValue)}</span>}
-                    </div>
-                  </Td>
-                  <Td>
-                    <div className="text-[11px] text-slate truncate max-w-xs">{e.reason || e.policy || '—'}</div>
-                  </Td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div
+            className="grid items-center gap-3 px-3.5 py-2 bg-cream text-[10.5px] uppercase tracking-wider text-mist"
+            style={{ gridTemplateColumns: '92px 132px 1fr 110px', fontFamily: "'IBM Plex Mono', monospace" }}
+          >
+            <span>When</span>
+            <span>Actor · Role</span>
+            <span>Action</span>
+            <span className="text-right">Score → Gate</span>
+          </div>
+          {list.slice(0, 100).map(e => (
+            <AuditEntry key={e.id} entry={e} />
+          ))}
         </Card>
       )}
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        {Object.entries(EVENT_TYPE_TONE).map(([type, tone]) => (
+          <span key={type} className={`px-2 py-0.5 rounded-full text-[10.5px] ${tone}`}>{type}</span>
+        ))}
+      </div>
     </div>
   )
 }
@@ -114,12 +110,4 @@ function FilterField({ label, value, onChange, options }) {
       </select>
     </label>
   )
-}
-
-function Th({ children }) {
-  return <th className="text-left font-medium text-mist uppercase tracking-wider text-[10.5px] px-4 py-2.5" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{children}</th>
-}
-
-function Td({ children, mono }) {
-  return <td className="px-4 py-2 text-ink" style={mono ? { fontFamily: "'IBM Plex Mono', monospace" } : undefined}>{children}</td>
 }
