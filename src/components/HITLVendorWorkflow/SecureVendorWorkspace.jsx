@@ -3,12 +3,16 @@ import { Lock, MessageSquare, ChevronLeft, ChevronRight, AlertTriangle, Shield, 
 import {
   HITL_PROJECTS, HITL_TASKS, HITL_SEGMENTS, getVendorById,
   rationaleChipsForDomain, divergenceScore, divergenceMap,
-  RULING_POSTURES, POSITIVE_CALIBRATION_CHIPS,
+  RULING_POSTURES, POSITIVE_CALIBRATION_CHIPS, REVIEW_MODES,
 } from '../../data/hitlVendorWorkflow'
 import { USERS } from '../../data/rbacModel'
 import { decideSegment, addSegmentComment } from '../../services/hitl/review'
 import { listMyTasks } from '../../services/hitl/taskAssignment'
-import { segmentPedigree, contributorLifetimeImpact } from '../../services/hitl/pedigree'
+import { segmentPedigree, documentPedigree, contributorLifetimeImpact } from '../../services/hitl/pedigree'
+import { useGovernance } from '../../context/GovernanceStore'
+import GateBadge from './governance/GateBadge'
+import SignoffControl from './governance/SignoffControl'
+import { gateFor } from './governance/gates'
 import { SectionHeading, Card, MonoLabel, StatusBadge, PrimaryButton, SecondaryButton, DangerButton, ScoreBar } from './shared'
 import { SegmentPedigreeCard } from './PedigreeCard'
 import {
@@ -44,6 +48,14 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
   const primaryReviewer = activeTask?.primaryReviewerId ? USERS.find(u => u.id === activeTask.primaryReviewerId) : null
   const collaborators = (activeTask?.collaboratorIds || []).map(id => USERS.find(u => u.id === id)).filter(Boolean)
   const isMine = activeTask && (activeTask.primaryReviewerId === currentUserId || activeTask.collaboratorIds.includes(currentUserId))
+
+  /* ─── Governance instrumentation ─────────────────────────────── */
+  const { currentRole, thresholds, record } = useGovernance()
+  const gateThresholds = thresholds.project
+  const [reviewModeOverride, setReviewModeOverride] = useState(null)
+  const reviewMode = reviewModeOverride || project.requirements.reviewMode
+  const docScore = documentPedigree(project.id)?.composite ?? null
+  const segScore = activeSeg ? (segmentPedigree(activeSeg.id)?.composite ?? null) : null
 
   const tally = useMemo(() => ({
     total: segments.length,
@@ -441,7 +453,18 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
   const headerActions = isQuick
     ? null
     : (
-      <div className="inline-flex items-center gap-2">
+      <div className="inline-flex items-center gap-3">
+        <div className="flex items-center gap-3">
+          <div className="flex bg-cream rounded-lg p-0.5 border border-rule">
+            {REVIEW_MODES.map(m => (
+              <button key={m} type="button" onClick={() => setReviewModeOverride(m)}
+                className={`px-2.5 py-1 rounded-md text-[11.5px] font-semibold cursor-pointer ${reviewMode === m ? 'bg-ocean text-white' : 'text-slate'}`}>
+                {m === 'internal-single' ? 'Internal Review 1' : m === 'internal-parallel' ? 'Internal Final' : 'External'}
+              </button>
+            ))}
+          </div>
+          <GateBadge score={docScore} thresholds={gateThresholds} variant="compact" label="Doc gate" />
+        </div>
         <CockpitModeChip mode={cockpitMode} onChange={setCockpitMode} />
         <ReviewerModeToggle mode={mode} onToggle={() => setMode(m => m === 'compact' ? 'reviewer' : 'compact')} onOpenShortcuts={() => setShowShortcuts(true)} />
       </div>
@@ -559,6 +582,7 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
                     onClick={() => setActiveIdx(i)}
                     className={`w-full text-left px-2 py-1.5 rounded text-[12px] cursor-pointer flex items-center gap-2 ${i === activeIdx ? 'bg-pale text-ocean' : 'text-slate hover:bg-pale/50'}`}
                   >
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${(gateFor(segmentPedigree(s.id)?.composite ?? null, gateThresholds)?.dot) || 'bg-mist'}`} />
                     <span className="text-mist w-6 text-right" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{i + 1}</span>
                     <span className="truncate flex-1">{s.source.slice(0, 60)}…</span>
                     {s.decision !== 'pending' && <StatusBadge status={s.decision} />}
@@ -811,6 +835,9 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
                   {!activeSeg.locked && <SecondaryButton onClick={() => lateral('locked')}>Lock</SecondaryButton>}
                 </div>
 
+                {/* PER-SEGMENT AUTONOMY GATE */}
+                <GateBadge score={segScore} thresholds={gateThresholds} variant="full" />
+
                 {/* TRUST-SCORE EXPLAINER (collapsible — press T) */}
                 <ConfidenceExplainer
                   pedigree={segmentPedigree(activeSeg.id)}
@@ -851,17 +878,53 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
           )}
         </div>
 
-        {/* Contextual side-rail — collapsed to glyphs in Reviewer Mode */}
-        <ContextualSideRail
-          segment={activeSeg}
-          project={project}
-          segments={segments}
-          activeIdx={activeIdx}
-          onJumpToSegment={(i) => setActiveIdx(i)}
-          collapsed={isCompact}
-          forceOpen={forceOpenPanel ? new Set([forceOpenPanel]) : null}
-          currentUserId={currentUserId}
-        />
+        {/* Right rail — governance panel + sign-off, then contextual side-rail */}
+        <div>
+          {!isCompact && (<>
+            <div className="rounded-lg border border-rule bg-pale p-3 mb-3">
+              <p className="text-[12px] font-semibold text-ocean mb-1">
+                {reviewMode === 'internal-single' ? 'You own this project'
+                  : reviewMode === 'internal-parallel' ? 'Parallel review'
+                  : 'External vendor cockpit'}
+              </p>
+              <p className="text-[11px] text-slate leading-snug">
+                {reviewMode === 'internal-single' ? 'Single-reviewer fast lane. You review all segments, then route to Compliance for sign-off.'
+                  : reviewMode === 'internal-parallel' ? 'Reviewers work segment ranges in parallel (Task Assignment). Final Validator consolidates → Compliance signs.'
+                  : 'Source locked, export disabled. Submit for internal review — no publish.'}
+              </p>
+            </div>
+
+            {reviewMode === 'external-vendor' ? (
+              <button type="button" className="w-full rounded-lg px-4 py-2.5 text-[13px] font-bold bg-ocean text-white cursor-pointer mb-3"
+                onClick={() => record({ eventType: 'signoff.requested', reason: 'Submitted for internal review', projectId: project.id })}>
+                Submit for internal review
+              </button>
+            ) : (
+              <div className="mb-3">
+                <SignoffControl
+                  resourceLabel={`${project.name}${project.requirements?.locales?.[0] ? ` · ${project.requirements.locales[0]}` : ''}`}
+                  preState={`${segments.length} segments`}
+                  currentRole={currentRole}
+                  requiredRoleLabel="Compliance"
+                  onApprove={() => record({ eventType: 'signoff.approved', reason: `Signed off ${project.name}`, projectId: project.id, sessionMeta: { score: docScore, gate: gateFor(docScore, gateThresholds)?.id } })}
+                  onRequest={() => record({ eventType: 'signoff.requested', reason: `Requested sign-off for ${project.name}`, projectId: project.id })}
+                />
+              </div>
+            )}
+          </>)}
+
+          {/* Contextual side-rail — collapsed to glyphs in Reviewer Mode */}
+          <ContextualSideRail
+            segment={activeSeg}
+            project={project}
+            segments={segments}
+            activeIdx={activeIdx}
+            onJumpToSegment={(i) => setActiveIdx(i)}
+            collapsed={isCompact}
+            forceOpen={forceOpenPanel ? new Set([forceOpenPanel]) : null}
+            currentUserId={currentUserId}
+          />
+        </div>
       </div>
       </>
       )}
