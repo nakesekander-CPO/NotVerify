@@ -5,6 +5,8 @@ import { DEFAULT_THRESHOLDS } from '../components/HITLVendorWorkflow/governance/
 
 const GovernanceContext = createContext(null)
 
+// Provider + hook intentionally co-located (standard context pattern).
+// eslint-disable-next-line react-refresh/only-export-components
 export function useGovernance() {
   const ctx = useContext(GovernanceContext)
   if (!ctx) throw new Error('useGovernance must be used within <GovernanceProvider>')
