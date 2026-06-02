@@ -10,7 +10,7 @@ import { useState, useEffect } from 'react'
 import {
   LayoutDashboard, Users, FolderTree, ScrollText, Workflow, BadgeCheck,
   CheckSquare, ClipboardList, GraduationCap, Activity, ShieldCheck, FileSpreadsheet, X,
-  UsersRound, Award, Trophy,
+  UsersRound, Award, Trophy, SlidersHorizontal,
 } from 'lucide-react'
 
 import WorkflowOverview from './WorkflowOverview'
@@ -28,22 +28,29 @@ import AuditLogViewer from './AuditLogViewer'
 import VendorAnalytics from './VendorAnalytics'
 import EngagementHub from './EngagementHub'
 import GlobalAdminSettings from './GlobalAdminSettings'
+import AutonomyAndModes from './AutonomyAndModes'
+
+import { GovernanceProvider, useGovernance } from '../../context/GovernanceStore'
+import ModeIndicator from './governance/ModeIndicator'
+import ViewAsRoleSwitcher from './governance/ViewAsRoleSwitcher'
+import { canManageAutonomy } from './governance/capabilities'
 
 const NAV = [
-  { id: 'overview', label: 'Workflow Overview', icon: LayoutDashboard, group: 'Operations' },
-  { id: 'projects', label: 'Project Cockpit', icon: ClipboardList, group: 'Operations' },
-  { id: 'recommendation', label: 'Vendor Recommendation', icon: Workflow, group: 'Operations' },
-  { id: 'assignments', label: 'Task Assignment', icon: UsersRound, group: 'Operations' },
-  { id: 'workspace', label: 'Review Workspace', icon: CheckSquare, group: 'Operations' },
-  { id: 'signoff', label: 'Final Sign-Off', icon: BadgeCheck, group: 'Operations' },
-  { id: 'retraining', label: 'Retraining Queue', icon: GraduationCap, group: 'Governance' },
-  { id: 'trainer', label: 'Trainer Profile', icon: Award, group: 'Governance' },
-  { id: 'audit', label: 'Audit Log', icon: ScrollText, group: 'Governance' },
-  { id: 'analytics', label: 'Vendor Analytics', icon: Activity, group: 'Governance' },
-  { id: 'engagement', label: 'Engagement Hub', icon: Trophy, group: 'Governance' },
-  { id: 'vendors', label: 'Vendor Registry', icon: Users, group: 'Admin' },
-  { id: 'pools', label: 'Vendor Pools', icon: FolderTree, group: 'Admin' },
-  { id: 'policies', label: 'Selection Policies', icon: FileSpreadsheet, group: 'Admin' },
+  { id: 'overview', label: 'Workflow Overview', icon: LayoutDashboard, group: 'Operate' },
+  { id: 'projects', label: 'Project Cockpit', icon: ClipboardList, group: 'Operate' },
+  { id: 'recommendation', label: 'Vendor Recommendation', icon: Workflow, group: 'Operate' },
+  { id: 'assignments', label: 'Task Assignment', icon: UsersRound, group: 'Operate' },
+  { id: 'workspace', label: 'Review Workspace', icon: CheckSquare, group: 'Operate' },
+  { id: 'signoff', label: 'Final Sign-Off', icon: BadgeCheck, group: 'Operate' },
+  { id: 'autonomy', label: 'Autonomy & Modes', icon: SlidersHorizontal, group: 'Govern' },
+  { id: 'audit', label: 'Audit Log', icon: ScrollText, group: 'Govern' },
+  { id: 'retraining', label: 'Retraining Queue', icon: GraduationCap, group: 'Govern' },
+  { id: 'trainer', label: 'Trainer Profile', icon: Award, group: 'Govern' },
+  { id: 'analytics', label: 'Vendor Analytics', icon: Activity, group: 'Govern' },
+  { id: 'engagement', label: 'Engagement Hub', icon: Trophy, group: 'Govern' },
+  { id: 'vendors', label: 'Vendor Registry', icon: Users, group: 'Vendors' },
+  { id: 'pools', label: 'Vendor Pools', icon: FolderTree, group: 'Vendors' },
+  { id: 'policies', label: 'Selection Policies', icon: FileSpreadsheet, group: 'Vendors' },
   { id: 'admin', label: 'Global Admin', icon: ShieldCheck, group: 'Admin' },
 ]
 
@@ -54,9 +61,10 @@ const SCREENS = {
   assignments: TaskAssignment,
   workspace: SecureVendorWorkspace,
   signoff: FinalSignOff,
+  autonomy: AutonomyAndModes,
+  audit: AuditLogViewer,
   retraining: RetrainingQueue,
   trainer: TrainerProfile,
-  audit: AuditLogViewer,
   analytics: VendorAnalytics,
   engagement: EngagementHub,
   vendors: VendorRegistry,
@@ -65,9 +73,11 @@ const SCREENS = {
   admin: GlobalAdminSettings,
 }
 
-const GROUPS = ['Operations', 'Governance', 'Admin']
+const GROUPS = ['Operate', 'Govern', 'Vendors', 'Admin']
 
-export default function HITLVendorWorkflow({ currentUserId, onClose }) {
+function HITLVendorWorkflowInner({ currentUserId, onClose }) {
+  const { systemMode, manualOverride, currentRole } = useGovernance()
+  const canCtl = canManageAutonomy(currentRole)
   const [active, setActive] = useState('overview')
   /* Cross-screen jump channel. Final Sign-Off sets this (e.g.
    * { segmentId } / { decision } / { flagCategory }) then navigates to
@@ -118,6 +128,17 @@ export default function HITLVendorWorkflow({ currentUserId, onClose }) {
           {/* Exit Review now lives inside the inner top task bar in
               QuickReviewWorkspace, so all task-level controls are in
               one horizontal band. Shift+E shortcut still active here. */}
+          {!inReviewMode && (
+            <>
+              <ModeIndicator
+                mode={systemMode}
+                manualOverride={manualOverride}
+                canControl={canCtl}
+                onOpenControl={() => setActive('autonomy')}
+              />
+              <ViewAsRoleSwitcher />
+            </>
+          )}
           <button onClick={onClose} className="p-2 rounded-md hover:bg-pale text-slate cursor-pointer" aria-label="Close">
             <X className="w-4 h-4" />
           </button>
@@ -176,5 +197,13 @@ export default function HITLVendorWorkflow({ currentUserId, onClose }) {
         </main>
       </div>
     </div>
+  )
+}
+
+export default function HITLVendorWorkflow(props) {
+  return (
+    <GovernanceProvider currentUserId={props.currentUserId}>
+      <HITLVendorWorkflowInner {...props} />
+    </GovernanceProvider>
   )
 }
