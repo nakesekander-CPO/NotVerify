@@ -2,7 +2,7 @@ import { Lock } from 'lucide-react'
 import { SectionHeading, Card, MonoLabel, PrimaryButton, SecondaryButton } from './shared'
 import { useGovernance } from '../../context/GovernanceStore'
 import { canManageAutonomy } from './governance/capabilities'
-import { gateFor } from './governance/gates'
+import { gateFor, DEFAULT_THRESHOLDS } from './governance/gates'
 
 const MODES = [
   { id: 'autonomous', name: 'Autonomous', desc: 'Content at/above the auto-publish gate ships with no human review.' },
@@ -70,7 +70,10 @@ export default function AutonomyAndModes() {
       {canEdit && (
         <div className="flex gap-3">
           <PrimaryButton onClick={() => record({ eventType: 'autonomy.threshold_change', reason: 'Saved autonomy config', afterValue: JSON.stringify(t) })}>Save &amp; record to audit</PrimaryButton>
-          <SecondaryButton onClick={() => { setThresholds(prev => ({ ...prev, project: { escalate: 75, review: 92 } })) }}>Reset to org defaults</SecondaryButton>
+          <SecondaryButton onClick={() => {
+            setThresholds(prev => ({ ...prev, project: { ...DEFAULT_THRESHOLDS } }))
+            record({ eventType: 'autonomy.threshold_change', reason: 'Reset thresholds to org defaults', beforeValue: JSON.stringify(t), afterValue: JSON.stringify(DEFAULT_THRESHOLDS) })
+          }}>Reset to org defaults</SecondaryButton>
         </div>
       )}
     </div>
