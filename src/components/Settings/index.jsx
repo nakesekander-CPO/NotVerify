@@ -1,22 +1,24 @@
 import { useState } from 'react'
-import { ArrowLeft, CreditCard, Puzzle, Building2, LayoutList, Shield, Users, ScrollText, Network } from 'lucide-react'
+import { ArrowLeft, CreditCard, Puzzle, Building2, LayoutList, Shield, Users, ScrollText, Network, Receipt } from 'lucide-react'
 import CreditsAndBilling from './CreditsAndBilling'
+import Billing from './Billing'
 import BillingEntities from './BillingEntities'
 import BudgetsAndAllocations from './BudgetsAndAllocations'
 import OrgAccess from './OrgAccess'
 
 export default function SettingsPage({ onBack, onOpenIntegrations }) {
-  const [activeSection, setActiveSection] = useState('billing')
+  const [activeSection, setActiveSection] = useState('billing-v2')
   const [tier, setTier] = useState('pro')
 
   const handleTierChange = (newTier) => {
     setTier(newTier)
     if (newTier !== 'enterprise' && (activeSection === 'billing-entities' || activeSection === 'budgets' || activeSection.startsWith('org-'))) {
-      setActiveSection('billing')
+      setActiveSection('billing-v2')
     }
   }
 
   const navItems = [
+    { id: 'billing-v2', label: 'Billing', icon: Receipt, active: true },
     { id: 'billing', label: 'Credits & Billing', icon: CreditCard, active: true },
     ...(tier === 'enterprise' ? [
       { id: 'billing-entities', label: 'Billing Entities', icon: Building2, active: true, indent: true },
@@ -93,6 +95,7 @@ export default function SettingsPage({ onBack, onOpenIntegrations }) {
             </div>
           </div>
 
+          {activeSection === 'billing-v2' && <Billing tier={tier} />}
           {activeSection === 'billing' && <CreditsAndBilling tier={tier} />}
           {activeSection === 'billing-entities' && <BillingEntities />}
           {activeSection === 'budgets' && <BudgetsAndAllocations />}
