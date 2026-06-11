@@ -10,7 +10,7 @@ import { useState, useEffect } from 'react'
 import {
   LayoutDashboard, Users, FolderTree, ScrollText, Workflow, BadgeCheck,
   CheckSquare, ClipboardList, GraduationCap, Activity, ShieldCheck, FileSpreadsheet, X,
-  UsersRound, Award, Trophy,
+  UsersRound, Award, Trophy, Languages,
 } from 'lucide-react'
 
 import WorkflowOverview from './WorkflowOverview'
@@ -28,6 +28,7 @@ import AuditLogViewer from './AuditLogViewer'
 import VendorAnalytics from './VendorAnalytics'
 import EngagementHub from './EngagementHub'
 import GlobalAdminSettings from './GlobalAdminSettings'
+import SwiftBridge from './SwiftBridge'
 
 const NAV = [
   { id: 'overview', label: 'Workflow Overview', icon: LayoutDashboard, group: 'Operations' },
@@ -36,6 +37,7 @@ const NAV = [
   { id: 'assignments', label: 'Task Assignment', icon: UsersRound, group: 'Operations' },
   { id: 'workspace', label: 'Review Workspace', icon: CheckSquare, group: 'Operations' },
   { id: 'signoff', label: 'Final Sign-Off', icon: BadgeCheck, group: 'Operations' },
+  { id: 'swiftbridge', label: 'SwiftBridge AI V2', icon: Languages, group: 'SwiftBridge Japan' },
   { id: 'retraining', label: 'Retraining Queue', icon: GraduationCap, group: 'Governance' },
   { id: 'trainer', label: 'Trainer Profile', icon: Award, group: 'Governance' },
   { id: 'audit', label: 'Audit Log', icon: ScrollText, group: 'Governance' },
@@ -54,6 +56,7 @@ const SCREENS = {
   assignments: TaskAssignment,
   workspace: SecureVendorWorkspace,
   signoff: FinalSignOff,
+  swiftbridge: SwiftBridge,
   retraining: RetrainingQueue,
   trainer: TrainerProfile,
   audit: AuditLogViewer,
@@ -65,7 +68,7 @@ const SCREENS = {
   admin: GlobalAdminSettings,
 }
 
-const GROUPS = ['Operations', 'Governance', 'Admin']
+const GROUPS = ['Operations', 'SwiftBridge Japan', 'Governance', 'Admin']
 
 export default function HITLVendorWorkflow({ currentUserId, onClose }) {
   const [active, setActive] = useState('overview')
