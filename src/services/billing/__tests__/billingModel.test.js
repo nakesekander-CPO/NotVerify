@@ -5,7 +5,7 @@ import {
   tabVisibility, validateAdjustment, buildAdjustmentEntry,
   getDemoAccount, DEMO_ACCOUNT_KEYS,
   planCtaModel, railPermissions, validateRailChange, buildRailChangeRequest,
-  allocateUsageToBuckets, bucketsFromLedger,
+  allocateUsageToBuckets, bucketsFromLedger, pastDueSummary, markInvoicesPaid,
 } from '../billingModel'
 
 describe('pricing — one schedule for both rails', () => {
@@ -388,5 +388,50 @@ describe('authoritative consumption rule — one allocator, every surface agrees
     expect(planLeft).toBeUndefined() // plan bucket already at zero
     const { draws } = allocateUsageToBuckets(1104, buckets)
     expect(draws[0].type).toBe('top_up')
+  })
+})
+
+describe('past-due banner ↔ invoice register consistency', () => {
+  it('banner amount, count, and date derive from the same rows the register shows', () => {
+    const a = getDemoAccount('enterprise-invoice')
+    const pd = pastDueSummary(a.invoices)
+    expect(pd.count).toBe(1)
+    expect(pd.ids).toEqual(['INV-2026-006'])
+    expect(pd.total).toBe(priceFor(5000)) // $45 — computed, never hardcoded
+    expect(pd.oldestDueDate).toBe('2026-05-31')
+    // The same row exists in the register with the same amount.
+    const row = a.invoices.find(i => i.id === 'INV-2026-006')
+    expect(row.status).toBe('past_due')
+    expect(row.amount).toBe(pd.total)
+  })
+
+  it('paying clears the past-due state so the banner re-evaluates', () => {
+    const a = getDemoAccount('enterprise-invoice')
+    const before = pastDueSummary(a.invoices)
+    const after = markInvoicesPaid(a.invoices, before.ids)
+    expect(pastDueSummary(after).count).toBe(0)
+    expect(pastDueSummary(after).total).toBe(0)
+    expect(after.find(i => i.id === 'INV-2026-006').status).toBe('paid')
+    // Other invoices untouched: open count unchanged.
+    expect(after.filter(i => i.status === 'open').length)
+      .toBe(a.invoices.filter(i => i.status === 'open').length)
+  })
+
+  it('partial payment leaves the remainder counted and summed', () => {
+    const invoices = [
+      { id: 'A', amount: 100, status: 'past_due', dueDate: '2026-05-01' },
+      { id: 'B', amount: 50,  status: 'past_due', dueDate: '2026-06-01' },
+    ]
+    const after = markInvoicesPaid(invoices, ['A'])
+    const pd = pastDueSummary(after)
+    expect(pd.count).toBe(1)
+    expect(pd.total).toBe(50)
+    expect(pd.oldestDueDate).toBe('2026-06-01')
+  })
+
+  it('card-rail accounts have no past-due surface at all', () => {
+    for (const k of ['standard-card', 'proteam-card', 'enterprise-card']) {
+      expect(pastDueSummary(getDemoAccount(k).invoices).count).toBe(0)
+    }
   })
 })

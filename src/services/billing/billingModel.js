@@ -309,6 +309,26 @@ export function buildRailChangeRequest({ targetRail, reason, actor, account, app
   }
 }
 
+/* ── Past-due invoices — one source for banner, button, register ─
+ *
+ * The banner copy, the "Pay now" button amount, and the pay handler
+ * must all derive from the same rows the Invoices register shows.
+ * Nothing about the amount is ever hardcoded. */
+
+export function pastDueSummary(invoices = []) {
+  const rows = invoices.filter(i => i.status === 'past_due')
+  return {
+    count: rows.length,
+    total: rows.reduce((s, i) => s + i.amount, 0),
+    oldestDueDate: rows.length ? rows.reduce((a, b) => (a.dueDate < b.dueDate ? a : b)).dueDate : null,
+    ids: rows.map(i => i.id),
+  }
+}
+
+export function markInvoicesPaid(invoices = [], ids = []) {
+  return invoices.map(i => (ids.includes(i.id) ? { ...i, status: 'paid' } : i))
+}
+
 /* ── Manual adjustment validation ────────────────────────────── */
 
 export const ADJUSTMENT_REASON_CODES = [

@@ -23,12 +23,13 @@ import {
 import {
   getDemoAccount, walletFromLedger, planMeterState, tabVisibility,
   railPermissions, validateRailChange, buildRailChangeRequest,
+  pastDueSummary, markInvoicesPaid,
 } from '../../services/billing/billingModel'
 import {
   TopUpPanel, UsageLedgerPanel, InvoicesPanel, PaymentsReceiptsPanel,
   AdminPanel, PlansPanel,
 } from './BillingPanels'
-import { Card, StatusPill, fmtDate } from './BillingShared'
+import { Card, StatusPill, fmtDate, fmtMoney } from './BillingShared'
 
 const TIER_TO_ACCOUNT = { standard: 'standard-card', pro: 'proteam-card', enterprise: 'enterprise-invoice' }
 
@@ -48,16 +49,31 @@ export default function Billing({ tier = 'pro' }) {
 
   const baseAccount = useMemo(() => getDemoAccount(accountKey), [accountKey])
 
-  /* Ledger is local state so top-ups / adjustments append real rows;
-   * wallet + tabs recompute from it. */
+  /* Ledger and invoices are local state so payments, top-ups, and
+   * adjustments mutate real rows; wallet, alerts, and tabs all
+   * recompute from them — banner and register share one source. */
   const [ledgerByAccount, setLedgerByAccount] = useState({})
+  const [invoicesByAccount, setInvoicesByAccount] = useState({})
   const ledger = ledgerByAccount[accountKey] || baseAccount.ledger
+  const invoices = invoicesByAccount[accountKey] || baseAccount.invoices
   const account = useMemo(() => {
     const creditWallet = walletFromLedger(ledger, { planGrant: baseAccount.creditWallet.plan.grantThisCycle })
-    const a = { ...baseAccount, ledger, creditWallet }
+    // Re-derive invoice flags + linked request statuses from live
+    // invoice state so the past-due warning re-evaluates on payment.
+    const paidPos = new Set(invoices.filter(i => i.status === 'paid' && i.po).map(i => i.po))
+    const topUpRequests = (baseAccount.topUpRequests || []).map(r =>
+      ['past_due', 'invoiced'].includes(r.status) && paidPos.has(r.po)
+        ? { ...r, status: 'completed', notes: 'Invoice paid · credits granted' }
+        : r
+    )
+    const a = {
+      ...baseAccount, ledger, creditWallet, invoices, topUpRequests,
+      hasPastDueInvoices: invoices.some(i => i.status === 'past_due'),
+      hasOpenInvoices: invoices.some(i => i.status === 'open'),
+    }
     a.tabs = tabVisibility(a)
     return a
-  }, [baseAccount, ledger])
+  }, [baseAccount, ledger, invoices])
 
   const appendLedger = (row) => {
     const prev = ledger[ledger.length - 1]
@@ -71,7 +87,56 @@ export default function Billing({ tier = 'pro' }) {
 
   const [tab, setTab] = useState('overview')
   const [ledgerFilter, setLedgerFilter] = useState('all')
+  const [invoiceFilter, setInvoiceFilter] = useState('all') // 'all' | 'past_due'
   const isCard = account.paymentRail === 'card_or_ach'
+
+  /* ── Pay past-due invoices inline ──────────────────────────────
+   * Pending state blocks double submission; success re-derives the
+   * banner (cleared or recounted) from the same invoice rows the
+   * register renders; failure keeps the banner and surfaces the
+   * error in place. */
+  const [payingPastDue, setPayingPastDue] = useState(false)
+  const [payError, setPayError] = useState(null)
+  const [paySuccess, setPaySuccess] = useState(null)
+
+  const payInvoiceIds = (ids) => {
+    if (payingPastDue || ids.length === 0) return
+    setPayError(null)
+    setPayingPastDue(true)
+    setTimeout(() => {
+      try {
+        const paidRows = invoices.filter(i => ids.includes(i.id))
+        if (paidRows.length === 0) throw new Error('Invoice not found')
+        setInvoicesByAccount(s => ({ ...s, [accountKey]: markInvoicesPaid(invoices, ids) }))
+        // Release credit grants held against the now-paid invoice(s).
+        for (const inv of paidRows) {
+          const req = (baseAccount.topUpRequests || []).find(r => r.po && r.po === inv.po && r.status === 'past_due')
+          if (req) appendLedger({
+            id: `tp-${inv.id}`, date: new Date().toISOString().slice(0, 10),
+            event: 'top_up', source: `PO top-up — ${req.id} (released on payment)`,
+            bucket: 'top_up', delta: req.credits, ref: inv.id, actor: 'system',
+            note: `Granted on payment of ${inv.id}`,
+          })
+        }
+        const total = paidRows.reduce((s, i) => s + i.amount, 0)
+        setPaySuccess(`${paidRows.map(i => i.id).join(', ')} paid — ${fmtMoney(total)}. Held credit grants released; the past-due hold is cleared.`)
+        setTimeout(() => setPaySuccess(null), 6000)
+      } catch {
+        setPayError('Payment failed — nothing was charged. Try again or contact billing@arbitr.com.')
+      } finally {
+        setPayingPastDue(false)
+      }
+    }, 900)
+  }
+
+  /* Banner primary action: one past-due invoice → pay it directly;
+   * several → invoices view pre-filtered with a Pay-all affordance
+   * (the banner amount is the sum). */
+  const onPayPastDue = () => {
+    const pd = pastDueSummary(invoices)
+    if (pd.count === 1) payInvoiceIds(pd.ids)
+    else if (pd.count > 1) { setInvoiceFilter('past_due'); setTab('invoices') }
+  }
 
   /* Reset to a visible tab when the account/rail changes hides one. */
   const tabDefs = [
@@ -101,7 +166,8 @@ export default function Billing({ tier = 'pro' }) {
         <RailControl account={account} entRail={entRail} setEntRail={setEntRail} />
       </header>
 
-      <AlertStack account={account} onOpenInvoices={() => setTab('invoices')} onTopUp={() => setTab('topup')} onViewExpiring={goToExpiring} />
+      <AlertStack account={account} onOpenInvoices={() => { setInvoiceFilter('all'); setTab('invoices') }} onTopUp={() => setTab('topup')} onViewExpiring={goToExpiring}
+        onPayPastDue={onPayPastDue} payingPastDue={payingPastDue} payError={payError} paySuccess={paySuccess} />
 
       <nav className="flex items-center gap-1 border-b border-black/[0.08] overflow-x-auto">
         {tabDefs.map(t => {
@@ -123,7 +189,10 @@ export default function Billing({ tier = 'pro' }) {
       {activeTab === 'plans' && <PlansPanel account={account} />}
       {activeTab === 'topup' && <TopUpPanel account={account} appendLedger={appendLedger} />}
       {activeTab === 'usage' && <UsageLedgerPanel account={account} filter={ledgerFilter} setFilter={setLedgerFilter} />}
-      {activeTab === 'invoices' && account.tabs.invoices && <InvoicesPanel account={account} />}
+      {activeTab === 'invoices' && account.tabs.invoices && (
+        <InvoicesPanel account={account} filter={invoiceFilter} setFilter={setInvoiceFilter}
+          onPayAll={() => payInvoiceIds(pastDueSummary(invoices).ids)} paying={payingPastDue} />
+      )}
       {activeTab === 'payments' && account.tabs.paymentsReceipts && <PaymentsReceiptsPanel account={account} />}
       {activeTab === 'admin' && account.tabs.admin && <AdminPanel account={account} appendLedger={appendLedger} />}
     </div>
@@ -216,26 +285,36 @@ function RailControl({ account, entRail, setEntRail }) {
 
 /* ── Alerts — rail-aware, action sits beside the message ─────── */
 
-function AlertStack({ account, onOpenInvoices, onTopUp, onViewExpiring }) {
+function AlertStack({ account, onOpenInvoices, onTopUp, onViewExpiring, onPayPastDue, payingPastDue, payError, paySuccess }) {
   const isCard = account.paymentRail === 'card_or_ach'
   const w = account.creditWallet
   const alerts = []
+
+  if (paySuccess) {
+    alerts.push({ tone: 'success', icon: CheckCircle2, title: 'Payment received', body: paySuccess })
+  }
 
   if (isCard) {
     if (account.lastPaymentFailed) alerts.push({ tone: 'red', icon: AlertCircle, title: 'Payment failed', body: 'Your last payment did not go through.', cta: { label: 'Retry payment', onClick: onTopUp } })
     if (account.cardExpiresSoon) alerts.push({ tone: 'amber', icon: CreditCard, title: 'Card expires soon', body: 'Your card on file expires at the end of next month.', cta: { label: 'Update payment method', onClick: onTopUp } })
     if (w.plan.overage > 0 && account.overagePolicy === 'draw_from_top_up') alerts.push({ tone: 'info', icon: Info, title: 'Plan credits fully used', body: `${w.plan.overage.toLocaleString()} credits this cycle were drawn from your top-up balance.`, cta: { label: 'Buy credits', onClick: onTopUp } })
   } else {
-    const pastDue = account.invoices.filter(i => i.status === 'past_due')
+    /* Banner figures and the Pay button derive from pastDueSummary —
+     * the same rows the Invoices register renders. */
+    const pd = pastDueSummary(account.invoices)
     const open = account.invoices.filter(i => i.status === 'open')
-    if (pastDue.length > 0) {
-      const oldest = pastDue.reduce((a, b) => (a.dueDate < b.dueDate ? a : b))
-      const total = pastDue.reduce((s, i) => s + i.amount, 0)
+    if (pd.count > 0) {
       alerts.push({
         tone: 'red', icon: AlertCircle,
-        title: `${pastDue.length} invoice${pastDue.length === 1 ? ' is' : 's are'} past due`,
-        body: `$${total.toLocaleString(undefined, { minimumFractionDigits: 2 })} due since ${fmtDate(oldest.dueDate)}. Credits may pause if unpaid.`,
+        title: `${pd.count} invoice${pd.count === 1 ? ' is' : 's are'} past due`,
+        body: `${fmtMoney(pd.total)} due since ${fmtDate(pd.oldestDueDate)}. Credits may pause if unpaid.`,
+        primary: {
+          label: payingPastDue ? 'Processing…' : `Pay ${fmtMoney(pd.total)} now`,
+          onClick: onPayPastDue,
+          busy: payingPastDue,
+        },
         cta: { label: 'Open invoices', onClick: onOpenInvoices },
+        errorText: payError,
       })
     }
     if (open.length > 0) {
@@ -265,23 +344,48 @@ function AlertStack({ account, onOpenInvoices, onTopUp, onViewExpiring }) {
     amber:   'bg-amber-50 border-amber-200 text-amber-800',
     info:    'bg-[#009eda]/8 border-[#009eda]/20 text-[#0089c4]',
     neutral: 'bg-gray-50 border-black/[0.08] text-gray-700',
+    success: 'bg-emerald-50 border-emerald-200 text-emerald-800',
+  }
+  /* Severity-matched solid button for the primary inline action —
+   * same style family as the page's other filled buttons. */
+  const primaryTones = {
+    red:     'bg-red-600 hover:bg-red-700 text-white',
+    amber:   'bg-amber-500 hover:bg-amber-600 text-white',
+    info:    'bg-[#009eda] hover:bg-[#0089c4] text-white',
+    neutral: 'bg-gray-900 hover:bg-black text-white',
+    success: 'bg-emerald-600 hover:bg-emerald-700 text-white',
   }
   return (
     <div className="space-y-2">
       {alerts.map((a, i) => {
         const Icon = a.icon
         return (
-          <div key={i} className={`rounded-lg border px-3 py-2 flex items-center gap-3 text-[12.5px] ${tones[a.tone]}`}>
-            <Icon className="w-4 h-4 shrink-0" />
-            <span className="min-w-0">
-              <span className="font-semibold">{a.title}</span>
-              <span className="opacity-90"> — {a.body}</span>
-              {a.cta && (
-                <button onClick={a.cta.onClick} className="ml-2 font-semibold underline underline-offset-2 cursor-pointer whitespace-nowrap">
-                  {a.cta.label}
+          <div key={i} className={`rounded-lg border px-3 py-2 text-[12.5px] ${tones[a.tone]}`}>
+            <div className="flex items-center gap-3 flex-wrap">
+              <Icon className="w-4 h-4 shrink-0" />
+              <span className="min-w-0 flex-1 basis-64">
+                <span className="font-semibold">{a.title}</span>
+                <span className="opacity-90"> — {a.body}</span>
+                {a.cta && (
+                  <button onClick={a.cta.onClick} className="ml-2 font-semibold underline underline-offset-2 cursor-pointer whitespace-nowrap">
+                    {a.cta.label}
+                  </button>
+                )}
+              </span>
+              {a.primary && (
+                <button
+                  onClick={a.primary.onClick}
+                  disabled={a.primary.busy}
+                  aria-label={a.primary.label}
+                  className={`shrink-0 px-3 py-1.5 rounded-md text-[11.5px] font-semibold cursor-pointer transition-colors disabled:opacity-60 disabled:cursor-wait ${primaryTones[a.tone]}`}
+                >
+                  {a.primary.label}
                 </button>
               )}
-            </span>
+            </div>
+            {a.errorText && (
+              <p className="mt-1.5 ml-7 text-[11.5px] font-medium">{a.errorText}</p>
+            )}
           </div>
         )
       })}

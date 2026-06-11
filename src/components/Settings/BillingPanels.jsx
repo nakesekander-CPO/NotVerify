@@ -236,7 +236,10 @@ function CardTopUp({ account, appendLedger }) {
 function InvoiceTopUp({ account }) {
   const [credits, setCredits] = useState(25000)
   const [po, setPo] = useState(account.poNumber || '')
-  const [requests, setRequests] = useState(account.topUpRequests)
+  // New requests live locally; existing ones derive from the account
+  // so their status reflects live invoice state (e.g. paid → completed).
+  const [added, setAdded] = useState([])
+  const requests = [...added, ...account.topUpRequests]
   const [done, setDone] = useState(null)
   const price = priceFor(credits)
   const rate = rateFor(credits)
@@ -248,7 +251,7 @@ function InvoiceTopUp({ account }) {
       credits, cost: price, rate, po, status: 'requested',
       notes: account.grantPolicy === 'on-finalization' ? 'Credits granted when the invoice is finalized' : 'Credits granted on payment',
     }
-    setRequests(r => [req, ...r])
+    setAdded(r => [req, ...r])
     setDone(`Request ${req.id} submitted. An invoice will be issued under ${account.netTerms}; ${req.notes.toLowerCase()}.`)
     setTimeout(() => setDone(null), 3000)
   }
@@ -423,15 +426,34 @@ function ReconRow({ label, value }) {
 
 /* ── Invoices (invoice/PO rail only) ─────────────────────────── */
 
-export function InvoicesPanel({ account }) {
+export function InvoicesPanel({ account, filter = 'all', setFilter, onPayAll, paying }) {
   const [payOpen, setPayOpen] = useState(null) // invoice id with the remittance panel open
+  const pastDue = account.invoices.filter(i => i.status === 'past_due')
+  const pastDueTotal = pastDue.reduce((s, i) => s + i.amount, 0)
+  const rows = filter === 'past_due' ? pastDue : account.invoices
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h4 className="text-[13px] font-semibold text-gray-900">Invoices</h4>
-        <button className="inline-flex items-center gap-1.5 text-[11px] text-gray-600 hover:text-gray-900 border border-black/[0.12] px-3 py-1.5 rounded-lg cursor-pointer">
-          <Download className="w-3 h-3" /> Export all
-        </button>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <h4 className="text-[13px] font-semibold text-gray-900">
+          Invoices
+          {filter === 'past_due' && (
+            <span className="ml-2 text-[11px] font-normal text-gray-500">
+              showing past-due only ·{' '}
+              <button onClick={() => setFilter?.('all')} className="text-[#009eda] hover:text-[#0089c4] cursor-pointer underline underline-offset-2">Show all</button>
+            </span>
+          )}
+        </h4>
+        <div className="flex items-center gap-2">
+          {filter === 'past_due' && pastDue.length > 0 && (
+            <button onClick={onPayAll} disabled={paying}
+              className="px-3 py-1.5 rounded-md bg-red-600 hover:bg-red-700 text-white text-[11.5px] font-semibold cursor-pointer disabled:opacity-60 disabled:cursor-wait">
+              {paying ? 'Processing…' : `Pay all past due (${fmtMoney(pastDueTotal)})`}
+            </button>
+          )}
+          <button className="inline-flex items-center gap-1.5 text-[11px] text-gray-600 hover:text-gray-900 border border-black/[0.12] px-3 py-1.5 rounded-lg cursor-pointer">
+            <Download className="w-3 h-3" /> Export all
+          </button>
+        </div>
       </div>
 
       {/* How to resolve — opened by a Pay action */}
@@ -468,7 +490,7 @@ export function InvoicesPanel({ account }) {
             </tr>
           </thead>
           <tbody>
-            {account.invoices.map(inv => (
+            {rows.map(inv => (
               <tr key={inv.id} className="border-b border-black/[0.04] last:border-b-0 hover:bg-gray-50/60">
                 <td className="px-4 py-2.5 text-gray-900 whitespace-nowrap">{inv.id}</td>
                 <td className="px-4 py-2.5 text-gray-700 whitespace-nowrap">{inv.type}</td>
