@@ -254,7 +254,7 @@ function AlertStack({ account, onOpenInvoices, onTopUp, onViewExpiring }) {
     alerts.push({
       tone: 'neutral', icon: Clock,
       title: `${account.expiring.amount.toLocaleString()} ${account.expiring.type} credits expire on ${fmtDate(account.expiring.expiresAt)}`,
-      body: 'Expiring credits are used before your other balances, so normal usage consumes them first.',
+      body: 'Expiring credits are used first — the ledger shows them drawn down before your other balances.',
       cta: { label: 'View expiring credits', onClick: onViewExpiring },
     })
   }

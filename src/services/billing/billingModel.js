@@ -68,7 +68,78 @@ export function creditPackages() {
 
 /* ── Ledger construction ─────────────────────────────────────── */
 
-export const CONSUMPTION_ORDER = ['plan', 'promotional', 'top_up', 'adjustment', 'legacy']
+/* ── Authoritative credit-consumption rule ───────────────────────
+ *
+ * ONE rule, one allocator. No surface (Overview, ledger, banners,
+ * usage processing) may infer its own consumption order.
+ *
+ *   1. Credits with an explicit expiration date are consumed before
+ *      non-expiring credits, soonest expiration first.
+ *   2. Within the same expiration date:
+ *      promotional → plan → top_up → adjustment → legacy.
+ *   3. Once expiring credits are exhausted, non-expiring credits:
+ *      plan → top_up → adjustment → legacy.
+ *
+ * This makes the customer-facing promise TRUE: expiring promotional
+ * credits are protected from expiry by being drawn down first. */
+
+const EXPIRING_TIE_ORDER = ['promotional', 'plan', 'top_up', 'adjustment', 'legacy']
+const NON_EXPIRING_ORDER = ['plan', 'top_up', 'adjustment', 'legacy', 'promotional']
+
+export const CONSUMPTION_POLICY_TEXT =
+  'Credits with the soonest expiry are used first (promotional before plan on the same date); non-expiring credits then follow Plan → Top-up → Adjustments → Legacy.'
+
+/** Kept for compatibility: the non-expiring fallback order. */
+export const CONSUMPTION_ORDER = ['plan', 'top_up', 'adjustment', 'legacy']
+
+/**
+ * allocateUsageToBuckets — the single allocator.
+ *
+ * buckets: [{ bucketId, type, availableCredits, expiresAt, sourceReference, eligibleForUsage }]
+ * Returns { draws: CreditDraw[], shortfall } — draws sum to at most
+ * usageCredits; shortfall > 0 means the wallet could not cover it.
+ */
+export function allocateUsageToBuckets(usageCredits, availableBuckets) {
+  const eligible = (availableBuckets || [])
+    .filter(b => b.eligibleForUsage !== false && b.availableCredits > 0)
+    .slice()
+    .sort((a, b) => {
+      const aExp = a.expiresAt != null, bExp = b.expiresAt != null
+      if (aExp !== bExp) return aExp ? -1 : 1                  // expiring first
+      if (aExp && bExp && a.expiresAt !== b.expiresAt) {
+        return a.expiresAt < b.expiresAt ? -1 : 1              // soonest expiry first
+      }
+      const order = aExp ? EXPIRING_TIE_ORDER : NON_EXPIRING_ORDER
+      return order.indexOf(a.type) - order.indexOf(b.type)
+    })
+
+  const draws = []
+  let remaining = usageCredits
+  for (const b of eligible) {
+    if (remaining <= 0) break
+    const take = Math.min(b.availableCredits, remaining)
+    draws.push({
+      bucketId: b.bucketId, type: b.type, creditsDrawn: take,
+      expiresAt: b.expiresAt ?? null, sourceReference: b.sourceReference ?? null,
+    })
+    remaining -= take
+  }
+  return { draws, shortfall: Math.max(0, remaining) }
+}
+
+/** Rebuild bucket state from a ledger prefix, for verifying that
+ *  recorded usage rows match what the allocator would have drawn. */
+export function bucketsFromLedger(rows, { planGrant, expiringMeta = {} }) {
+  const byType = {}
+  for (const r of rows) byType[r.bucket] = (byType[r.bucket] || 0) + r.delta
+  return Object.entries(byType)
+    .filter(([, bal]) => bal > 0)
+    .map(([type, bal]) => ({
+      bucketId: type, type, availableCredits: bal,
+      expiresAt: expiringMeta[type] ?? null,
+      sourceReference: null, eligibleForUsage: true,
+    }))
+}
 
 /* Rows in: { date, event, source, bucket, delta, ref?, actor? }
  * Rows out add runningWallet + runningBucket, computed in order. */
@@ -92,14 +163,18 @@ export function buildLedger(rows) {
 export function walletFromLedger(ledger, { planGrant }) {
   const sum = (pred) => ledger.filter(pred).reduce((s, r) => s + r.delta, 0)
   const bucketBal = (b) => sum(r => r.bucket === b)
-  const totalUsed = -sum(r => r.event === 'usage')
   const planBucketUsed = -sum(r => r.bucket === 'plan' && r.event === 'usage')
+  // Overage = usage that spilled into non-plan reserves because the
+  // plan was exhausted. Promotional draws are NOT overage — under the
+  // consumption rule they are consumed first by design, so they never
+  // inflate the plan meter.
+  const overage = Math.max(0, -sum(r => r.event === 'usage' && ['top_up', 'adjustment', 'legacy'].includes(r.bucket)))
+  const usedThisCycle = planBucketUsed + overage
   const planRemaining = Math.max(0, planGrant - planBucketUsed)
-  const overage = Math.max(0, totalUsed - planGrant)
   const availableTotal = ledger.length ? ledger[ledger.length - 1].runningWallet : 0
   return {
     availableTotal,
-    plan: { grantThisCycle: planGrant, usedThisCycle: totalUsed, remaining: planRemaining, overage },
+    plan: { grantThisCycle: planGrant, usedThisCycle, remaining: planRemaining, overage },
     topUp: { available: bucketBal('top_up') },
     adjustments: { available: bucketBal('adjustment') },
     legacy: { available: bucketBal('legacy') },
@@ -372,7 +447,9 @@ export function getDemoAccount(key) {
       netTerms: 'Net 30', poNumber: 'PO-2026-018', poRequired: true,
       grantPolicy: 'on-finalization',
       cardExpiresSoon: false, lastPaymentFailed: false,
-      expiring: { amount: 300, expiresAt: '2026-06-30', type: 'promotional' },
+      // Remaining expiring credits — consistent with the ledger: 300
+      // granted May 28, 150 already consumed first by May 30 usage.
+      expiring: { amount: 150, expiresAt: '2026-06-30', type: 'promotional' },
       pricingPolicy: { type: 'public_packages', baselinePricePerCredit: PRICING.baseRate, contractPricePerCredit: null, currency: 'USD' },
       overagePolicy: 'invoiceable_overage',
       downgradePolicy: 'not_allowed', // contract-managed; changes go through the account team
@@ -390,13 +467,17 @@ export function getDemoAccount(key) {
         { id: 'TR-1024', date: '2026-04-12', credits: 10000, cost: priceFor(10000), rate: rateFor(10000), po: 'PO-2026-014', status: 'completed', notes: 'Credits granted Apr 14' },
       ],
     }, [
+      // Ledger order deliberately demonstrates the consumption rule:
+      // usage BEFORE the promo grant draws plan; usage AFTER it draws
+      // the expiring promotional bucket first, while plan is plentiful.
       { date: '2026-04-20', event: 'migration',  source: 'Legacy migration — PO-2025-098', bucket: 'legacy',      delta: +840,   ref: 'MIG-0042', actor: 'system' },
       { date: '2026-05-01', event: 'grant',      source: 'Monthly plan grant',             bucket: 'plan',        delta: +50000, ref: 'INV-2026-005', actor: 'system' },
-      { date: '2026-05-04', event: 'promo_grant',source: 'Promotional credit — Q2 pilot',  bucket: 'promotional', delta: +300,   ref: 'PROMO-Q2', actor: 'system' },
       { date: '2026-05-09', event: 'usage',      source: 'Q3 Earnings Report — JA',        bucket: 'plan',        delta: -1200,  actor: 'Hana Ito' },
       { date: '2026-05-16', event: 'top_up',     source: 'PO top-up — TR-1031 (partial grant)', bucket: 'top_up', delta: +2500,  ref: 'INV-2026-007', actor: 'system' },
       { date: '2026-05-22', event: 'usage',      source: 'BaFin Filing Translation — DE',  bucket: 'plan',        delta: -904,   actor: 'Klaus Berger' },
       { date: '2026-05-27', event: 'adjustment', source: 'Manual adjustment — billing correction', bucket: 'adjustment', delta: +250, ref: 'TICKET-1234', actor: 'arbitr Finance' },
+      { date: '2026-05-28', event: 'promo_grant',source: 'Promotional credit — Q2 pilot (expires Jun 30)', bucket: 'promotional', delta: +300, ref: 'PROMO-Q2', actor: 'system', expiresAt: '2026-06-30' },
+      { date: '2026-05-30', event: 'usage',      source: 'Q3 MD&A Memo — JA',              bucket: 'promotional', delta: -150,  actor: 'Hana Ito', note: 'Expiring credits consumed first (expires Jun 30)' },
     ], 50000)
 
     /* Enterprise · card/ACH (supported; no invoices issued) */

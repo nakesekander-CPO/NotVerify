@@ -5,6 +5,7 @@ import {
   tabVisibility, validateAdjustment, buildAdjustmentEntry,
   getDemoAccount, DEMO_ACCOUNT_KEYS,
   planCtaModel, railPermissions, validateRailChange, buildRailChangeRequest,
+  allocateUsageToBuckets, bucketsFromLedger,
 } from '../billingModel'
 
 describe('pricing — one schedule for both rails', () => {
@@ -300,5 +301,92 @@ describe('payments & receipts fixtures — table coverage', () => {
       expect(a.poNumber).toBeNull()
       for (const r of a.receipts) expect(r.po).toBeUndefined()
     }
+  })
+})
+
+describe('authoritative consumption rule — one allocator, every surface agrees', () => {
+  const B = (type, availableCredits, expiresAt = null, extra = {}) =>
+    ({ bucketId: `${type}${expiresAt ? '-' + expiresAt : ''}`, type, availableCredits, expiresAt, sourceReference: null, eligibleForUsage: true, ...extra })
+
+  it('expiring credits are consumed before non-expiring — promo drained while plan is plentiful', () => {
+    const { draws, shortfall } = allocateUsageToBuckets(150, [
+      B('plan', 47896), B('promotional', 300, '2026-06-30'), B('top_up', 2500), B('legacy', 840),
+    ])
+    expect(shortfall).toBe(0)
+    expect(draws).toHaveLength(1)
+    expect(draws[0]).toMatchObject({ type: 'promotional', creditsDrawn: 150, expiresAt: '2026-06-30' })
+  })
+
+  it('soonest expiration is protected first', () => {
+    const { draws } = allocateUsageToBuckets(100, [
+      B('promotional', 100, '2026-08-01'), B('promotional', 100, '2026-06-30'),
+    ])
+    expect(draws[0].expiresAt).toBe('2026-06-30')
+  })
+
+  it('same expiration date ties break promotional → plan → top_up → adjustment → legacy', () => {
+    const { draws } = allocateUsageToBuckets(250, [
+      B('plan', 100, '2026-06-30'), B('promotional', 100, '2026-06-30'), B('top_up', 100, '2026-06-30'),
+    ])
+    expect(draws.map(d => d.type)).toEqual(['promotional', 'plan', 'top_up'])
+  })
+
+  it('after expiring credits, non-expiring order is plan → top_up → adjustment → legacy', () => {
+    const { draws } = allocateUsageToBuckets(1300, [
+      B('legacy', 840), B('top_up', 2500), B('plan', 1000), B('adjustment', 250),
+    ])
+    expect(draws.map(d => d.type)).toEqual(['plan', 'top_up'])
+    expect(draws[0].creditsDrawn).toBe(1000)
+    expect(draws[1].creditsDrawn).toBe(300)
+  })
+
+  it('ineligible buckets are skipped; shortfall is reported, never hidden', () => {
+    const { draws, shortfall } = allocateUsageToBuckets(500, [
+      B('plan', 1000, null, { eligibleForUsage: false }), B('top_up', 200),
+    ])
+    expect(draws).toEqual([expect.objectContaining({ type: 'top_up', creditsDrawn: 200 })])
+    expect(shortfall).toBe(300)
+  })
+
+  it('the enterprise ledger matches what the allocator would have drawn — engine and ledger agree', () => {
+    const a = getDemoAccount('enterprise-invoice')
+    const expiringMeta = { promotional: '2026-06-30' }
+    a.ledger.forEach((row, i) => {
+      if (row.event !== 'usage') return
+      const buckets = bucketsFromLedger(a.ledger.slice(0, i), { planGrant: 50000, expiringMeta })
+      const { draws } = allocateUsageToBuckets(-row.delta, buckets)
+      // The bucket recorded on the ledger row must be the first bucket
+      // the allocator draws from for that usage.
+      expect(draws[0].type).toBe(row.bucket)
+    })
+  })
+
+  it('banner, wallet, and ledger agree on remaining expiring credits', () => {
+    const a = getDemoAccount('enterprise-invoice')
+    expect(a.expiring.amount).toBe(a.creditWallet.promotional.available)
+    // The ledger proves the drawdown: a usage row hit the promotional
+    // bucket while the plan bucket held ample credits.
+    const promoUsage = a.ledger.find(r => r.event === 'usage' && r.bucket === 'promotional')
+    expect(promoUsage).toBeTruthy()
+    expect(promoUsage.delta).toBe(-150)
+  })
+
+  it('promotional draws do not inflate the plan meter; true overage still reports', () => {
+    const ent = getDemoAccount('enterprise-invoice')
+    expect(ent.creditWallet.plan.usedThisCycle).toBe(2104) // plan usage only
+    expect(ent.creditWallet.plan.overage).toBe(0)
+    const std = getDemoAccount('standard-card')
+    expect(std.creditWallet.plan.usedThisCycle).toBe(2104) // 1,000 plan + 1,104 overage
+    expect(std.creditWallet.plan.overage).toBe(1104)
+  })
+
+  it('the standard-card overage row follows the non-expiring fallback (plan exhausted → top_up)', () => {
+    const a = getDemoAccount('standard-card')
+    const i = a.ledger.findIndex(r => r.event === 'usage' && r.bucket === 'top_up')
+    const buckets = bucketsFromLedger(a.ledger.slice(0, i), { planGrant: 1000 })
+    const planLeft = buckets.find(b => b.type === 'plan')
+    expect(planLeft).toBeUndefined() // plan bucket already at zero
+    const { draws } = allocateUsageToBuckets(1104, buckets)
+    expect(draws[0].type).toBe('top_up')
   })
 })

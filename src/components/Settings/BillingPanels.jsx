@@ -13,7 +13,7 @@ import {
 import {
   creditPackages, priceFor, rateFor, savingsPct, PRICING,
   reconciliationSummary, validateAdjustment, buildAdjustmentEntry,
-  ADJUSTMENT_REASON_CODES, CONSUMPTION_ORDER, planCtaModel,
+  ADJUSTMENT_REASON_CODES, CONSUMPTION_POLICY_TEXT, planCtaModel,
 } from '../../services/billing/billingModel'
 import { Card, Toggle, Field, StatusPill, fmtDate, fmtMoney } from './BillingShared'
 
@@ -272,7 +272,15 @@ function InvoiceTopUp({ account }) {
             <input value={po} onChange={e => setPo(e.target.value)} placeholder="e.g. PO-2026-022" className="w-full px-2.5 py-1.5 rounded-md border border-black/[0.12] text-[12px] bg-white" />
           </Field>
         </div>
-        <div className="mt-4 flex items-center justify-between rounded-lg border border-black/[0.08] bg-gray-50/60 p-3">
+        {/* The financial commitment is stated BEFORE submission —
+            a PO-backed request is binding once invoiced. */}
+        <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50/60 px-3 py-2 text-[11.5px] text-amber-800">
+          Submitting creates a purchase commitment: arbitr will issue an invoice for{' '}
+          <span className="font-semibold">{fmtMoney(price)}</span>
+          {po.trim() ? <> against <span className="font-semibold">{po.trim()}</span></> : null} under {account.netTerms}.
+          Credits are {account.grantPolicy === 'on-finalization' ? 'granted when the invoice is finalized' : 'granted when the invoice is paid'}; the request is binding once invoiced.
+        </div>
+        <div className="mt-3 flex items-center justify-between rounded-lg border border-black/[0.08] bg-gray-50/60 p-3">
           <div>
             <p className="text-[16px] font-bold text-gray-900">{credits.toLocaleString()} credits · {fmtMoney(price)}</p>
             <p className="text-[10.5px] text-gray-400">${rate.toFixed(4)} per credit{save > 0 ? ` · ${save}% volume discount included` : ''} · {account.netTerms}</p>
@@ -300,7 +308,10 @@ function InvoiceTopUp({ account }) {
                 <p className="text-gray-900">{r.id} · {r.credits.toLocaleString()} credits</p>
                 <p className="text-[10.5px] text-gray-400 truncate">{fmtDate(r.date)} · {r.po} · {r.notes}</p>
               </div>
-              <span className="text-gray-700 tabular-nums">{fmtMoney(r.cost)} <span className="text-gray-400">(${r.rate.toFixed(4)}/cr)</span></span>
+              <span className="text-right">
+                <span className="text-gray-700 tabular-nums block">{fmtMoney(r.cost)} <span className="text-gray-400">(${r.rate.toFixed(4)}/cr)</span></span>
+                <span className="text-[10px] text-gray-400 block">commitment · {account.netTerms}</span>
+              </span>
               <StatusPill status={r.status} />
               <button className="text-[11px] text-[#009eda] hover:text-[#0089c4] cursor-pointer">Details</button>
             </li>
@@ -393,7 +404,7 @@ export function UsageLedgerPanel({ account, filter, setFilter }) {
         </table>
       </div>
       <p className="text-[11px] text-gray-400">
-        Consumption order: {CONSUMPTION_ORDER.map(b => BUCKET_LABEL[b]).join(' → ')}. Every grant and consumption is traceable to a source.
+        Consumption order: {CONSUMPTION_POLICY_TEXT} Every grant and consumption is traceable to a source.
       </p>
     </div>
   )
@@ -413,6 +424,7 @@ function ReconRow({ label, value }) {
 /* ── Invoices (invoice/PO rail only) ─────────────────────────── */
 
 export function InvoicesPanel({ account }) {
+  const [payOpen, setPayOpen] = useState(null) // invoice id with the remittance panel open
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -421,6 +433,27 @@ export function InvoicesPanel({ account }) {
           <Download className="w-3 h-3" /> Export all
         </button>
       </div>
+
+      {/* How to resolve — opened by a Pay action */}
+      {payOpen && (() => {
+        const inv = account.invoices.find(i => i.id === payOpen)
+        if (!inv) return null
+        return (
+          <div className="rounded-lg border border-[#009eda]/25 bg-[#009eda]/5 p-4 text-[12px] text-gray-800">
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1.5">
+                <p className="font-semibold text-gray-900">Pay {inv.id} · {fmtMoney(inv.amount)}{inv.status === 'past_due' ? ` · past due since ${fmtDate(inv.dueDate)}` : ` · due ${fmtDate(inv.dueDate)}`}</p>
+                <p>Pay by bank transfer using the remittance details on the invoice PDF. Include the invoice number <span className="font-mono">{inv.id}</span>{inv.po ? <> and PO <span className="font-mono">{inv.po}</span></> : null} in the payment reference.</p>
+                <p className="text-gray-600">Status updates within 1 business day of receipt{inv.status === 'past_due' ? '; paying clears the past-due hold on new credit grants' : ''}. Questions or disputes: <span className="text-[#009eda]">billing@arbitr.com</span>.</p>
+                {account.cardTopUpsEnabled && (
+                  <button className="mt-1 px-3 py-1.5 rounded-md border border-black/[0.12] text-[11.5px] text-gray-700 hover:bg-white cursor-pointer">Pay by card for this one-time invoice</button>
+                )}
+              </div>
+              <button onClick={() => setPayOpen(null)} aria-label="Close payment details" className="text-[11px] text-gray-500 hover:text-gray-800 cursor-pointer shrink-0">Close</button>
+            </div>
+          </div>
+        )
+      })()}
       <div className="rounded-xl border border-black/[0.08] bg-white overflow-x-auto">
         <table className="w-full text-[12px]">
           <thead>
@@ -445,7 +478,7 @@ export function InvoicesPanel({ account }) {
                 <td className={`px-4 py-2.5 tabular-nums whitespace-nowrap hidden md:table-cell ${inv.status === 'past_due' ? 'text-red-600 font-medium' : 'text-gray-500'}`}>{fmtDate(inv.dueDate)}</td>
                 <td className="px-4 py-2.5 whitespace-nowrap text-right min-w-[132px] sticky right-0 bg-white shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.12)]">
                   <button aria-label={`Download invoice ${inv.id}`} className="text-[11px] text-[#009eda] hover:text-[#0089c4] cursor-pointer mr-3 px-1 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009eda]/40">Download</button>
-                  {inv.status !== 'paid' && <button aria-label={`Pay invoice ${inv.id}`} className="text-[11px] text-[#009eda] hover:text-[#0089c4] cursor-pointer px-1 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009eda]/40">Pay</button>}
+                  {inv.status !== 'paid' && <button onClick={() => setPayOpen(inv.id)} aria-label={`Pay invoice ${inv.id}`} className="text-[11px] text-[#009eda] hover:text-[#0089c4] cursor-pointer px-1 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009eda]/40">Pay</button>}
                 </td>
               </tr>
             ))}
