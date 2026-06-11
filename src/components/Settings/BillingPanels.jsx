@@ -14,7 +14,7 @@ import {
   creditPackages, priceFor, rateFor, savingsPct, PRICING,
   reconciliationSummary, validateAdjustment, buildAdjustmentEntry,
   ADJUSTMENT_REASON_CODES, CONSUMPTION_POLICY_TEXT, planCtaModel,
-  validateTopUpRequest,
+  validateTopUpRequest, TRUST_PRICING, trustPriceFor,
 } from '../../services/billing/billingModel'
 import { Card, Toggle, Field, StatusPill, fmtDate, fmtMoney } from './BillingShared'
 
@@ -135,11 +135,71 @@ function Metric({ label, value, sub }) {
 
 /* ── Top up ───────────────────────────────────────────────────── */
 
-export function TopUpPanel({ account, appendLedger }) {
+export function TopUpPanel({ account, appendLedger, appendTrustLedger }) {
   const isCard = account.paymentRail === 'card_or_ach'
-  return isCard
-    ? <CardTopUp account={account} appendLedger={appendLedger} />
-    : <InvoiceTopUp account={account} appendLedger={appendLedger} />
+  return (
+    <div className="space-y-6">
+      {isCard
+        ? <CardTopUp account={account} appendLedger={appendLedger} />
+        : <InvoiceTopUp account={account} appendLedger={appendLedger} />}
+      {(account.trustCredits?.grantThisCycle > 0 || account.trustCredits?.available > 0) && (
+        <TrustTopUpCard account={account} appendTrustLedger={appendTrustLedger} />
+      )}
+    </div>
+  )
+}
+
+/* Trust Credits — separate currency, separate pricing. Card rail
+ * buys instantly; invoice rail submits a purchase request. */
+function TrustTopUpCard({ account, appendTrustLedger }) {
+  const isCard = account.paymentRail === 'card_or_ach'
+  const [sel, setSel] = useState(1)
+  const [done, setDone] = useState(null)
+  const options = [
+    { credits: 1, price: trustPriceFor(1), label: '1 credit' },
+    { credits: TRUST_PRICING.bundle.credits, price: TRUST_PRICING.bundle.price, label: `${TRUST_PRICING.bundle.credits} credits`, save: true },
+  ]
+  const opt = options[sel] || options[0]
+  const buy = () => {
+    if (isCard) {
+      appendTrustLedger?.({
+        date: new Date().toISOString().slice(0, 10), event: 'top_up', delta: opt.credits,
+        source: 'Trust Credit top-up — card', ref: `RCP-T${Math.floor(Math.random() * 900) + 100}`,
+      })
+      setDone(`${opt.credits} Trust Credit${opt.credits === 1 ? '' : 's'} added — ${fmtMoney(opt.price)}. Receipt emailed.`)
+    } else {
+      setDone(`Request submitted — an invoice for ${fmtMoney(opt.price)} will be issued under ${account.netTerms}; Trust Credits granted on finalization.`)
+    }
+    setTimeout(() => setDone(null), 3500)
+  }
+  return (
+    <Card>
+      <div className="flex items-center gap-2">
+        <ShieldCheck className="w-4 h-4 text-[#009eda]" />
+        <h4 className="text-[13px] font-semibold text-gray-900">Trust Credits</h4>
+        <span className="ml-auto text-[11px] text-gray-400 tabular-nums">
+          {account.trustCredits.used} of {account.trustCredits.grantThisCycle} used · {account.trustCredits.available} available
+        </span>
+      </div>
+      <p className="text-[12px] text-gray-500 mt-0.5 mb-3">
+        Trust Credits cover trusted human review and sign-off. They are a separate balance from Intelligence Credits, with their own pricing.
+      </p>
+      <div className="flex items-center gap-2 flex-wrap">
+        {options.map((o, i) => (
+          <button key={o.credits} onClick={() => setSel(i)}
+            className={`text-left rounded-lg border px-3 py-2 cursor-pointer transition-colors ${sel === i ? 'border-[#009eda] bg-[#009eda]/5' : 'border-black/[0.12] hover:border-black/[0.25]'}`}>
+            <span className="text-[12.5px] font-semibold text-gray-900">{o.label} — {fmtMoney(o.price)}</span>
+            {o.save && <span className="ml-1.5 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Bundle</span>}
+          </button>
+        ))}
+        <button onClick={buy}
+          className="ml-auto px-4 py-2 rounded-lg bg-[#009eda] text-white text-[12.5px] font-semibold hover:bg-[#0089c4] cursor-pointer">
+          {isCard ? `Pay ${fmtMoney(opt.price)}` : 'Request by invoice'}
+        </button>
+      </div>
+      {done && <p className="mt-3 text-[12px] text-emerald-700 inline-flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4" />{done}</p>}
+    </Card>
+  )
 }
 
 function PackageGrid({ selected, onSelect }) {
@@ -350,7 +410,7 @@ export function UsageLedgerPanel({ account, filter, setFilter }) {
     <div className="space-y-4">
       {/* Reconciliation summary — ties exactly to the Overview headline */}
       <Card>
-        <h4 className="text-[13px] font-semibold text-gray-900 mb-3">Reconciliation · this wallet</h4>
+        <h4 className="text-[13px] font-semibold text-gray-900 mb-3">Reconciliation · Intelligence Credits</h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-1.5 text-[12px]">
           <ReconRow label="Plan grants" value={recon.planGrants} />
           <ReconRow label="Top-ups" value={recon.topUps} />
@@ -419,6 +479,31 @@ export function UsageLedgerPanel({ account, filter, setFilter }) {
       <p className="text-[11px] text-gray-400">
         Consumption order: {CONSUMPTION_POLICY_TEXT} Every grant and consumption is traceable to a source.
       </p>
+
+      {/* Trust Credits — separate currency, separate mini-ledger so
+          the Intelligence Credits reconciliation stays exact. */}
+      {account.trustCredits?.ledger?.length > 0 && (
+        <Card>
+          <div className="flex items-center gap-2 mb-2">
+            <ShieldCheck className="w-4 h-4 text-[#009eda]" />
+            <h4 className="text-[13px] font-semibold text-gray-900">Trust Credit activity</h4>
+            <span className="ml-auto text-[11px] text-gray-400 tabular-nums">
+              {account.trustCredits.available} available · {account.trustCredits.used} of {account.trustCredits.grantThisCycle} used this cycle
+            </span>
+          </div>
+          <ul className="divide-y divide-black/[0.06]">
+            {account.trustCredits.ledger.map((e, i) => (
+              <li key={i} className="py-2 flex items-center gap-3 text-[12px]">
+                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${e.delta > 0 ? 'bg-emerald-500' : 'bg-gray-400'}`} />
+                <span className="text-gray-500 tabular-nums w-24 shrink-0">{fmtDate(e.date)}</span>
+                <span className="text-gray-900 flex-1 min-w-0 truncate">{e.source}{e.actor ? <span className="text-gray-400"> · {e.actor}</span> : null}</span>
+                <span className={`tabular-nums ${e.delta > 0 ? 'text-emerald-600' : 'text-gray-700'}`}>{e.delta > 0 ? '+' : ''}{e.delta}</span>
+                <span className="text-gray-400 text-[10.5px] w-20 text-right shrink-0">{e.ref || '—'}</span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
     </div>
   )
 }

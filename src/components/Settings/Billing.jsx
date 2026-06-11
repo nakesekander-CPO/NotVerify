@@ -18,12 +18,12 @@ import { useMemo, useState } from 'react'
 import {
   Wallet, History, Receipt, Plus, Tag, Settings as SettingsIcon,
   CheckCircle2, AlertCircle, Clock, Info, CreditCard,
-  FileText, Building2,
+  FileText, Building2, ShieldCheck,
 } from 'lucide-react'
 import {
   getDemoAccount, walletFromLedger, planMeterState, tabVisibility,
   railPermissions, validateRailChange, buildRailChangeRequest,
-  pastDueSummary, markInvoicesPaid,
+  pastDueSummary, markInvoicesPaid, trustWalletFromLedger,
 } from '../../services/billing/billingModel'
 import {
   TopUpPanel, UsageLedgerPanel, InvoicesPanel, PaymentsReceiptsPanel,
@@ -58,8 +58,12 @@ export default function Billing({ tier = 'pro' }) {
    * PO is required on top-up requests) — overrides the fixture so
    * the Admin toggle genuinely controls the request form. */
   const [settingsByAccount, setSettingsByAccount] = useState({})
+  /* Trust Credits are a separate currency with their own ledger —
+   * they never mix into the Intelligence Credits bucket math. */
+  const [trustByAccount, setTrustByAccount] = useState({})
   const ledger = ledgerByAccount[accountKey] || baseAccount.ledger
   const invoices = invoicesByAccount[accountKey] || baseAccount.invoices
+  const trustLedger = trustByAccount[accountKey] || baseAccount.trustLedger || []
   const settings = settingsByAccount[accountKey] || {}
   const updateBillingSettings = (patch) =>
     setSettingsByAccount(s => ({ ...s, [accountKey]: { ...(s[accountKey] || {}), ...patch } }))
@@ -75,12 +79,13 @@ export default function Billing({ tier = 'pro' }) {
     )
     const a = {
       ...baseAccount, ...settings, ledger, creditWallet, invoices, topUpRequests,
+      trustCredits: { ...trustWalletFromLedger(trustLedger), ledger: trustLedger },
       hasPastDueInvoices: invoices.some(i => i.status === 'past_due'),
       hasOpenInvoices: invoices.some(i => i.status === 'open'),
     }
     a.tabs = tabVisibility(a)
     return a
-  }, [baseAccount, ledger, invoices, settings])
+  }, [baseAccount, ledger, invoices, settings, trustLedger])
 
   const appendLedger = (row) => {
     const prev = ledger[ledger.length - 1]
@@ -91,6 +96,9 @@ export default function Billing({ tier = 'pro' }) {
     }
     setLedgerByAccount(s => ({ ...s, [accountKey]: [...ledger, next] }))
   }
+
+  const appendTrustLedger = (row) =>
+    setTrustByAccount(s => ({ ...s, [accountKey]: [...trustLedger, row] }))
 
   const [tab, setTab] = useState('overview')
   const [ledgerFilter, setLedgerFilter] = useState('all')
@@ -194,7 +202,7 @@ export default function Billing({ tier = 'pro' }) {
           onViewLedger={() => setTab('usage')} onViewInvoices={() => setTab('invoices')} onViewPayments={() => setTab('payments')} />
       )}
       {activeTab === 'plans' && <PlansPanel account={account} />}
-      {activeTab === 'topup' && <TopUpPanel account={account} appendLedger={appendLedger} />}
+      {activeTab === 'topup' && <TopUpPanel account={account} appendLedger={appendLedger} appendTrustLedger={appendTrustLedger} />}
       {activeTab === 'usage' && <UsageLedgerPanel account={account} filter={ledgerFilter} setFilter={setLedgerFilter} />}
       {activeTab === 'invoices' && account.tabs.invoices && (
         <InvoicesPanel account={account} filter={invoiceFilter} setFilter={setInvoiceFilter}
@@ -456,7 +464,7 @@ function OverviewPanel({ account, onTopUp, onChangePlan, onViewLedger, onViewInv
             </button>
           </div>
           <p className="text-[32px] font-bold text-gray-900 leading-none mt-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{w.availableTotal.toLocaleString()}</p>
-          <p className="text-[11px] text-gray-500 mt-1">credits available · next grant Jul 1, 2026 ({w.plan.grantThisCycle.toLocaleString()} credits)</p>
+          <p className="text-[11px] text-gray-500 mt-1">Intelligence Credits available · next grant Jul 1, 2026 ({w.plan.grantThisCycle.toLocaleString()} credits)</p>
 
           {/* Plan meter — overage is reported, never hidden */}
           <div className="mt-4">
@@ -494,6 +502,19 @@ function OverviewPanel({ account, onTopUp, onChangePlan, onViewLedger, onViewInv
               </li>
             ))}
           </ul>
+
+          {/* Trust Credits — separate currency, separate ledger. Shown
+              only when the plan includes them or a balance exists. */}
+          {(account.trustCredits?.grantThisCycle > 0 || account.trustCredits?.available > 0) && (
+            <div className="mt-3 pt-3 border-t border-black/[0.06] flex items-center justify-between text-[11.5px]">
+              <span className="text-gray-500 inline-flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#009eda]" /> Trust Credits
+              </span>
+              <span className="text-gray-900 font-medium tabular-nums">
+                {account.trustCredits.used} of {account.trustCredits.grantThisCycle} used · {account.trustCredits.available} available
+              </span>
+            </div>
+          )}
         </Card>
       </div>
 

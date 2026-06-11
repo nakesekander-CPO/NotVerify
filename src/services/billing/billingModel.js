@@ -309,6 +309,34 @@ export function buildRailChangeRequest({ targetRail, reason, actor, account, app
   }
 }
 
+/* ── Trust Credits — the second wallet ───────────────────────────
+ *
+ * Trust Credits (human sign-off / trusted-review credits) are a
+ * separate currency from Intelligence Credits: their own monthly
+ * grant, their own ledger, and their own pricing ($38/credit,
+ * 3-for-$110 bundle). They never mix into the IC bucket math, so
+ * the IC reconciliation stays exact. */
+
+export const TRUST_PRICING = {
+  currency: 'USD',
+  perCredit: 38,
+  bundle: { credits: 3, price: 110 },
+}
+
+export function trustPriceFor(credits) {
+  if (credits === TRUST_PRICING.bundle.credits) return TRUST_PRICING.bundle.price
+  return credits * TRUST_PRICING.perCredit
+}
+
+export function trustWalletFromLedger(rows = []) {
+  const sum = (pred) => rows.filter(pred).reduce((s, r) => s + r.delta, 0)
+  return {
+    grantThisCycle: sum(r => r.event === 'grant'),
+    used: -sum(r => r.event === 'usage'),
+    available: rows.reduce((s, r) => s + r.delta, 0),
+  }
+}
+
 /* ── Top-up request validation — PO requirement is an account-level
  *    setting (Admin → Purchase orders), not a hardcoded rule. ───── */
 
@@ -401,7 +429,9 @@ export function buildAdjustmentEntry({ direction, amount, bucket, reasonCode, re
 function account(base, ledgerRows, planGrant) {
   const ledger = buildLedger(ledgerRows)
   const creditWallet = walletFromLedger(ledger, { planGrant })
-  return { ...base, ledger, creditWallet, tabs: tabVisibility({ ...base }) }
+  const trustLedger = base.trustLedger || []
+  const trustCredits = { ...trustWalletFromLedger(trustLedger), ledger: trustLedger }
+  return { ...base, ledger, creditWallet, trustCredits, tabs: tabVisibility({ ...base }) }
 }
 
 export function getDemoAccount(key) {
@@ -453,6 +483,11 @@ export function getDemoAccount(key) {
       pricingPolicy: { type: 'public_packages', baselinePricePerCredit: PRICING.baseRate, contractPricePerCredit: null, currency: 'USD' },
       overagePolicy: 'draw_from_top_up',
       downgradePolicy: 'self_serve',
+      // Trust Credits — Team plan includes 2 / month.
+      trustLedger: [
+        { date: '2026-05-01', event: 'grant', delta: +2, source: 'Monthly plan grant — Team', ref: 'RCP-2008' },
+        { date: '2026-05-20', event: 'usage', delta: -1, source: 'Trusted review — Q3 Earnings Report — JA', actor: 'Hana Ito' },
+      ],
       receipts: [
         { id: 'RCP-2011', date: '2026-05-18', type: 'Credit top-up', amount: 10,  method: 'Amex •••• 1005', status: 'paid' },
         { id: 'RCP-2008', date: '2026-05-01', type: 'Subscription',  amount: 100, method: 'Amex •••• 1005', status: 'paid' },
@@ -483,6 +518,10 @@ export function getDemoAccount(key) {
       pricingPolicy: { type: 'public_packages', baselinePricePerCredit: PRICING.baseRate, contractPricePerCredit: null, currency: 'USD' },
       overagePolicy: 'invoiceable_overage',
       downgradePolicy: 'not_allowed', // contract-managed; changes go through the account team
+      trustLedger: [
+        { date: '2026-05-01', event: 'grant', delta: +2, source: 'Monthly contract grant', ref: 'INV-2026-005' },
+        { date: '2026-05-22', event: 'usage', delta: -1, source: 'Trusted review — BaFin Filing Translation — DE', actor: 'Klaus Berger' },
+      ],
       receipts: [],
       invoices: [
         { id: 'INV-2026-008', date: '2026-06-01', type: 'Subscription', amount: 4000, po: 'PO-2026-018', status: 'open',     dueDate: '2026-07-01' },
@@ -524,6 +563,9 @@ export function getDemoAccount(key) {
       pricingPolicy: { type: 'public_packages', baselinePricePerCredit: PRICING.baseRate, contractPricePerCredit: null, currency: 'USD' },
       overagePolicy: 'draw_from_top_up',
       downgradePolicy: 'request_only', // self-serve rail, but plan changes by request
+      trustLedger: [
+        { date: '2026-05-01', event: 'grant', delta: +2, source: 'Monthly contract grant', ref: 'RCP-3015' },
+      ],
       receipts: [
         { id: 'RCP-3021-ACH-MERIDIAN-LTD', date: '2026-05-12', type: 'Credit top-up', amount: priceFor(2500), method: 'ACH — Chase Business Complete ••6789', status: 'paid' },
         { id: 'RCP-3015', date: '2026-05-01', type: 'Subscription',  amount: 4000, method: 'ACH — Chase ••6789', status: 'paid' },

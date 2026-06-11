@@ -6,7 +6,7 @@ import {
   getDemoAccount, DEMO_ACCOUNT_KEYS,
   planCtaModel, railPermissions, validateRailChange, buildRailChangeRequest,
   allocateUsageToBuckets, bucketsFromLedger, pastDueSummary, markInvoicesPaid,
-  validateTopUpRequest,
+  validateTopUpRequest, TRUST_PRICING, trustPriceFor, trustWalletFromLedger,
 } from '../billingModel'
 
 describe('pricing — one schedule for both rails', () => {
@@ -462,5 +462,55 @@ describe('top-up PO requirement — account-level setting, not a hardcoded rule'
     // validator obeys whatever the account currently says:
     const overridden = { ...getDemoAccount('enterprise-invoice'), poRequired: false }
     expect(validateTopUpRequest({ credits: 5000, po: '' }, overridden).ok).toBe(true)
+  })
+})
+
+describe('Trust Credits — the second wallet, restored', () => {
+  it('trust pricing matches the published rates: $38/credit, 3-for-$110 bundle', () => {
+    expect(trustPriceFor(1)).toBe(38)
+    expect(trustPriceFor(2)).toBe(76)
+    expect(trustPriceFor(3)).toBe(110) // bundle, not 114
+    expect(TRUST_PRICING.perCredit).toBe(38)
+  })
+
+  it('trust wallet derives from its own ledger: grant, used, available', () => {
+    const w = trustWalletFromLedger([
+      { date: '2026-05-01', event: 'grant',  delta: +2 },
+      { date: '2026-05-20', event: 'usage',  delta: -1 },
+      { date: '2026-05-25', event: 'top_up', delta: +1 },
+    ])
+    expect(w.grantThisCycle).toBe(2)
+    expect(w.used).toBe(1)
+    expect(w.available).toBe(2)
+  })
+
+  it('plans that sell Trust Credits actually grant them; plans that do not, do not', () => {
+    // Team plan: "2 Trust Credits / month" — must be backed by a grant.
+    const team = getDemoAccount('proteam-card').trustCredits
+    expect(team.grantThisCycle).toBe(2)
+    expect(team.used).toBe(1)
+    expect(team.available).toBe(1)
+    // Enterprise (both rails) includes Trust Credits.
+    expect(getDemoAccount('enterprise-invoice').trustCredits.grantThisCycle).toBe(2)
+    expect(getDemoAccount('enterprise-card').trustCredits.grantThisCycle).toBe(2)
+    // Standard sells none and grants none.
+    const std = getDemoAccount('standard-card').trustCredits
+    expect(std.grantThisCycle).toBe(0)
+    expect(std.available).toBe(0)
+  })
+
+  it('Trust Credits never leak into the Intelligence Credits wallet math', () => {
+    // The IC reconciliation invariants are asserted elsewhere for every
+    // account; here we pin that trust ledgers live outside the IC ledger.
+    for (const key of DEMO_ACCOUNT_KEYS) {
+      const a = getDemoAccount(key)
+      for (const row of a.ledger) {
+        expect(Math.abs(row.delta)).toBeGreaterThanOrEqual(100) // IC rows are credit-scale
+      }
+      const trustRows = a.trustCredits.ledger
+      for (const row of trustRows) {
+        expect(Math.abs(row.delta)).toBeLessThanOrEqual(3) // TC rows are unit-scale
+      }
+    }
   })
 })
