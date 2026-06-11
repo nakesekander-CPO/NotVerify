@@ -39,6 +39,8 @@ export function StatusPill({ status }) {
     requested: ['Requested', 'bg-violet-50 text-violet-700 border-violet-200'],
     completed: ['Completed', 'bg-emerald-100 text-emerald-700 border-emerald-200'],
     rejected:  ['Rejected', 'bg-red-50 text-red-700 border-red-200'],
+    failed:    ['Failed', 'bg-red-50 text-red-700 border-red-200'],
+    refunded:  ['Refunded', 'bg-gray-100 text-gray-600 border-gray-200'],
   }
   const [label, tone] = map[status] || [status, 'bg-gray-100 text-gray-700 border-gray-200']
   return <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-semibold border whitespace-nowrap ${tone}`}>{label}</span>

@@ -13,23 +13,25 @@ import {
 import {
   creditPackages, priceFor, rateFor, savingsPct, PRICING,
   reconciliationSummary, validateAdjustment, buildAdjustmentEntry,
-  ADJUSTMENT_REASON_CODES, CONSUMPTION_ORDER,
+  ADJUSTMENT_REASON_CODES, CONSUMPTION_ORDER, planCtaModel,
 } from '../../services/billing/billingModel'
 import { Card, Toggle, Field, StatusPill, fmtDate, fmtMoney } from './BillingShared'
 
 /* ── Plans / Contract ─────────────────────────────────────────── */
 
-const PUBLIC_PLANS = [
-  { id: 'standard', name: 'Standard', price: 20,  credits: 1000, blurb: 'Fast AI intelligence for everyday work.', features: ['1,000 Intelligence Credits / month', 'Standard AI Translation'] },
-  { id: 'plus',     name: 'Plus',     price: 35,  credits: 2000, blurb: 'More credits and Specialty Verification.', features: ['2,000 Intelligence Credits / month', 'AI Agent Specialty Verification'] },
-  { id: 'pro_team', name: 'Team',     price: 100, credits: 5000, blurb: 'Full platform with Trust Credits and priority.', features: ['5,000 Intelligence Credits / month', 'All AI features', '2 Trust Credits', 'Priority & rollovers'] },
-  { id: 'enterprise', name: 'Enterprise', price: null, credits: null, blurb: 'Contract pricing, governance, and scale.', features: ['Committed credit pool', 'Invoice / PO / ACH / net terms', 'SSO + advanced security', 'Dedicated support'] },
-]
-const TIER_ORDER = { standard: 0, plus: 1, pro_team: 2, enterprise: 3 }
+const PUBLIC_PLANS = {
+  standard:   { name: 'Standard', price: 20,  blurb: 'Fast AI intelligence for everyday work.', features: ['1,000 Intelligence Credits / month', 'Standard AI Translation'] },
+  plus:       { name: 'Plus',     price: 35,  blurb: 'More credits and Specialty Verification.', features: ['2,000 Intelligence Credits / month', 'AI Agent Specialty Verification'] },
+  pro_team:   { name: 'Team',     price: 100, blurb: 'Full platform with Trust Credits and priority.', features: ['5,000 Intelligence Credits / month', 'All AI features', '2 Trust Credits', 'Priority & rollovers'] },
+  enterprise: { name: 'Enterprise', price: null, blurb: 'Contract pricing, governance, and scale.', features: ['Committed credit pool', 'Invoice / PO / ACH / net terms', 'SSO + advanced security', 'Dedicated support'] },
+}
 
+/* CTA hierarchy comes from planCtaModel (tested): current plan is a
+ * state, exactly one primary (the recommended next step up), and
+ * downgrades are always outline/neutral — never the loudest button. */
 export function PlansPanel({ account }) {
   if (account.tier === 'enterprise') return <ContractPanel account={account} />
-  const currentIdx = TIER_ORDER[account.tier]
+  const ctas = planCtaModel(account.tier, { downgradePolicy: account.downgradePolicy })
   return (
     <div className="space-y-4">
       <div>
@@ -37,12 +39,12 @@ export function PlansPanel({ account }) {
         <p className="text-[12px] text-gray-500 mt-0.5">Every plan includes a monthly credit grant. Top up anytime.</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        {PUBLIC_PLANS.map(p => {
-          const idx = TIER_ORDER[p.id]
-          const isCurrent = idx === currentIdx
-          const isUpgrade = idx > currentIdx
+        {ctas.map(cta => {
+          const p = PUBLIC_PLANS[cta.planId]
+          const isCurrent = cta.emphasis === 'current'
           return (
-            <div key={p.id} className={`rounded-xl bg-white p-5 flex flex-col gap-3 relative ${isCurrent ? 'border-2 border-[#009eda]' : 'border border-black/[0.12]'}`}>
+            <div key={cta.planId} aria-label={cta.ariaLabel}
+              className={`rounded-xl bg-white p-5 flex flex-col gap-3 relative ${isCurrent ? 'border-2 border-[#009eda]' : 'border border-black/[0.12]'}`}>
               {isCurrent && <span className="absolute -top-3 left-4 text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#009eda] text-white">Current plan</span>}
               <div>
                 <p className="text-[14px] font-bold text-gray-900">{p.name}</p>
@@ -59,14 +61,14 @@ export function PlansPanel({ account }) {
                 ))}
               </ul>
               {isCurrent ? (
-                <div className="mt-auto px-4 py-2.5 rounded-lg text-center text-[13px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Current plan</div>
-              ) : isUpgrade ? (
-                <button className="mt-auto w-full px-4 py-2.5 rounded-lg text-[13px] font-semibold bg-[#009eda] text-white hover:bg-[#0089c4] cursor-pointer">
-                  {p.id === 'enterprise' ? 'Contact sales' : `Upgrade to ${p.name}`}
+                <div aria-label={cta.ariaLabel} className="mt-auto px-4 py-2.5 rounded-lg text-center text-[13px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Current plan</div>
+              ) : cta.emphasis === 'primary' ? (
+                <button aria-label={cta.ariaLabel} className="mt-auto w-full px-4 py-2.5 rounded-lg text-[13px] font-semibold bg-[#009eda] text-white hover:bg-[#0089c4] cursor-pointer">
+                  {cta.label}
                 </button>
               ) : (
-                <button className="mt-auto w-full px-4 py-2.5 rounded-lg text-[13px] font-medium border border-black/[0.15] text-gray-600 hover:bg-black/[0.04] cursor-pointer">
-                  Switch to {p.name}
+                <button aria-label={cta.ariaLabel} className="mt-auto w-full px-4 py-2.5 rounded-lg text-[13px] font-medium border border-black/[0.15] text-gray-600 hover:bg-black/[0.04] cursor-pointer">
+                  {cta.label}
                 </button>
               )}
             </div>
@@ -97,14 +99,24 @@ function ContractPanel({ account }) {
           <Metric label="Used this cycle" value={w.plan.usedThisCycle.toLocaleString()} sub={`${Math.round((w.plan.usedThisCycle / w.plan.grantThisCycle) * 100)}% of grant`} />
           <Metric label="Available now" value={w.availableTotal.toLocaleString()} sub="all buckets" />
         </div>
-        <div className="mt-4 pt-4 border-t border-black/[0.06] flex items-center gap-2">
-          <button className="px-4 py-2 rounded-lg bg-[#009eda] text-white text-[12.5px] font-semibold hover:bg-[#0089c4] cursor-pointer inline-flex items-center gap-1.5">
+        <div className="mt-4 pt-4 border-t border-black/[0.06] flex items-center gap-2 flex-wrap">
+          <button aria-label="Contact account team about Enterprise plan" className="px-4 py-2 rounded-lg bg-[#009eda] text-white text-[12.5px] font-semibold hover:bg-[#0089c4] cursor-pointer inline-flex items-center gap-1.5">
             <Phone className="w-3.5 h-3.5" /> Contact account team
           </button>
           <button className="px-4 py-2 rounded-lg border border-black/[0.12] text-[12.5px] font-medium text-gray-700 hover:bg-black/[0.03] cursor-pointer">View contract</button>
           <button className="px-4 py-2 rounded-lg border border-black/[0.12] text-[12.5px] font-medium text-gray-700 hover:bg-black/[0.03] cursor-pointer">Compare plans</button>
+          {account.downgradePolicy === 'request_only' && (
+            <button aria-label="Request a plan change — reviewed by your account team" className="px-4 py-2 rounded-lg border border-black/[0.12] text-[12.5px] font-medium text-gray-600 hover:bg-black/[0.03] cursor-pointer">
+              Request plan change
+            </button>
+          )}
         </div>
-        <p className="text-[11px] text-gray-400 mt-3">Overage policy: {account.overagePolicy === 'invoiceable_overage' ? 'usage beyond commitment is invoiced at your contract rate.' : 'usage beyond the grant draws from top-up credits.'} Plan changes go through your account team.</p>
+        <p className="text-[11px] text-gray-400 mt-3">
+          Overage policy: {account.overagePolicy === 'invoiceable_overage' ? 'usage beyond commitment is invoiced at your contract rate.' : 'usage beyond the grant draws from top-up credits.'}{' '}
+          {account.downgradePolicy === 'not_allowed'
+            ? 'Plan changes are contract-managed — contact your account team.'
+            : 'Plan-change requests are reviewed by your account team before taking effect.'}
+        </p>
       </Card>
     </div>
   )
@@ -419,7 +431,7 @@ export function InvoicesPanel({ account }) {
               <th className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold px-4 py-2 whitespace-nowrap hidden md:table-cell">PO</th>
               <th className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold px-4 py-2 whitespace-nowrap">Status</th>
               <th className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold px-4 py-2 whitespace-nowrap hidden md:table-cell">Due date</th>
-              <th className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold px-4 py-2 whitespace-nowrap">Actions</th>
+              <th className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold px-4 py-2 whitespace-nowrap text-right min-w-[132px] sticky right-0 bg-gray-50 shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.12)]">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -431,9 +443,9 @@ export function InvoicesPanel({ account }) {
                 <td className="px-4 py-2.5 text-gray-500 whitespace-nowrap hidden md:table-cell">{inv.po || '—'}</td>
                 <td className="px-4 py-2.5"><StatusPill status={inv.status} /></td>
                 <td className={`px-4 py-2.5 tabular-nums whitespace-nowrap hidden md:table-cell ${inv.status === 'past_due' ? 'text-red-600 font-medium' : 'text-gray-500'}`}>{fmtDate(inv.dueDate)}</td>
-                <td className="px-4 py-2.5 whitespace-nowrap">
-                  <button className="text-[11px] text-[#009eda] hover:text-[#0089c4] cursor-pointer mr-3">Download</button>
-                  {inv.status !== 'paid' && <button className="text-[11px] text-[#009eda] hover:text-[#0089c4] cursor-pointer">Pay</button>}
+                <td className="px-4 py-2.5 whitespace-nowrap text-right min-w-[132px] sticky right-0 bg-white shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.12)]">
+                  <button aria-label={`Download invoice ${inv.id}`} className="text-[11px] text-[#009eda] hover:text-[#0089c4] cursor-pointer mr-3 px-1 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009eda]/40">Download</button>
+                  {inv.status !== 'paid' && <button aria-label={`Pay invoice ${inv.id}`} className="text-[11px] text-[#009eda] hover:text-[#0089c4] cursor-pointer px-1 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009eda]/40">Pay</button>}
                 </td>
               </tr>
             ))}
@@ -455,25 +467,43 @@ export function PaymentsReceiptsPanel({ account }) {
           <Download className="w-3 h-3" /> Export all
         </button>
       </div>
+      {/* The Actions column has a guaranteed min-width and never
+          truncates — "Download" must always render in full. If the
+          table needs to give up space, the low-priority method and
+          receipt-id columns truncate (with title tooltips) instead. */}
       <div className="rounded-xl border border-black/[0.08] bg-white overflow-x-auto">
-        <table className="w-full text-[12px]">
+        <table className="w-full text-[12px]" style={{ tableLayout: 'auto' }}>
           <thead>
             <tr className="bg-gray-50/60 border-b border-black/[0.06] text-left">
-              {['Receipt', 'Date', 'Type', 'Payment method', 'Amount', 'Status', 'Actions'].map(h => (
-                <th key={h} className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold px-4 py-2 whitespace-nowrap">{h}</th>
-              ))}
+              <th scope="col" className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold px-4 py-2 whitespace-nowrap">Receipt</th>
+              <th scope="col" className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold px-4 py-2 whitespace-nowrap">Date</th>
+              <th scope="col" className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold px-4 py-2 whitespace-nowrap hidden md:table-cell">Type</th>
+              <th scope="col" className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold px-4 py-2 whitespace-nowrap hidden md:table-cell">Payment method</th>
+              <th scope="col" className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold px-4 py-2 whitespace-nowrap">Amount</th>
+              <th scope="col" className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold px-4 py-2 whitespace-nowrap">Status</th>
+              {/* Sticky action column: always visible even when the
+                  table scrolls horizontally; edge shadow signals the
+                  scroll. Never clipped, never truncated. */}
+              <th scope="col" className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold px-4 py-2 whitespace-nowrap text-right min-w-[104px] sticky right-0 bg-gray-50 shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.12)]">Actions</th>
             </tr>
           </thead>
           <tbody>
             {account.receipts.map(r => (
               <tr key={r.id} className="border-b border-black/[0.04] last:border-b-0 hover:bg-gray-50/60">
-                <td className="px-4 py-2.5 text-gray-900 whitespace-nowrap">{r.id}</td>
+                <td className="px-4 py-2.5 text-gray-900 max-w-[140px] truncate" title={r.id}>{r.id}</td>
                 <td className="px-4 py-2.5 text-gray-500 tabular-nums whitespace-nowrap">{fmtDate(r.date)}</td>
-                <td className="px-4 py-2.5 text-gray-700 whitespace-nowrap">{r.type}</td>
-                <td className="px-4 py-2.5 text-gray-500 whitespace-nowrap">{r.method}</td>
+                <td className="px-4 py-2.5 text-gray-700 whitespace-nowrap hidden md:table-cell">{r.type}</td>
+                <td className="px-4 py-2.5 text-gray-500 max-w-[150px] truncate hidden md:table-cell" title={r.method}>{r.method}</td>
                 <td className="px-4 py-2.5 text-gray-900 tabular-nums whitespace-nowrap">{fmtMoney(r.amount)}</td>
                 <td className="px-4 py-2.5"><StatusPill status={r.status} /></td>
-                <td className="px-4 py-2.5"><button className="text-[11px] text-[#009eda] hover:text-[#0089c4] cursor-pointer">Download</button></td>
+                <td className="px-4 py-2.5 text-right whitespace-nowrap min-w-[104px] sticky right-0 bg-white shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.12)]">
+                  <button
+                    aria-label={`Download receipt ${r.id}`}
+                    className="text-[11px] text-[#009eda] hover:text-[#0089c4] cursor-pointer px-1 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009eda]/40"
+                  >
+                    Download
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

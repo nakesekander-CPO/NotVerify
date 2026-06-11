@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import {
   getDemoAccount, walletFromLedger, planMeterState, tabVisibility,
+  railPermissions, validateRailChange, buildRailChangeRequest,
 } from '../../services/billing/billingModel'
 import {
   TopUpPanel, UsageLedgerPanel, InvoicesPanel, PaymentsReceiptsPanel,
@@ -30,6 +31,12 @@ import {
 import { Card, StatusPill, fmtDate } from './BillingShared'
 
 const TIER_TO_ACCOUNT = { standard: 'standard-card', pro: 'proteam-card', enterprise: 'enterprise-invoice' }
+
+/* This build is an explicit demo environment, so a clearly-labelled
+ * rail preview switcher is allowed. In production this MUST be false:
+ * the rail then renders as a read-only "Billing arrangement" with a
+ * permissioned, audit-logged change-request flow only. */
+const IS_DEMO_ENV = true
 
 export default function Billing({ tier = 'pro' }) {
   /* Enterprise can run on either rail — explicit account data, not an
@@ -91,19 +98,7 @@ export default function Billing({ tier = 'pro' }) {
               : 'Subscription, credits, invoices, and purchase requests.'}
           </p>
         </div>
-        {account.tier === 'enterprise' && (
-          <div className="shrink-0 rounded-lg border border-black/[0.08] bg-gray-50 px-3 py-2">
-            <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Account payment rail (preview)</p>
-            <div className="flex gap-1">
-              {[['invoice_or_po', 'Invoice / PO'], ['card_or_ach', 'Card / ACH']].map(([v, l]) => (
-                <button key={v} onClick={() => setEntRail(v)}
-                  className={`px-2.5 py-1 rounded-md text-[11px] font-medium cursor-pointer ${entRail === v ? 'bg-[#009eda] text-white' : 'text-gray-500 hover:bg-black/[0.05]'}`}>
-                  {l}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+        <RailControl account={account} entRail={entRail} setEntRail={setEntRail} />
       </header>
 
       <AlertStack account={account} onOpenInvoices={() => setTab('invoices')} onTopUp={() => setTab('topup')} onViewExpiring={goToExpiring} />
@@ -131,6 +126,90 @@ export default function Billing({ tier = 'pro' }) {
       {activeTab === 'invoices' && account.tabs.invoices && <InvoicesPanel account={account} />}
       {activeTab === 'payments' && account.tabs.paymentsReceipts && <PaymentsReceiptsPanel account={account} />}
       {activeTab === 'admin' && account.tabs.admin && <AdminPanel account={account} appendLedger={appendLedger} />}
+    </div>
+  )
+}
+
+/* ── Payment rail control — production-safe ──────────────────────
+ *
+ * The rail is a billing contract attribute. Customers see a read-only
+ * "Billing arrangement"; eligible admins can REQUEST a change through
+ * a confirmation flow (reason + impact acknowledgment + audit entry;
+ * high-risk changes are approval-gated). Only when IS_DEMO_ENV is
+ * true does an explicitly-labelled demo switcher render. */
+
+const RAIL_LABEL = { card_or_ach: 'Card / ACH', invoice_or_po: 'Invoice / PO' }
+
+function RailControl({ account, entRail, setEntRail }) {
+  const perms = railPermissions(account.role)
+  const [open, setOpen] = useState(false)
+  const [reason, setReason] = useState('')
+  const [acknowledged, setAcknowledged] = useState(false)
+  const [request, setRequest] = useState(null)
+  if (!perms.canViewPaymentRail) return null
+
+  const targetRail = account.paymentRail === 'card_or_ach' ? 'invoice_or_po' : 'card_or_ach'
+  const validation = validateRailChange({ targetRail, reason, acknowledged }, account)
+
+  const submit = () => {
+    const req = buildRailChangeRequest({ targetRail, reason, actor: `${account.role}@meridian`, account })
+    setRequest(req)
+    setOpen(false); setReason(''); setAcknowledged(false)
+  }
+
+  return (
+    <div className="shrink-0 rounded-lg border border-black/[0.08] bg-gray-50 px-3 py-2 max-w-[300px]">
+      <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Billing arrangement</p>
+      <div className="flex items-center gap-2">
+        <span className="text-[12px] font-semibold text-gray-900">{RAIL_LABEL[account.paymentRail]}</span>
+        {perms.canRequestPaymentRailChange && !request && (
+          <button onClick={() => setOpen(o => !o)} className="text-[11px] text-[#009eda] hover:text-[#0089c4] cursor-pointer">
+            Request change
+          </button>
+        )}
+      </div>
+      {request && (
+        <p className="text-[10.5px] text-gray-500 mt-1">
+          Request {request.id} → {RAIL_LABEL[request.toRail]} · {request.status === 'pending_approval' ? 'pending approval' : 'approved'} · logged to audit
+        </p>
+      )}
+      {open && (
+        <div className="mt-2 pt-2 border-t border-black/[0.08] space-y-2">
+          <p className="text-[11px] text-gray-700">
+            Change to <span className="font-semibold">{RAIL_LABEL[targetRail]}</span>. This changes invoices vs. receipts,
+            payment methods, PO and net-terms handling, and how top-ups are purchased.
+          </p>
+          <input value={reason} onChange={e => setReason(e.target.value)} placeholder="Reason (required)"
+            className="w-full px-2.5 py-1.5 rounded-md border border-black/[0.12] text-[11.5px] bg-white" />
+          <label className="flex items-start gap-1.5 text-[10.5px] text-gray-600 cursor-pointer">
+            <input type="checkbox" checked={acknowledged} onChange={e => setAcknowledged(e.target.checked)} className="mt-0.5" />
+            I understand this changes the account's billing contract surface.
+          </label>
+          {validation.requiresApproval && (
+            <p className="text-[10.5px] text-amber-700">This change requires arbitr finance approval before it takes effect.</p>
+          )}
+          <div className="flex gap-1.5">
+            <button onClick={submit} disabled={!validation.ok}
+              className="px-2.5 py-1 rounded-md bg-gray-900 text-white text-[11px] font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+              Submit request
+            </button>
+            <button onClick={() => setOpen(false)} className="px-2.5 py-1 rounded-md border border-black/[0.12] text-[11px] text-gray-600 cursor-pointer">Cancel</button>
+          </div>
+        </div>
+      )}
+      {IS_DEMO_ENV && account.tier === 'enterprise' && (
+        <div className="mt-2 pt-2 border-t border-dashed border-black/[0.1]">
+          <p className="text-[9.5px] uppercase tracking-wider text-amber-600 mb-1">Demo environment · preview both rails</p>
+          <div className="flex gap-1">
+            {[['invoice_or_po', 'Invoice / PO'], ['card_or_ach', 'Card / ACH']].map(([v, l]) => (
+              <button key={v} onClick={() => setEntRail(v)}
+                className={`px-2 py-0.5 rounded text-[10.5px] font-medium cursor-pointer ${entRail === v ? 'bg-[#009eda] text-white' : 'text-gray-500 hover:bg-black/[0.05]'}`}>
+                {l}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

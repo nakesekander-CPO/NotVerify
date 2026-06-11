@@ -4,6 +4,7 @@ import {
   buildLedger, walletFromLedger, reconciliationSummary, planMeterState,
   tabVisibility, validateAdjustment, buildAdjustmentEntry,
   getDemoAccount, DEMO_ACCOUNT_KEYS,
+  planCtaModel, railPermissions, validateRailChange, buildRailChangeRequest,
 } from '../billingModel'
 
 describe('pricing — one schedule for both rails', () => {
@@ -164,5 +165,140 @@ describe('manual adjustments — finance controls', () => {
     expect(entry.audit.reasonCode).toBe('billing_correction')
     expect(entry.ref).toBe('TICKET-1234')
     expect(entry.audit.timestamp).toBeTruthy()
+  })
+})
+
+describe('plans CTA hierarchy — locked down', () => {
+  it('current plan is a state, never a sales CTA', () => {
+    for (const tier of ['standard', 'pro_team']) {
+      const cur = planCtaModel(tier).find(c => c.planId === tier)
+      expect(cur.emphasis).toBe('current')
+      expect(cur.label).toBe('Current plan')
+    }
+  })
+
+  it('at most one primary filled CTA per tier', () => {
+    for (const tier of ['standard', 'plus', 'pro_team', 'enterprise']) {
+      const primaries = planCtaModel(tier).filter(c => c.emphasis === 'primary')
+      expect(primaries.length).toBeLessThanOrEqual(1)
+    }
+  })
+
+  it('the single primary is the recommended next step up', () => {
+    expect(planCtaModel('standard').find(c => c.emphasis === 'primary').planId).toBe('plus')
+    expect(planCtaModel('pro_team').find(c => c.emphasis === 'primary').planId).toBe('enterprise')
+  })
+
+  it('downgrades are never primary, in any policy', () => {
+    for (const downgradePolicy of ['self_serve', 'request_only', 'not_allowed']) {
+      const ctas = planCtaModel('pro_team', { downgradePolicy })
+      const downgrades = ctas.filter(c => ['standard', 'plus'].includes(c.planId))
+      for (const d of downgrades) expect(d.emphasis).not.toBe('primary')
+    }
+  })
+
+  it('enterprise never sees a self-serve "Switch to Team" — contract policies map to request/contact', () => {
+    const notAllowed = planCtaModel('enterprise', { downgradePolicy: 'not_allowed' })
+    for (const c of notAllowed.filter(x => x.planId !== 'enterprise')) {
+      expect(c.label).toBe('Contact support')
+      expect(c.emphasis).toBe('none')
+    }
+    const requestOnly = planCtaModel('enterprise', { downgradePolicy: 'request_only' })
+    for (const c of requestOnly.filter(x => x.planId !== 'enterprise')) {
+      expect(c.label).toBe('Request downgrade')
+      expect(c.emphasis).toBe('outline')
+    }
+  })
+
+  it('aria labels expose plan state', () => {
+    const ctas = planCtaModel('enterprise', { downgradePolicy: 'request_only' })
+    expect(ctas.find(c => c.planId === 'enterprise').ariaLabel).toBe('enterprise, current plan')
+    expect(ctas.find(c => c.planId === 'pro_team').ariaLabel).toContain('downgrade')
+  })
+
+  it('demo accounts carry an explicit downgrade policy', () => {
+    expect(getDemoAccount('enterprise-invoice').downgradePolicy).toBe('not_allowed')
+    expect(getDemoAccount('enterprise-card').downgradePolicy).toBe('request_only')
+  })
+})
+
+describe('payment rail — permissioned, validated, audited', () => {
+  it('permission matrix: customers can at most request; only internal finance edits/approves', () => {
+    for (const role of ['owner', 'admin', 'finance_admin']) {
+      const p = railPermissions(role)
+      expect(p.canViewPaymentRail).toBe(true)
+      expect(p.canRequestPaymentRailChange).toBe(true)
+      expect(p.canEditPaymentRail).toBe(false)
+      expect(p.canApprovePaymentRailChange).toBe(false)
+    }
+    expect(railPermissions('member').canRequestPaymentRailChange).toBe(false)
+    expect(railPermissions('viewer').canViewPaymentRail).toBe(false)
+    const internal = railPermissions('finance_admin', { internalFinance: true })
+    expect(internal.canEditPaymentRail).toBe(true)
+    expect(internal.canApprovePaymentRailChange).toBe(true)
+  })
+
+  it('rail change requires target, reason, and acknowledgment', () => {
+    const acct = getDemoAccount('proteam-card')
+    expect(validateRailChange({ targetRail: 'invoice_or_po', reason: '', acknowledged: true }, acct).ok).toBe(false)
+    expect(validateRailChange({ targetRail: 'invoice_or_po', reason: 'Procurement requires invoicing', acknowledged: false }, acct).ok).toBe(false)
+    expect(validateRailChange({ targetRail: 'card_or_ach', reason: 'x', acknowledged: true }, acct).ok).toBe(false) // already on rail
+    expect(validateRailChange({ targetRail: 'invoice_or_po', reason: 'Procurement requires invoicing', acknowledged: true }, acct).ok).toBe(true)
+  })
+
+  it('high-risk changes require approval: open/past-due invoices or enterprise', () => {
+    const team = getDemoAccount('proteam-card')
+    const entInv = getDemoAccount('enterprise-invoice')
+    const valid = { targetRail: 'invoice_or_po', reason: 'r', acknowledged: true }
+    expect(validateRailChange(valid, team).requiresApproval).toBe(false)
+    expect(validateRailChange({ ...valid, targetRail: 'card_or_ach' }, entInv).requiresApproval).toBe(true)
+  })
+
+  it('rail change requests produce a full audit record', () => {
+    const acct = getDemoAccount('enterprise-invoice')
+    const req = buildRailChangeRequest({ targetRail: 'card_or_ach', reason: 'Moving to self-serve', actor: 'finance_admin@meridian', account: acct })
+    expect(req.source).toBe('payment_rail_change')
+    expect(req.fromRail).toBe('invoice_or_po')
+    expect(req.toRail).toBe('card_or_ach')
+    expect(req.status).toBe('pending_approval')
+    expect(req.actorId).toBeTruthy()
+    expect(req.timestamp).toBeTruthy()
+    const approved = buildRailChangeRequest({ targetRail: 'card_or_ach', reason: 'r', actor: 'a', account: acct, approvalId: 'APPR-1' })
+    expect(approved.status).toBe('approved')
+  })
+})
+
+describe('payments & receipts fixtures — table coverage', () => {
+  it('card accounts include success, failed, and refunded receipts plus long IDs/methods', () => {
+    const std = getDemoAccount('standard-card')
+    const statuses = std.receipts.map(r => r.status)
+    expect(statuses).toContain('paid')
+    expect(statuses).toContain('failed')
+    expect(statuses).toContain('refunded')
+    const entCard = getDemoAccount('enterprise-card')
+    expect(entCard.receipts.some(r => r.id.length > 12)).toBe(true)
+    expect(entCard.receipts.some(r => /ACH/.test(r.method))).toBe(true)
+  })
+
+  it('every receipt row has the fields the table renders — no blank cells', () => {
+    for (const key of ['standard-card', 'proteam-card', 'enterprise-card']) {
+      for (const r of getDemoAccount(key).receipts) {
+        expect(r.id).toBeTruthy()
+        expect(r.date).toBeTruthy()
+        expect(r.type).toBeTruthy()
+        expect(r.method).toBeTruthy()
+        expect(typeof r.amount).toBe('number')
+        expect(r.status).toBeTruthy()
+      }
+    }
+  })
+
+  it('card-rail receipts never carry invoice fields (no PO, no net terms)', () => {
+    for (const key of ['standard-card', 'proteam-card', 'enterprise-card']) {
+      const a = getDemoAccount(key)
+      expect(a.netTerms).toBeNull()
+      expect(a.poNumber).toBeNull()
+      for (const r of a.receipts) expect(r.po).toBeUndefined()
+    }
   })
 })

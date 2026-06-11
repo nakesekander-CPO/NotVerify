@@ -149,6 +149,91 @@ export function tabVisibility(account) {
   }
 }
 
+/* ── Plans CTA hierarchy ─────────────────────────────────────────
+ *
+ * Pure, testable model of the Plans tab button hierarchy:
+ *  - the current plan is an active STATE, never a sales CTA
+ *  - at most ONE primary filled CTA (the recommended next step up)
+ *  - downgrades are always outline/neutral and never self-serve for
+ *    enterprise (request_only or not_allowed via downgradePolicy)
+ */
+
+const PLAN_ORDER = ['standard', 'plus', 'pro_team', 'enterprise']
+
+export function planCtaModel(tier, { downgradePolicy = 'self_serve' } = {}) {
+  const currentIdx = PLAN_ORDER.indexOf(tier)
+  return PLAN_ORDER.map((planId, idx) => {
+    if (idx === currentIdx) {
+      return { planId, emphasis: 'current', label: 'Current plan', ariaLabel: `${planId}, current plan` }
+    }
+    if (idx > currentIdx) {
+      const isNextStep = idx === currentIdx + 1
+      const label = planId === 'enterprise' ? 'Contact sales' : `Upgrade to ${planId === 'pro_team' ? 'Team' : 'Plus'}`
+      return {
+        planId,
+        emphasis: isNextStep ? 'primary' : 'outline',
+        label,
+        ariaLabel: `${planId}, available upgrade`,
+      }
+    }
+    // Downgrade — never primary.
+    if (downgradePolicy === 'not_allowed') {
+      return { planId, emphasis: 'none', label: 'Contact support', ariaLabel: `${planId}, contact support to change plan` }
+    }
+    if (downgradePolicy === 'request_only') {
+      return { planId, emphasis: 'outline', label: 'Request downgrade', ariaLabel: `${planId}, downgrade by request` }
+    }
+    return { planId, emphasis: 'outline', label: `Switch to ${planId === 'standard' ? 'Standard' : planId === 'plus' ? 'Plus' : 'Team'}`, ariaLabel: `${planId}, available downgrade option` }
+  })
+}
+
+/* ── Payment-rail permissions & change control ───────────────────
+ *
+ * The rail is a billing contract attribute, not a casual toggle.
+ * Customers can at most REQUEST a change; only internal finance
+ * (arbitr-side) can edit directly, and high-risk changes require
+ * approval. The demo environment may expose a clearly-labelled
+ * preview switcher; production must not.
+ */
+
+export function railPermissions(role, { internalFinance = false } = {}) {
+  const adminRoles = ['owner', 'admin', 'finance_admin']
+  return {
+    canViewPaymentRail: role !== 'viewer' ? true : false,
+    canEditPaymentRail: internalFinance === true,
+    canRequestPaymentRailChange: adminRoles.includes(role),
+    canApprovePaymentRailChange: internalFinance === true,
+  }
+}
+
+export function validateRailChange({ targetRail, reason, acknowledged }, account) {
+  const errors = []
+  if (!['card_or_ach', 'invoice_or_po'].includes(targetRail)) errors.push('A target billing arrangement is required.')
+  if (targetRail === account.paymentRail) errors.push('The account is already on this billing arrangement.')
+  if (!reason || !reason.trim()) errors.push('A reason is required.')
+  if (!acknowledged) errors.push('You must acknowledge the impact of this change.')
+  // High-risk: open/past-due invoices, or any enterprise account.
+  const requiresApproval =
+    account.hasOpenInvoices || account.hasPastDueInvoices || account.tier === 'enterprise'
+  return { ok: errors.length === 0, errors, requiresApproval }
+}
+
+export function buildRailChangeRequest({ targetRail, reason, actor, account, approvalId }) {
+  return {
+    id: `RC-${Date.now()}`,
+    type: 'payment_rail_change',
+    accountId: account.accountId,
+    fromRail: account.paymentRail,
+    toRail: targetRail,
+    reason,
+    actorId: actor,
+    approvalId: approvalId || null,
+    status: approvalId ? 'approved' : 'pending_approval',
+    timestamp: new Date().toISOString(),
+    source: 'payment_rail_change',
+  }
+}
+
 /* ── Manual adjustment validation ────────────────────────────── */
 
 export const ADJUSTMENT_REASON_CODES = [
@@ -229,9 +314,12 @@ export function getDemoAccount(key) {
       expiring: null,
       pricingPolicy: { type: 'public_packages', baselinePricePerCredit: PRICING.baseRate, contractPricePerCredit: null, currency: 'USD' },
       overagePolicy: 'draw_from_top_up', // plan exhausted → top-up credits cover it
+      downgradePolicy: 'self_serve',
       receipts: [
         { id: 'RCP-1042', date: '2026-05-21', type: 'Credit top-up', amount: 24, method: 'Visa •••• 4242', status: 'paid' },
+        { id: 'RCP-1041', date: '2026-05-20', type: 'Credit top-up', amount: 24, method: 'Visa •••• 4242', status: 'failed' },
         { id: 'RCP-1038', date: '2026-05-01', type: 'Subscription',  amount: 20, method: 'Visa •••• 4242', status: 'paid' },
+        { id: 'RCP-1035', date: '2026-04-18', type: 'Credit top-up', amount: 10, method: 'Visa •••• 4242', status: 'refunded' },
         { id: 'RCP-1031', date: '2026-04-01', type: 'Subscription',  amount: 20, method: 'Visa •••• 4242', status: 'paid' },
       ],
       invoices: [], topUpRequests: [],
@@ -259,6 +347,7 @@ export function getDemoAccount(key) {
       expiring: null,
       pricingPolicy: { type: 'public_packages', baselinePricePerCredit: PRICING.baseRate, contractPricePerCredit: null, currency: 'USD' },
       overagePolicy: 'draw_from_top_up',
+      downgradePolicy: 'self_serve',
       receipts: [
         { id: 'RCP-2011', date: '2026-05-18', type: 'Credit top-up', amount: 10,  method: 'Amex •••• 1005', status: 'paid' },
         { id: 'RCP-2008', date: '2026-05-01', type: 'Subscription',  amount: 100, method: 'Amex •••• 1005', status: 'paid' },
@@ -286,6 +375,7 @@ export function getDemoAccount(key) {
       expiring: { amount: 300, expiresAt: '2026-06-30', type: 'promotional' },
       pricingPolicy: { type: 'public_packages', baselinePricePerCredit: PRICING.baseRate, contractPricePerCredit: null, currency: 'USD' },
       overagePolicy: 'invoiceable_overage',
+      downgradePolicy: 'not_allowed', // contract-managed; changes go through the account team
       receipts: [],
       invoices: [
         { id: 'INV-2026-008', date: '2026-06-01', type: 'Subscription', amount: 4000, po: 'PO-2026-018', status: 'open',     dueDate: '2026-07-01' },
@@ -322,8 +412,9 @@ export function getDemoAccount(key) {
       expiring: null,
       pricingPolicy: { type: 'public_packages', baselinePricePerCredit: PRICING.baseRate, contractPricePerCredit: null, currency: 'USD' },
       overagePolicy: 'draw_from_top_up',
+      downgradePolicy: 'request_only', // self-serve rail, but plan changes by request
       receipts: [
-        { id: 'RCP-3021', date: '2026-05-12', type: 'Credit top-up', amount: priceFor(2500), method: 'ACH — Chase ••6789', status: 'paid' },
+        { id: 'RCP-3021-ACH-MERIDIAN-LTD', date: '2026-05-12', type: 'Credit top-up', amount: priceFor(2500), method: 'ACH — Chase Business Complete ••6789', status: 'paid' },
         { id: 'RCP-3015', date: '2026-05-01', type: 'Subscription',  amount: 4000, method: 'ACH — Chase ••6789', status: 'paid' },
       ],
       invoices: [], topUpRequests: [],
