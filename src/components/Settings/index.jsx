@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { ArrowLeft, CreditCard, Puzzle, Building2, LayoutList, Shield, Users, ScrollText, Network, Receipt } from 'lucide-react'
-import CreditsAndBilling from './CreditsAndBilling'
+import { ArrowLeft, Puzzle, Building2, LayoutList, Shield, Users, ScrollText, Network, Receipt } from 'lucide-react'
 import Billing from './Billing'
 import BillingEntities from './BillingEntities'
 import BudgetsAndAllocations from './BudgetsAndAllocations'
@@ -19,7 +18,6 @@ export default function SettingsPage({ onBack, onOpenIntegrations }) {
 
   const navItems = [
     { id: 'billing-v2', label: 'Billing', icon: Receipt, active: true },
-    { id: 'billing', label: 'Credits & Billing', icon: CreditCard, active: true },
     ...(tier === 'enterprise' ? [
       { id: 'billing-entities', label: 'Billing Entities', icon: Building2, active: true, indent: true },
       { id: 'budgets', label: 'Budgets & Allocations', icon: LayoutList, active: true, indent: true },
@@ -96,7 +94,6 @@ export default function SettingsPage({ onBack, onOpenIntegrations }) {
           </div>
 
           {activeSection === 'billing-v2' && <Billing tier={tier} />}
-          {activeSection === 'billing' && <CreditsAndBilling tier={tier} />}
           {activeSection === 'billing-entities' && <BillingEntities />}
           {activeSection === 'budgets' && <BudgetsAndAllocations />}
           {activeSection.startsWith('org-') && <OrgAccess activeTab={activeSection.replace('org-', '')} tier={tier} />}

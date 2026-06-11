@@ -193,6 +193,7 @@ export default function Billing({ tier = 'pro' }) {
       <nav className="flex items-center gap-1 border-b border-black/[0.08]">
         {[
           { id: 'overview', label: 'Overview',  icon: Wallet },
+          { id: 'plans',    label: 'Plans',     icon: Tag },
           { id: 'topup',    label: 'Top up',    icon: Plus },
           { id: 'usage',    label: 'Usage & Ledger', icon: History },
           { id: 'invoices', label: 'Invoices',  icon: Receipt },
@@ -210,7 +211,9 @@ export default function Billing({ tier = 'pro' }) {
       </nav>
 
       {/* ── Tab bodies ──────────────────────────────────────── */}
-      {tab === 'overview' && <OverviewTab plan={plan} tier={tier} balance={balance} used={used} monthlyGrant={monthlyGrant} topUpBalance={topUpBalance} adjustBalance={adjustBalance} legacyBalance={legacyBalance} expiringSoon={expiringSoon} ledger={ledger} invoices={INVOICES} invoiceCustomer={invoiceCustomer} admin={admin} onTopUp={() => { setTab('topup'); setTopUpOpen(true) }} onViewLedger={() => setTab('usage')} onViewInvoices={() => setTab('invoices')} />}
+      {tab === 'overview' && <OverviewTab plan={plan} tier={tier} balance={balance} used={used} monthlyGrant={monthlyGrant} topUpBalance={topUpBalance} adjustBalance={adjustBalance} legacyBalance={legacyBalance} expiringSoon={expiringSoon} ledger={ledger} invoices={INVOICES} invoiceCustomer={invoiceCustomer} admin={admin} onTopUp={() => { setTab('topup'); setTopUpOpen(true) }} onViewLedger={() => setTab('usage')} onViewInvoices={() => setTab('invoices')} onChangePlan={() => setTab('plans')} />}
+
+      {tab === 'plans' && <PlansTab tier={tier} />}
 
       {tab === 'topup' && <TopUpTab tier={tier} invoiceCustomer={invoiceCustomer} admin={admin} topUpOpen={topUpOpen} setTopUpOpen={setTopUpOpen} topUpMethod={topUpMethod} setTopUpMethod={setTopUpMethod} selectedBundle={selectedBundle} setSelectedBundle={setSelectedBundle} poNumber={poNumber} setPoNumber={setPoNumber} topUpStatus={topUpStatus} submitTopUp={submitTopUp} autoTopUp={autoTopUp} setAutoTopUp={setAutoTopUp} topUpRequests={TOPUP_REQUESTS} />}
 
@@ -225,7 +228,7 @@ export default function Billing({ tier = 'pro' }) {
 
 /* ── Overview tab ─────────────────────────────────────────────── */
 
-function OverviewTab({ plan, tier, balance, used, monthlyGrant, topUpBalance, adjustBalance, legacyBalance, expiringSoon, ledger, invoices, invoiceCustomer, admin, onTopUp, onViewLedger, onViewInvoices }) {
+function OverviewTab({ plan, tier, balance, used, monthlyGrant, topUpBalance, adjustBalance, legacyBalance, expiringSoon, ledger, invoices, invoiceCustomer, admin, onTopUp, onViewLedger, onViewInvoices, onChangePlan }) {
   const pct = Math.round((Math.min(used, monthlyGrant) / monthlyGrant) * 100)
   return (
     <div className="space-y-6">
@@ -246,7 +249,7 @@ function OverviewTab({ plan, tier, balance, used, monthlyGrant, topUpBalance, ad
             ))}
           </ul>
           <div className="flex gap-2 mt-auto">
-            <button className="flex-1 px-3 py-2 rounded-lg border border-black/[0.12] text-[12px] font-medium text-gray-700 hover:bg-black/[0.03] cursor-pointer">Change plan</button>
+            <button onClick={onChangePlan} className="flex-1 px-3 py-2 rounded-lg border border-black/[0.12] text-[12px] font-medium text-gray-700 hover:bg-black/[0.03] cursor-pointer">Change plan</button>
             <button className="flex-1 px-3 py-2 rounded-lg border border-black/[0.12] text-[12px] font-medium text-gray-700 hover:bg-black/[0.03] cursor-pointer">Payment method</button>
           </div>
         </Card>
@@ -358,6 +361,96 @@ function OverviewTab({ plan, tier, balance, used, monthlyGrant, topUpBalance, ad
           </ul>
         </Card>
       )}
+    </div>
+  )
+}
+
+/* ── Plans tab (four-tier comparison, ported from the legacy
+ *    Credits & Billing screen) ─────────────────────────────────── */
+
+const ALL_PLANS = [
+  {
+    id: 'standard', name: 'Standard', tagline: 'Fast AI intelligence for everyday work.',
+    monthly: 20, annual: 17,
+    features: ['1,000 Intelligence Credits', 'Standard AI Translation'],
+    cta: 'Switch to Standard',
+  },
+  {
+    id: 'plus', name: 'Plus / Pro Individual', tagline: 'More credits and Specialty Verification for power users.',
+    monthly: 35, annual: 31,
+    features: ['2,000 Intelligence Credits', 'Standard AI Translation', 'Unlocked: AI Agent Specialty Verification'],
+    cta: 'Switch to Plus',
+  },
+  {
+    id: 'pro', name: 'Team', tagline: 'Full platform — every AI feature plus Trust Credits and priority.',
+    monthly: 100, annual: 90, highlight: true,
+    features: ['5,000 Intelligence Credits', 'All AI features (Translation + Agent)', '2 Trust Credits', 'Priority processing & Rollovers'],
+    cta: 'Switch to Team',
+  },
+  {
+    id: 'enterprise', name: 'Enterprise', tagline: 'Built for large orgs needing flexibility, scale, and governance.',
+    monthly: null,
+    features: ['Volume-based credit pricing', 'Invoice / PO / ACH / net terms', 'Dedicated support', 'SSO + advanced security'],
+    cta: 'Book a Demo',
+  },
+]
+
+function PlansTab({ tier }) {
+  const [annual, setAnnual] = useState(false)
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h4 className="text-[13px] font-semibold text-gray-900">All plans</h4>
+          <p className="text-[12px] text-gray-500 mt-0.5">Every plan includes a monthly credit grant and top-ups anytime. Invoice and PO billing available on Enterprise.</p>
+        </div>
+        <label className="flex items-center gap-2 cursor-pointer select-none shrink-0">
+          <Toggle on={annual} onChange={() => setAnnual(v => !v)} />
+          <span className="text-[11.5px] text-gray-600">Annual {annual && <span className="text-emerald-600 font-medium">(save up to 15%)</span>}</span>
+        </label>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        {ALL_PLANS.map(p => {
+          const isCurrent = tier === p.id
+          return (
+            <div key={p.id} className={`rounded-xl bg-white p-5 flex flex-col gap-3 relative ${isCurrent ? 'border-2 border-[#009eda]' : 'border border-black/[0.12]'}`}>
+              {isCurrent && (
+                <span className="absolute -top-3 left-4 text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#009eda] text-white">Current Plan</span>
+              )}
+              <div>
+                <p className="text-[14px] font-bold text-gray-900">{p.name}</p>
+                <p className="text-[11px] text-gray-500 leading-relaxed mt-0.5">{p.tagline}</p>
+              </div>
+              {p.monthly != null ? (
+                <div>
+                  <span className="text-[26px] font-bold text-gray-900">${annual ? p.annual : p.monthly}</span>
+                  <span className="text-[12px] text-gray-500 ml-1">per month</span>
+                  <p className="text-[10px] text-gray-400 mt-0.5">incl. VAT · credits granted every cycle</p>
+                </div>
+              ) : (
+                <div>
+                  <span className="text-[20px] font-bold text-gray-900">Platform fee</span>
+                  <p className="text-[10px] text-gray-400 mt-0.5">Based on company size, covering all employees</p>
+                </div>
+              )}
+              <ul className="space-y-1.5 flex-1">
+                {p.features.map(f => (
+                  <li key={f} className="flex items-start gap-2 text-[12px] text-gray-700">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />{f}
+                  </li>
+                ))}
+              </ul>
+              {isCurrent ? (
+                <div className="mt-auto px-4 py-2.5 rounded-lg text-center text-[13px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Current Plan</div>
+              ) : (
+                <button className={`mt-auto w-full px-4 py-2.5 rounded-lg text-[13px] font-semibold transition-colors cursor-pointer ${p.highlight ? 'bg-[#009eda] text-white hover:bg-[#0089c4]' : 'border border-black/[0.15] text-gray-700 hover:bg-black/[0.04]'}`}>
+                  {p.cta}
+                </button>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
