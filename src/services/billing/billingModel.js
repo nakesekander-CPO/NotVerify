@@ -309,6 +309,16 @@ export function buildRailChangeRequest({ targetRail, reason, actor, account, app
   }
 }
 
+/* ── Top-up request validation — PO requirement is an account-level
+ *    setting (Admin → Purchase orders), not a hardcoded rule. ───── */
+
+export function validateTopUpRequest({ credits, po }, account) {
+  const errors = []
+  if (!credits || credits <= 0) errors.push('A credit amount is required.')
+  if (account?.poRequired && !(po || '').trim()) errors.push('A PO number is required for this account.')
+  return { ok: errors.length === 0, errors }
+}
+
 /* ── Past-due invoices — one source for banner, button, register ─
  *
  * The banner copy, the "Pay now" button amount, and the pay handler

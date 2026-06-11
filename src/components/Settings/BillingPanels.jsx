@@ -14,6 +14,7 @@ import {
   creditPackages, priceFor, rateFor, savingsPct, PRICING,
   reconciliationSummary, validateAdjustment, buildAdjustmentEntry,
   ADJUSTMENT_REASON_CODES, CONSUMPTION_POLICY_TEXT, planCtaModel,
+  validateTopUpRequest,
 } from '../../services/billing/billingModel'
 import { Card, Toggle, Field, StatusPill, fmtDate, fmtMoney } from './BillingShared'
 
@@ -245,10 +246,13 @@ function InvoiceTopUp({ account }) {
   const rate = rateFor(credits)
   const save = savingsPct(credits)
 
+  const validation = validateTopUpRequest({ credits, po }, account)
+
   const submit = () => {
+    if (!validation.ok) return
     const req = {
       id: `TR-${Math.floor(Math.random() * 900) + 1100}`, date: new Date().toISOString().slice(0, 10),
-      credits, cost: price, rate, po, status: 'requested',
+      credits, cost: price, rate, po: po.trim() || null, status: 'requested',
       notes: account.grantPolicy === 'on-finalization' ? 'Credits granted when the invoice is finalized' : 'Credits granted on payment',
     }
     setAdded(r => [req, ...r])
@@ -271,8 +275,13 @@ function InvoiceTopUp({ account }) {
               ))}
             </select>
           </Field>
-          <Field label={`PO number${account.poRequired ? ' (required)' : ''}`}>
+          <Field label={`PO number (${account.poRequired ? 'required' : 'optional'})`}>
             <input value={po} onChange={e => setPo(e.target.value)} placeholder="e.g. PO-2026-022" className="w-full px-2.5 py-1.5 rounded-md border border-black/[0.12] text-[12px] bg-white" />
+            <p className="text-[10px] text-gray-400 mt-1">
+              {account.poRequired
+                ? 'Your billing admin requires a PO on every top-up request (Admin → Purchase orders).'
+                : 'Optional for this account — your billing admin can require it under Admin → Purchase orders.'}
+            </p>
           </Field>
         </div>
         {/* The financial commitment is stated BEFORE submission —
@@ -293,7 +302,8 @@ function InvoiceTopUp({ account }) {
             {account.cardTopUpsEnabled && (
               <button className="px-3 py-2 rounded-lg border border-black/[0.12] text-[12px] font-medium text-gray-600 hover:bg-black/[0.03] cursor-pointer">Pay by card for this one-time purchase</button>
             )}
-            <button onClick={submit} disabled={account.poRequired && !po.trim()}
+            <button onClick={submit} disabled={!validation.ok}
+              title={validation.ok ? undefined : validation.errors.join(' ')}
               className="px-4 py-2.5 rounded-lg bg-[#009eda] text-white text-[13px] font-semibold hover:bg-[#0089c4] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
               Submit purchase request
             </button>
@@ -309,7 +319,7 @@ function InvoiceTopUp({ account }) {
             <li key={r.id} className="py-3 grid grid-cols-[1fr_auto_auto_auto] gap-4 items-center text-[12px]">
               <div className="min-w-0">
                 <p className="text-gray-900">{r.id} · {r.credits.toLocaleString()} credits</p>
-                <p className="text-[10.5px] text-gray-400 truncate">{fmtDate(r.date)} · {r.po} · {r.notes}</p>
+                <p className="text-[10.5px] text-gray-400 truncate">{fmtDate(r.date)} · {r.po || 'No PO'} · {r.notes}</p>
               </div>
               <span className="text-right">
                 <span className="text-gray-700 tabular-nums block">{fmtMoney(r.cost)} <span className="text-gray-400">(${r.rate.toFixed(4)}/cr)</span></span>
@@ -576,9 +586,8 @@ const REASON_LABEL = {
   contract_adjustment: 'Contract adjustment', promotional_grant: 'Promotional grant', other: 'Other',
 }
 
-export function AdminPanel({ account, appendLedger }) {
+export function AdminPanel({ account, appendLedger, updateBillingSettings }) {
   const isInvoice = account.paymentRail === 'invoice_or_po'
-  const [poRequired, setPoRequired] = useState(!!account.poRequired)
   const [invoiceEnabled, setInvoiceEnabled] = useState(!!account.invoicesEnabled)
 
   return (
@@ -615,12 +624,23 @@ export function AdminPanel({ account, appendLedger }) {
             <h4 className="text-[13px] font-semibold text-gray-900 mb-3">Purchase orders</h4>
             <div className="space-y-3">
               <Field label="PO required for top-ups">
-                <Toggle on={poRequired} onChange={() => setPoRequired(v => !v)} label={poRequired ? 'Required' : 'Optional'} />
+                <Toggle
+                  on={!!account.poRequired}
+                  onChange={() => updateBillingSettings?.({ poRequired: !account.poRequired })}
+                  label={account.poRequired ? 'Required' : 'Optional'}
+                />
               </Field>
               <Field label="Default PO number">
-                <input defaultValue={account.poNumber || ''} className="w-full px-2.5 py-1.5 rounded-md border border-black/[0.12] text-[12px] bg-white" />
+                <input
+                  value={account.poNumber || ''}
+                  onChange={e => updateBillingSettings?.({ poNumber: e.target.value })}
+                  placeholder="e.g. PO-2026-018"
+                  className="w-full px-2.5 py-1.5 rounded-md border border-black/[0.12] text-[12px] bg-white"
+                />
               </Field>
-              <p className="text-[10.5px] text-gray-400">Pre-fills the PO field on every purchase request.</p>
+              <p className="text-[10.5px] text-gray-400">
+                Applies immediately to new top-up requests for this account. When optional, requesters may submit without a PO; the invoice is issued without a PO reference.
+              </p>
             </div>
           </Card>
         </div>

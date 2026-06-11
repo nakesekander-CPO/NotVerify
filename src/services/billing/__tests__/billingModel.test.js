@@ -6,6 +6,7 @@ import {
   getDemoAccount, DEMO_ACCOUNT_KEYS,
   planCtaModel, railPermissions, validateRailChange, buildRailChangeRequest,
   allocateUsageToBuckets, bucketsFromLedger, pastDueSummary, markInvoicesPaid,
+  validateTopUpRequest,
 } from '../billingModel'
 
 describe('pricing — one schedule for both rails', () => {
@@ -433,5 +434,33 @@ describe('past-due banner ↔ invoice register consistency', () => {
     for (const k of ['standard-card', 'proteam-card', 'enterprise-card']) {
       expect(pastDueSummary(getDemoAccount(k).invoices).count).toBe(0)
     }
+  })
+})
+
+describe('top-up PO requirement — account-level setting, not a hardcoded rule', () => {
+  it('when the account requires a PO, requests without one are blocked', () => {
+    const acct = { poRequired: true }
+    expect(validateTopUpRequest({ credits: 25000, po: '' }, acct).ok).toBe(false)
+    expect(validateTopUpRequest({ credits: 25000, po: '   ' }, acct).ok).toBe(false)
+    expect(validateTopUpRequest({ credits: 25000, po: 'PO-2026-022' }, acct).ok).toBe(true)
+  })
+
+  it('when the account setting is optional, requests submit without a PO', () => {
+    const acct = { poRequired: false }
+    expect(validateTopUpRequest({ credits: 25000, po: '' }, acct).ok).toBe(true)
+    expect(validateTopUpRequest({ credits: 25000, po: 'PO-2026-022' }, acct).ok).toBe(true)
+  })
+
+  it('a credit amount is always required regardless of PO policy', () => {
+    expect(validateTopUpRequest({ credits: 0, po: 'PO-1' }, { poRequired: false }).ok).toBe(false)
+    expect(validateTopUpRequest({ credits: null, po: '' }, { poRequired: false }).ok).toBe(false)
+  })
+
+  it('the demo enterprise account defaults to PO required (overridable in Admin)', () => {
+    expect(getDemoAccount('enterprise-invoice').poRequired).toBe(true)
+    // The Admin toggle overrides via account-level settings — the
+    // validator obeys whatever the account currently says:
+    const overridden = { ...getDemoAccount('enterprise-invoice'), poRequired: false }
+    expect(validateTopUpRequest({ credits: 5000, po: '' }, overridden).ok).toBe(true)
   })
 })

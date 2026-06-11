@@ -54,8 +54,15 @@ export default function Billing({ tier = 'pro' }) {
    * recompute from them — banner and register share one source. */
   const [ledgerByAccount, setLedgerByAccount] = useState({})
   const [invoicesByAccount, setInvoicesByAccount] = useState({})
+  /* Account-level billing settings editable in Admin (e.g. whether a
+   * PO is required on top-up requests) — overrides the fixture so
+   * the Admin toggle genuinely controls the request form. */
+  const [settingsByAccount, setSettingsByAccount] = useState({})
   const ledger = ledgerByAccount[accountKey] || baseAccount.ledger
   const invoices = invoicesByAccount[accountKey] || baseAccount.invoices
+  const settings = settingsByAccount[accountKey] || {}
+  const updateBillingSettings = (patch) =>
+    setSettingsByAccount(s => ({ ...s, [accountKey]: { ...(s[accountKey] || {}), ...patch } }))
   const account = useMemo(() => {
     const creditWallet = walletFromLedger(ledger, { planGrant: baseAccount.creditWallet.plan.grantThisCycle })
     // Re-derive invoice flags + linked request statuses from live
@@ -67,13 +74,13 @@ export default function Billing({ tier = 'pro' }) {
         : r
     )
     const a = {
-      ...baseAccount, ledger, creditWallet, invoices, topUpRequests,
+      ...baseAccount, ...settings, ledger, creditWallet, invoices, topUpRequests,
       hasPastDueInvoices: invoices.some(i => i.status === 'past_due'),
       hasOpenInvoices: invoices.some(i => i.status === 'open'),
     }
     a.tabs = tabVisibility(a)
     return a
-  }, [baseAccount, ledger, invoices])
+  }, [baseAccount, ledger, invoices, settings])
 
   const appendLedger = (row) => {
     const prev = ledger[ledger.length - 1]
@@ -194,7 +201,7 @@ export default function Billing({ tier = 'pro' }) {
           onPayAll={() => payInvoiceIds(pastDueSummary(invoices).ids)} paying={payingPastDue} />
       )}
       {activeTab === 'payments' && account.tabs.paymentsReceipts && <PaymentsReceiptsPanel account={account} />}
-      {activeTab === 'admin' && account.tabs.admin && <AdminPanel account={account} appendLedger={appendLedger} />}
+      {activeTab === 'admin' && account.tabs.admin && <AdminPanel account={account} appendLedger={appendLedger} updateBillingSettings={updateBillingSettings} />}
     </div>
   )
 }
@@ -556,7 +563,7 @@ function OverviewPanel({ account, onTopUp, onChangePlan, onViewLedger, onViewInv
           <ul className="grid grid-cols-4 gap-x-6 gap-y-2 text-[12px]">
             <li><Term label="Payment rail" value="Invoice / PO" /></li>
             <li><Term label="Terms" value={account.netTerms} /></li>
-            <li><Term label="PO on file" value={account.poNumber || '—'} /></li>
+            <li><Term label={`PO (${account.poRequired ? 'required' : 'optional'})`} value={account.poNumber || '—'} /></li>
             <li><Term label="Credit grant" value={account.grantPolicy === 'on-finalization' ? 'On invoice finalization' : 'On payment'} /></li>
           </ul>
         </Card>
