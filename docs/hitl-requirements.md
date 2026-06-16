@@ -2,12 +2,19 @@
 
 *One page for Finance and Dev. Plain words. If a 12-year-old can't follow it, it's wrong.*
 
+> **v2 — updated after team feedback.** The earlier draft invented a few steps that
+> aren't in Straker's real workflow (a Straker "final validator," Reject/Escalate
+> states, four-eyes on "important" jobs, one vague "teach the AI" step). This version
+> matches reality. A short **"where the prototype still differs"** punch-list for Dev
+> is at the end (Section 11).
+
 ---
 
 ## 1. The big idea (in one breath)
 
-The AI does a **first draft**. Then **people check the parts that matter** before anything is sent to the customer.
-Nothing risky ships until a person says **"yes, this is good."** Every choice is **written down** so we can always see who did what.
+The AI does a **first draft**. Then **people fix the parts that matter**.
+The **client** is the one who says "yes, this is good" at the end.
+Every choice is **written down** so we can always see who did what.
 
 That's it. Everything below is just the details.
 
@@ -15,13 +22,17 @@ That's it. Everything below is just the details.
 
 ## 2. The cast (who does what)
 
-| Person | What they're allowed to do |
-|---|---|
-| **Vendor reviewer** | Check and fix the segments on **their own assigned job only**. Can't see other vendors' work. |
-| **Internal reviewer** | Check and fix segments on any job in their team's scope. |
-| **Project manager** | Hand jobs out to reviewers, move them around, balance the load. |
-| **Final validator** | The last "yes." Signs off the whole job and locks it. |
-| **Admin (arbitr)** | Set the rules, fix mistakes, approve learning. |
+| Person | Side | What they do |
+|---|---|---|
+| **Vendor editor** | Straker network | Edits the segments on **their own assigned job only**. Can't see other vendors' work. |
+| **Internal editor** | Straker | Edits segments on jobs in their team's scope (when Straker does the editing). |
+| **Coordinator / PM** | Straker | Hands jobs to editors, moves them around, balances the load. |
+| **Client reviewer** | Client | Reviews and **signs off** the job. The final "yes." |
+| **Admin** | Straker / platform | Sets the rules, fixes mistakes, configures policies. |
+
+**There is NO "final validator" role on the Straker side.** A job may or may not have a
+client reviewer at all. By default, **sign-off is done by the client reviewer, or by the
+vendor who last touched the job** — never by a Straker person reading the whole file.
 
 **Rule:** every action checks "are you allowed to do this?" first. If not, it's blocked **and** the attempt is recorded.
 
@@ -29,218 +40,219 @@ That's it. Everything below is just the details.
 
 ## 3. The pieces (what we're moving around)
 
-Think of it like a stack of pages going through a checking line.
+Think of it like a stack of pages going through an editing line.
 
-- **Project** — the whole job (e.g. "Q3 Earnings Report → Japanese").
-- **Task** — a chunk of the project given to one reviewer.
-- **Segment** — one sentence/row to check. The smallest unit.
-- **Decision** — what a person did to a segment (approved it, edited it, sent it back…).
-- **Sign-off** — the final "the whole job is good," which **locks** everything.
-- **Audit log** — the diary. Every action, forever.
-
----
-
-## 4. What can happen to a segment
-
-A reviewer looks at each segment and picks one:
-
-| Decision | Plain meaning |
-|---|---|
-| **Verify** | "This is correct." |
-| **Edit** | "I fixed it — here's the better version." |
-| **Accept** | "The AI's suggestion is good, keep it." |
-| **Not verified / Reject** | "This is wrong." |
-| **Needs rework** | "Send it back to be redone." |
-| **Escalate** | "I'm not sure — someone senior should look." |
-| **Lock** | "Frozen. No more changes." (final validators only) |
+- **Job** — the whole piece of work. It has **two names**:
+  - **Job ID** — the internal reference (e.g. `JOB-2026-04812`). We use this everywhere internally; with thousands of jobs, names alone get messy.
+  - **Job name** — the friendly label the client sees (e.g. "Q3 Earnings Report → Japanese").
+- **Task** — a chunk of the job given to one editor.
+- **Segment** — one sentence/row. The smallest unit.
+- **Decision** — what happened to a segment (confirmed, edited, or locked).
+- **Sign-off** — the client's (or last-touch vendor's) "the whole job is good."
+- **Audit log** — the diary. Every action, forever, by **Job ID**.
 
 ---
 
-## 5. The human gates (the whole point of HITL)
+## 4. What can happen to a segment (kept simple)
 
-These are the moments a **person must say yes**. The AI can never skip them.
+Most segments only ever get **two** things done to them — plus some are **locked before anyone starts**.
 
-1. **Segment review** — a human checks the flagged sentences.
-2. **Four-eyes** — for important jobs, a **second** reviewer checks too.
-3. **Final sign-off** — the right senior person signs the whole job, which locks it.
-4. **Learning approval** — before any correction is used to teach the AI, an authorized person approves it.
+| State | When | Plain meaning |
+|---|---|---|
+| **Locked (set early)** | **Before review** | The safest matches — **101% (in-context exact) TM matches** — are locked up front so editors **can't change them**. They're already correct. |
+| **Confirm** | During review | "This is good, leave it." (One action. There is no separate "verify" vs "accept.") |
+| **Edit** | During review | "I improved it — here's the better version." |
+
+That's the whole list. **No Reject, no Escalate, no "needs rework"** — those are not part of
+the workflow today. If a segment is wrong, the editor simply **edits** it.
+
+---
+
+## 5. The human gates (where a person must act)
+
+1. **Editing** — a person edits the segments that need it (the locked 101% ones are left alone).
+2. **Second review (only if the client asked for it)** — see below.
+3. **Sign-off** — the **client** (or the last-touch vendor) approves the job.
+
+### About "second review" (the old "four-eyes")
+- **Straker does not decide which jobs get a second editor.** The **client chooses** the
+  workflow — with or without a second edit — **before they send the job** to Straker.
+- If a second edit is included, it runs **one after the other (sequential)**: the second
+  editor only starts once the first editor has finished. It must **never run in parallel**,
+  or two editors could overwrite each other's segments.
+
+### About sign-off
+- **Client-side only.** No Straker human reads the files to sign off.
+- By default the signer is the **client reviewer**; if the client delegates it, the
+  **vendor who last touched the job** can sign off.
 
 ---
 
 ## 6. The golden rules (must always be true)
 
 1. **Permission first.** Every change checks the person's role. Blocked attempts are logged, not silently dropped.
-2. **Everything is written down.** Every action and every denial goes in the audit log with who, what, and when.
-3. **Sign-off locks the work.** Once a job is signed off, its segments are frozen and the record can't be edited.
-4. **The AI only learns from approved, tagged work.** A correction trains the AI **only if** the job is signed off, the policy allows it, the sign-off authorized it, the segment was verified/edited, and a person tagged *why* and approved it.
-5. **Vendors stay in their lane.** A vendor reviewer can only touch their own assigned segments — never another vendor's.
-6. **Auto-assign only when it's safe.** The system can pick a vendor automatically only if the rules allow it AND the match score is high enough AND the pool doesn't require manual approval. Otherwise a human decides.
+2. **Everything is written down.** Every action and denial goes in the audit log with who, what, when — keyed by **Job ID**.
+3. **Lock the safe stuff early.** 101% in-context matches are locked **before** editing so no one changes what's already right.
+4. **The client signs off.** Sign-off is a client-side action (or the last-touch vendor). No Straker final validator.
+5. **Editors stay in their lane.** A vendor editor only touches their own assigned segments — never another vendor's.
+6. **A second edit is the client's choice, and it's sequential.** Only if the client selected it, and only one editor at a time.
+7. **Improving the AI is three separate, governed things** (see Section 7) — not one vague "training."
 
 ---
 
-## 7. Glossary (say it like you're 12)
+## 7. How approved work improves the AI (three SEPARATE things)
 
-- **HITL** — "Human In The Loop." A person checks the AI's work.
-- **Segment** — one sentence/row to review.
-- **Verify** — mark something correct.
-- **Escalate** — ask someone more senior to look.
-- **Sign-off** — the final approval that locks the job.
-- **Lock** — frozen; no more edits.
-- **Four-eyes** — two people review instead of one.
-- **Audit log** — the permanent diary of every action.
-- **Retraining** — using approved corrections to make the AI smarter.
-- **Org Brain** — the company's approved memory the AI can reuse.
-- **Rationale tag** — a short reason label a reviewer attaches (so the AI learns the *why*, not just the *what*).
-- **Vendor** — an outside team that does review work.
-- **Selection engine** — the helper that recommends the best vendor for a job.
+This is the big correction. "Train the AI" is **not one thing** — it's **three different
+pipelines**, each tracked and governed on its own:
+
+| # | Pipeline | What it means | Plain example |
+|---|---|---|---|
+| 1 | **Translation Memory (TM) update** | Approved final sentence pairs are saved so the **same/similar sentence is reused** next time. | "We confirmed this sentence → store it so the next identical sentence is auto-filled." |
+| 2 | **Terminology dataset update** | Approved **term choices** are captured to update the **terminology agent's** dataset. | "のれん → Goodwill (never 'goodwill premium') → add to the term list." |
+| 3 | **Model improvement (RLHF)** | Human edits/preferences are used as **feedback to improve the model** over time. | "Editors kept rewriting the AI's phrasing this way → feed that back to make the model better." |
+
+Each pipeline is **opt-in per client/job** and only ever uses **approved** work.
+
+> **⚠️ Open questions for Product/ML (not decided yet):**
+> - **Who is "authorized" to approve feeding each pipeline?** (Client? Straker ops? Per-pipeline?)
+> - **How does RLHF actually run** — batch cadence, which signals, who reviews the result?
+> - **Does TM update need approval at all,** or is an approved/signed-off segment automatically TM-eligible?
+> These were unclear in the earlier draft. We should decide them before building pipeline 3.
 
 ---
 
 ## 8. Workflow diagrams
 
-### A document's journey
+### A job's journey
 
 ```mermaid
 flowchart TD
-    A[New project arrives] --> B[AI does the first draft]
-    B --> C[Risky / low-confidence segments get flagged]
-    C --> D[Project Manager assigns the work to reviewers]
-    D --> E[Reviewer checks each segment:<br/>verify / edit / reject / rework / escalate]
-    E --> F{Important job needing four-eyes?}
-    F -->|Yes| G[Second reviewer checks too]
+    A[Client sends a job<br/>chooses 1-edit or 2-edit workflow] --> B[AI does the first draft]
+    B --> C[101% in-context matches LOCKED early]
+    C --> D[Coordinator assigns the work to editors]
+    D --> E[Editor 1 works each unlocked segment:<br/>Confirm or Edit]
+    E --> F{Client chose a second edit?}
+    F -->|Yes| G[Editor 2 reviews AFTER Editor 1<br/>sequential — never at the same time]
     F -->|No| H[Ready for sign-off]
     G --> H
-    H --> I{Final validator signs off?}
-    I -->|Not yet| E
-    I -->|Yes| J[Job is LOCKED + delivered]
-    J --> K{Allowed to teach the AI?}
-    K -->|Yes| L[Approved corrections go to the learning queue]
-    K -->|No| M[Nothing is reused — just delivered]
+    H --> I{Client reviewer or last-touch vendor signs off}
+    I -->|Yes| J[Job delivered]
+    J --> K{Client allows reuse?}
+    K -->|Yes| L[Approved work may feed: TM · Terminology dataset · RLHF]
+    K -->|No| M[Delivered only — nothing reused]
 ```
 
-### The learning gate (can this correction teach the AI?)
-
-*All must be YES, or it does not train the AI.*
+### The three improvement pipelines (each gated on its own)
 
 ```mermaid
 flowchart LR
-    S[A corrected segment] --> R1{Job signed off?}
-    R1 -->|No| X[Display only — never trains]
-    R1 -->|Yes| R2{Policy allows learning?}
-    R2 -->|No| X
-    R2 -->|Yes| R3{Sign-off authorized the feed?}
-    R3 -->|No| X
-    R3 -->|Yes| R4{Segment was verified or edited?}
-    R4 -->|No| X
-    R4 -->|Yes| R5{Has a reason tag?}
-    R5 -->|No| X
-    R5 -->|Yes| R6{A person approved it?}
-    R6 -->|No| P[Waiting for approval]
-    R6 -->|Yes| T[Feeds Org Brain / retraining]
+    S[Approved / signed-off segment] --> Q{Client allows reuse for this job?}
+    Q -->|No| X[Delivered only — never reused]
+    Q -->|Yes| P1{TM update enabled?}
+    Q -->|Yes| P2{Terminology capture enabled?}
+    Q -->|Yes| P3{Model improvement enabled?}
+    P1 -->|Yes| T1[Save sentence pair to Translation Memory]
+    P2 -->|Yes| T2[Add approved terms to terminology dataset]
+    P3 -->|Yes| T3[Send edits as RLHF feedback signal]
 ```
 
 ---
 
 ## 9. Scenarios (Gherkin — copy/paste-able for dev tests)
 
-### Reviewing segments
+### Editing segments
 
 ```gherkin
-Feature: Reviewing segments
+Feature: Editing segments
 
-  Scenario: A reviewer verifies a segment
-    Given I am a reviewer with permission on this job
-    When I mark a segment "Verified"
-    Then the segment's decision becomes "verified"
-    And the action is written to the audit log with my name and the time
+  Scenario: High-confidence matches are locked before editing starts
+    Given a job has segments that are 101% in-context TM matches
+    When editing begins
+    Then those segments are already locked
+    And an editor cannot change them
 
-  Scenario: A reviewer edits a segment
-    Given I am a reviewer with edit permission
-    When I change a segment's text and save
+  Scenario: An editor confirms a segment
+    Given I am an editor with permission on this job
+    When I mark an unlocked segment "Confirm"
+    Then the segment is recorded as confirmed
+    And the action is written to the audit log against the Job ID
+
+  Scenario: An editor edits a segment
+    Given I am an editor with permission
+    When I change an unlocked segment and save
     Then the new text becomes the segment's value
     And the original value is kept in the record
 
-  Scenario: A vendor reviewer cannot touch another vendor's work
-    Given I am a vendor reviewer
+  Scenario: A vendor editor cannot touch another vendor's work
+    Given I am a vendor editor
     When I try to act on a segment that is not on my assignment
     Then the action is blocked
-    And a "access denied" entry is written to the audit log
-
-  Scenario: Locked segments cannot be changed
-    Given a segment has been locked at sign-off
-    When anyone tries to edit it
-    Then the change is refused
-    And the refusal is written to the audit log
+    And an "access denied" entry is written to the audit log
 ```
 
-### Handing out work
+### Two-editor (second review) workflow
 
 ```gherkin
-Feature: Assigning work
+Feature: Optional second edit, chosen by the client
 
-  Scenario: Assign a task to one reviewer
-    Given I am a project manager
-    When I assign a task to a reviewer
-    Then that reviewer sees it in "My Queue"
-    And the assignment is logged
+  Scenario: The client decides whether there is a second editor
+    Given a client selects a "two-edit" workflow before sending the job
+    Then the job is set up for a first edit and a second edit
+    And Straker does not add or remove the second edit on its own
 
-  Scenario: Four-eyes review on an important task
-    Given I am a project manager
-    When I add a second reviewer as a collaborator
-    Then the task becomes a parallel (four-eyes) review
-
-  Scenario: Reassigning requires a reason
-    Given I want to move a task to a different reviewer
-    When I reassign it without giving a reason
-    Then the reassignment is blocked until I add a reason
+  Scenario: The second edit happens after the first, never in parallel
+    Given a job has a second edit
+    When Editor 1 has not finished
+    Then Editor 2 cannot start
+    And the two editors can never edit the same segments at the same time
 ```
 
-### Final sign-off
+### Sign-off (client-side)
 
 ```gherkin
-Feature: Final sign-off
+Feature: Sign-off is a client action
 
-  Scenario: Only the right role can sign off
-    Given a job requires a "final validator" to sign off
-    When someone without that role tries to sign off
-    Then it is blocked
-    And the mismatch is written to the audit log
+  Scenario: The client reviewer signs off
+    Given a job is finished editing
+    When the client reviewer signs off
+    Then the job is marked signed off and delivered
+    And the sign-off is recorded against the Job ID
 
-  Scenario: Sign-off locks everything
-    Given I am the final validator
-    When I sign off the job
-    Then an immutable sign-off record is created
-    And every segment in the job is locked
-    And the project moves to "signed off"
+  Scenario: Last-touch vendor signs off when delegated
+    Given the client has delegated sign-off
+    When the vendor who last touched the job signs off
+    Then the job is marked signed off
+
+  Scenario: No Straker person signs off the files
+    Given a job needs sign-off
+    Then sign-off is only available to the client reviewer or the last-touch vendor
+    And never to a Straker internal reviewer
 ```
 
-### Teaching the AI (the safety gate)
+### Improving the AI (three separate pipelines)
 
 ```gherkin
-Feature: Only approved work teaches the AI
+Feature: Approved work can improve the AI in three separate ways
 
-  Scenario: A correction is queued for learning
+  Scenario: Translation Memory update
     Given a job is signed off
-    And the policy allows learning
-    And the sign-off authorized the feed
-    And the corrected segment has a reason tag
-    When the learning queue is built
-    Then that segment becomes a pending learning candidate
+    And the client allows reuse
+    And TM update is enabled for this job
+    Then approved sentence pairs are saved to the Translation Memory
 
-  Scenario: Untagged corrections never train the AI
-    Given a corrected segment has no reason tag
-    Then it is shown for the record only
-    And it never enters the learning queue
+  Scenario: Terminology dataset update
+    Given a job is signed off
+    And terminology capture is enabled
+    Then approved term choices are added to the terminology agent dataset
 
-  Scenario: Learning needs a human approval
-    Given a pending learning candidate
-    When an authorized person approves it
-    Then it feeds Org Brain with the list of people who shaped it
-    And the approval is written to the audit log
+  Scenario: Model improvement (RLHF)
+    Given a job is signed off
+    And model improvement is enabled
+    Then the human edits are sent as RLHF feedback
 
-  Scenario: Policy can forbid learning entirely
-    Given a project's policy says "do not reuse"
-    Then no segment from that project can ever train the AI
+  Scenario: The client can forbid all reuse
+    Given a job's policy says "do not reuse"
+    Then none of the three pipelines run for that job
 ```
 
 ### Picking a vendor
@@ -249,7 +261,7 @@ Feature: Only approved work teaches the AI
 Feature: Vendor selection
 
   Scenario: Recommend the best-matched vendor
-    Given a project needs a vendor
+    Given a job needs a vendor
     When the selection engine runs
     Then vendors that fail the hard rules are disqualified with reasons
     And the rest are ranked by score
@@ -271,23 +283,43 @@ Feature: Vendor selection
 | Rule / workflow | Code |
 |---|---|
 | Permission gate + denial logging | `services/hitl/rbac.js` |
-| Segment decisions (verify/edit/reject/lock) | `services/hitl/review.js` |
-| Final sign-off + lock + immutable record | `services/hitl/signOff.js` |
-| Learning eligibility + approval | `services/hitl/retrainingGate.js` |
-| Assigning / four-eyes / reassign | `services/hitl/taskAssignment.js` |
+| Segment actions (confirm / edit / lock) | `services/hitl/review.js` |
+| Sign-off + record | `services/hitl/signOff.js` |
+| Reuse pipelines (TM / terminology / RLHF) | `services/hitl/retrainingGate.js` (today: single path — needs splitting) |
+| Assigning / second-edit / reassign | `services/hitl/taskAssignment.js` |
 | Vendor recommend + auto-assign gating | `services/hitl/selectionEngine.js` |
 | The diary | `services/hitl/auditLog.js` |
 | The screens | `components/HITLVendorWorkflow/` |
 
-Covered by automated tests in `services/hitl/__tests__/` — including an end-to-end
-review → sign-off → retraining integration test.
+---
+
+## 11. Where the prototype still differs from this doc (Dev punch-list)
+
+The current prototype was built before this feedback. To match the real workflow, Dev should:
+
+1. **Remove extra segment states** — the code currently allows `not-verified` / `rejected`,
+   `escalated`, and `needs-rework`. The real workflow has only **Confirm**, **Edit**, and
+   **Locked (early)**. Remove the others.
+2. **Collapse Verify + Accept into one "Confirm."**
+3. **Move Lock to the start.** Today lock happens at sign-off; it should be applied **up front**
+   to 101% in-context matches (read-only before editing).
+4. **Drop the Straker "final validator" role.** Sign-off should be **client reviewer or
+   last-touch vendor** only.
+5. **Make the second edit client-selected and sequential.** Today it's modeled as parallel
+   "four-eyes." Change to: included only if the client's chosen workflow says so, and editor 2
+   runs **after** editor 1.
+6. **Split the single retraining gate into three pipelines** — TM update, terminology dataset,
+   model improvement (RLHF) — each separately enabled and tracked.
+7. **Add a first-class Job ID** used internally and in every audit entry.
 
 ---
 
-## 11. What's real vs. demo (so dev/finance aren't surprised)
+## 12. What's real vs. demo
 
-- **Real & tested:** all the rules above — permissions, segment decisions, vendor scoping, locked-segment refusal, sign-off locking, the learning gate's six conditions, four-eyes, reassign-needs-reason, and auto-assign gating.
-- **Demo conveniences (real system would do automatically):**
-  - AI drafting, confidence scores, and flags are sample data, not a live model.
-  - "Training the AI" stops at an approved queue — the actual model training run is out of scope.
-  - No live file upload or delivery yet; those are integration work.
+- **Real & tested today:** permissions + denial logging, segment edit/confirm, vendor scoping,
+  locked-segment refusal, sign-off + locking, assignment & reassign-needs-reason, vendor
+  auto-assign gating, and the (single) reuse-eligibility gate.
+- **To be aligned (Section 11):** simplified segment states, early lock, client-only sign-off,
+  client-chosen sequential second edit, and splitting reuse into three pipelines.
+- **Always demo, not live:** AI drafting / confidence / flags are sample data; the actual TM
+  write, terminology-dataset write, and RLHF run are integration/ML work, not built here.
