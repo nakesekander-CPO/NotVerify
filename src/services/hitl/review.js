@@ -1,28 +1,29 @@
 /**
  * Segment Review service
  *
- * Verify / Not Verify / Edit / Needs Rework / Escalate / Lock decisions
- * at the segment level. Every decision flows through `decideSegment` to
- * enforce RBAC and write a ReviewDecision + audit event.
+ * The real Straker workflow has only two reviewer actions:
+ *   - confirm : "this is good, leave it"  (was verify/accept — now one)
+ *   - edit    : "I improved it"
+ * Plus segments may be LOCKED early (101% in-context matches) so the
+ * reviewer can't change them. There is no reject / escalate / needs-
+ * rework. Every action flows through `decideSegment` to enforce RBAC
+ * and write a ReviewDecision + audit event.
  */
 
 import {
   HITL_SEGMENTS,
+  HITL_TASKS,
   REVIEW_DECISIONS,
   createReviewDecision,
 } from '../../data/hitlVendorWorkflow';
 import { requirePermission, getUserRoles, hasPermission, isRole } from './rbac';
+import { isSecondEditor, secondEditorCanStart } from './taskAssignment';
 import { appendAuditEvent } from './auditLog';
 
 const PERMISSION_BY_ACTION = {
-  verified: 'verify_segment',
-  'not-verified': 'verify_segment',
+  confirmed: 'verify_segment',
   edited: 'edit_segment',
-  'needs-rework': 'request_rework',
-  escalated: 'request_rework',
-  accepted: 'verify_segment',
-  rejected: 'request_rework',
-  locked: 'final_validate',
+  locked: 'final_validate', // system/admin only — set early, not a reviewer choice
 };
 
 /**
@@ -54,6 +55,20 @@ export function decideSegment({ segmentId, actorId, action, newValue, reason, ch
   const perm = PERMISSION_BY_ACTION[action];
   if (!perm) throw new Error(`unknown action: ${action}`);
   requirePermission(actorId, perm, { projectId: seg.projectId, segmentId });
+
+  // Sequential second edit: a second editor can only start once the
+  // first editor has finished. The two editors never touch the same
+  // segment at the same time.
+  if (seg.taskId && isSecondEditor(actorId, seg.taskId) && !secondEditorCanStart(seg.taskId)) {
+    appendAuditEvent({
+      actorId, actorRole: getUserRoles(actorId)[0]?.id, projectId: seg.projectId, segmentId,
+      eventType: 'segment.second-editor-too-early',
+      reason: 'Second edit is sequential; the first editor has not finished.',
+    });
+    const err = new Error('second editor cannot start until the first edit is finished');
+    err.code = 'SECOND_EDIT_NOT_READY';
+    throw err;
+  }
 
   // Vendor-user scoping
   if (isRole(actorId, 'vendor-user') && !canVendorUserActOnSegment(actorId, seg)) {
@@ -142,6 +157,3 @@ export function addSegmentComment({ segmentId, actorId, text }) {
   return comment;
 }
 
-export function escalateSegment({ segmentId, actorId, reason }) {
-  return decideSegment({ segmentId, actorId, action: 'escalated', reason });
-}

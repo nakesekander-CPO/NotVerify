@@ -285,7 +285,7 @@ Feature: Vendor selection
 | Permission gate + denial logging | `services/hitl/rbac.js` |
 | Segment actions (confirm / edit / lock) | `services/hitl/review.js` |
 | Sign-off + record | `services/hitl/signOff.js` |
-| Reuse pipelines (TM / terminology / RLHF) | `services/hitl/retrainingGate.js` (today: single path — needs splitting) |
+| Reuse pipelines (TM / terminology / RLHF) | `services/hitl/retrainingGate.js` (three separate pipelines) |
 | Assigning / second-edit / reassign | `services/hitl/taskAssignment.js` |
 | Vendor recommend + auto-assign gating | `services/hitl/selectionEngine.js` |
 | The diary | `services/hitl/auditLog.js` |
@@ -293,33 +293,37 @@ Feature: Vendor selection
 
 ---
 
-## 11. Where the prototype still differs from this doc (Dev punch-list)
+## 11. Alignment status (Dev punch-list — now done ✅)
 
-The current prototype was built before this feedback. To match the real workflow, Dev should:
+The prototype was originally built before this feedback. The code has since been
+aligned to this doc. All seven items are complete:
 
-1. **Remove extra segment states** — the code currently allows `not-verified` / `rejected`,
-   `escalated`, and `needs-rework`. The real workflow has only **Confirm**, **Edit**, and
-   **Locked (early)**. Remove the others.
-2. **Collapse Verify + Accept into one "Confirm."**
-3. **Move Lock to the start.** Today lock happens at sign-off; it should be applied **up front**
-   to 101% in-context matches (read-only before editing).
-4. **Drop the Straker "final validator" role.** Sign-off should be **client reviewer or
-   last-touch vendor** only.
-5. **Make the second edit client-selected and sequential.** Today it's modeled as parallel
-   "four-eyes." Change to: included only if the client's chosen workflow says so, and editor 2
-   runs **after** editor 1.
-6. **Split the single retraining gate into three pipelines** — TM update, terminology dataset,
-   model improvement (RLHF) — each separately enabled and tracked.
-7. **Add a first-class Job ID** used internally and in every audit entry.
+1. ✅ **Extra segment states removed** — `not-verified` / `rejected`, `escalated`, and
+   `needs-rework` are gone. The write path (`review.js`) only accepts **confirm**, **edit**,
+   and **lock**; the audit cockpit and quick-review surfaces no longer offer the others.
+2. ✅ **Verify + Accept collapsed into one "Confirm"** (`decision: 'confirmed'`).
+3. ✅ **Lock moved to the start** — 101% in-context (ICE) matches seed as `locked` /
+   `lockReason: 'ice-match'` and are read-only before any editing.
+4. ✅ **Straker "final validator" dropped from sign-off** — `signOff.js` authorises by role:
+   **client reviewer or last-touch vendor** (admins always allowed); no `signoff_output`
+   permission is required.
+5. ✅ **Second edit is client-selected and sequential** — at most one second editor per job;
+   `secondEditorCanStart()` blocks editor 2 until editor 1's pass is complete; `review.js`
+   refuses an early second-editor write.
+6. ✅ **Reuse gate split into three pipelines** — `evaluateForTM`, `evaluateForTerminology`,
+   `evaluateForModel` (RLHF additionally requires a rationale tag), each separately enabled
+   (`tmAllowed` / `terminologyAllowed` / `modelImprovementAllowed`) and approvable.
+7. ✅ **First-class Job ID** — every project carries a `jobId` (e.g. `JOB-2026-04812`),
+   stamped on sign-off and related audit entries.
 
 ---
 
 ## 12. What's real vs. demo
 
-- **Real & tested today:** permissions + denial logging, segment edit/confirm, vendor scoping,
-  locked-segment refusal, sign-off + locking, assignment & reassign-needs-reason, vendor
-  auto-assign gating, and the (single) reuse-eligibility gate.
-- **To be aligned (Section 11):** simplified segment states, early lock, client-only sign-off,
-  client-chosen sequential second edit, and splitting reuse into three pipelines.
+- **Real & tested today:** permissions + denial logging, segment confirm/edit, early ICE
+  lock, vendor scoping, locked-segment refusal, client-side sign-off + locking, assignment
+  & reassign-needs-reason, client-chosen sequential second edit (with the
+  editor-2-after-editor-1 gate), vendor auto-assign gating, and the three reuse-eligibility
+  pipelines (TM / terminology / RLHF).
 - **Always demo, not live:** AI drafting / confidence / flags are sample data; the actual TM
   write, terminology-dataset write, and RLHF run are integration/ML work, not built here.

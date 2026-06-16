@@ -426,9 +426,8 @@ function DocumentReadingView({ project, segments, activeIdx, onJump }) {
             const display = s.editedTarget || s.target || s.source
             const decision = s.decision || 'pending'
             const dotClass =
-              decision === 'verified' || decision === 'accepted' || decision === 'edited' ? 'bg-teal'
-              : decision === 'rejected' || decision === 'not-verified' ? 'bg-error'
-              : decision === 'needs-rework' ? 'bg-amber-deep'
+              decision === 'confirmed' || decision === 'edited' || decision === 'verified' || decision === 'accepted' ? 'bg-teal'
+              : decision === 'locked' ? 'bg-slate'
               : 'bg-mist'
             return (
               <div key={s.id} className="group">
@@ -478,9 +477,8 @@ function DocumentReadingView({ project, segments, activeIdx, onJump }) {
           to <span className="font-semibold text-ink">Quick</span> to edit.
         </p>
         <ul className="text-[11.5px] text-slate space-y-1.5">
-          <li className="flex items-center gap-2"><span className="inline-block w-1.5 h-1.5 rounded-full bg-teal" /> Verified / accepted</li>
-          <li className="flex items-center gap-2"><span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-deep" /> Needs rework</li>
-          <li className="flex items-center gap-2"><span className="inline-block w-1.5 h-1.5 rounded-full bg-error" /> Rejected / not verified</li>
+          <li className="flex items-center gap-2"><span className="inline-block w-1.5 h-1.5 rounded-full bg-teal" /> Confirmed / edited</li>
+          <li className="flex items-center gap-2"><span className="inline-block w-1.5 h-1.5 rounded-full bg-slate" /> Locked (101% match)</li>
           <li className="flex items-center gap-2"><span className="inline-block w-1.5 h-1.5 rounded-full bg-mist" /> Pending</li>
         </ul>
         <div className="border-t border-rule mt-4 pt-3 text-[11px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
@@ -597,7 +595,7 @@ export default function QuickReviewWorkspace({
    * flagCategories entry that the reviewer has not yet verified/edited. */
   const isFlaggedAndOpen = (s) =>
     (s?.flagCategories?.length > 0) &&
-    !['verified', 'edited', 'accepted'].includes(s?.decision)
+    !['confirmed', 'edited'].includes(s?.decision)
 
   const findNextOpenFlagged = (from, dir = 1) => {
     const n = segments.length
@@ -612,8 +610,8 @@ export default function QuickReviewWorkspace({
 
   const commit = useCallback(({ advance = 'any' } = {}) => {
     if (!activeSeg) return
-    const inferredPosture = isAccepted ? 'accept' : 'refine'
-    const action = isAccepted ? 'verified' : 'edited'
+    const inferredPosture = isAccepted ? 'confirm' : 'edit'
+    const action = isAccepted ? 'confirmed' : 'edited'
     const top = [...(activeSeg.agentCandidates || [])].sort((a, b) => b.confidence - a.confidence)[0]
     try {
       decideSegment({
@@ -917,14 +915,14 @@ export default function QuickReviewWorkspace({
   }, [segments, activeIdx])
 
   const totalSeg = segments.length
-  const doneSeg = segments.filter(s => ['verified', 'edited', 'accepted'].includes(s.decision)).length
+  const doneSeg = segments.filter(s => ['confirmed', 'edited'].includes(s.decision) || (s.locked && s.lockReason === 'ice-match')).length
   /* Flagged-segment counts for the compact progress + flag strip. */
   const flaggedAll = useMemo(
     () => segments.filter(s => s.flagCategories?.length > 0),
     [segments]
   )
   const totalFlagged = flaggedAll.length
-  const flaggedDone = flaggedAll.filter(s => ['verified', 'edited', 'accepted'].includes(s.decision)).length
+  const flaggedDone = flaggedAll.filter(s => ['confirmed', 'edited'].includes(s.decision)).length
 
   /* Timer visuals */
   const timerPalette =
@@ -950,7 +948,7 @@ export default function QuickReviewWorkspace({
             <p className="text-[10.5px] text-mist truncate" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
               {project?.requirements.sourceLanguage?.toUpperCase()} → {project?.requirements.targetLanguages?.[0]?.toUpperCase()}
               {totalFlagged > 0 && <> · <span className={flaggedDone === totalFlagged ? 'text-teal' : 'text-amber-deep'}>{flaggedDone} of {totalFlagged} flagged resolved</span></>}
-              {' · '}{doneSeg}/{totalSeg} verified
+              {' · '}{doneSeg}/{totalSeg} done
             </p>
           </div>
         </div>
@@ -1118,7 +1116,7 @@ export default function QuickReviewWorkspace({
               <ul className="max-h-[640px] overflow-y-auto py-1">
                 {contextWindow.map(({ s, i }) => {
                   const isActive = i === activeIdx
-                  const done = ['verified', 'edited', 'accepted'].includes(s.decision)
+                  const done = ['confirmed', 'edited'].includes(s.decision) || (s.locked && s.lockReason === 'ice-match')
                   const hasOpen = !done && qaDiff(s.source, s.editedTarget || s.target).some(r => !r.ok)
                   return (
                     <li key={s.id}>
@@ -1457,13 +1455,13 @@ function FindReplaceBar({ segments, currentUserRole, onClose }) {
   const findRef = useRef(null)
   useEffect(() => { findRef.current?.focus() }, [])
 
-  // Vendor-user is gated out of overwriting verified work.
+  // Vendor-user is gated out of overwriting confirmed/edited work.
   const canOverwriteVerified =
     !['vendor-user', 'client-reviewer'].includes(currentUserRole)
 
   const matches = useMemo(() => {
     if (!find) return { count: 0, segs: 0 }
-    const list = segments.filter(s => includeVerified || !['verified', 'edited', 'accepted'].includes(s.decision))
+    const list = segments.filter(s => includeVerified || !['confirmed', 'edited'].includes(s.decision))
     let count = 0, segs = 0
     for (const s of list) {
       const hay = (s.editedTarget || s.target || '')
@@ -1502,7 +1500,7 @@ function FindReplaceBar({ segments, currentUserRole, onClose }) {
           className={`px-2.5 py-1 cursor-pointer ${scope === 'corpus' ? 'bg-ocean text-white' : 'text-slate hover:bg-pale'}`}
         >Entire corpus</button>
       </div>
-      <label className="inline-flex items-center gap-1.5 text-[11.5px] text-slate cursor-pointer shrink-0" title={canOverwriteVerified ? 'Include already-verified segments' : 'Locked — your role cannot overwrite verified segments'}>
+      <label className="inline-flex items-center gap-1.5 text-[11.5px] text-slate cursor-pointer shrink-0" title={canOverwriteVerified ? 'Include already-done segments' : 'Locked — your role cannot overwrite confirmed segments'}>
         <input
           type="checkbox"
           checked={includeVerified}
@@ -1510,7 +1508,7 @@ function FindReplaceBar({ segments, currentUserRole, onClose }) {
           onChange={e => setIncludeVerified(e.target.checked)}
           className="accent-ocean"
         />
-        Include verified
+        Include done
       </label>
       <span className="text-[11px] text-mist shrink-0" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
         {find ? `${matches.count} occurrence${matches.count === 1 ? '' : 's'} in ${matches.segs} segment${matches.segs === 1 ? '' : 's'}` : '—'}

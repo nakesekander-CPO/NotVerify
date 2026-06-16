@@ -742,6 +742,7 @@ export const SELECTION_POLICIES = [
 export const HITL_PROJECTS = [
   {
     id: 'hp-q3-ja-earnings',
+    jobId: 'JOB-2026-04812',
     name: 'Q3 2026 Earnings Report — JA',
     clientTenantId: 'meridian',
     clientNodeId: 'mc-japan-finance',
@@ -765,8 +766,9 @@ export const HITL_PROJECTS = [
       requiredVendorPool: 'vp-japanese-financial',
       vendorExclusions: [],
       requiredSignoffRole: 'final-validator',
-      retrainingAllowed: true,
-      orgBrainAllowed: true,
+      tmAllowed: true,
+      terminologyAllowed: true,
+      modelImprovementAllowed: true,
       modelSuggestionsAllowed: true,
     },
     riskAssessment: {
@@ -793,6 +795,7 @@ export const HITL_PROJECTS = [
   },
   {
     id: 'hp-de-regulatory',
+    jobId: 'JOB-2026-04820',
     name: 'BaFin Filing Translation — DE',
     clientTenantId: 'meridian',
     clientNodeId: 'mc-germany-tax',
@@ -816,8 +819,9 @@ export const HITL_PROJECTS = [
       requiredVendorPool: 'vp-eu-regulatory',
       vendorExclusions: [],
       requiredSignoffRole: 'compliance-reviewer',
-      retrainingAllowed: false,
-      orgBrainAllowed: true,
+      tmAllowed: true,
+      terminologyAllowed: true,
+      modelImprovementAllowed: false,
       modelSuggestionsAllowed: false,
     },
     riskAssessment: {
@@ -845,6 +849,7 @@ export const HITL_PROJECTS = [
   /* ── Internal review: single reviewer / single file ──────────── */
   {
     id: 'hp-q3-mda-internal-single',
+    jobId: 'JOB-2026-04835',
     name: 'Q3 MD&A Memo — Internal review (single reviewer)',
     clientTenantId: 'meridian',
     clientNodeId: 'mc-japan-finance',
@@ -868,8 +873,9 @@ export const HITL_PROJECTS = [
       requiredVendorPool: 'vp-internal-only',
       vendorExclusions: [],
       requiredSignoffRole: 'final-validator',
-      retrainingAllowed: true,
-      orgBrainAllowed: true,
+      tmAllowed: true,
+      terminologyAllowed: true,
+      modelImprovementAllowed: true,
       modelSuggestionsAllowed: true,
     },
     riskAssessment: {
@@ -897,6 +903,7 @@ export const HITL_PROJECTS = [
   /* ── Internal review: multiple files / parallel reviewers ────── */
   {
     id: 'hp-annual-internal-parallel',
+    jobId: 'JOB-2026-04841',
     name: 'FY26 Annual Report — Internal parallel review',
     clientTenantId: 'meridian',
     clientNodeId: 'mc-japan-finance',
@@ -920,8 +927,9 @@ export const HITL_PROJECTS = [
       requiredVendorPool: 'vp-internal-only',
       vendorExclusions: [],
       requiredSignoffRole: 'final-validator',
-      retrainingAllowed: true,
-      orgBrainAllowed: true,
+      tmAllowed: true,
+      terminologyAllowed: true,
+      modelImprovementAllowed: true,
       modelSuggestionsAllowed: false,
     },
     riskAssessment: {
@@ -1325,8 +1333,12 @@ export function createAssignment({ projectId, vendorId, recommendedById, assigne
   };
 }
 
-export function createSegment({ taskId, projectId, segmentNumber, source, target, agentCandidates, agentSuggestion, agentConfidence, riskFlags, errorCategory, flagCategories, sourceAnchor, script, expansionRisk, placeholders, markupCount, dntTerms, localeFormatting } = {}) {
+export function createSegment({ taskId, projectId, segmentNumber, source, target, agentCandidates, agentSuggestion, agentConfidence, riskFlags, errorCategory, flagCategories, sourceAnchor, script, expansionRisk, placeholders, markupCount, dntTerms, localeFormatting, matchPct } = {}) {
   const input = { flagCategories, sourceAnchor, script, expansionRisk, placeholders, markupCount, dntTerms, localeFormatting };
+  // TM match level. 101% = in-context exact (ICE) — locked up front so
+  // reviewers can't change what's already certain. 100% = exact text.
+  const pct = typeof matchPct === 'number' ? matchPct : null;
+  const iceLocked = pct != null && pct >= 101;
   return {
     id: nextId('seg'),
     taskId,
@@ -1351,13 +1363,16 @@ export function createSegment({ taskId, projectId, segmentNumber, source, target
     agentConfidence: typeof agentConfidence === 'number' ? agentConfidence : null,
     riskFlags: riskFlags || [],
     errorCategory: errorCategory || null,
-    decision: 'pending',
+    matchPct: pct,                              // TM match level (null if no match)
+    decision: iceLocked ? 'locked' : 'pending',
     decidedAt: null,
     decidedById: null,
     chosenCandidateId: null,   // which agent proposal was accepted (or null if authored)
     editedTarget: null,
     comments: [],
-    locked: false,
+    locked: iceLocked,                          // 101% ICE matches are read-only from the start
+    lockReason: iceLocked ? 'ice-match' : null, // 'ice-match' = locked early; else set at sign-off
+
     /* Cockpit-2 fields — computed at extraction, persisted on the segment */
     flagCategories: input?.flagCategories || [],          // string[] keys of FLAG_CATEGORIES
     sourceAnchor: input?.sourceAnchor || null,             // { page, bbox, snippet }
@@ -1422,7 +1437,7 @@ export function createReviewDecision({
   };
 }
 
-export function createSignOffRecord({ projectId, outputId, actorId, actorRole, validationScore, qualityScore, riskSummary, openIssues, statement, canPublish, feedOrgBrain, feedRetraining, approvalChain, version }) {
+export function createSignOffRecord({ projectId, outputId, actorId, actorRole, validationScore, qualityScore, riskSummary, openIssues, statement, canPublish, feedTM, feedTerminology, feedModel, approvalChain, version }) {
   const now = new Date().toISOString();
   return {
     id: nextId('so'),
@@ -1438,8 +1453,10 @@ export function createSignOffRecord({ projectId, outputId, actorId, actorRole, v
     openIssues: openIssues || [],
     statement: statement || '',
     canPublish: !!canPublish,
-    feedOrgBrain: !!feedOrgBrain,
-    feedRetraining: !!feedRetraining,
+    // Three separate reuse pipelines (each opt-in).
+    feedTM: !!feedTM,
+    feedTerminology: !!feedTerminology,
+    feedModel: !!feedModel,
     approvalChain: approvalChain || [],
     immutable: true,
   };
@@ -1666,6 +1683,10 @@ export function listVendorsInPool(poolId) {
   const Q3JA_DNT = ['EBITDA', 'APAC', 'Q3'];
   sampleSegments.forEach((s, i) => {
     const top = [...s.candidates].sort((a, b) => b.confidence - a.confidence)[0];
+    // First segment is a 101% in-context (ICE) TM match — locked up
+    // front so reviewers can't change what's already certain.
+    const matchPct = i === 0 ? 101 : (i === 1 ? 100 : null);
+    const ice = matchPct != null && matchPct >= 101;
     HITL_SEGMENTS.push({
       id: `seg-q3ja-${i + 1}`,
       taskId: 'tk-q3-ja-mgmt-discussion',
@@ -1678,13 +1699,15 @@ export function listVendorsInPool(poolId) {
       agentConfidence: top.confidence,
       riskFlags: top.confidence < 0.75 ? ['low-confidence'] : [],
       errorCategory: s.errorCategory,
-      decision: 'pending',
+      matchPct,
+      decision: ice ? 'locked' : 'pending',
       decidedAt: null,
       decidedById: null,
       chosenCandidateId: null,
       editedTarget: null,
       comments: [],
-      locked: false,
+      locked: ice,
+      lockReason: ice ? 'ice-match' : null,
       flagCategories: Q3JA_FLAGS[i] || [],
       sourceAnchor: { page: 4 + Math.floor(i / 2), bbox: [120, 200 + i * 60, 480, 240 + i * 60], snippet: s.source.slice(0, 80) },
       script: 'mixed',                                  // EN source → JA target

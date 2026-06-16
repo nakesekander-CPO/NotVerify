@@ -28,8 +28,8 @@ export default function RetrainingQueue({ currentUserId }) {
   return (
     <div>
       <SectionHeading
-        title="Retraining Queue · governed memory promotions"
-        subtitle="Only tagged, validated, and signed-off rulings enter this queue. A final-validator or arbitr global admin must approve each candidate before it feeds Org Brain or a retraining run. Untagged or rejected rulings never train a model."
+        title="Reuse Queue · three governed pipelines"
+        subtitle="Only signed-off rulings enter this queue. An authorised approver must approve each candidate before it flows into a pipeline: Translation Memory (TM), terminology dataset, or model improvement (RLHF). RLHF additionally requires a rationale tag. Rejected rulings never enter any pipeline."
       />
 
       <div className="flex items-center gap-2 mb-4">
@@ -63,8 +63,9 @@ export default function RetrainingQueue({ currentUserId }) {
                     <GraduationCap className="w-4 h-4 text-amber" />
                     <p className="text-[13px] font-semibold text-ink">{c.id}</p>
                     <StatusBadge status={c.status} />
-                    {c.eligibleOrgBrain && <span className="text-[10.5px] text-teal bg-teal/10 px-2 py-0.5 rounded-full">Org Brain eligible</span>}
-                    {c.eligibleRetraining && <span className="text-[10.5px] text-amber-deep bg-amber/15 px-2 py-0.5 rounded-full">Retraining eligible</span>}
+                    {c.eligibleTM && <span className="text-[10.5px] text-teal bg-teal/10 px-2 py-0.5 rounded-full">TM eligible</span>}
+                    {c.eligibleTerminology && <span className="text-[10.5px] text-ocean bg-ocean/10 px-2 py-0.5 rounded-full">Terminology eligible</span>}
+                    {c.eligibleModel && <span className="text-[10.5px] text-amber-deep bg-amber/15 px-2 py-0.5 rounded-full">Model (RLHF) eligible</span>}
                   </div>
                   <span className="text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{c.domain} · {c.language} · {c.errorCategory}</span>
                 </div>
@@ -99,9 +100,11 @@ export default function RetrainingQueue({ currentUserId }) {
                     <span>Project <span className="font-mono text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{c.projectId}</span></span>
                   </div>
                   {c.status === 'pending' && (
-                    <div className="flex items-center gap-2">
-                      <SecondaryButton onClick={() => approve(c.id, 'orgBrain')} disabled={!c.eligibleOrgBrain}><Brain className="w-3.5 h-3.5" /> Approve → Org Brain</SecondaryButton>
-                      <PrimaryButton onClick={() => approve(c.id, 'both')} disabled={!c.eligibleRetraining}><Check className="w-3.5 h-3.5" /> Approve → both</PrimaryButton>
+                    <div className="flex items-center gap-2 flex-wrap justify-end">
+                      <SecondaryButton onClick={() => approve(c.id, 'tm')} disabled={!c.eligibleTM}><Brain className="w-3.5 h-3.5" /> → TM</SecondaryButton>
+                      <SecondaryButton onClick={() => approve(c.id, 'terminology')} disabled={!c.eligibleTerminology}><Brain className="w-3.5 h-3.5" /> → Terminology</SecondaryButton>
+                      <SecondaryButton onClick={() => approve(c.id, 'model')} disabled={!c.eligibleModel}><Brain className="w-3.5 h-3.5" /> → Model (RLHF)</SecondaryButton>
+                      <PrimaryButton onClick={() => approve(c.id, 'all')} disabled={!(c.eligibleTM && c.eligibleTerminology && c.eligibleModel)}><Check className="w-3.5 h-3.5" /> Approve → all</PrimaryButton>
                       <DangerButton onClick={() => reject(c.id)}><X className="w-3.5 h-3.5" /> Reject</DangerButton>
                     </div>
                   )}
@@ -117,8 +120,8 @@ export default function RetrainingQueue({ currentUserId }) {
       )}
 
       <div className="mt-8">
-        <MonoLabel>Org Brain updates produced ({ORG_BRAIN_UPDATES.length})</MonoLabel>
-        {ORG_BRAIN_UPDATES.length === 0 && <p className="text-[12.5px] text-mist mt-2">No Org Brain updates yet — approve a candidate to feed governed memory.</p>}
+        <MonoLabel>TM & terminology updates produced ({ORG_BRAIN_UPDATES.length})</MonoLabel>
+        {ORG_BRAIN_UPDATES.length === 0 && <p className="text-[12.5px] text-mist mt-2">No reuse updates yet — approve a candidate (TM or terminology) to record provenance.</p>}
         <ul className="mt-2 space-y-1.5">
           {ORG_BRAIN_UPDATES.slice(-5).reverse().map(o => (
             <li key={o.id} className="text-[12.5px] bg-pale rounded p-2.5 flex items-center justify-between">

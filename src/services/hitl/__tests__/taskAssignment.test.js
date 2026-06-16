@@ -48,43 +48,53 @@ describe('task assignment — single reviewer', () => {
   })
 })
 
-describe('task assignment — parallel co-reviewers', () => {
-  it('promotes a task to parallel mode when collaborators are added', () => {
+describe('task assignment — second editor (sequential)', () => {
+  it('promotes a task to sequential mode when a second editor is added', () => {
     const t = HITL_TASKS.find(x => x.id === 'tk-annual-financial')
     addCollaborator({ taskId: t.id, userId: 'sarah', actorId: 'alex' })
     expect(t.collaboratorIds).toContain('sarah')
-    expect(t.assignmentMode).toBe('parallel')
+    expect(t.assignmentMode).toBe('sequential')
   })
 
-  it('rejects making the primary reviewer their own collaborator', () => {
+  it('rejects making the primary reviewer their own second editor', () => {
     const t = HITL_TASKS.find(x => x.id === 'tk-annual-financial')
     expect(() => addCollaborator({ taskId: t.id, userId: t.primaryReviewerId, actorId: 'alex' })).toThrow(/already the primary/)
   })
 
-  it('removes the collaborator and falls back to single mode when none remain', () => {
+  it('rejects a second second editor — a job has only one', () => {
+    const t = HITL_TASKS.find(x => x.id === 'tk-annual-financial')
+    expect(() => addCollaborator({ taskId: t.id, userId: 'yuki', actorId: 'alex' })).toThrow(/only one second editor/)
+  })
+
+  it('removes the second editor and falls back to single mode', () => {
     const t = HITL_TASKS.find(x => x.id === 'tk-annual-financial')
     removeCollaborator({ taskId: t.id, userId: 'sarah', actorId: 'alex' })
     expect(t.collaboratorIds).not.toContain('sarah')
     expect(t.assignmentMode).toBe('single')
   })
 
-  it('assignTaskParallel sets primary + collaborators atomically', () => {
+  it('assignTaskParallel sets primary + one second editor atomically', () => {
     const t = HITL_TASKS.find(x => x.id === 'tk-annual-mda')
-    assignTaskParallel({ taskId: t.id, primaryReviewerId: 'marcus', collaboratorIds: ['yuki', 'sarah'], actorId: 'alex' })
+    assignTaskParallel({ taskId: t.id, primaryReviewerId: 'marcus', collaboratorIds: ['sarah'], actorId: 'alex' })
     expect(t.primaryReviewerId).toBe('marcus')
-    expect(t.collaboratorIds.sort()).toEqual(['sarah', 'yuki'])
-    expect(t.assignmentMode).toBe('parallel')
+    expect(t.collaboratorIds).toEqual(['sarah'])
+    expect(t.assignmentMode).toBe('sequential')
   })
 
-  it('rejects duplicate user as both primary and collaborator', () => {
+  it('rejects more than one second editor (never parallel)', () => {
     const t = HITL_TASKS.find(x => x.id === 'tk-annual-mda')
-    expect(() => assignTaskParallel({ taskId: t.id, primaryReviewerId: 'sarah', collaboratorIds: ['sarah'], actorId: 'alex' })).toThrow(/cannot also/)
+    expect(() => assignTaskParallel({ taskId: t.id, primaryReviewerId: 'marcus', collaboratorIds: ['yuki', 'sarah'], actorId: 'alex' })).toThrow(/at most one second editor/)
+  })
+
+  it('rejects the same user as both first and second editor', () => {
+    const t = HITL_TASKS.find(x => x.id === 'tk-annual-mda')
+    expect(() => assignTaskParallel({ taskId: t.id, primaryReviewerId: 'sarah', collaboratorIds: ['sarah'], actorId: 'alex' })).toThrow(/different person/)
   })
 })
 
 describe('task assignment — queries', () => {
-  it('listMyTasks returns tasks where the user is primary or collaborator', () => {
-    // After parallel assignment above, sarah is collaborator on tk-annual-mda.
+  it('listMyTasks returns tasks where the user is primary or second editor', () => {
+    // After the assignment above, sarah is the second editor on tk-annual-mda.
     const tasks = listMyTasks('sarah', { projectId: PROJECT_ID })
     const ids = tasks.map(t => t.id)
     expect(ids).toContain('tk-annual-mda')

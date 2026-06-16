@@ -1,94 +1,68 @@
 import { describe, it, expect } from 'vitest'
-import { evaluateSegmentForRetraining, evaluateSegmentForOrgBrain } from '../retrainingGate'
+import { evaluateForTM, evaluateForTerminology, evaluateForModel } from '../retrainingGate'
 
 function project(overrides = {}) {
   return {
     id: 'p-test',
     status: 'signed-off',
-    requirements: { retrainingAllowed: true, orgBrainAllowed: true, targetLanguages: ['ja'], domain: 'financial' },
+    requirements: { tmAllowed: true, terminologyAllowed: true, modelImprovementAllowed: true, targetLanguages: ['ja'], domain: 'financial' },
     ...overrides,
   }
 }
 function signOff(overrides = {}) {
-  return { id: 'so-test', feedOrgBrain: true, feedRetraining: true, ...overrides }
+  return { id: 'so-test', feedTM: true, feedTerminology: true, feedModel: true, ...overrides }
 }
 function segment(overrides = {}) {
-  return { id: 'seg-test', decision: 'verified', ...overrides }
+  return { id: 'seg-test', decision: 'confirmed', ...overrides }
 }
 
-// Stub the decisions array so the "tagged" gate has data to find.
-// Tests that don't care about tags pass a `_taggedDecision` flag which
-// pushes a decision with at least one rationale tag.
 import { REVIEW_DECISIONS } from '../../../data/hitlVendorWorkflow'
 function withTaggedDecision(segId) {
   REVIEW_DECISIONS.push({
-    id: `rd-test-${segId}`, segmentId: segId, actorId: 'tester', actorRole: 'final-validator',
-    action: 'verified', rationaleTags: ['register'], timestamp: new Date().toISOString(),
+    id: `rd-test-${segId}`, segmentId: segId, actorId: 'tester', actorRole: 'client-reviewer',
+    action: 'confirmed', rationaleTags: ['register'], timestamp: new Date().toISOString(),
   })
 }
 
-describe('retraining gate — eligibility', () => {
-  it('approves a verified, tagged segment when project is signed-off and policy + sign-off allow retraining', () => {
-    const seg = segment({ id: 'seg-test-1' })
-    withTaggedDecision(seg.id)
-    const r = evaluateSegmentForRetraining(seg, signOff(), project())
-    expect(r.eligible).toBe(true)
+describe('reuse gate — three separate pipelines', () => {
+  it('TM update is eligible for a confirmed/edited segment when signed off + policy + feed allow', () => {
+    expect(evaluateForTM(segment(), signOff(), project()).eligible).toBe(true)
+    expect(evaluateForTM(segment({ decision: 'edited' }), signOff(), project()).eligible).toBe(true)
   })
 
-  it('blocks retraining when the decision has no rationale tags (display-only)', () => {
-    const seg = segment({ id: 'seg-test-untagged' })
-    REVIEW_DECISIONS.push({ id: `rd-untagged-${seg.id}`, segmentId: seg.id, actorId: 'tester', actorRole: 'final-validator', action: 'verified', rationaleTags: [], timestamp: new Date().toISOString() })
-    const r = evaluateSegmentForRetraining(seg, signOff(), project())
+  it('terminology capture has its own flag and policy', () => {
+    expect(evaluateForTerminology(segment(), signOff({ feedTerminology: false }), project()).eligible).toBe(false)
+    expect(evaluateForTerminology(segment(), signOff(), project({ requirements: { terminologyAllowed: false } })).eligible).toBe(false)
+    expect(evaluateForTerminology(segment(), signOff(), project()).eligible).toBe(true)
+  })
+
+  it('model improvement (RLHF) additionally requires a rationale tag', () => {
+    const tagged = segment({ id: 'seg-rlhf-ok' })
+    withTaggedDecision(tagged.id)
+    expect(evaluateForModel(tagged, signOff(), project()).eligible).toBe(true)
+
+    const untagged = segment({ id: 'seg-rlhf-untagged' })
+    REVIEW_DECISIONS.push({ id: 'rd-untagged', segmentId: untagged.id, actorId: 'tester', actorRole: 'client-reviewer', action: 'confirmed', rationaleTags: [], timestamp: new Date().toISOString() })
+    const r = evaluateForModel(untagged, signOff(), project())
     expect(r.eligible).toBe(false)
     expect(r.reasons.some(x => /no rationale tags/i.test(x))).toBe(true)
   })
 
-  it('blocks retraining when project policy disallows it (regardless of sign-off)', () => {
-    const seg = segment({ id: 'seg-test-2' })
-    withTaggedDecision(seg.id)
-    const r = evaluateSegmentForRetraining(seg, signOff(), project({ requirements: { retrainingAllowed: false, orgBrainAllowed: true } }))
-    expect(r.eligible).toBe(false)
-    expect(r.reasons.some(x => /policy disallows/i.test(x))).toBe(true)
+  it('every pipeline blocks when the project is not signed off', () => {
+    const p = project({ status: 'in-vendor-review' })
+    expect(evaluateForTM(segment(), signOff(), p).eligible).toBe(false)
+    expect(evaluateForTerminology(segment(), signOff(), p).eligible).toBe(false)
+    expect(evaluateForModel(segment(), signOff(), p).eligible).toBe(false)
   })
 
-  it('blocks retraining when sign-off did not authorise feedRetraining', () => {
-    const seg = segment({ id: 'seg-test-3' })
-    withTaggedDecision(seg.id)
-    const r = evaluateSegmentForRetraining(seg, signOff({ feedRetraining: false }), project())
-    expect(r.eligible).toBe(false)
-    expect(r.reasons.some(x => /sign-off did not authorise/i.test(x))).toBe(true)
+  it('only confirmed or edited segments are eligible (no other states exist)', () => {
+    expect(evaluateForTM(segment({ decision: 'pending' }), signOff(), project()).eligible).toBe(false)
+    expect(evaluateForTM(segment({ decision: 'locked' }), signOff(), project()).eligible).toBe(false)
   })
 
-  it('blocks retraining for not-verified segments', () => {
-    const seg = segment({ id: 'seg-test-4', decision: 'not-verified' })
-    withTaggedDecision(seg.id)
-    const r = evaluateSegmentForRetraining(seg, signOff(), project())
-    expect(r.eligible).toBe(false)
-    expect(r.reasons.some(x => /not eligible/i.test(x))).toBe(true)
-  })
-
-  it('blocks retraining for rejected segments', () => {
-    const seg = segment({ id: 'seg-test-5', decision: 'rejected' })
-    withTaggedDecision(seg.id)
-    const r = evaluateSegmentForRetraining(seg, signOff(), project())
-    expect(r.eligible).toBe(false)
-  })
-
-  it('blocks retraining for projects not signed off yet', () => {
-    const seg = segment({ id: 'seg-test-6' })
-    withTaggedDecision(seg.id)
-    const r = evaluateSegmentForRetraining(seg, signOff(), project({ status: 'in-vendor-review' }))
-    expect(r.eligible).toBe(false)
-    expect(r.reasons.some(x => /not signed-off/i.test(x))).toBe(true)
-  })
-
-  it('allows Org Brain feed under a separate flag from retraining', () => {
-    const ob = evaluateSegmentForOrgBrain(segment(), signOff({ feedRetraining: false }), project({ requirements: { retrainingAllowed: false, orgBrainAllowed: true } }))
-    expect(ob.eligible).toBe(true)
-  })
-
-  it('respects orgBrainAllowed = false project policy', () => {
-    const ob = evaluateSegmentForOrgBrain(segment(), signOff(), project({ requirements: { retrainingAllowed: true, orgBrainAllowed: false } }))
-    expect(ob.eligible).toBe(false)
+  it('a client can allow TM but forbid model improvement (independent pipelines)', () => {
+    const p = project({ requirements: { tmAllowed: true, terminologyAllowed: true, modelImprovementAllowed: false } })
+    expect(evaluateForTM(segment(), signOff(), p).eligible).toBe(true)
+    expect(evaluateForModel(segment(), signOff(), p).eligible).toBe(false)
   })
 })

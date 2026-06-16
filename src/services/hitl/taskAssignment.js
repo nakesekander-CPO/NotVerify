@@ -4,10 +4,20 @@
  * Internal-review patterns:
  *   - internal-single    : one task on a project, one primary reviewer.
  *   - internal-parallel  : multiple tasks on a project, each assigned to
- *                          one primary reviewer (and optional co-reviewers
- *                          for four-eyes). Project Manager / Org Admin /
- *                          arbitr Global Admin can assign, reassign, and
- *                          unassign. Every change is audit-logged.
+ *                          one primary reviewer. Project Manager / Org
+ *                          Admin / arbitr Global Admin can assign,
+ *                          reassign, and unassign. Every change is
+ *                          audit-logged.
+ *
+ * Second edit (the old "four-eyes"):
+ *   - It is the CLIENT'S choice, made before the job is sent. Straker
+ *     never adds or removes it on its own.
+ *   - A job has AT MOST ONE second editor.
+ *   - It runs SEQUENTIALLY: the second editor can only start once the
+ *     first editor has finished. The two editors never touch the same
+ *     segments at the same time.
+ *   The single second editor is stored in `collaboratorIds` (length ≤ 1)
+ *   and `assignmentMode === 'sequential'`.
  *
  * The same primitives also handle vendor task assignment within a vendor
  * organisation — assignedVendorId stays the same, but primaryReviewerId
@@ -55,21 +65,30 @@ export function assignTask({ taskId, userId, actorId, note }) {
   return t;
 }
 
-/* ─── parallel co-reviewer assignment ─────────────────────────── */
+/* ─── second-editor assignment (sequential, max one) ──────────── */
 
+/**
+ * Set the first editor and (optionally) the one second editor in a
+ * single call. A job has at most ONE second editor and it runs
+ * sequentially — never in parallel. `collaboratorIds` keeps the
+ * existing call shape but must contain zero or one user.
+ */
 export function assignTaskParallel({ taskId, primaryReviewerId, collaboratorIds = [], actorId, note }) {
   requirePermission(actorId, 'reassign_task', { taskId });
   const t = _findTask(taskId);
   if (!_user(primaryReviewerId)) throw new Error(`primary reviewer not found: ${primaryReviewerId}`);
+  if (collaboratorIds.length > 1) {
+    throw new Error('a job has at most one second editor (sequential, never parallel)');
+  }
   for (const c of collaboratorIds) {
-    if (!_user(c)) throw new Error(`collaborator not found: ${c}`);
-    if (c === primaryReviewerId) throw new Error('primary reviewer cannot also be a collaborator');
+    if (!_user(c)) throw new Error(`second editor not found: ${c}`);
+    if (c === primaryReviewerId) throw new Error('the second editor must be a different person');
   }
 
   const before = { primaryReviewerId: t.primaryReviewerId, collaboratorIds: [...t.collaboratorIds] };
   t.primaryReviewerId = primaryReviewerId;
   t.collaboratorIds = [...new Set(collaboratorIds)];
-  t.assignmentMode = collaboratorIds.length > 0 ? 'parallel' : 'single';
+  t.assignmentMode = collaboratorIds.length > 0 ? 'sequential' : 'single';
   t.assignedAt = new Date().toISOString();
   t.assignedBy = actorId;
   if (t.status === 'not-started') t.status = 'assigned';
@@ -77,13 +96,17 @@ export function assignTaskParallel({ taskId, primaryReviewerId, collaboratorIds 
   appendAuditEvent({
     actorId, actorRole: getUserRoles(actorId)[0]?.id,
     projectId: t.projectId, taskId,
-    eventType: 'task.assigned-parallel',
+    eventType: 'task.second-editor-assigned',
     beforeValue: before,
     afterValue: { primaryReviewerId, collaboratorIds: t.collaboratorIds, assignmentMode: t.assignmentMode },
     reason: note || null,
   });
   return t;
 }
+
+/** Clearer alias for the single-second-editor setup. */
+export const assignSecondEditor = ({ taskId, primaryReviewerId, secondEditorId, actorId, note }) =>
+  assignTaskParallel({ taskId, primaryReviewerId, collaboratorIds: secondEditorId ? [secondEditorId] : [], actorId, note });
 
 /* ─── reassign with required reason ───────────────────────────── */
 
@@ -134,7 +157,7 @@ export function unassignTask({ taskId, actorId, reason }) {
   return t;
 }
 
-/* ─── add / remove a collaborator (four-eyes) ─────────────────── */
+/* ─── add / remove the single second editor ───────────────────── */
 
 export function addCollaborator({ taskId, userId, actorId }) {
   requirePermission(actorId, 'reassign_task', { taskId });
@@ -142,15 +165,19 @@ export function addCollaborator({ taskId, userId, actorId }) {
   if (!_user(userId)) throw new Error(`user not found: ${userId}`);
   if (t.primaryReviewerId === userId) throw new Error('user is already the primary reviewer');
   if (t.collaboratorIds.includes(userId)) return t;
-  t.collaboratorIds = [...t.collaboratorIds, userId];
-  t.assignmentMode = 'parallel';
+  if (t.collaboratorIds.length > 0) {
+    throw new Error('a job has only one second editor (sequential); remove the current one first');
+  }
+  t.collaboratorIds = [userId];
+  t.assignmentMode = 'sequential';
   appendAuditEvent({
     actorId, actorRole: getUserRoles(actorId)[0]?.id, projectId: t.projectId, taskId,
-    eventType: 'task.collaborator-added',
+    eventType: 'task.second-editor-assigned',
     afterValue: { userId },
   });
   return t;
 }
+export const assignSecondEditorTo = addCollaborator;
 
 export function removeCollaborator({ taskId, userId, actorId }) {
   requirePermission(actorId, 'reassign_task', { taskId });
@@ -159,10 +186,45 @@ export function removeCollaborator({ taskId, userId, actorId }) {
   if (t.collaboratorIds.length === 0) t.assignmentMode = 'single';
   appendAuditEvent({
     actorId, actorRole: getUserRoles(actorId)[0]?.id, projectId: t.projectId, taskId,
-    eventType: 'task.collaborator-removed',
+    eventType: 'task.second-editor-removed',
     afterValue: { userId },
   });
   return t;
+}
+export const removeSecondEditor = removeCollaborator;
+
+/* ─── sequential second-edit gate ─────────────────────────────── */
+
+/**
+ * The first editor's pass is complete when every segment on the task
+ * (or, if segments aren't task-scoped, on the project) is either
+ * resolved (confirmed/edited) or locked early (101% ICE match).
+ */
+export function firstEditComplete(taskId) {
+  const t = HITL_TASKS.find(x => x.id === taskId);
+  if (!t) return false;
+  let segs = HITL_SEGMENTS.filter(s => s.taskId === taskId);
+  if (segs.length === 0) segs = HITL_SEGMENTS.filter(s => s.projectId === t.projectId);
+  if (segs.length === 0) return false;
+  return segs.every(s => s.locked || ['confirmed', 'edited'].includes(s.decision));
+}
+
+/**
+ * Can the assigned second editor start? Only if a second editor exists
+ * AND the first editor has finished. This enforces "sequential, never
+ * in parallel".
+ */
+export function secondEditorCanStart(taskId) {
+  const t = HITL_TASKS.find(x => x.id === taskId);
+  if (!t || !t.collaboratorIds || t.collaboratorIds.length === 0) return false;
+  return firstEditComplete(taskId);
+}
+
+/** Is `userId` the second editor on this task (not the first editor)? */
+export function isSecondEditor(userId, taskId) {
+  const t = HITL_TASKS.find(x => x.id === taskId);
+  if (!t) return false;
+  return t.primaryReviewerId !== userId && (t.collaboratorIds || []).includes(userId);
 }
 
 /* ─── queries ─────────────────────────────────────────────────── */

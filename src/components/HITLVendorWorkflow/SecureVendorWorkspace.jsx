@@ -47,17 +47,17 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
 
   const tally = useMemo(() => ({
     total: segments.length,
-    verified: segments.filter(s => ['verified','accepted','edited'].includes(s.decision)).length,
-    notVerified: segments.filter(s => ['not-verified','rejected'].includes(s.decision)).length,
+    done: segments.filter(s => ['confirmed','edited'].includes(s.decision)).length,
+    locked: segments.filter(s => s.decision === 'locked' || (s.locked && s.lockReason === 'ice-match')).length,
     pending: segments.filter(s => s.decision === 'pending').length,
-    needsRework: segments.filter(s => s.decision === 'needs-rework').length,
   }), [segments, activeSeg?.decision])
 
   /* ─── Triangulated review state ──────────────────────────────── */
-  // posture            — null | 'accept' | 'refine' | 'reject'.
+  // posture            — null | 'accept' (= confirm) | 'refine' (= edit).
   //                      The Ruling field is LOCKED until posture is set.
+  //                      There is no reject / not-verified posture.
   // chosenCandidateId  — which agent proposal is anchor of the ruling
-  // authoredText       — validator's authored output (only used in refine/reject)
+  // authoredText       — validator's authored output (only used in refine)
   // tags               — selected RATIONALE_CHIPS ids
   // reasonNote         — optional free-text annotation
   // calibrationChips   — Positive-Calibration selections (Accept path only)
@@ -237,28 +237,23 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
     hoverStart.current[cand.id] = null
   }
 
-  /* Posture → action map.
-   *   accept → verified, with chosenCandidateId
-   *   refine → edited, with newValue = authoredText (seeded from chosen)
-   *   reject → not-verified, requires tags + reasonNote
+  /* Posture → action map. Only two reviewer actions exist:
+   *   accept → confirmed, with chosenCandidateId  ("this is good, leave it")
+   *   refine → edited,    with newValue = authoredText (seeded from chosen)
+   * There is no reject / not-verified / escalate. Locking happens early
+   * (101% ICE matches) and is a system action, never a reviewer choice.
    */
-  const postureToAction = { accept: 'verified', refine: 'edited', reject: 'not-verified' }
+  const postureToAction = { accept: 'confirmed', refine: 'edited' }
 
   const commitRuling = () => {
     if (!activeSeg) return
     if (!posture) {
-      window.alert('Choose a posture first: Accept as-is, Refine, or Reject.')
+      window.alert('Choose a posture first: Confirm as-is, or Edit.')
       return
     }
     if (posture === 'refine' && !authoredText.trim()) {
-      window.alert('Refine requires an edited ruling.')
+      window.alert('Edit requires an edited ruling.')
       return
-    }
-    if (posture === 'reject') {
-      if (!authoredText.trim() && tags.length === 0 && !reasonNote.trim()) {
-        window.alert('Reject requires either an alternative ruling, a rationale tag, or a reason note.')
-        return
-      }
     }
     // Record preference pair when posture commits with a chosen anchor.
     if (chosenCandidateId) recordPreference(chosenCandidateId)
@@ -272,7 +267,7 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
           ? null
           : authoredText.trim() || null,
         reason: reasonNote || tags.join(', ') || null,
-        chosenCandidateId: posture === 'accept' ? chosenCandidateId : (posture === 'refine' ? chosenCandidateId : null),
+        chosenCandidateId,
         rejectedCandidateIds: candidates
           .filter(c => c.id !== chosenCandidateId)
           .map(c => c.id),
@@ -290,31 +285,11 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
     }
   }
 
-  // Lateral actions still available regardless of posture (rework, escalate, lock).
-  const lateral = (action) => {
-    if (!activeSeg) return
-    if (tags.length === 0 && !reasonNote.trim()) {
-      window.alert('A rationale tag or reason note is required for this action.')
-      return
-    }
-    try {
-      decideSegment({
-        segmentId: activeSeg.id, actorId: currentUserId, action,
-        reason: reasonNote || tags.join(', ') || null,
-        chosenCandidateId, rejectedCandidateIds: candidates.filter(c => c.id !== chosenCandidateId).map(c => c.id),
-        rationaleTags: tags, reasonNote: reasonNote || null,
-        telemetry: buildTelemetry(),
-      })
-      setTags([]); setReasonNote('')
-      refresh()
-    } catch (e) { window.alert(`Action denied: ${e.message}`) }
-  }
-
   // Posture click handlers — each one also pre-seeds the Ruling state.
   const pickAccept = (cand) => {
     setPostureWithTrace('accept')
     setChosenCandidateId(cand.id)
-    setAuthoredText('') // Accept never carries authored text
+    setAuthoredText('') // Confirm never carries authored text
     // Positive-Calibration 2.5s flash
     setShowCalibrationFlash(true)
     if (flashTimer.current) clearTimeout(flashTimer.current)
@@ -324,11 +299,6 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
     setPostureWithTrace('refine')
     setChosenCandidateId(cand?.id || candidates[0]?.id || null)
     setAuthoredText((cand || candidates[0])?.text || '')
-  }
-  const pickReject = () => {
-    setPostureWithTrace('reject')
-    setChosenCandidateId(null)
-    setAuthoredText('')
   }
 
   const toggleCalibration = (id) => setCalibrationChips(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
@@ -374,9 +344,6 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
           const c = candidates.find(x => x.id === chosenCandidateId) || candidates[0]
           if (c) { pickRefine(c); e.preventDefault() }
           return
-        }
-        case 'x': case 'X': {
-          pickReject(); e.preventDefault(); return
         }
         case 'j': case 'J': {
           if (activeIdx < segments.length - 1) setActiveIdx(activeIdx + 1)
@@ -524,8 +491,8 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
       {!isQuick && (
       <>
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <Stat label="Verified" value={`${tally.verified} / ${tally.total}`} />
-        <Stat label="Not verified" value={tally.notVerified} />
+        <Stat label="Done" value={`${tally.done} / ${tally.total}`} />
+        <Stat label="Locked (101%)" value={tally.locked} />
         <Stat label="Pending" value={tally.pending} />
       </div>
 
@@ -734,11 +701,6 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
                     >
                       <Plus className="w-3.5 h-3.5" /> Summon second opinion
                     </button>
-                    <button
-                      onClick={pickReject}
-                      disabled={activeSeg.locked}
-                      className="text-[12px] text-error hover:text-error cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                    >Reject all proposals →</button>
                   </div>
                 </Field>
 
@@ -762,8 +724,8 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
                   resetPosture={() => setPostureWithTrace(null)}
                 />
 
-                {/* RATIONALE CHIPS — shown for refine + reject */}
-                {posture && posture !== 'accept' && (
+                {/* RATIONALE CHIPS — shown when editing */}
+                {posture === 'refine' && (
                   <div className="mb-3">
                     <MonoLabel>Reason · why this decision</MonoLabel>
                     <p className="text-[10.5px] text-mist mt-1">At least one tag is required for this decision to feed training. Untagged commits are stored for display only.</p>
@@ -801,14 +763,14 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
                   </div>
                 )}
 
-                {/* JUDICIAL ACTIONS */}
+                {/* JUDICIAL ACTIONS — only two: confirm or edit. */}
                 <div className="flex items-center gap-2 flex-wrap pt-3 border-t border-rule">
                   <PrimaryButton onClick={commitRuling} disabled={activeSeg.locked || !posture}>
                     Commit decision
                   </PrimaryButton>
-                  <SecondaryButton onClick={() => lateral('needs-rework')} disabled={activeSeg.locked}>Return for rework</SecondaryButton>
-                  <SecondaryButton onClick={() => lateral('escalated')} disabled={activeSeg.locked}>Escalate</SecondaryButton>
-                  {!activeSeg.locked && <SecondaryButton onClick={() => lateral('locked')}>Lock</SecondaryButton>}
+                  {activeSeg.locked && (
+                    <span className="text-[11.5px] text-slate inline-flex items-center gap-1.5"><Lock className="w-3.5 h-3.5 text-mist" /> Locked early (101% ICE match) — no review needed</span>
+                  )}
                 </div>
 
                 {/* TRUST-SCORE EXPLAINER (collapsible — press T) */}
@@ -996,11 +958,11 @@ function DivergenceLegend() {
  * THE KEY CONSTRAINT: the Ruling textarea defaults to EMPTY and is
  * INACCESSIBLE until a Posture is committed.
  *
- *   posture = null            → empty state, three Posture CTAs.
- *   posture = 'accept'        → accepted-ruling preview + 2.5s
+ *   posture = null            → empty state, two Posture CTAs.
+ *   posture = 'accept'        → confirmed-ruling preview + 2.5s
  *                                Positive-Calibration chip flash.
  *   posture = 'refine'        → textarea unlocks, seeded from chosen.
- *   posture = 'reject'        → textarea unlocks empty; tags + note req.
+ *   (There is no reject posture — only confirm or edit.)
  *
  * The textarea is GUARANTEED disabled when posture is null. There is no
  * code path that allows the validator to type into the Ruling field
@@ -1030,14 +992,12 @@ function ValidatorsRulingPanel({
       {!posture && (
         <div className="border border-dashed border-rule-strong rounded-md p-5 text-center bg-white">
           <p className="text-[12.5px] text-mist">
-            The decision field is locked until you choose how to act. Press <kbd className="px-1 bg-cream border border-rule rounded text-[10px]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>A</kbd> / <kbd className="px-1 bg-cream border border-rule rounded text-[10px]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>R</kbd> / <kbd className="px-1 bg-cream border border-rule rounded text-[10px]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>X</kbd> or click below:
+            The decision field is locked until you choose how to act. Press <kbd className="px-1 bg-cream border border-rule rounded text-[10px]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>A</kbd> / <kbd className="px-1 bg-cream border border-rule rounded text-[10px]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>R</kbd> or click below:
           </p>
           <div className="mt-3 flex items-center justify-center gap-2 text-[11px]">
-            <span className="px-2 py-0.5 rounded-full bg-teal/10 text-teal border border-teal/30">Accept as-is</span>
+            <span className="px-2 py-0.5 rounded-full bg-teal/10 text-teal border border-teal/30">Confirm as-is</span>
             <span className="text-mist">·</span>
-            <span className="px-2 py-0.5 rounded-full bg-amber/10 text-amber-deep border border-amber/30">Refine</span>
-            <span className="text-mist">·</span>
-            <span className="px-2 py-0.5 rounded-full bg-error/10 text-error border border-error/30">Reject all</span>
+            <span className="px-2 py-0.5 rounded-full bg-amber/10 text-amber-deep border border-amber/30">Edit</span>
           </div>
         </div>
       )}
@@ -1047,7 +1007,7 @@ function ValidatorsRulingPanel({
         <div className="space-y-3">
           <div className="bg-teal/5 border border-teal/30 rounded-md p-3">
             <div className="flex items-center justify-between mb-1.5">
-              <p className="text-[11px] uppercase tracking-wider text-teal" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>Accepted ruling · verbatim</p>
+              <p className="text-[11px] uppercase tracking-wider text-teal" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>Confirmed ruling · verbatim</p>
               <button onClick={resetPosture} className="text-[10.5px] text-mist hover:text-slate cursor-pointer">Change posture</button>
             </div>
             <p className="text-[13px] text-ink leading-relaxed">{chosen?.text}</p>
@@ -1094,24 +1054,6 @@ function ValidatorsRulingPanel({
         </div>
       )}
 
-      {/* Reject → empty textarea unlocks; chips + reason required */}
-      {posture === 'reject' && (
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <p className="text-[11px] uppercase tracking-wider text-error" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>Rejecting all proposals · author from source</p>
-            <button onClick={resetPosture} className="text-[10.5px] text-mist hover:text-slate cursor-pointer">Change posture</button>
-          </div>
-          <textarea
-            rows={3}
-            value={authoredText}
-            onChange={e => setAuthoredText(e.target.value)}
-            disabled={locked}
-            placeholder="Author the ruling from the source. A rationale tag or reason note is required to commit."
-            className="w-full text-[13px] border border-rule rounded-md p-2.5"
-            style={{ fontFamily: "'IBM Plex Mono', monospace" }}
-          />
-        </div>
-      )}
     </div>
   )
 }

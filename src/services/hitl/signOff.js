@@ -19,22 +19,27 @@ import {
   nextId,
   getProjectById,
 } from '../../data/hitlVendorWorkflow';
-import { requirePermission, getUserRoles } from './rbac';
+import { requirePermission, getUserRoles, isRole } from './rbac';
 import { appendAuditEvent } from './auditLog';
 
-export function buildValidationReport({ projectId, actorId }) {
-  requirePermission(actorId, 'final_validate', { projectId });
+export function buildValidationReport({ projectId, actorId, skipAuth }) {
+  // Read-only summary — any reviewer/signer scope can view it. When
+  // called from within signOff() the signer is already authorised by
+  // the client-side role gate, so we skip the view permission (a
+  // delegated vendor signer wouldn't otherwise hold view_resource).
+  if (!skipAuth) requirePermission(actorId, 'view_resource', { projectId });
   const project = getProjectById(projectId);
   if (!project) throw new Error(`project not found: ${projectId}`);
   const segs = HITL_SEGMENTS.filter(s => s.projectId === projectId);
-  const verified = segs.filter(s => s.decision === 'verified' || s.decision === 'accepted' || s.decision === 'edited');
-  const notVerified = segs.filter(s => s.decision === 'not-verified' || s.decision === 'rejected');
-  const escalated = segs.filter(s => s.decision === 'escalated');
-  const needsRework = segs.filter(s => s.decision === 'needs-rework');
+  // A segment is "done" when it is confirmed, edited, or pre-locked
+  // (101% in-context match — already correct, no review needed).
+  const done = segs.filter(s => ['confirmed', 'edited'].includes(s.decision) || (s.locked && s.lockReason === 'ice-match'));
+  // Anything not yet handled is an open item still needing a person.
+  const openItems = segs.filter(s => !done.includes(s));
 
-  const validationScore = segs.length ? Math.round((verified.length / segs.length) * 100) : 0;
-  const qualityScore = verified.length
-    ? Math.round(verified.reduce((acc, s) => acc + (s.agentConfidence ?? 0.8), 0) / verified.length * 100)
+  const validationScore = segs.length ? Math.round((done.length / segs.length) * 100) : 0;
+  const qualityScore = done.length
+    ? Math.round(done.reduce((acc, s) => acc + (s.agentConfidence ?? 0.8), 0) / done.length * 100)
     : 0;
 
   const report = {
@@ -42,36 +47,61 @@ export function buildValidationReport({ projectId, actorId }) {
     projectId,
     generatedBy: actorId,
     generatedAt: new Date().toISOString(),
-    counts: { total: segs.length, verified: verified.length, notVerified: notVerified.length, escalated: escalated.length, needsRework: needsRework.length },
+    counts: { total: segs.length, done: done.length, open: openItems.length },
     validationScore,
     qualityScore,
-    openIssues: [...notVerified, ...escalated, ...needsRework].map(s => ({ segmentId: s.id, decision: s.decision, reason: s.target?.slice?.(0, 100) })),
+    openIssues: openItems.map(s => ({ segmentId: s.id, decision: s.decision, reason: s.target?.slice?.(0, 100) })),
   };
   VALIDATION_REPORTS.push(report);
   return report;
 }
 
-export function signOff({ projectId, actorId, statement, canPublish, feedOrgBrain, feedRetraining, approvalChain, version }) {
-  requirePermission(actorId, 'signoff_output', { projectId });
+/**
+ * The vendor-user who most recently acted on a segment in this project.
+ * Sign-off may be delegated to this "last-touch vendor".
+ */
+export function lastTouchVendor(projectId) {
+  const segIds = new Set(HITL_SEGMENTS.filter(s => s.projectId === projectId).map(s => s.id));
+  const decisions = REVIEW_DECISIONS
+    .filter(d => segIds.has(d.segmentId))
+    .sort((a, b) => (a.timestamp < b.timestamp ? 1 : -1));
+  const latestVendor = decisions.find(d => d.actorRole === 'vendor-user');
+  return latestVendor ? latestVendor.actorId : null;
+}
+
+/**
+ * Sign-off is a CLIENT-side action. By default the signer is the
+ * client reviewer, or — if the client delegates it — the vendor who
+ * last touched the job. No Straker "final validator" signs off files.
+ */
+export function signOff({ projectId, actorId, statement, canPublish, feedTM, feedTerminology, feedModel, approvalChain, version }) {
   const project = getProjectById(projectId);
   if (!project) throw new Error(`project not found: ${projectId}`);
 
+  // Sign-off is client-side. Authorisation is the ROLE gate below — NOT
+  // a Straker "final validator" permission. The signer is the client
+  // reviewer, or (only if the client delegated it) the vendor who last
+  // touched the job. Admins may always sign off.
   const role = getUserRoles(actorId)[0]?.id;
-  const requiredRole = project.requirements.requiredSignoffRole;
-  if (requiredRole && requiredRole !== role && role !== 'tenant-admin' && role !== 'arbitr-global-admin') {
+  const isClientReviewer = isRole(actorId, 'client-reviewer');
+  const isDelegatedVendor = lastTouchVendor(projectId) === actorId;
+  const isAdmin = role === 'tenant-admin' || role === 'arbitr-global-admin';
+  if (!isClientReviewer && !isDelegatedVendor && !isAdmin) {
     appendAuditEvent({
-      actorId, actorRole: role, projectId,
-      eventType: 'signoff.role-mismatch',
-      reason: `signoff requires role "${requiredRole}" but actor is "${role}"`,
+      actorId, actorRole: role, projectId, jobId: project.jobId,
+      eventType: 'signoff.not-permitted',
+      reason: 'Sign-off is client-side only (client reviewer or the last-touch vendor).',
     });
-    throw new Error(`Sign-off requires role "${requiredRole}"`);
+    throw new Error('Sign-off is restricted to the client reviewer or the last-touch vendor.');
   }
 
-  // Honour project policy: cannot feed retraining if project disallows.
-  const safeFeedOrgBrain = !!feedOrgBrain && project.requirements.orgBrainAllowed !== false;
-  const safeFeedRetraining = !!feedRetraining && project.requirements.retrainingAllowed === true;
+  // Reuse pipelines (each opt-in per project policy):
+  //   TM update · terminology dataset · model improvement (RLHF).
+  const safeFeedTM = !!feedTM && project.requirements.tmAllowed !== false;
+  const safeFeedTerminology = !!feedTerminology && project.requirements.terminologyAllowed !== false;
+  const safeFeedModel = !!feedModel && project.requirements.modelImprovementAllowed === true;
 
-  const report = buildValidationReport({ projectId, actorId });
+  const report = buildValidationReport({ projectId, actorId, skipAuth: true });
 
   const record = createSignOffRecord({
     projectId,
@@ -84,8 +114,9 @@ export function signOff({ projectId, actorId, statement, canPublish, feedOrgBrai
     openIssues: report.openIssues,
     statement: statement || `Signed off by ${actorId} (${role}).`,
     canPublish: !!canPublish,
-    feedOrgBrain: safeFeedOrgBrain,
-    feedRetraining: safeFeedRetraining,
+    feedTM: safeFeedTM,
+    feedTerminology: safeFeedTerminology,
+    feedModel: safeFeedModel,
     approvalChain: approvalChain || [{ actorId, role, at: new Date().toISOString() }],
     version: version || 'v1',
   });
@@ -117,7 +148,7 @@ export function signOff({ projectId, actorId, statement, canPublish, feedOrgBrai
   }
 
   appendAuditEvent({
-    actorId, actorRole: role, projectId,
+    actorId, actorRole: role, projectId, jobId: project.jobId,
     eventType: 'project.signed-off',
     afterValue: { signOffId: record.id, validationScore: report.validationScore, canPublish: record.canPublish },
   });

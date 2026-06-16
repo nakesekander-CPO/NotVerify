@@ -24,17 +24,18 @@ export default function FinalSignOff({ activeProjectId, currentUserId, navigate,
     navigate('workspace')
   }
   const decisionMatchers = {
-    verified:   s => ['verified', 'accepted'].includes(s.decision),
-    edited:     s => s.decision === 'edited',
-    notVerified:s => ['not-verified', 'rejected'].includes(s.decision),
-    needsRework:s => s.decision === 'needs-rework',
-    escalated:  s => s.decision === 'escalated',
+    confirmed: s => s.decision === 'confirmed',
+    edited:    s => s.decision === 'edited',
+    locked:    s => s.decision === 'locked' || (s.locked && s.lockReason === 'ice-match'),
+    open:      s => !s.decision || s.decision === 'pending',
   }
   const signOffs = SIGNOFF_RECORDS.filter(r => r.projectId === project.id)
   const [statement, setStatement] = useState('')
   const [canPublish, setCanPublish] = useState(true)
-  const [feedOrgBrain, setFeedOrgBrain] = useState(true)
-  const [feedRetraining, setFeedRetraining] = useState(true)
+  // Three independent reuse pipelines (each opt-in per project policy).
+  const [feedTM, setFeedTM] = useState(true)
+  const [feedTerminology, setFeedTerminology] = useState(true)
+  const [feedModel, setFeedModel] = useState(true)
   const [status, setStatus] = useState(null)
   const [, force] = useState(0)
   const refresh = () => force(n => n + 1)
@@ -50,13 +51,14 @@ export default function FinalSignOff({ activeProjectId, currentUserId, navigate,
         actorId: currentUserId,
         statement: statement || `Signed off by ${currentUserId}.`,
         canPublish,
-        feedOrgBrain,
-        feedRetraining,
+        feedTM,
+        feedTerminology,
+        feedModel,
       })
-      // Queue retraining candidates right after sign-off if allowed.
+      // Queue reuse candidates right after sign-off if allowed.
       let queued = []
       try { queued = queueRetrainingCandidates({ projectId: project.id, actorId: currentUserId }) } catch {}
-      setStatus({ kind: 'ok', text: `Signed off. Record ${rec.id} created. ${queued.length} retraining candidates queued.` })
+      setStatus({ kind: 'ok', text: `Signed off. Record ${rec.id} created. ${queued.length} reuse candidates queued.` })
       refresh()
     } catch (e) {
       setStatus({ kind: 'err', text: e.message })
@@ -69,7 +71,7 @@ export default function FinalSignOff({ activeProjectId, currentUserId, navigate,
     <div>
       <SectionHeading
         title="Final Sign-Off"
-        subtitle="The validator compares source, agent panel, validator rulings, and the final document. Sign-off produces an immutable record, locks the project's segments, and (if approved) queues training-eligible corrections for Org Brain and retraining."
+        subtitle="Sign-off is a client-side action (the client reviewer, or the last-touch vendor if delegated). It produces an immutable record, locks the job's segments, and — only where the client allowed it — queues approved corrections into the three reuse pipelines: Translation Memory, terminology dataset, and model improvement (RLHF)."
       />
 
       {/* Document-level Pedigree Card — the wax seal */}
@@ -89,9 +91,9 @@ export default function FinalSignOff({ activeProjectId, currentUserId, navigate,
           label="Validation"
           status={!report || segments.length === 0 ? 'not-started' : (report.openIssues.length === 0 ? 'passed' : (report.validationScore >= 90 ? 'in-progress' : 'failed'))}
           value={report && segments.length > 0 ? `${report.validationScore}%` : null}
-          detail={report && segments.length > 0 ? `${report.counts.verified} of ${report.counts.total} segments verified` : undefined}
-          actionHint="First unverified"
-          onClick={segments.length ? () => focusSegment(s => !decisionMatchers.verified(s)) : undefined}
+          detail={report && segments.length > 0 ? `${report.counts.done} of ${report.counts.total} segments done` : undefined}
+          actionHint="First open"
+          onClick={segments.length ? () => focusSegment(decisionMatchers.open) : undefined}
         />
         <EmptyStateStat
           label="Quality score"
@@ -122,11 +124,10 @@ export default function FinalSignOff({ activeProjectId, currentUserId, navigate,
             <p className="text-[13px] font-semibold text-ink">Segment summary</p>
           </div>
           <ul className="px-5 py-3 text-[12.5px] space-y-1">
-            <Row label="Verified" value={report?.counts.verified ?? 0} tone="teal" onJump={() => focusSegment(decisionMatchers.verified)} />
-            <Row label="Edited (kept)" value={segments.filter(s => s.decision === 'edited').length} tone="ocean" onJump={() => focusSegment(decisionMatchers.edited)} />
-            <Row label="Not verified" value={report?.counts.notVerified ?? 0} tone="error" onJump={() => focusSegment(decisionMatchers.notVerified)} />
-            <Row label="Needs rework" value={report?.counts.needsRework ?? 0} tone="amber" onJump={() => focusSegment(decisionMatchers.needsRework)} />
-            <Row label="Escalated" value={report?.counts.escalated ?? 0} tone="amber" onJump={() => focusSegment(decisionMatchers.escalated)} />
+            <Row label="Confirmed" value={segments.filter(decisionMatchers.confirmed).length} tone="teal" onJump={() => focusSegment(decisionMatchers.confirmed)} />
+            <Row label="Edited" value={segments.filter(decisionMatchers.edited).length} tone="ocean" onJump={() => focusSegment(decisionMatchers.edited)} />
+            <Row label="Locked (101% match)" value={segments.filter(decisionMatchers.locked).length} tone="slate" onJump={() => focusSegment(decisionMatchers.locked)} />
+            <Row label="Open" value={report?.counts.open ?? segments.filter(decisionMatchers.open).length} tone="amber" onJump={() => focusSegment(decisionMatchers.open)} />
           </ul>
           {report && (
             <div className="px-5 py-3 border-t border-rule">
@@ -176,12 +177,13 @@ export default function FinalSignOff({ activeProjectId, currentUserId, navigate,
             </div>
             <div className="grid grid-cols-1 gap-2 text-[12.5px]">
               <label className="flex items-center gap-2"><input type="checkbox" checked={canPublish} onChange={e => setCanPublish(e.target.checked)} /> Approve for publish</label>
-              <label className="flex items-center gap-2"><input type="checkbox" checked={feedOrgBrain} onChange={e => setFeedOrgBrain(e.target.checked)} disabled={!project.requirements.orgBrainAllowed} /> Feed approved corrections to Org Brain {project.requirements.orgBrainAllowed ? '' : '(policy: disallowed)'}</label>
-              <label className="flex items-center gap-2"><input type="checkbox" checked={feedRetraining} onChange={e => setFeedRetraining(e.target.checked)} disabled={!project.requirements.retrainingAllowed} /> Queue approved corrections for retraining {project.requirements.retrainingAllowed ? '' : '(policy: disallowed)'}</label>
+              <label className="flex items-center gap-2"><input type="checkbox" checked={feedTM} onChange={e => setFeedTM(e.target.checked)} disabled={!project.requirements.tmAllowed} /> Update Translation Memory (TM) {project.requirements.tmAllowed ? '' : '(policy: disallowed)'}</label>
+              <label className="flex items-center gap-2"><input type="checkbox" checked={feedTerminology} onChange={e => setFeedTerminology(e.target.checked)} disabled={!project.requirements.terminologyAllowed} /> Add approved terms to terminology dataset {project.requirements.terminologyAllowed ? '' : '(policy: disallowed)'}</label>
+              <label className="flex items-center gap-2"><input type="checkbox" checked={feedModel} onChange={e => setFeedModel(e.target.checked)} disabled={!project.requirements.modelImprovementAllowed} /> Use edits for model improvement · RLHF {project.requirements.modelImprovementAllowed ? '' : '(policy: disallowed)'}</label>
             </div>
             <div className="border-t border-rule pt-3">
-              <MonoLabel>Required role</MonoLabel>
-              <p className="text-[12.5px] text-ink mt-1">{project.requirements.requiredSignoffRole}</p>
+              <MonoLabel>Who signs off</MonoLabel>
+              <p className="text-[12.5px] text-ink mt-1">Client-side: the client reviewer, or the last-touch vendor if the client delegated it.</p>
             </div>
             <div className="flex items-center gap-2">
               <PrimaryButton onClick={handleSign}>Sign off & lock</PrimaryButton>
@@ -203,11 +205,12 @@ export default function FinalSignOff({ activeProjectId, currentUserId, navigate,
                 <StatusBadge status="signed-off" />
               </div>
               <p className="text-[12px] text-slate mt-1">{r.statement}</p>
-              <div className="mt-2 grid grid-cols-4 gap-3 text-[11.5px]">
+              <div className="mt-2 grid grid-cols-5 gap-3 text-[11.5px]">
                 <span>Validation <strong className="text-ink">{r.validationScore}%</strong></span>
                 <span>Quality <strong className="text-ink">{r.qualityScore}%</strong></span>
-                <span>Org Brain <strong className={r.feedOrgBrain ? 'text-teal' : 'text-mist'}>{r.feedOrgBrain ? 'on' : 'off'}</strong></span>
-                <span>Retraining <strong className={r.feedRetraining ? 'text-teal' : 'text-mist'}>{r.feedRetraining ? 'on' : 'off'}</strong></span>
+                <span>TM <strong className={r.feedTM ? 'text-teal' : 'text-mist'}>{r.feedTM ? 'on' : 'off'}</strong></span>
+                <span>Terminology <strong className={r.feedTerminology ? 'text-teal' : 'text-mist'}>{r.feedTerminology ? 'on' : 'off'}</strong></span>
+                <span>Model <strong className={r.feedModel ? 'text-teal' : 'text-mist'}>{r.feedModel ? 'on' : 'off'}</strong></span>
               </div>
               <p className="text-[10.5px] text-mist mt-2" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{r.actorId} · {r.actorRole} · {new Date(r.timestamp).toLocaleString()}</p>
             </li>
@@ -219,7 +222,7 @@ export default function FinalSignOff({ activeProjectId, currentUserId, navigate,
 }
 
 function Row({ label, value, tone, onJump }) {
-  const palette = { teal: 'text-teal', ocean: 'text-ocean', error: 'text-error', amber: 'text-amber-deep', mist: 'text-mist' }
+  const palette = { teal: 'text-teal', ocean: 'text-ocean', error: 'text-error', amber: 'text-amber-deep', slate: 'text-slate', mist: 'text-mist' }
   const clickable = typeof onJump === 'function' && value > 0
   return (
     <li>
