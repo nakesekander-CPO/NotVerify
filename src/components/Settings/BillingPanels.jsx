@@ -14,7 +14,7 @@ import {
   creditPackages, priceFor, rateFor, savingsPct, PRICING,
   reconciliationSummary, validateAdjustment, buildAdjustmentEntry,
   ADJUSTMENT_REASON_CODES, CONSUMPTION_POLICY_TEXT, planCtaModel,
-  validateTopUpRequest, TRUST_PRICING, trustPriceFor,
+  validateTopUpRequest, trustPriceFor,
 } from '../../services/billing/billingModel'
 import { Card, Toggle, Field, StatusPill, fmtDate, fmtMoney } from './BillingShared'
 
@@ -135,45 +135,32 @@ function Metric({ label, value, sub }) {
 
 /* ── Top up ───────────────────────────────────────────────────── */
 
-export function TopUpPanel({ account, appendLedger, appendTrustLedger }) {
+export function TopUpPanel({ account, appendLedger, appendTrustLedger, appendReceipt }) {
   const isCard = account.paymentRail === 'card_or_ach'
   return (
     <div className="space-y-6">
       {isCard
-        ? <CardTopUp account={account} appendLedger={appendLedger} />
+        ? <CardTopUp account={account} appendLedger={appendLedger} appendReceipt={appendReceipt} />
         : <InvoiceTopUp account={account} appendLedger={appendLedger} />}
       {(account.trustCredits?.grantThisCycle > 0 || account.trustCredits?.available > 0) && (
-        <TrustTopUpCard account={account} appendTrustLedger={appendTrustLedger} />
+        isCard
+          ? <TrustCardTopUp account={account} appendTrustLedger={appendTrustLedger} appendReceipt={appendReceipt} />
+          : <TrustInvoiceTopUp account={account} />
       )}
     </div>
   )
 }
 
-/* Trust Credits — separate currency, separate pricing. Card rail
- * buys instantly; invoice rail submits a purchase request. */
-function TrustTopUpCard({ account, appendTrustLedger }) {
-  const isCard = account.paymentRail === 'card_or_ach'
-  const [sel, setSel] = useState(1)
-  const [done, setDone] = useState(null)
-  const options = [
-    { credits: 1, price: trustPriceFor(1), label: '1 credit' },
-    { credits: TRUST_PRICING.bundle.credits, price: TRUST_PRICING.bundle.price, label: `${TRUST_PRICING.bundle.credits} credits`, save: true },
-  ]
-  const opt = options[sel] || options[0]
-  const buy = () => {
-    if (isCard) {
-      appendTrustLedger?.({
-        date: new Date().toISOString().slice(0, 10), event: 'top_up', delta: opt.credits,
-        source: 'Trust Credit top-up — card', ref: `RCP-T${Math.floor(Math.random() * 900) + 100}`,
-      })
-      setDone(`${opt.credits} Trust Credit${opt.credits === 1 ? '' : 's'} added — ${fmtMoney(opt.price)}. Receipt emailed.`)
-    } else {
-      setDone(`Request submitted — an invoice for ${fmtMoney(opt.price)} will be issued under ${account.netTerms}; Trust Credits granted on finalization.`)
-    }
-    setTimeout(() => setDone(null), 3500)
-  }
+const TRUST_OPTIONS = [
+  { credits: 1, label: '1 credit' },
+  { credits: 3, label: '3 credits', bundle: true },
+  { credits: 5, label: '5 credits' },
+  { credits: 10, label: '10 credits' },
+]
+
+function TrustHeader({ account, blurb }) {
   return (
-    <Card>
+    <>
       <div className="flex items-center gap-2">
         <ShieldCheck className="w-4 h-4 text-[#009eda]" />
         <h4 className="text-[13px] font-semibold text-gray-900">Trust Credits</h4>
@@ -181,23 +168,125 @@ function TrustTopUpCard({ account, appendTrustLedger }) {
           {account.trustCredits.used} of {account.trustCredits.grantThisCycle} used · {account.trustCredits.available} available
         </span>
       </div>
-      <p className="text-[12px] text-gray-500 mt-0.5 mb-3">
-        Trust Credits cover trusted human review and sign-off. They are a separate balance from Intelligence Credits, with their own pricing.
-      </p>
+      <p className="text-[12px] text-gray-500 mt-0.5 mb-3">{blurb}</p>
+    </>
+  )
+}
+
+/* Trust · card / ACH — instant purchase, writes the trust ledger and
+ * a receipt, exactly like an Intelligence Credit card top-up. */
+function TrustCardTopUp({ account, appendTrustLedger, appendReceipt }) {
+  const [sel, setSel] = useState(0)
+  const [done, setDone] = useState(null)
+  const opt = TRUST_OPTIONS[sel]
+  const price = trustPriceFor(opt.credits)
+  const buy = () => {
+    const today = new Date().toISOString().slice(0, 10)
+    const ref = `RCP-T${Math.floor(Math.random() * 9000) + 1000}`
+    appendTrustLedger?.({ date: today, event: 'top_up', delta: opt.credits, source: 'Trust Credit top-up — card', ref })
+    appendReceipt?.({ id: ref, date: today, type: 'Trust Credit top-up', method: 'Card •••• 4242', amount: price, status: 'paid', creditType: 'trust' })
+    setDone(`${opt.credits} Trust Credit${opt.credits === 1 ? '' : 's'} added — ${fmtMoney(price)}. A receipt has been emailed and added to Payments & receipts.`)
+    setTimeout(() => setDone(null), 3500)
+  }
+  return (
+    <Card>
+      <TrustHeader account={account} blurb="Trust Credits cover trusted human review and sign-off — a separate balance from Intelligence Credits, with their own pricing ($38/credit, 3 for $110). Purchases are instant and a receipt is emailed." />
       <div className="flex items-center gap-2 flex-wrap">
-        {options.map((o, i) => (
+        {TRUST_OPTIONS.map((o, i) => (
           <button key={o.credits} onClick={() => setSel(i)}
             className={`text-left rounded-lg border px-3 py-2 cursor-pointer transition-colors ${sel === i ? 'border-[#009eda] bg-[#009eda]/5' : 'border-black/[0.12] hover:border-black/[0.25]'}`}>
-            <span className="text-[12.5px] font-semibold text-gray-900">{o.label} — {fmtMoney(o.price)}</span>
-            {o.save && <span className="ml-1.5 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Bundle</span>}
+            <span className="text-[12.5px] font-semibold text-gray-900">{o.label} — {fmtMoney(trustPriceFor(o.credits))}</span>
+            {o.bundle && <span className="ml-1.5 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Bundle</span>}
           </button>
         ))}
-        <button onClick={buy}
-          className="ml-auto px-4 py-2 rounded-lg bg-[#009eda] text-white text-[12.5px] font-semibold hover:bg-[#0089c4] cursor-pointer">
-          {isCard ? `Pay ${fmtMoney(opt.price)}` : 'Request by invoice'}
+        <button onClick={buy} className="ml-auto px-4 py-2 rounded-lg bg-[#009eda] text-white text-[12.5px] font-semibold hover:bg-[#0089c4] cursor-pointer">
+          Pay {fmtMoney(price)}
         </button>
       </div>
       {done && <p className="mt-3 text-[12px] text-emerald-700 inline-flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4" />{done}</p>}
+    </Card>
+  )
+}
+
+/* Trust · invoice / PO — same request/approval flow as Intelligence
+ * Credits: PO enforcement, commitment copy, grant policy, tracked
+ * requests. */
+function TrustInvoiceTopUp({ account }) {
+  const [credits, setCredits] = useState(5)
+  const [po, setPo] = useState(account.poNumber || '')
+  const [added, setAdded] = useState([])
+  const requests = [...added, ...(account.trustTopUpRequests || [])]
+  const [done, setDone] = useState(null)
+  const price = trustPriceFor(credits)
+  const validation = validateTopUpRequest({ credits, po }, account)
+
+  const submit = () => {
+    if (!validation.ok) return
+    const req = {
+      id: `TTR-${Math.floor(Math.random() * 900) + 1100}`, date: new Date().toISOString().slice(0, 10),
+      credits, cost: price, po: po.trim() || null, status: 'requested',
+      notes: account.grantPolicy === 'on-finalization' ? 'Trust Credits granted when the invoice is finalized' : 'Trust Credits granted on payment',
+    }
+    setAdded(r => [req, ...r])
+    setDone(`Request ${req.id} submitted. An invoice will be issued under ${account.netTerms}; ${req.notes.toLowerCase()}.`)
+    setTimeout(() => setDone(null), 3000)
+  }
+
+  return (
+    <Card>
+      <TrustHeader account={account} blurb={`Trust Credits cover trusted human review and sign-off — a separate balance, billed by ${account.poRequired ? 'PO-backed invoice' : 'invoice'} under ${account.netTerms} at $38/credit (3 for $110).`} />
+      <div className="grid grid-cols-[1fr_1fr] gap-4">
+        <Field label="Trust Credit amount">
+          <select value={credits} onChange={e => setCredits(Number(e.target.value))} className="w-full px-2.5 py-1.5 rounded-md border border-black/[0.12] text-[12px] bg-white">
+            {[3, 5, 10, 25, 50].map(v => (
+              <option key={v} value={v}>{v} credits — {fmtMoney(trustPriceFor(v))}{v === 3 ? ' (bundle)' : ''}</option>
+            ))}
+          </select>
+        </Field>
+        <Field label={`PO number (${account.poRequired ? 'required' : 'optional'})`}>
+          <input value={po} onChange={e => setPo(e.target.value)} placeholder="e.g. PO-2026-022" className="w-full px-2.5 py-1.5 rounded-md border border-black/[0.12] text-[12px] bg-white" />
+          <p className="text-[10px] text-gray-400 mt-1">
+            {account.poRequired
+              ? 'Your billing admin requires a PO on every top-up request (Admin → Purchase orders).'
+              : 'Optional for this account — your billing admin can require it under Admin → Purchase orders.'}
+          </p>
+        </Field>
+      </div>
+      <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50/60 px-3 py-2 text-[11.5px] text-amber-800">
+        Submitting creates a purchase commitment: arbitr will issue an invoice for{' '}
+        <span className="font-semibold">{fmtMoney(price)}</span>
+        {po.trim() ? <> against <span className="font-semibold">{po.trim()}</span></> : null} under {account.netTerms}.
+        Trust Credits are {account.grantPolicy === 'on-finalization' ? 'granted when the invoice is finalized' : 'granted when the invoice is paid'}; the request is binding once invoiced.
+      </div>
+      <div className="mt-3 flex items-center justify-between rounded-lg border border-black/[0.08] bg-gray-50/60 p-3">
+        <div>
+          <p className="text-[16px] font-bold text-gray-900">{credits} Trust Credits · {fmtMoney(price)}</p>
+          <p className="text-[10.5px] text-gray-400">$38 per credit · {account.netTerms}</p>
+        </div>
+        <button onClick={submit} disabled={!validation.ok}
+          title={validation.ok ? undefined : validation.errors.join(' ')}
+          className="px-4 py-2.5 rounded-lg bg-[#009eda] text-white text-[13px] font-semibold hover:bg-[#0089c4] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+          Submit purchase request
+        </button>
+      </div>
+      {done && <p className="mt-3 text-[12px] text-[#0089c4] inline-flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4" />{done}</p>}
+
+      <div className="mt-5 pt-4 border-t border-black/[0.08]">
+        <h5 className="text-[12px] font-semibold text-gray-900 mb-2">Trust top-up requests</h5>
+        <ul className="divide-y divide-black/[0.06]">
+          {requests.length === 0 && <li className="py-3 text-[12px] text-gray-400">No Trust Credit requests yet.</li>}
+          {requests.map(r => (
+            <li key={r.id} className="py-3 grid grid-cols-[1fr_auto_auto] gap-4 items-center text-[12px]">
+              <div className="min-w-0">
+                <p className="text-gray-900">{r.id} · {r.credits} Trust Credits</p>
+                <p className="text-[10.5px] text-gray-400 truncate">{fmtDate(r.date)} · {r.po || 'No PO'} · {r.notes}</p>
+              </div>
+              <span className="text-gray-700 tabular-nums">{fmtMoney(r.cost)}</span>
+              <StatusPill status={r.status} />
+            </li>
+          ))}
+        </ul>
+      </div>
     </Card>
   )
 }
@@ -222,7 +311,7 @@ function PackageGrid({ selected, onSelect }) {
   )
 }
 
-function CardTopUp({ account, appendLedger }) {
+function CardTopUp({ account, appendLedger, appendReceipt }) {
   const pkgs = creditPackages()
   const [sel, setSel] = useState(1)
   const [method, setMethod] = useState('card')
@@ -231,11 +320,14 @@ function CardTopUp({ account, appendLedger }) {
   const pkg = pkgs[sel]
 
   const buy = () => {
+    const today = new Date().toISOString().slice(0, 10)
+    const ref = `RCP-${Math.floor(Math.random() * 9000) + 1000}`
     appendLedger({
-      id: `tp-${Date.now()}`, date: new Date().toISOString().slice(0, 10),
+      id: `tp-${Date.now()}`, date: today,
       event: 'top_up', source: `Top-up — ${method === 'card' ? 'card' : 'ACH'}`,
-      bucket: 'top_up', delta: pkg.credits, ref: `RCP-${Math.floor(Math.random() * 9000) + 1000}`, actor: 'You',
+      bucket: 'top_up', delta: pkg.credits, ref, actor: 'You',
     })
+    appendReceipt?.({ id: ref, date: today, type: 'Credit top-up', method: method === 'card' ? 'Card •••• 4242' : 'ACH transfer', amount: pkg.price, status: 'paid', creditType: 'intelligence' })
     setDone(`${pkg.credits.toLocaleString()} credits added. A receipt has been emailed to you.`)
     setTimeout(() => setDone(null), 2500)
   }
@@ -642,7 +734,10 @@ export function PaymentsReceiptsPanel({ account }) {
               <tr key={r.id} className="border-b border-black/[0.04] last:border-b-0 hover:bg-gray-50/60">
                 <td className="px-4 py-2.5 text-gray-900 max-w-[140px] truncate" title={r.id}>{r.id}</td>
                 <td className="px-4 py-2.5 text-gray-500 tabular-nums whitespace-nowrap">{fmtDate(r.date)}</td>
-                <td className="px-4 py-2.5 text-gray-700 whitespace-nowrap hidden md:table-cell">{r.type}</td>
+                <td className="px-4 py-2.5 text-gray-700 whitespace-nowrap hidden md:table-cell">
+                  {r.type}
+                  {r.creditType === 'trust' && <span className="ml-1.5 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#009eda]/10 text-[#0089c4] border border-[#009eda]/20 font-semibold">Trust</span>}
+                </td>
                 <td className="px-4 py-2.5 text-gray-500 max-w-[150px] truncate hidden md:table-cell" title={r.method}>{r.method}</td>
                 <td className="px-4 py-2.5 text-gray-900 tabular-nums whitespace-nowrap">{fmtMoney(r.amount)}</td>
                 <td className="px-4 py-2.5"><StatusPill status={r.status} /></td>

@@ -514,3 +514,35 @@ describe('Trust Credits — the second wallet, restored', () => {
     }
   })
 })
+
+describe('Trust Credits — purchase & invoicing parity with Intelligence Credits', () => {
+  it('trust pricing is one schedule used on both rails ($38/credit, 3-for-$110 bundle)', () => {
+    expect(trustPriceFor(1)).toBe(38)
+    expect(trustPriceFor(3)).toBe(110)   // bundle
+    expect(trustPriceFor(5)).toBe(190)
+    expect(trustPriceFor(10)).toBe(380)
+    expect(trustPriceFor(25)).toBe(950)
+  })
+
+  it('invoice/PO trust requests obey the account PO requirement, like IC requests', () => {
+    const poReq = { poRequired: true }
+    expect(validateTopUpRequest({ credits: 5, po: '' }, poReq).ok).toBe(false)
+    expect(validateTopUpRequest({ credits: 5, po: 'PO-1' }, poReq).ok).toBe(true)
+    const poOpt = { poRequired: false }
+    expect(validateTopUpRequest({ credits: 5, po: '' }, poOpt).ok).toBe(true)
+  })
+
+  it('the invoice/PO enterprise account seeds tracked trust top-up requests', () => {
+    const reqs = getDemoAccount('enterprise-invoice').trustTopUpRequests
+    expect(reqs.length).toBeGreaterThanOrEqual(1)
+    for (const r of reqs) expect(r.cost).toBe(trustPriceFor(r.credits))
+    expect(reqs.some(r => r.status === 'invoiced')).toBe(true)
+  })
+
+  it('trust requests never appear on card-rail accounts (rail-shaped)', () => {
+    for (const k of ['standard-card', 'proteam-card', 'enterprise-card']) {
+      const reqs = getDemoAccount(k).trustTopUpRequests || []
+      expect(reqs.length).toBe(0)
+    }
+  })
+})

@@ -522,6 +522,12 @@ export function getDemoAccount(key) {
         { date: '2026-05-01', event: 'grant', delta: +2, source: 'Monthly contract grant', ref: 'INV-2026-005' },
         { date: '2026-05-22', event: 'usage', delta: -1, source: 'Trusted review — BaFin Filing Translation — DE', actor: 'Klaus Berger' },
       ],
+      // Trust Credits are purchased on the same invoice/PO rail as
+      // Intelligence Credits — tracked requests, own pricing.
+      trustTopUpRequests: [
+        { id: 'TTR-1018', date: '2026-05-18', credits: 5, cost: trustPriceFor(5), po: 'PO-2026-021', status: 'invoiced',  notes: 'Trust Credits granted on finalization · awaiting payment (Net 30)' },
+        { id: 'TTR-1009', date: '2026-04-12', credits: 3, cost: trustPriceFor(3), po: 'PO-2026-013', status: 'completed', notes: 'Bundle · granted Apr 14' },
+      ],
       receipts: [],
       invoices: [
         { id: 'INV-2026-008', date: '2026-06-01', type: 'Subscription', amount: 4000, po: 'PO-2026-018', status: 'open',     dueDate: '2026-07-01' },

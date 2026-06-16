@@ -61,9 +61,13 @@ export default function Billing({ tier = 'pro' }) {
   /* Trust Credits are a separate currency with their own ledger —
    * they never mix into the Intelligence Credits bucket math. */
   const [trustByAccount, setTrustByAccount] = useState({})
+  /* Receipts are live so card/ACH purchases (IC and Trust alike)
+   * leave a real paper trail in Payments & receipts. */
+  const [receiptsByAccount, setReceiptsByAccount] = useState({})
   const ledger = ledgerByAccount[accountKey] || baseAccount.ledger
   const invoices = invoicesByAccount[accountKey] || baseAccount.invoices
   const trustLedger = trustByAccount[accountKey] || baseAccount.trustLedger || []
+  const receipts = receiptsByAccount[accountKey] || baseAccount.receipts || []
   const settings = settingsByAccount[accountKey] || {}
   const updateBillingSettings = (patch) =>
     setSettingsByAccount(s => ({ ...s, [accountKey]: { ...(s[accountKey] || {}), ...patch } }))
@@ -78,14 +82,14 @@ export default function Billing({ tier = 'pro' }) {
         : r
     )
     const a = {
-      ...baseAccount, ...settings, ledger, creditWallet, invoices, topUpRequests,
+      ...baseAccount, ...settings, ledger, creditWallet, invoices, receipts, topUpRequests,
       trustCredits: { ...trustWalletFromLedger(trustLedger), ledger: trustLedger },
       hasPastDueInvoices: invoices.some(i => i.status === 'past_due'),
       hasOpenInvoices: invoices.some(i => i.status === 'open'),
     }
     a.tabs = tabVisibility(a)
     return a
-  }, [baseAccount, ledger, invoices, settings, trustLedger])
+  }, [baseAccount, ledger, invoices, receipts, settings, trustLedger])
 
   const appendLedger = (row) => {
     const prev = ledger[ledger.length - 1]
@@ -99,6 +103,9 @@ export default function Billing({ tier = 'pro' }) {
 
   const appendTrustLedger = (row) =>
     setTrustByAccount(s => ({ ...s, [accountKey]: [...trustLedger, row] }))
+
+  const appendReceipt = (row) =>
+    setReceiptsByAccount(s => ({ ...s, [accountKey]: [row, ...receipts] }))
 
   const [tab, setTab] = useState('overview')
   const [ledgerFilter, setLedgerFilter] = useState('all')
@@ -202,7 +209,7 @@ export default function Billing({ tier = 'pro' }) {
           onViewLedger={() => setTab('usage')} onViewInvoices={() => setTab('invoices')} onViewPayments={() => setTab('payments')} />
       )}
       {activeTab === 'plans' && <PlansPanel account={account} />}
-      {activeTab === 'topup' && <TopUpPanel account={account} appendLedger={appendLedger} appendTrustLedger={appendTrustLedger} />}
+      {activeTab === 'topup' && <TopUpPanel account={account} appendLedger={appendLedger} appendTrustLedger={appendTrustLedger} appendReceipt={appendReceipt} />}
       {activeTab === 'usage' && <UsageLedgerPanel account={account} filter={ledgerFilter} setFilter={setLedgerFilter} />}
       {activeTab === 'invoices' && account.tabs.invoices && (
         <InvoicesPanel account={account} filter={invoiceFilter} setFilter={setInvoiceFilter}
