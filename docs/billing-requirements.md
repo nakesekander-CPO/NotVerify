@@ -19,7 +19,7 @@ There are **two separate wallets**. The two kinds of credits are **NOT interchan
 
 | Wallet | Credit type | What it's for | Price per credit |
 |---|---|---|---|
-| **Intelligence wallet** | **Intelligence Credits (IC)** | Everyday AI work (translation, analysis) | ~$Will share calculation methodology|
+| **Intelligence wallet** | **Intelligence Credits (IC)** | Everyday AI work (translation, analysis) | Will share calculation methodology|
 | **Trust wallet** | **Trust Credits (TC)** | Human expert review & sign-off | $38 each (or 3 for $110) |
 
 ---
