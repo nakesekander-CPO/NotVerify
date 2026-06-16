@@ -59,9 +59,9 @@ Every account pays **one of two ways**. This is the single most important settin
 
 ---
 
-## 6. Glossary (say it like you're 12)
+## 6. Glossary
 
-- **Credit / coin** — the thing you spend to use arbitr.
+- **Credit** — the thing you spend to use arbitr.
 - **Wallet** — a jar that holds one kind of coin.
 - **Plan grant** — the allowance of coins you get each month.
 - **Top-up** — buying extra coins.
