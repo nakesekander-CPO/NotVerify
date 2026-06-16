@@ -6,21 +6,21 @@
 
 ## 1. The big idea (in one breath)
 
-You **subscribe to a plan**. The plan drops **credits** into your account every month — like an allowance.
+You **subscribe to a plan**. The plan adds **credits** to your account every month — like an allowance.
 You **spend credits** to use arbitr. If you run low, you **buy more**. You always get a **receipt or invoice**.
 
 That's it. Everything below is just the details.
 
 ---
 
-## 2. The two jars of coins (wallets)
+## 2. The two kinds of credits (two separate wallets)
 
-There are **two separate jars**. Coins never jump between jars.
+There are **two separate wallets**. The two kinds of credits are **NOT interchangeable** — Intelligence Credits can never be spent as Trust Credits, or the other way around. Each wallet has its own balance, its own price, and its own history.
 
-| Jar | What it's for | What a coin costs |
-|---|---|---|
-| **Intelligence Credits (IC)** | Everyday AI work (translation, analysis) | ~$0.01 each, cheaper in bulk |
-| **Trust Credits (TC)** | Human expert review & sign-off | $38 each (or 3 for $110) |
+| Wallet | Credit type | What it's for | Price per credit |
+|---|---|---|---|
+| **Intelligence wallet** | **Intelligence Credits (IC)** | Everyday AI work (translation, analysis) | ~$0.01 each, cheaper in bulk |
+| **Trust wallet** | **Trust Credits (TC)** | Human expert review & sign-off | $38 each (or 3 for $110) |
 
 ---
 
@@ -51,23 +51,23 @@ Every account pays **one of two ways**. This is the single most important settin
 ## 5. The golden rules (must always be true)
 
 1. **The numbers always add up.** The big balance on the Overview screen = the running total in the ledger = the reconciliation summary. Always. No mystery numbers.
-2. **Every coin is traceable.** Every credit added or spent has a row in the ledger that says where it came from and where it went.
-3. **Spend the coins that expire first.** If some credits expire soon, those get used first so they don't go to waste.
+2. **Every credit is traceable.** Every credit added or spent has a row in the ledger that says where it came from and where it went.
+3. **Spend the credits that expire first.** If some credits expire soon, those get used first so they don't go to waste.
 4. **Over-budget is shown honestly.** If you use more than your plan gives, we say so plainly ("2,104 of 1,000 used · 1,104 over plan") — we never quietly hide it at 100%.
 5. **Money actions are protected.** Changing balances or how an account is billed needs a reason, a record, and sometimes a second person's approval.
-6. **The two jars stay separate.** Intelligence and Trust credits have their own balances, own prices, own history. They never mix.
+6. **The two wallets stay separate.** Intelligence Credits and Trust Credits have their own balances, own prices, and own history. They are not interchangeable and never mix.
 
 ---
 
 ## 6. Glossary
 
-- **Credit** — the thing you spend to use arbitr.
-- **Wallet** — a jar that holds one kind of coin.
-- **Plan grant** — the allowance of coins you get each month.
-- **Top-up** — buying extra coins.
-- **Ledger** — the receipt book. Every coin in and out.
+- **Credit** — the thing you spend to use arbitr. Comes in two kinds (Intelligence and Trust) that are **not interchangeable**.
+- **Wallet** — a balance that holds one kind of credit. There are two: the Intelligence wallet and the Trust wallet.
+- **Plan grant** — the allowance of credits you get each month.
+- **Top-up** — buying extra credits.
+- **Ledger** — the receipt book. Every credit in and out.
 - **Reconciliation** — proof the receipt book adds up to the balance shown.
-- **Overage** — using more coins than your plan gave you.
+- **Overage** — using more credits than your plan gave you.
 - **Rail** — how you pay: card now, or invoice later.
 - **PO (Purchase Order)** — a company's "approved to spend" number, written on the bill.
 - **Net 30** — "pay this bill within 30 days."
@@ -99,12 +99,14 @@ flowchart TD
     K --> L[arbitr issues the invoice]
     L --> M{Invoice paid / finalized?}
     M -->|Yes| N[Each line fulfils to its OWN wallet]
-    N --> O[Intelligence credits -> Intelligence jar]
-    N --> P[Trust credits -> Trust jar]
+    N --> O[Intelligence Credits -> Intelligence wallet]
+    N --> P[Trust Credits -> Trust wallet]
     M -->|No| Q[Request shows status: requested / invoiced / past due]
 ```
 
-### Spending credits (which coin first)
+### Spending credits (which credit first)
+
+*This order runs inside one wallet. Intelligence Credits and Trust Credits are spent from their own wallets and never substitute for each other.*
 
 ```mermaid
 flowchart LR
@@ -150,9 +152,9 @@ Feature: Buying credits
     Then I see two separate line items with separate prices
     And I see one combined invoice total
     When the invoice is paid
-    Then the Intelligence credits go to the Intelligence wallet
-    And the Trust credits go to the Trust wallet
-    And the two amounts never mix
+    Then the Intelligence Credits go to the Intelligence wallet
+    And the Trust Credits go to the Trust wallet
+    And the two credit types are not interchangeable and never mix
 ```
 
 ### The numbers add up
