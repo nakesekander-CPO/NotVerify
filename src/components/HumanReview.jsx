@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ArrowLeft, Search, CheckCircle2, Circle, AlertTriangle, Clock,
-  User, Send, Edit3, XCircle, ChevronDown, ChevronUp, Sparkles,
+  User, Send, Edit3, ChevronDown, ChevronUp, Sparkles,
   Globe, FileText, Shield, Bot, RotateCcw, Brain, ArrowRightLeft, Zap,
   Puzzle, Upload, MessageSquare, TicketCheck, Database, Play, X, ArrowRight, ShieldCheck,
 } from 'lucide-react'
@@ -734,8 +734,8 @@ function ReviewPhase({ reviewRequest, onSubmitReview, onBack, reduced, reviewerP
   function setDecision(segId, decision, segLabel) {
     setDecisions(prev => ({ ...prev, [segId]: decision }))
     setExpandedSegId(null)
-    if (decision.action === 'accept' || decision.action === 'edit') {
-      if (decision.action === 'accept') addToast(segLabel)
+    if (decision.action === 'confirm' || decision.action === 'edit') {
+      if (decision.action === 'confirm') addToast(segLabel)
       // Trigger intelligent propagation
       const sourceSeg = allSegments.find(s => s.id === segId)
       if (sourceSeg) {
@@ -783,7 +783,7 @@ function ReviewPhase({ reviewRequest, onSubmitReview, onBack, reduced, reviewerP
       if (seg.source === sourceText && propSettings.propagateExact) {
         if (!propSettings.overwriteVerified || !decisions[seg.id]) {
           newPropagated[seg.id] = { type: 'exact', fromSegId, confidence: 100, committedTranslation }
-          newDecisions[seg.id] = { action: 'accept', reason: 'Systemically Verified (100% match)', translation: committedTranslation, via: 'propagation-exact' }
+          newDecisions[seg.id] = { action: 'confirm', reason: 'Systemically Verified (100% match)', translation: committedTranslation, via: 'propagation-exact' }
           exactCount++
         }
         return
@@ -877,7 +877,7 @@ function ReviewPhase({ reviewRequest, onSubmitReview, onBack, reduced, reviewerP
     const newDecisions = { ...decisions }
     Object.entries(realignedSegments).forEach(([segId, info]) => {
       if (info.realigned && !info.verified) {
-        newDecisions[segId] = { action: 'accept', reason: 'AI realignment verified', translation: null, via: 'realignment', ruleId: info.ruleId }
+        newDecisions[segId] = { action: 'confirm', reason: 'AI realignment verified', translation: null, via: 'realignment', ruleId: info.ruleId }
         setRealignedSegments(prev => ({ ...prev, [segId]: { ...prev[segId], verified: true } }))
       }
     })
@@ -898,7 +898,7 @@ function ReviewPhase({ reviewRequest, onSubmitReview, onBack, reduced, reviewerP
   useEffect(() => {
     function handleKeyDown(e) {
       if (e.shiftKey && e.key === 'V' && expandedSegId && realignedSegments[expandedSegId]?.realigned && !realignedSegments[expandedSegId]?.verified) {
-        setDecisions(prev => ({ ...prev, [expandedSegId]: { action: 'accept', reason: 'AI realignment verified (Shift+V)', translation: null, via: 'realignment' } }))
+        setDecisions(prev => ({ ...prev, [expandedSegId]: { action: 'confirm', reason: 'AI realignment verified (Shift+V)', translation: null, via: 'realignment' } }))
         setRealignedSegments(prev => ({ ...prev, [expandedSegId]: { ...prev[expandedSegId], verified: true } }))
         setExpandedSegId(null)
       }
@@ -1579,7 +1579,6 @@ function DiffView({ original, diffOriginal, diffReplacement }) {
 function SegmentActionBar({ segment, expandedAction, onExpandAction, onDecide, reduced, onOpenKnowledgeRule }) {
   const [editText, setEditText] = useState(segment.suggestedFix)
   const [editReason, setEditReason] = useState('')
-  const [rejectReason, setRejectReason] = useState('')
   const [acceptReason, setAcceptReason] = useState('')
 
   const c = severityColor[segment.severity]
@@ -1594,25 +1593,19 @@ function SegmentActionBar({ segment, expandedAction, onExpandAction, onDecide, r
         </div>
       </div>
 
-      {/* Action buttons */}
+      {/* Action buttons — two only: Confirm or Edit. */}
       <div className="flex items-center gap-2">
         <button
           onClick={() => onExpandAction(expandedAction === 'accept' ? null : 'accept')}
           className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 ${expandedAction === 'accept' ? 'bg-emerald-500/20 text-emerald-600 border border-emerald-500/40' : 'bg-black/[0.03] text-gray-900/60 border border-black/[0.12] hover:bg-black/[0.06]'}`}
         >
-          <CheckCircle2 className="w-3.5 h-3.5" /> Accept Fix
+          <CheckCircle2 className="w-3.5 h-3.5" /> Confirm
         </button>
         <button
           onClick={() => onExpandAction(expandedAction === 'edit' ? null : 'edit')}
           className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 ${expandedAction === 'edit' ? 'bg-[#1B5E8F]/20 text-[#1B5E8F] border border-[#1B5E8F]/40' : 'bg-black/[0.03] text-gray-900/60 border border-black/[0.12] hover:bg-black/[0.06]'}`}
         >
           <Edit3 className="w-3.5 h-3.5" /> Edit
-        </button>
-        <button
-          onClick={() => onExpandAction(expandedAction === 'reject' ? null : 'reject')}
-          className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 ${expandedAction === 'reject' ? 'bg-red-500/20 text-red-600 border border-red-500/40' : 'bg-black/[0.03] text-gray-900/60 border border-transparent hover:bg-black/[0.06] border-red-500/20'}`}
-        >
-          <XCircle className="w-3.5 h-3.5" /> Reject
         </button>
       </div>
 
@@ -1642,13 +1635,13 @@ function SegmentActionBar({ segment, expandedAction, onExpandAction, onDecide, r
               <button
                 disabled={!acceptReason}
                 onClick={() => onDecide({
-                  action: 'accept',
+                  action: 'confirm',
                   reason: acceptReason,
                   translation: segment.suggestedFix,
                 })}
                 className="w-full py-2 rounded-lg bg-emerald-500/80 hover:bg-emerald-500 disabled:bg-black/[0.03] disabled:text-gray-900/20 text-white text-xs font-semibold transition-colors disabled:cursor-not-allowed"
               >
-                Confirm Accept
+                Confirm
               </button>
             </div>
           </motion.div>
@@ -1701,37 +1694,6 @@ function SegmentActionBar({ segment, expandedAction, onExpandAction, onDecide, r
           </motion.div>
         )}
 
-        {expandedAction === 'reject' && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={reduced ? { duration: 0 } : { duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            <div className="pt-1 space-y-2">
-              <p className="text-[11px] text-gray-900/50">What should change? <span className="text-red-600">*</span></p>
-              <textarea
-                value={rejectReason}
-                onChange={e => setRejectReason(e.target.value)}
-                placeholder="Describe what needs to change..."
-                rows={2}
-                className="w-full px-3 py-2 rounded-lg bg-black/[0.03] border border-red-500/30 text-sm text-gray-900 placeholder:text-gray-900/30 outline-none focus:border-red-500/50 resize-none transition-colors"
-              />
-              <button
-                disabled={rejectReason.length < 2}
-                onClick={() => onDecide({
-                  action: 'reject',
-                  reason: rejectReason,
-                  translation: null,
-                })}
-                className="w-full py-2 rounded-lg bg-red-500/80 hover:bg-red-500 disabled:bg-black/[0.03] disabled:text-gray-900/20 text-white text-xs font-semibold transition-colors disabled:cursor-not-allowed"
-              >
-                Confirm Reject
-              </button>
-            </div>
-          </motion.div>
-        )}
       </AnimatePresence>
     </div>
   )
@@ -1864,9 +1826,8 @@ function ActionBar({ connectedIntegrations, onOpenIntegrations }) {
 
 function CompletePhase({ reviewRequest, results, onBack, reduced, connectedIntegrations = [], onOpenIntegrations }) {
   const decisions = results?.decisions || []
-  const accepted = decisions.filter(d => d.action === 'accept').length
+  const confirmed = decisions.filter(d => d.action === 'confirm').length
   const edited = decisions.filter(d => d.action === 'edit').length
-  const rejected = decisions.filter(d => d.action === 'reject').length
 
   const agentImpacts = useMemo(() => {
     const impacts = {}
@@ -1879,10 +1840,6 @@ function CompletePhase({ reviewRequest, results, onBack, reduced, connectedInteg
       if (decision.action === 'edit') {
         impacts[seg.flaggedBy].learnings.push(
           `Learning: ${seg.issue.split('.')[0]} preference from your edit on SEG-${String(seg.segmentNumber).padStart(3, '0')}`
-        )
-      } else if (decision.action === 'reject') {
-        impacts[seg.flaggedBy].learnings.push(
-          `Flagged for retraining from SEG-${String(seg.segmentNumber).padStart(3, '0')}`
         )
       }
     })
@@ -1913,7 +1870,7 @@ function CompletePhase({ reviewRequest, results, onBack, reduced, connectedInteg
         <div className="text-center space-y-2">
           <h2 className="text-2xl font-bold text-gray-900">Review Complete</h2>
           <p className="text-sm text-gray-900/50 font-mono">
-            {decisions.length} segments reviewed &bull; {accepted} accepted &bull; {edited} edited &bull; {rejected} rejected &bull; ~8 min
+            {decisions.length} segments reviewed &bull; {confirmed} confirmed &bull; {edited} edited &bull; ~8 min
           </p>
         </div>
 
@@ -1950,7 +1907,7 @@ function CompletePhase({ reviewRequest, results, onBack, reduced, connectedInteg
             ))}
 
             {Object.keys(agentImpacts).length === 0 && (
-              <p className="text-xs text-gray-900/40">All suggestions accepted — reinforcing current model behavior.</p>
+              <p className="text-xs text-gray-900/40">All suggestions confirmed — reinforcing current model behavior.</p>
             )}
           </div>
 

@@ -8,7 +8,6 @@ import {
   RotateCcw,
   ClipboardCheck,
   Check,
-  X,
   Pencil,
   ChevronDown,
   MessageSquarePlus,
@@ -91,11 +90,9 @@ const DEFAULT_FLAGGED_SEGMENTS = [
 ];
 
 /* ─── Segment Card (Reviewer View) ─── */
-function ReviewerSegmentCard({ segment, resolution, onAccept, onEdit, onReject, prefersReducedMotion }) {
+function ReviewerSegmentCard({ segment, resolution, onAccept, onEdit, prefersReducedMotion }) {
   const [editMode, setEditMode] = useState(false);
   const [editValue, setEditValue] = useState(segment.suggestedFix);
-  const [rejectMode, setRejectMode] = useState(false);
-  const [rejectReason, setRejectReason] = useState('');
   const sev = SEVERITY_CONFIG[segment.severity];
   const SevIcon = sev.icon;
 
@@ -104,11 +101,6 @@ function ReviewerSegmentCard({ segment, resolution, onAccept, onEdit, onReject, 
   const handleEditApprove = () => {
     onEdit(segment.id, editValue);
     setEditMode(false);
-  };
-
-  const handleRejectSubmit = () => {
-    onReject(segment.id, rejectReason);
-    setRejectMode(false);
   };
 
   return (
@@ -135,11 +127,7 @@ function ReviewerSegmentCard({ segment, resolution, onAccept, onEdit, onReject, 
         {isResolved && (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-600 ring-1 ring-emerald-500/30">
             <Check className="w-3 h-3" />
-            {resolution.type === 'accepted'
-              ? 'Accepted'
-              : resolution.type === 'edited'
-              ? 'Edited & Approved'
-              : 'Rejected'}
+            {resolution.type === 'edited' ? 'Edited & confirmed' : 'Confirmed'}
           </span>
         )}
       </div>
@@ -201,7 +189,7 @@ function ReviewerSegmentCard({ segment, resolution, onAccept, onEdit, onReject, 
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-md transition-colors"
                   >
                     <Check className="w-3.5 h-3.5" />
-                    Save & Approve
+                    Save & Confirm
                   </button>
                   <button
                     onClick={() => setEditMode(false)}
@@ -214,51 +202,15 @@ function ReviewerSegmentCard({ segment, resolution, onAccept, onEdit, onReject, 
             )}
           </AnimatePresence>
 
-          {/* Reject Mode */}
-          <AnimatePresence>
-            {rejectMode && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={spring}
-                className="overflow-hidden"
-              >
-                <textarea
-                  value={rejectReason}
-                  onChange={(e) => setRejectReason(e.target.value)}
-                  rows={2}
-                  placeholder="Reason for rejection..."
-                  className="w-full bg-[#ffffff] border border-red-900/50 rounded-md p-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"
-                />
-                <div className="flex gap-2 mt-2">
-                  <button
-                    onClick={handleRejectSubmit}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white text-xs font-semibold rounded-md transition-colors"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                    Confirm Rejection
-                  </button>
-                  <button
-                    onClick={() => setRejectMode(false)}
-                    className="px-3 py-1.5 text-gray-500 hover:text-gray-800 text-xs rounded-md transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Action Buttons */}
-          {!editMode && !rejectMode && (
+          {/* Action Buttons — two only: Confirm or Edit. */}
+          {!editMode && (
             <div className="flex items-center gap-2">
               <button
                 onClick={() => onAccept(segment.id)}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-600 text-xs font-semibold rounded-md ring-1 ring-emerald-500/30 transition-colors"
               >
                 <Check className="w-3.5 h-3.5" />
-                Accept Suggestion
+                Confirm
               </button>
               <button
                 onClick={() => {
@@ -268,14 +220,7 @@ function ReviewerSegmentCard({ segment, resolution, onAccept, onEdit, onReject, 
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1B5E8F]/20 hover:bg-[#1B5E8F]/40 text-[#1B5E8F] text-xs font-semibold rounded-md ring-1 ring-[#1B5E8F]/30 transition-colors"
               >
                 <Pencil className="w-3.5 h-3.5" />
-                Edit & Approve
-              </button>
-              <button
-                onClick={() => setRejectMode(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-500/20 text-red-600 text-xs font-semibold rounded-md ring-1 ring-red-500/30 transition-colors"
-              >
-                <X className="w-3.5 h-3.5" />
-                Reject
+                Edit
               </button>
             </div>
           )}
@@ -352,7 +297,6 @@ export default function ComplianceGate({
   complianceStatus = 'flagged',
   flaggedSegments = DEFAULT_FLAGGED_SEGMENTS,
   onApprove,
-  onReject,
   onDelegate,
   isReviewer = false,
   onViewAsReviewer,
@@ -390,7 +334,7 @@ export default function ComplianceGate({
   const handleAccept = useCallback((segmentId) => {
     setResolutions((prev) => ({
       ...prev,
-      [segmentId]: { type: 'accepted' },
+      [segmentId]: { type: 'confirmed' },
     }));
   }, []);
 
@@ -401,18 +345,11 @@ export default function ComplianceGate({
     }));
   }, []);
 
-  const handleReject = useCallback((segmentId, reason) => {
-    setResolutions((prev) => ({
-      ...prev,
-      [segmentId]: { type: 'rejected', reason },
-    }));
-  }, []);
-
   const handleApproveAll = useCallback(() => {
     const newResolutions = {};
     flaggedSegments.forEach((s) => {
       if (!resolutions[s.id]) {
-        newResolutions[s.id] = { type: 'accepted' };
+        newResolutions[s.id] = { type: 'confirmed' };
       }
     });
     setResolutions((prev) => ({ ...prev, ...newResolutions }));
@@ -472,7 +409,6 @@ export default function ComplianceGate({
               resolution={resolutions[segment.id]}
               onAccept={handleAccept}
               onEdit={handleEdit}
-              onReject={handleReject}
               prefersReducedMotion={prefersReducedMotion}
             />
           ))}
@@ -505,7 +441,7 @@ export default function ComplianceGate({
               className="flex items-center gap-1.5 px-4 py-2 bg-[#1B5E8F]/20 hover:bg-[#1B5E8F]/30 text-[#1B5E8F] text-sm font-semibold rounded-lg ring-1 ring-[#1B5E8F]/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Check className="w-4 h-4" />
-              Approve All Suggestions
+              Confirm All Suggestions
             </button>
             <button
               onClick={handleSubmitReview}

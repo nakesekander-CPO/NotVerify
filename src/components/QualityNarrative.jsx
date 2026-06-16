@@ -330,7 +330,7 @@ function InlineSegmentCard({ segment, resolution, onResolve }) {
       <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-emerald-500/5 border border-emerald-500/15">
         <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
         <span className="text-[12px] text-emerald-300 font-medium">{segment.ref} resolved</span>
-        <span className="text-[11px] text-gray-500">&mdash; {resolution.action === 'accept' ? 'Accepted AI fix' : resolution.action === 'edit' ? 'Edited & accepted' : 'Rejected'}</span>
+        <span className="text-[11px] text-gray-500">&mdash; {resolution.action === 'edit' ? 'Edited & confirmed' : 'Confirmed AI fix'}</span>
         <span className="ml-auto text-[10px] text-gray-400 font-mono">{resolution.timestamp}</span>
       </div>
     )
@@ -374,22 +374,16 @@ function InlineSegmentCard({ segment, resolution, onResolve }) {
       ) : (
         <div className="px-4 pb-3 flex items-center gap-2">
           <button
-            onClick={() => onResolve('accept', {})}
+            onClick={() => onResolve('confirm', {})}
             className="px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-500/25 text-emerald-300 text-[11px] font-semibold transition-colors cursor-pointer"
           >
-            Accept Fix
+            Confirm
           </button>
           <button
             onClick={() => setEditing(true)}
             className="px-3 py-1.5 rounded-lg bg-straker-50 hover:bg-straker-500/25 text-straker-600 text-[11px] font-semibold transition-colors cursor-pointer"
           >
             Edit
-          </button>
-          <button
-            onClick={() => onResolve('reject', {})}
-            className="px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-500/20 text-red-400 text-[11px] font-semibold transition-colors cursor-pointer"
-          >
-            Reject
           </button>
         </div>
       )}
@@ -512,7 +506,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
 
   const handleInlineResolve = (segId, action, data) => {
     setInlineResolutions(prev => ({ ...prev, [segId]: { action, ...data, timestamp: new Date().toLocaleTimeString() } }))
-    if (action === 'accept' || action === 'edit') {
+    if (action === 'confirm' || action === 'edit') {
       addToast('\u2713 Fixed & Committed to Org Brain \u2014 Model JP-FIN-3 will incorporate this correction', 'success', 3000)
     }
   }
