@@ -396,6 +396,30 @@ export function normalizeRequest(r, type) {
 export const CREDIT_TYPE_LABEL = { intelligence: 'Intelligence Credits', trust: 'Trust Credits' }
 export const CREDIT_TYPE_SHORT = { intelligence: 'IC', trust: 'Trust' }
 
+/* Fulfillment — when a combined order is paid/finalized, each line is
+ * granted to its OWN wallet: Intelligence lines become top-up rows in
+ * the Intelligence ledger; Trust lines become top-up rows in the
+ * separate Trust ledger. They never cross. Returns ready-to-append
+ * rows per wallet. */
+export function purchaseRequestFulfillment(request, { date } = {}) {
+  const day = date || new Date().toISOString().slice(0, 10)
+  const ref = request.po || request.id
+  const icRows = (request.items || [])
+    .filter(i => i.type === 'intelligence' && i.credits > 0)
+    .map(i => ({
+      date: day, event: 'top_up', bucket: 'top_up', delta: i.credits,
+      source: `Order ${request.id} — Intelligence Credits`, ref, actor: 'system',
+      note: 'Granted from combined order',
+    }))
+  const trustRows = (request.items || [])
+    .filter(i => i.type === 'trust' && i.credits > 0)
+    .map(i => ({
+      date: day, event: 'top_up', delta: i.credits,
+      source: `Order ${request.id} — Trust Credits`, ref,
+    }))
+  return { icRows, trustRows }
+}
+
 /* ── Past-due invoices — one source for banner, button, register ─
  *
  * The banner copy, the "Pay now" button amount, and the pay handler

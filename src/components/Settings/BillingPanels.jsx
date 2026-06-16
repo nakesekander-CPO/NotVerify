@@ -14,8 +14,8 @@ import {
   creditPackages, priceFor, rateFor,
   reconciliationSummary, validateAdjustment, buildAdjustmentEntry,
   ADJUSTMENT_REASON_CODES, CONSUMPTION_POLICY_TEXT, planCtaModel,
-  trustPriceFor, purchaseRequestTotal, validatePurchaseRequest,
-  buildPurchaseRequest, normalizeRequest,
+  trustPriceFor, purchaseLineCost, purchaseRequestTotal, validatePurchaseRequest,
+  buildPurchaseRequest, normalizeRequest, purchaseRequestFulfillment,
 } from '../../services/billing/billingModel'
 import { Card, Toggle, Field, StatusPill, fmtDate, fmtMoney } from './BillingShared'
 
@@ -142,7 +142,7 @@ export function TopUpPanel({ account, appendLedger, appendTrustLedger, appendRec
   /* Invoice/PO rail uses ONE combined order card (IC + Trust on a
    * single invoice). Card/ACH rail keeps separate instant purchases —
    * there is no invoice to combine onto. */
-  if (!isCard) return <InvoiceTopUp account={account} />
+  if (!isCard) return <InvoiceTopUp account={account} appendLedger={appendLedger} appendTrustLedger={appendTrustLedger} />
   return (
     <div className="space-y-6">
       <CardTopUp account={account} appendLedger={appendLedger} appendReceipt={appendReceipt} />
@@ -315,12 +315,13 @@ function requestLineLabel(item) {
     : `${item.credits.toLocaleString()} IC`
 }
 
-function InvoiceTopUp({ account }) {
+function InvoiceTopUp({ account, appendLedger, appendTrustLedger }) {
   const trustAvailable = account.trustCredits?.grantThisCycle > 0 || account.trustCredits?.available > 0
   const [ic, setIc] = useState(25000)
   const [tc, setTc] = useState(trustAvailable ? 5 : 0)
   const [po, setPo] = useState(account.poNumber || '')
   const [added, setAdded] = useState([])
+  const [statusOverrides, setStatusOverrides] = useState({}) // id → status (after grant)
   const [done, setDone] = useState(null)
 
   const items = [
@@ -337,7 +338,9 @@ function InvoiceTopUp({ account }) {
     ...(account.purchaseRequests || []),
     ...(account.topUpRequests || []).map(r => normalizeRequest(r, 'intelligence')),
     ...(account.trustTopUpRequests || []).map(r => normalizeRequest(r, 'trust')),
-  ].sort((a, b) => (a.date < b.date ? 1 : -1))
+  ]
+    .map(r => statusOverrides[r.id] ? { ...r, status: statusOverrides[r.id] } : r)
+    .sort((a, b) => (a.date < b.date ? 1 : -1))
 
   const submit = () => {
     if (!validation.ok) return
@@ -345,6 +348,21 @@ function InvoiceTopUp({ account }) {
     setAdded(r => [req, ...r])
     const summary = req.items.map(requestLineLabel).join(' + ')
     setDone(`Request ${req.id} submitted — ${summary} on one invoice (${fmtMoney(req.cost)}) under ${account.netTerms}. ${req.notes}.`)
+    setTimeout(() => setDone(null), 4000)
+  }
+
+  /* Mark a request's invoice paid → fulfil each line to its OWN
+   * wallet: Intelligence → Intelligence ledger, Trust → Trust
+   * ledger. They never cross. */
+  const grant = (req) => {
+    const { icRows, trustRows } = purchaseRequestFulfillment(req)
+    icRows.forEach(row => appendLedger?.(row))
+    trustRows.forEach(row => appendTrustLedger?.(row))
+    setStatusOverrides(s => ({ ...s, [req.id]: 'completed' }))
+    const parts = []
+    if (icRows.length) parts.push(`${icRows.reduce((s, r) => s + r.delta, 0).toLocaleString()} IC → Intelligence wallet`)
+    if (trustRows.length) parts.push(`${trustRows.reduce((s, r) => s + r.delta, 0)} → Trust wallet`)
+    setDone(`Invoice ${req.id} marked paid — ${parts.join(' · ')}.`)
     setTimeout(() => setDone(null), 4000)
   }
 
@@ -400,14 +418,30 @@ function InvoiceTopUp({ account }) {
           Credits are {account.grantPolicy === 'on-finalization' ? 'granted when the invoice is finalized' : 'granted when the invoice is paid'}; the request is binding once invoiced.
         </div>
 
-        <div className="mt-3 flex items-center justify-between rounded-lg border border-black/[0.08] bg-gray-50/60 p-3">
-          <div>
-            <p className="text-[16px] font-bold text-gray-900">
-              {items.length === 0 ? 'No items selected' : <>{items.map(requestLineLabel).join(' + ')} · {fmtMoney(total)}</>}
-            </p>
-            <p className="text-[10.5px] text-gray-400">One invoice · {account.netTerms}</p>
-          </div>
-          <div className="flex items-center gap-2">
+        {/* Itemized order summary — one invoice, separate lines */}
+        <div className="mt-3 rounded-lg border border-black/[0.08] bg-gray-50/60 p-3">
+          {items.length === 0 ? (
+            <p className="text-[13px] text-gray-500">No items selected.</p>
+          ) : (
+            <ul className="space-y-1 mb-2">
+              {items.map(it => (
+                <li key={it.type} className="flex items-center justify-between text-[12px]">
+                  <span className="inline-flex items-center gap-1.5 text-gray-700">
+                    {it.type === 'trust' ? <ShieldCheck className="w-3.5 h-3.5 text-[#009eda]" /> : <Sparkles className="w-3.5 h-3.5 text-gray-400" />}
+                    {requestLineLabel(it)}
+                    <span className="text-[10px] text-gray-400">→ {it.type === 'trust' ? 'Trust wallet' : 'Intelligence wallet'}</span>
+                  </span>
+                  <span className="tabular-nums text-gray-900">{fmtMoney(purchaseLineCost(it.type, it.credits))}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="flex items-center justify-between border-t border-black/[0.08] pt-2">
+            <div>
+              <p className="text-[15px] font-bold text-gray-900">Invoice total · {fmtMoney(total)}</p>
+              <p className="text-[10.5px] text-gray-400">One invoice · {account.netTerms}</p>
+            </div>
+            <div className="flex items-center gap-2">
             <button className="px-3 py-2 rounded-lg border border-black/[0.12] text-[12px] font-medium text-gray-600 hover:bg-black/[0.03] cursor-pointer">Contact sales</button>
             {account.cardTopUpsEnabled && (
               <button className="px-3 py-2 rounded-lg border border-black/[0.12] text-[12px] font-medium text-gray-600 hover:bg-black/[0.03] cursor-pointer">Pay by card for this one-time order</button>
@@ -417,6 +451,7 @@ function InvoiceTopUp({ account }) {
               className="px-4 py-2.5 rounded-lg bg-[#009eda] text-white text-[13px] font-semibold hover:bg-[#0089c4] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
               Submit purchase request
             </button>
+            </div>
           </div>
         </div>
         {done && <p className="mt-3 text-[12px] text-[#0089c4] inline-flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 shrink-0" />{done}</p>}
@@ -426,22 +461,48 @@ function InvoiceTopUp({ account }) {
         <h4 className="text-[13px] font-semibold text-gray-900 mb-3">Purchase requests</h4>
         <ul className="divide-y divide-black/[0.06]">
           {requests.map(r => (
-            <li key={r.id} className="py-3 grid grid-cols-[1fr_auto_auto] gap-4 items-center text-[12px]">
-              <div className="min-w-0">
-                <p className="text-gray-900">
-                  {r.id} · {r.items.map(requestLineLabel).join(' + ')}
-                  {r.items.length > 1 && <span className="ml-1.5 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#009eda]/10 text-[#0089c4] border border-[#009eda]/20 font-semibold">Combined</span>}
-                </p>
-                <p className="text-[10.5px] text-gray-400 truncate">{fmtDate(r.date)} · {r.po || 'No PO'} · {r.notes}</p>
+            <li key={r.id} className="py-3 text-[12px]">
+              <div className="grid grid-cols-[1fr_auto_auto] gap-4 items-start">
+                <div className="min-w-0">
+                  <p className="text-gray-900 font-medium">
+                    {r.id}
+                    {r.items.length > 1 && <span className="ml-1.5 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#009eda]/10 text-[#0089c4] border border-[#009eda]/20 font-semibold">Combined</span>}
+                  </p>
+                  {/* Separate, itemized line items per credit type */}
+                  <ul className="mt-1 space-y-0.5">
+                    {r.items.map(it => (
+                      <li key={it.type} className="flex items-center gap-1.5 text-[11.5px] text-gray-600">
+                        {it.type === 'trust'
+                          ? <ShieldCheck className="w-3 h-3 text-[#009eda] shrink-0" />
+                          : <Sparkles className="w-3 h-3 text-gray-400 shrink-0" />}
+                        <span className="text-gray-800">{requestLineLabel(it)}</span>
+                        <span className="text-gray-400">→ {it.type === 'trust' ? 'Trust wallet' : 'Intelligence wallet'}</span>
+                        <span className="ml-auto tabular-nums text-gray-500">{fmtMoney(it.cost ?? purchaseLineCost(it.type, it.credits))}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-[10.5px] text-gray-400 mt-1 truncate">{fmtDate(r.date)} · {r.po || 'No PO'} · {r.notes}</p>
+                </div>
+                <span className="text-right shrink-0">
+                  <span className="text-gray-900 font-semibold tabular-nums block">{fmtMoney(r.cost)}</span>
+                  <span className="text-[10px] text-gray-400 block">one invoice · {account.netTerms}</span>
+                </span>
+                <div className="flex flex-col items-end gap-1.5 shrink-0">
+                  <StatusPill status={r.status} />
+                  {r.status !== 'completed' && (
+                    <button onClick={() => grant(r)}
+                      className="text-[10.5px] text-[#009eda] hover:text-[#0089c4] cursor-pointer whitespace-nowrap font-medium">
+                      Mark paid &amp; grant →
+                    </button>
+                  )}
+                </div>
               </div>
-              <span className="text-right">
-                <span className="text-gray-700 tabular-nums block">{fmtMoney(r.cost)}</span>
-                <span className="text-[10px] text-gray-400 block">commitment · {account.netTerms}</span>
-              </span>
-              <StatusPill status={r.status} />
             </li>
           ))}
         </ul>
+        <p className="text-[10.5px] text-gray-400 mt-3">
+          On payment, each line is fulfilled to its own wallet — Intelligence to the Intelligence balance, Trust to the Trust balance.
+        </p>
       </Card>
     </div>
   )

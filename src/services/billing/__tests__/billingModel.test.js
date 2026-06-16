@@ -8,6 +8,7 @@ import {
   allocateUsageToBuckets, bucketsFromLedger, pastDueSummary, markInvoicesPaid,
   validateTopUpRequest, TRUST_PRICING, trustPriceFor, trustWalletFromLedger,
   purchaseRequestTotal, validatePurchaseRequest, buildPurchaseRequest, normalizeRequest,
+  purchaseRequestFulfillment, purchaseLineCost,
 } from '../billingModel'
 
 describe('pricing — one schedule for both rails', () => {
@@ -594,5 +595,40 @@ describe('Combined purchase requests — IC + Trust on one invoice', () => {
     expect(combined).toBeTruthy()
     expect(combined.items.map(i => i.type).sort()).toEqual(['intelligence', 'trust'])
     expect(combined.cost).toBe(combined.items.reduce((s, i) => s + i.cost, 0))
+  })
+})
+
+describe('Combined order fulfillment — each line to its own wallet', () => {
+  it('splits a combined order: IC → Intelligence ledger (top_up bucket), Trust → Trust ledger', () => {
+    const req = { id: 'PR-9', po: 'PO-9', items: [
+      { type: 'intelligence', credits: 25000, cost: priceFor(25000) },
+      { type: 'trust', credits: 5, cost: trustPriceFor(5) },
+    ] }
+    const { icRows, trustRows } = purchaseRequestFulfillment(req, { date: '2026-06-16' })
+    expect(icRows).toHaveLength(1)
+    expect(icRows[0]).toMatchObject({ event: 'top_up', bucket: 'top_up', delta: 25000, ref: 'PO-9' })
+    expect(trustRows).toHaveLength(1)
+    expect(trustRows[0]).toMatchObject({ event: 'top_up', delta: 5, ref: 'PO-9' })
+    expect(trustRows[0].bucket).toBeUndefined() // trust ledger has no IC bucket
+  })
+
+  it('IC-only and Trust-only orders fulfil to just one wallet', () => {
+    const icOnly = purchaseRequestFulfillment({ id: 'PR-1', items: [{ type: 'intelligence', credits: 5000 }] })
+    expect(icOnly.icRows).toHaveLength(1)
+    expect(icOnly.trustRows).toHaveLength(0)
+    const trustOnly = purchaseRequestFulfillment({ id: 'PR-2', items: [{ type: 'trust', credits: 3 }] })
+    expect(trustOnly.icRows).toHaveLength(0)
+    expect(trustOnly.trustRows).toHaveLength(1)
+  })
+
+  it('granting the seeded combined order adds exactly its credits to each wallet', () => {
+    const a = getDemoAccount('enterprise-invoice')
+    const combined = a.purchaseRequests.find(r => r.items.length > 1)
+    const { icRows, trustRows } = purchaseRequestFulfillment(combined)
+    const icBefore = a.creditWallet.topUp.available
+    const icAfter = walletFromLedger([...a.ledger, ...icRows.map(r => ({ ...r }))], { planGrant: a.creditWallet.plan.grantThisCycle }).topUp.available
+    expect(icAfter - icBefore).toBe(combined.items.find(i => i.type === 'intelligence').credits)
+    const trustAdded = trustRows.reduce((s, r) => s + r.delta, 0)
+    expect(trustAdded).toBe(combined.items.find(i => i.type === 'trust').credits)
   })
 })
