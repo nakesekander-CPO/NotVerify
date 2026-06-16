@@ -347,6 +347,55 @@ export function validateTopUpRequest({ credits, po }, account) {
   return { ok: errors.length === 0, errors }
 }
 
+/* ── Combined purchase requests — Intelligence + Trust on one invoice
+ *
+ * A single invoice/PO request may carry line items of different
+ * credit types. Each line is priced on its own schedule (IC volume
+ * tiers; Trust $38/credit). One PO, one combined total, one request. */
+
+export function purchaseLineCost(type, credits) {
+  return type === 'trust' ? trustPriceFor(credits) : priceFor(credits)
+}
+
+export function purchaseRequestTotal(items = []) {
+  return Math.round(items.reduce((s, i) => s + purchaseLineCost(i.type, Number(i.credits) || 0), 0) * 100) / 100
+}
+
+export function validatePurchaseRequest({ items, po }, account) {
+  const errors = []
+  const lines = (items || []).filter(i => (Number(i.credits) || 0) > 0)
+  if (lines.length === 0) errors.push('Add at least one credit type to the order.')
+  if (account?.poRequired && !(po || '').trim()) errors.push('A PO number is required for this account.')
+  return { ok: errors.length === 0, errors, lineCount: lines.length }
+}
+
+export function buildPurchaseRequest({ items, po, account, id }) {
+  const lines = (items || [])
+    .filter(i => (Number(i.credits) || 0) > 0)
+    .map(i => ({ type: i.type, credits: Number(i.credits), cost: purchaseLineCost(i.type, Number(i.credits)) }))
+  return {
+    id: id || `PR-${Math.floor(Math.random() * 9000) + 1000}`,
+    date: new Date().toISOString().slice(0, 10),
+    items: lines,
+    cost: purchaseRequestTotal(lines),
+    po: (po || '').trim() || null,
+    status: 'requested',
+    notes: account?.grantPolicy === 'on-finalization'
+      ? 'Credits granted when the invoice is finalized'
+      : 'Credits granted on payment',
+  }
+}
+
+/* Normalize legacy single-currency requests to the line-item shape so
+ * one list can render IC, Trust, and combined requests uniformly. */
+export function normalizeRequest(r, type) {
+  if (r.items) return r
+  return { ...r, items: [{ type, credits: r.credits, cost: r.cost }] }
+}
+
+export const CREDIT_TYPE_LABEL = { intelligence: 'Intelligence Credits', trust: 'Trust Credits' }
+export const CREDIT_TYPE_SHORT = { intelligence: 'IC', trust: 'Trust' }
+
 /* ── Past-due invoices — one source for banner, button, register ─
  *
  * The banner copy, the "Pay now" button amount, and the pay handler
@@ -525,8 +574,17 @@ export function getDemoAccount(key) {
       // Trust Credits are purchased on the same invoice/PO rail as
       // Intelligence Credits — tracked requests, own pricing.
       trustTopUpRequests: [
-        { id: 'TTR-1018', date: '2026-05-18', credits: 5, cost: trustPriceFor(5), po: 'PO-2026-021', status: 'invoiced',  notes: 'Trust Credits granted on finalization · awaiting payment (Net 30)' },
         { id: 'TTR-1009', date: '2026-04-12', credits: 3, cost: trustPriceFor(3), po: 'PO-2026-013', status: 'completed', notes: 'Bundle · granted Apr 14' },
+      ],
+      // Combined orders — Intelligence + Trust credits on one invoice.
+      purchaseRequests: [
+        { id: 'PR-1044', date: '2026-05-18', po: 'PO-2026-021', status: 'invoiced',
+          items: [
+            { type: 'intelligence', credits: 25000, cost: priceFor(25000) },
+            { type: 'trust', credits: 5, cost: trustPriceFor(5) },
+          ],
+          cost: priceFor(25000) + trustPriceFor(5),
+          notes: 'Combined order · granted on finalization (Net 30)' },
       ],
       receipts: [],
       invoices: [

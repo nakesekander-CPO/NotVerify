@@ -7,6 +7,7 @@ import {
   planCtaModel, railPermissions, validateRailChange, buildRailChangeRequest,
   allocateUsageToBuckets, bucketsFromLedger, pastDueSummary, markInvoicesPaid,
   validateTopUpRequest, TRUST_PRICING, trustPriceFor, trustWalletFromLedger,
+  purchaseRequestTotal, validatePurchaseRequest, buildPurchaseRequest, normalizeRequest,
 } from '../billingModel'
 
 describe('pricing — one schedule for both rails', () => {
@@ -532,11 +533,13 @@ describe('Trust Credits — purchase & invoicing parity with Intelligence Credit
     expect(validateTopUpRequest({ credits: 5, po: '' }, poOpt).ok).toBe(true)
   })
 
-  it('the invoice/PO enterprise account seeds tracked trust top-up requests', () => {
-    const reqs = getDemoAccount('enterprise-invoice').trustTopUpRequests
-    expect(reqs.length).toBeGreaterThanOrEqual(1)
-    for (const r of reqs) expect(r.cost).toBe(trustPriceFor(r.credits))
-    expect(reqs.some(r => r.status === 'invoiced')).toBe(true)
+  it('the invoice/PO enterprise account seeds tracked trust purchases', () => {
+    const a = getDemoAccount('enterprise-invoice')
+    expect(a.trustTopUpRequests.length).toBeGreaterThanOrEqual(1)
+    for (const r of a.trustTopUpRequests) expect(r.cost).toBe(trustPriceFor(r.credits))
+    // An invoiced Trust line now rides on a combined IC+Trust order.
+    const invoicedTrust = a.purchaseRequests.some(r => r.status === 'invoiced' && r.items.some(i => i.type === 'trust'))
+    expect(invoicedTrust).toBe(true)
   })
 
   it('trust requests never appear on card-rail accounts (rail-shaped)', () => {
@@ -544,5 +547,52 @@ describe('Trust Credits — purchase & invoicing parity with Intelligence Credit
       const reqs = getDemoAccount(k).trustTopUpRequests || []
       expect(reqs.length).toBe(0)
     }
+  })
+})
+
+describe('Combined purchase requests — IC + Trust on one invoice', () => {
+  it('totals each line on its own pricing schedule', () => {
+    const items = [
+      { type: 'intelligence', credits: 25000 },
+      { type: 'trust', credits: 5 },
+    ]
+    expect(purchaseRequestTotal(items)).toBe(priceFor(25000) + trustPriceFor(5)) // 200 + 190 = 390
+  })
+
+  it('validates: needs at least one line and obeys the account PO requirement', () => {
+    const poReq = { poRequired: true }
+    expect(validatePurchaseRequest({ items: [], po: 'PO-1' }, poReq).ok).toBe(false)
+    expect(validatePurchaseRequest({ items: [{ type: 'trust', credits: 0 }], po: 'PO-1' }, poReq).ok).toBe(false)
+    expect(validatePurchaseRequest({ items: [{ type: 'intelligence', credits: 5000 }], po: '' }, poReq).ok).toBe(false)
+    expect(validatePurchaseRequest({ items: [{ type: 'intelligence', credits: 5000 }, { type: 'trust', credits: 3 }], po: 'PO-1' }, poReq).ok).toBe(true)
+  })
+
+  it('builds a request with priced line items and a combined total', () => {
+    const req = buildPurchaseRequest({
+      items: [{ type: 'intelligence', credits: 10000 }, { type: 'trust', credits: 3 }, { type: 'trust', credits: 0 }],
+      po: 'PO-2026-099', account: { grantPolicy: 'on-finalization' }, id: 'PR-test',
+    })
+    expect(req.items).toHaveLength(2) // zero-credit line dropped
+    expect(req.items[0]).toMatchObject({ type: 'intelligence', credits: 10000, cost: priceFor(10000) })
+    expect(req.items[1]).toMatchObject({ type: 'trust', credits: 3, cost: trustPriceFor(3) })
+    expect(req.cost).toBe(priceFor(10000) + trustPriceFor(3))
+    expect(req.po).toBe('PO-2026-099')
+    expect(req.status).toBe('requested')
+  })
+
+  it('normalizes legacy single-currency requests to the line-item shape', () => {
+    const ic = normalizeRequest({ id: 'TR-1', credits: 5000, cost: priceFor(5000) }, 'intelligence')
+    expect(ic.items).toEqual([{ type: 'intelligence', credits: 5000, cost: priceFor(5000) }])
+    const combined = { id: 'PR-1', items: [{ type: 'trust', credits: 3, cost: 110 }] }
+    expect(normalizeRequest(combined, 'trust')).toBe(combined) // already line-item, untouched
+  })
+
+  it('the enterprise account seeds a real combined order (IC + Trust)', () => {
+    const pr = getDemoAccount('enterprise-invoice').purchaseRequests
+    expect(pr.length).toBeGreaterThanOrEqual(1)
+    const combined = pr.find(r => r.items.length > 1)
+    expect(combined).toBeTruthy()
+    expect(combined.items.map(i => i.type).sort()).toEqual(['intelligence', 'trust'])
+    expect(combined.cost).toBe(combined.items.reduce((s, i) => s + i.cost, 0))
   })
 })

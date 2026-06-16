@@ -11,10 +11,11 @@ import {
   Sparkles, Building2, Phone, ShieldCheck,
 } from 'lucide-react'
 import {
-  creditPackages, priceFor, rateFor, savingsPct, PRICING,
+  creditPackages, priceFor, rateFor,
   reconciliationSummary, validateAdjustment, buildAdjustmentEntry,
   ADJUSTMENT_REASON_CODES, CONSUMPTION_POLICY_TEXT, planCtaModel,
-  validateTopUpRequest, trustPriceFor,
+  trustPriceFor, purchaseRequestTotal, validatePurchaseRequest,
+  buildPurchaseRequest, normalizeRequest,
 } from '../../services/billing/billingModel'
 import { Card, Toggle, Field, StatusPill, fmtDate, fmtMoney } from './BillingShared'
 
@@ -137,16 +138,15 @@ function Metric({ label, value, sub }) {
 
 export function TopUpPanel({ account, appendLedger, appendTrustLedger, appendReceipt }) {
   const isCard = account.paymentRail === 'card_or_ach'
+  const trustAvailable = account.trustCredits?.grantThisCycle > 0 || account.trustCredits?.available > 0
+  /* Invoice/PO rail uses ONE combined order card (IC + Trust on a
+   * single invoice). Card/ACH rail keeps separate instant purchases —
+   * there is no invoice to combine onto. */
+  if (!isCard) return <InvoiceTopUp account={account} />
   return (
     <div className="space-y-6">
-      {isCard
-        ? <CardTopUp account={account} appendLedger={appendLedger} appendReceipt={appendReceipt} />
-        : <InvoiceTopUp account={account} appendLedger={appendLedger} />}
-      {(account.trustCredits?.grantThisCycle > 0 || account.trustCredits?.available > 0) && (
-        isCard
-          ? <TrustCardTopUp account={account} appendTrustLedger={appendTrustLedger} appendReceipt={appendReceipt} />
-          : <TrustInvoiceTopUp account={account} />
-      )}
+      <CardTopUp account={account} appendLedger={appendLedger} appendReceipt={appendReceipt} />
+      {trustAvailable && <TrustCardTopUp account={account} appendTrustLedger={appendTrustLedger} appendReceipt={appendReceipt} />}
     </div>
   )
 }
@@ -204,89 +204,6 @@ function TrustCardTopUp({ account, appendTrustLedger, appendReceipt }) {
         </button>
       </div>
       {done && <p className="mt-3 text-[12px] text-emerald-700 inline-flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4" />{done}</p>}
-    </Card>
-  )
-}
-
-/* Trust · invoice / PO — same request/approval flow as Intelligence
- * Credits: PO enforcement, commitment copy, grant policy, tracked
- * requests. */
-function TrustInvoiceTopUp({ account }) {
-  const [credits, setCredits] = useState(5)
-  const [po, setPo] = useState(account.poNumber || '')
-  const [added, setAdded] = useState([])
-  const requests = [...added, ...(account.trustTopUpRequests || [])]
-  const [done, setDone] = useState(null)
-  const price = trustPriceFor(credits)
-  const validation = validateTopUpRequest({ credits, po }, account)
-
-  const submit = () => {
-    if (!validation.ok) return
-    const req = {
-      id: `TTR-${Math.floor(Math.random() * 900) + 1100}`, date: new Date().toISOString().slice(0, 10),
-      credits, cost: price, po: po.trim() || null, status: 'requested',
-      notes: account.grantPolicy === 'on-finalization' ? 'Trust Credits granted when the invoice is finalized' : 'Trust Credits granted on payment',
-    }
-    setAdded(r => [req, ...r])
-    setDone(`Request ${req.id} submitted. An invoice will be issued under ${account.netTerms}; ${req.notes.toLowerCase()}.`)
-    setTimeout(() => setDone(null), 3000)
-  }
-
-  return (
-    <Card>
-      <TrustHeader account={account} blurb={`Trust Credits cover trusted human review and sign-off — a separate balance, billed by ${account.poRequired ? 'PO-backed invoice' : 'invoice'} under ${account.netTerms} at $38/credit (3 for $110).`} />
-      <div className="grid grid-cols-[1fr_1fr] gap-4">
-        <Field label="Trust Credit amount">
-          <select value={credits} onChange={e => setCredits(Number(e.target.value))} className="w-full px-2.5 py-1.5 rounded-md border border-black/[0.12] text-[12px] bg-white">
-            {[3, 5, 10, 25, 50].map(v => (
-              <option key={v} value={v}>{v} credits — {fmtMoney(trustPriceFor(v))}{v === 3 ? ' (bundle)' : ''}</option>
-            ))}
-          </select>
-        </Field>
-        <Field label={`PO number (${account.poRequired ? 'required' : 'optional'})`}>
-          <input value={po} onChange={e => setPo(e.target.value)} placeholder="e.g. PO-2026-022" className="w-full px-2.5 py-1.5 rounded-md border border-black/[0.12] text-[12px] bg-white" />
-          <p className="text-[10px] text-gray-400 mt-1">
-            {account.poRequired
-              ? 'Your billing admin requires a PO on every top-up request (Admin → Purchase orders).'
-              : 'Optional for this account — your billing admin can require it under Admin → Purchase orders.'}
-          </p>
-        </Field>
-      </div>
-      <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50/60 px-3 py-2 text-[11.5px] text-amber-800">
-        Submitting creates a purchase commitment: arbitr will issue an invoice for{' '}
-        <span className="font-semibold">{fmtMoney(price)}</span>
-        {po.trim() ? <> against <span className="font-semibold">{po.trim()}</span></> : null} under {account.netTerms}.
-        Trust Credits are {account.grantPolicy === 'on-finalization' ? 'granted when the invoice is finalized' : 'granted when the invoice is paid'}; the request is binding once invoiced.
-      </div>
-      <div className="mt-3 flex items-center justify-between rounded-lg border border-black/[0.08] bg-gray-50/60 p-3">
-        <div>
-          <p className="text-[16px] font-bold text-gray-900">{credits} Trust Credits · {fmtMoney(price)}</p>
-          <p className="text-[10.5px] text-gray-400">$38 per credit · {account.netTerms}</p>
-        </div>
-        <button onClick={submit} disabled={!validation.ok}
-          title={validation.ok ? undefined : validation.errors.join(' ')}
-          className="px-4 py-2.5 rounded-lg bg-[#009eda] text-white text-[13px] font-semibold hover:bg-[#0089c4] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
-          Submit purchase request
-        </button>
-      </div>
-      {done && <p className="mt-3 text-[12px] text-[#0089c4] inline-flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4" />{done}</p>}
-
-      <div className="mt-5 pt-4 border-t border-black/[0.08]">
-        <h5 className="text-[12px] font-semibold text-gray-900 mb-2">Trust top-up requests</h5>
-        <ul className="divide-y divide-black/[0.06]">
-          {requests.length === 0 && <li className="py-3 text-[12px] text-gray-400">No Trust Credit requests yet.</li>}
-          {requests.map(r => (
-            <li key={r.id} className="py-3 grid grid-cols-[1fr_auto_auto] gap-4 items-center text-[12px]">
-              <div className="min-w-0">
-                <p className="text-gray-900">{r.id} · {r.credits} Trust Credits</p>
-                <p className="text-[10.5px] text-gray-400 truncate">{fmtDate(r.date)} · {r.po || 'No PO'} · {r.notes}</p>
-              </div>
-              <span className="text-gray-700 tabular-nums">{fmtMoney(r.cost)}</span>
-              <StatusPill status={r.status} />
-            </li>
-          ))}
-        </ul>
-      </div>
     </Card>
   )
 }
@@ -386,73 +303,114 @@ function CardTopUp({ account, appendLedger, appendReceipt }) {
   )
 }
 
-function InvoiceTopUp({ account }) {
-  const [credits, setCredits] = useState(25000)
-  const [po, setPo] = useState(account.poNumber || '')
-  // New requests live locally; existing ones derive from the account
-  // so their status reflects live invoice state (e.g. paid → completed).
-  const [added, setAdded] = useState([])
-  const requests = [...added, ...account.topUpRequests]
-  const [done, setDone] = useState(null)
-  const price = priceFor(credits)
-  const rate = rateFor(credits)
-  const save = savingsPct(credits)
+/* Combined invoice/PO order — Intelligence and/or Trust credits on a
+ * single invoice. Each line is priced on its own schedule; one PO,
+ * one combined total, one tracked request. */
+const IC_AMOUNTS = [0, 5000, 10000, 25000, 50000, 100000]
+const TC_AMOUNTS = [0, 3, 5, 10, 25, 50]
 
-  const validation = validateTopUpRequest({ credits, po }, account)
+function requestLineLabel(item) {
+  return item.type === 'trust'
+    ? `${item.credits} Trust Credits`
+    : `${item.credits.toLocaleString()} IC`
+}
+
+function InvoiceTopUp({ account }) {
+  const trustAvailable = account.trustCredits?.grantThisCycle > 0 || account.trustCredits?.available > 0
+  const [ic, setIc] = useState(25000)
+  const [tc, setTc] = useState(trustAvailable ? 5 : 0)
+  const [po, setPo] = useState(account.poNumber || '')
+  const [added, setAdded] = useState([])
+  const [done, setDone] = useState(null)
+
+  const items = [
+    ic > 0 && { type: 'intelligence', credits: ic },
+    tc > 0 && { type: 'trust', credits: tc },
+  ].filter(Boolean)
+  const total = purchaseRequestTotal(items)
+  const validation = validatePurchaseRequest({ items, po }, account)
+
+  /* One unified, date-sorted list: legacy IC + Trust single-currency
+   * requests are normalized to line items alongside combined orders. */
+  const requests = [
+    ...added,
+    ...(account.purchaseRequests || []),
+    ...(account.topUpRequests || []).map(r => normalizeRequest(r, 'intelligence')),
+    ...(account.trustTopUpRequests || []).map(r => normalizeRequest(r, 'trust')),
+  ].sort((a, b) => (a.date < b.date ? 1 : -1))
 
   const submit = () => {
     if (!validation.ok) return
-    const req = {
-      id: `TR-${Math.floor(Math.random() * 900) + 1100}`, date: new Date().toISOString().slice(0, 10),
-      credits, cost: price, rate, po: po.trim() || null, status: 'requested',
-      notes: account.grantPolicy === 'on-finalization' ? 'Credits granted when the invoice is finalized' : 'Credits granted on payment',
-    }
+    const req = buildPurchaseRequest({ items, po, account })
     setAdded(r => [req, ...r])
-    setDone(`Request ${req.id} submitted. An invoice will be issued under ${account.netTerms}; ${req.notes.toLowerCase()}.`)
-    setTimeout(() => setDone(null), 3000)
+    const summary = req.items.map(requestLineLabel).join(' + ')
+    setDone(`Request ${req.id} submitted — ${summary} on one invoice (${fmtMoney(req.cost)}) under ${account.netTerms}. ${req.notes}.`)
+    setTimeout(() => setDone(null), 4000)
   }
 
   return (
     <div className="space-y-6">
       <Card>
-        <h4 className="text-[13px] font-semibold text-gray-900">Request a credit top-up</h4>
+        <h4 className="text-[13px] font-semibold text-gray-900">Order credits</h4>
         <p className="text-[12px] text-gray-500 mt-0.5 mb-4">
-          Top-ups are billed by {account.poRequired ? 'PO-backed invoice' : 'invoice'} under {account.netTerms}. Pricing uses the same volume schedule as self-serve — your effective rate is shown before you submit.
+          Order Intelligence Credits, Trust Credits, or both on a single {account.poRequired ? 'PO-backed invoice' : 'invoice'} under {account.netTerms}. Each line is priced on its own schedule; you'll see one combined total before you submit.
         </p>
-        <div className="grid grid-cols-[1fr_1fr] gap-4">
-          <Field label="Credit amount">
-            <select value={credits} onChange={e => setCredits(Number(e.target.value))} className="w-full px-2.5 py-1.5 rounded-md border border-black/[0.12] text-[12px] bg-white">
-              {[5000, 10000, 25000, 50000, 100000].map(v => (
-                <option key={v} value={v}>{v.toLocaleString()} credits — {fmtMoney(priceFor(v))} (${rateFor(v).toFixed(4)}/credit)</option>
+
+        {/* Line items */}
+        <div className="space-y-2.5">
+          <div className="grid grid-cols-[120px_1fr_auto] gap-3 items-center">
+            <span className="text-[12px] font-medium text-gray-700">Intelligence</span>
+            <select value={ic} onChange={e => setIc(Number(e.target.value))} className="w-full px-2.5 py-1.5 rounded-md border border-black/[0.12] text-[12px] bg-white">
+              {IC_AMOUNTS.map(v => (
+                <option key={v} value={v}>{v === 0 ? 'None' : `${v.toLocaleString()} credits — ${fmtMoney(priceFor(v))} ($${rateFor(v).toFixed(4)}/cr)`}</option>
               ))}
             </select>
-          </Field>
+            <span className="text-[12px] tabular-nums text-gray-900 w-20 text-right">{ic > 0 ? fmtMoney(priceFor(ic)) : '—'}</span>
+          </div>
+          {trustAvailable && (
+            <div className="grid grid-cols-[120px_1fr_auto] gap-3 items-center">
+              <span className="text-[12px] font-medium text-gray-700 inline-flex items-center gap-1"><ShieldCheck className="w-3.5 h-3.5 text-[#009eda]" /> Trust</span>
+              <select value={tc} onChange={e => setTc(Number(e.target.value))} className="w-full px-2.5 py-1.5 rounded-md border border-black/[0.12] text-[12px] bg-white">
+                {TC_AMOUNTS.map(v => (
+                  <option key={v} value={v}>{v === 0 ? 'None' : `${v} credits — ${fmtMoney(trustPriceFor(v))}${v === 3 ? ' (bundle)' : ''}`}</option>
+                ))}
+              </select>
+              <span className="text-[12px] tabular-nums text-gray-900 w-20 text-right">{tc > 0 ? fmtMoney(trustPriceFor(tc)) : '—'}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-[1fr_1fr] gap-4 mt-4">
           <Field label={`PO number (${account.poRequired ? 'required' : 'optional'})`}>
             <input value={po} onChange={e => setPo(e.target.value)} placeholder="e.g. PO-2026-022" className="w-full px-2.5 py-1.5 rounded-md border border-black/[0.12] text-[12px] bg-white" />
             <p className="text-[10px] text-gray-400 mt-1">
               {account.poRequired
-                ? 'Your billing admin requires a PO on every top-up request (Admin → Purchase orders).'
+                ? 'Your billing admin requires a PO on every order (Admin → Purchase orders).'
                 : 'Optional for this account — your billing admin can require it under Admin → Purchase orders.'}
             </p>
           </Field>
         </div>
-        {/* The financial commitment is stated BEFORE submission —
-            a PO-backed request is binding once invoiced. */}
+
+        {/* Combined commitment */}
         <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50/60 px-3 py-2 text-[11.5px] text-amber-800">
-          Submitting creates a purchase commitment: arbitr will issue an invoice for{' '}
-          <span className="font-semibold">{fmtMoney(price)}</span>
+          Submitting creates a purchase commitment: arbitr will issue <span className="font-semibold">one invoice</span> for{' '}
+          <span className="font-semibold">{fmtMoney(total)}</span>
+          {items.length > 0 && <> ({items.map(requestLineLabel).join(' + ')})</>}
           {po.trim() ? <> against <span className="font-semibold">{po.trim()}</span></> : null} under {account.netTerms}.
           Credits are {account.grantPolicy === 'on-finalization' ? 'granted when the invoice is finalized' : 'granted when the invoice is paid'}; the request is binding once invoiced.
         </div>
+
         <div className="mt-3 flex items-center justify-between rounded-lg border border-black/[0.08] bg-gray-50/60 p-3">
           <div>
-            <p className="text-[16px] font-bold text-gray-900">{credits.toLocaleString()} credits · {fmtMoney(price)}</p>
-            <p className="text-[10.5px] text-gray-400">${rate.toFixed(4)} per credit{save > 0 ? ` · ${save}% volume discount included` : ''} · {account.netTerms}</p>
+            <p className="text-[16px] font-bold text-gray-900">
+              {items.length === 0 ? 'No items selected' : <>{items.map(requestLineLabel).join(' + ')} · {fmtMoney(total)}</>}
+            </p>
+            <p className="text-[10.5px] text-gray-400">One invoice · {account.netTerms}</p>
           </div>
           <div className="flex items-center gap-2">
             <button className="px-3 py-2 rounded-lg border border-black/[0.12] text-[12px] font-medium text-gray-600 hover:bg-black/[0.03] cursor-pointer">Contact sales</button>
             {account.cardTopUpsEnabled && (
-              <button className="px-3 py-2 rounded-lg border border-black/[0.12] text-[12px] font-medium text-gray-600 hover:bg-black/[0.03] cursor-pointer">Pay by card for this one-time purchase</button>
+              <button className="px-3 py-2 rounded-lg border border-black/[0.12] text-[12px] font-medium text-gray-600 hover:bg-black/[0.03] cursor-pointer">Pay by card for this one-time order</button>
             )}
             <button onClick={submit} disabled={!validation.ok}
               title={validation.ok ? undefined : validation.errors.join(' ')}
@@ -461,24 +419,26 @@ function InvoiceTopUp({ account }) {
             </button>
           </div>
         </div>
-        {done && <p className="mt-3 text-[12px] text-[#0089c4] inline-flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4" />{done}</p>}
+        {done && <p className="mt-3 text-[12px] text-[#0089c4] inline-flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 shrink-0" />{done}</p>}
       </Card>
 
       <Card>
-        <h4 className="text-[13px] font-semibold text-gray-900 mb-3">Top-up requests</h4>
+        <h4 className="text-[13px] font-semibold text-gray-900 mb-3">Purchase requests</h4>
         <ul className="divide-y divide-black/[0.06]">
           {requests.map(r => (
-            <li key={r.id} className="py-3 grid grid-cols-[1fr_auto_auto_auto] gap-4 items-center text-[12px]">
+            <li key={r.id} className="py-3 grid grid-cols-[1fr_auto_auto] gap-4 items-center text-[12px]">
               <div className="min-w-0">
-                <p className="text-gray-900">{r.id} · {r.credits.toLocaleString()} credits</p>
+                <p className="text-gray-900">
+                  {r.id} · {r.items.map(requestLineLabel).join(' + ')}
+                  {r.items.length > 1 && <span className="ml-1.5 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#009eda]/10 text-[#0089c4] border border-[#009eda]/20 font-semibold">Combined</span>}
+                </p>
                 <p className="text-[10.5px] text-gray-400 truncate">{fmtDate(r.date)} · {r.po || 'No PO'} · {r.notes}</p>
               </div>
               <span className="text-right">
-                <span className="text-gray-700 tabular-nums block">{fmtMoney(r.cost)} <span className="text-gray-400">(${r.rate.toFixed(4)}/cr)</span></span>
+                <span className="text-gray-700 tabular-nums block">{fmtMoney(r.cost)}</span>
                 <span className="text-[10px] text-gray-400 block">commitment · {account.netTerms}</span>
               </span>
               <StatusPill status={r.status} />
-              <button className="text-[11px] text-[#009eda] hover:text-[#0089c4] cursor-pointer">Details</button>
             </li>
           ))}
         </ul>
