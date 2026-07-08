@@ -32,6 +32,7 @@ import OperationsControlRoom from './components/OperationsControlRoom'
 import CampaignResultsView from './components/CampaignResultsView'
 import ContentCreator from './components/ContentCreator'
 import AnalyticsDashboard from './components/AnalyticsDashboard'
+import AgentStudio from './components/AgentStudio'
 import GovernanceAudit from './components/GovernanceAudit'
 import useMediaQuery from './hooks/useMediaQuery'
 import useQualityCalculator from './hooks/useQualityCalculator'
@@ -647,6 +648,14 @@ export default function App() {
           {phase === 'create' && (
             <ContentCreator
               onBack={() => setPhase(previousPhase || 'dashboard')}
+            />
+          )}
+
+          {/* Agent Studio — governed custom agents, nav sibling of Org Brain */}
+          {phase === 'agent-studio' && (
+            <AgentStudio
+              onBack={() => setPhase(previousPhase || 'dashboard')}
+              currentUserId="alex"
             />
           )}
 
