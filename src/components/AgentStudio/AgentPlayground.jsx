@@ -142,7 +142,7 @@ function EvidenceRail({ result, version }) {
               <ul className="space-y-1">{result.sourcesUsed.map((s, i) => <li key={i} className="text-slate">{s.name} {s.cites && <span className="text-[9px] text-teal bg-teal/10 px-1 rounded">cites</span>}</li>)}</ul>
             )}
             <div className="flex flex-wrap gap-2 mt-1.5 text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-              <span>Org Brain: {result.orgBrainHits}</span><span>Terminology: {result.termMatches}</span><span>TM: {result.tmMatches}</span>
+              <span>Cortex: {result.orgBrainHits}</span><span>Terminology: {result.termMatches}</span><span>TM: {result.tmMatches}</span>
             </div>
           </RailBlock>
 

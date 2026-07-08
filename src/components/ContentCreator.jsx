@@ -224,7 +224,7 @@ function PromptStudio({ onGenerate, prefersReduced }) {
 
         {/* Auto-suggested nodes */}
         <div className="px-5 pb-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-2">Org Brain intelligence</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-2">Cortex intelligence</p>
           <div className="flex flex-wrap gap-2">
             {DOMAIN_NODES.map(node => {
               const isActive = activeNodes.has(node.id)
@@ -752,7 +752,7 @@ export default function ContentCreator({ onBack }) {
         </button>
         <div className="flex items-center gap-2">
           <Brain className="w-5 h-5 text-[#009eda]" />
-          <h1 className="text-[20px] font-semibold text-gray-900">Create with Org Brain</h1>
+          <h1 className="text-[20px] font-semibold text-gray-900">Create with Cortex</h1>
         </div>
         {step !== 'prompt' && (
           <div className="ml-auto flex items-center gap-1.5 text-[11px] text-gray-400">

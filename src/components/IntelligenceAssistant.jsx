@@ -12,7 +12,7 @@ const SPRING = { type: 'spring', stiffness: 300, damping: 20 }
 const QUICK_ACTIONS = [
   { id: 'quality', icon: BarChart3, label: 'Explain my confidence score', color: 'text-emerald-600 bg-emerald-50' },
   { id: 'agents', icon: Bot, label: 'Which agents should I use?', color: 'text-straker-600 bg-straker-50' },
-  { id: 'orgbrain', icon: Brain, label: 'How is my Org Brain growing?', color: 'text-violet-600 bg-violet-50' },
+  { id: 'orgbrain', icon: Brain, label: 'How is my Cortex growing?', color: 'text-violet-600 bg-violet-50' },
   { id: 'compliance', icon: Shield, label: 'What compliance flags exist?', color: 'text-amber-600 bg-amber-50' },
   { id: 'feedback', icon: MessageSquarePlus, label: 'Submit Feedback', color: 'text-sky-600 bg-sky-50' },
 ]
@@ -48,7 +48,7 @@ const CANNED_RESPONSES = {
     "JP-FIN-3 is your highest-impact agent — it provides +5 quality lift for Japanese financial content. Your Digital Twin ensures output matches Meridian Capital's established patterns.",
   ],
   orgbrain: [
-    "Your Org Brain has grown to **1,247 knowledge entries** across 6 domain models. In the last 30 days, you've added 47 new terms and 18 patterns.",
+    "Your Cortex has grown to **1,247 knowledge entries** across 6 domain models. In the last 30 days, you've added 47 new terms and 18 patterns.",
     "JP-FIN-3 (Japanese Financial) is your most active model with 412 entries and 96% accuracy. Your knowledge coverage is at 34% — strong for 6 months of operation.",
   ],
   compliance: [
@@ -67,7 +67,7 @@ const CANNED_RESPONSES = {
     "It looks like that tool isn't connected yet. Head to **Connected Tools** to set it up — I'll be able to use it automatically once it's linked.",
   ],
   default: [
-    "I'm your Intelligence Assistant. I can help you understand confidence scores, choose the right agents, track your Org Brain growth, and navigate compliance requirements.",
+    "I'm your Intelligence Assistant. I can help you understand confidence scores, choose the right agents, track your Cortex growth, and navigate compliance requirements.",
     "Try asking me about any of those topics, or use the quick actions below.",
   ],
 }
@@ -181,7 +181,7 @@ export default function IntelligenceAssistant({ companyName, userName, currentPh
         : currentPhase === 'narrative' ? " You're reviewing the Governance report. I can explain any scores or flags."
         : currentPhase === 'human-review' ? " You're on the Review step. Need help with any flagged segments?"
         : currentPhase === 'org-brain' && connectedIntegrations.some(c => c.id === 'confluence')
-          ? " I've updated the Org Brain. Want me to sync new entries to your Confluence glossary?"
+          ? " I've updated the Cortex. Want me to sync new entries to your Confluence glossary?"
         : ' How can I help you today?'
       setMessages([
         {
@@ -226,7 +226,7 @@ export default function IntelligenceAssistant({ companyName, userName, currentPh
     let responseKey = 'default'
     if (lower.includes('quality') || lower.includes('score')) responseKey = 'quality'
     else if (lower.includes('agent') || lower.includes('ensemble')) responseKey = 'agents'
-    else if (lower.includes('org brain') || lower.includes('knowledge') || lower.includes('brain')) responseKey = 'orgbrain'
+    else if (lower.includes('Cortex') || lower.includes('knowledge') || lower.includes('brain')) responseKey = 'orgbrain'
     else if (lower.includes('compliance') || lower.includes('flag') || lower.includes('review')) responseKey = 'compliance'
     else if (lower.includes('automat') || lower.includes('workflow') || lower.includes('integrat') || lower.includes('connect')) responseKey = 'integrations'
     else if (lower.includes('slack') || lower.includes('jira') || lower.includes('drive') || lower.includes('salesforce')) {

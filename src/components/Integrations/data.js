@@ -60,7 +60,7 @@ export const TRIGGERS = [
   { id: 'compliance-flagged', label: 'Compliance review flagged', step: 5 },
   { id: 'review-approved', label: 'Human review approved', step: 6 },
   { id: 'review-revision', label: 'Revision requested', step: 6 },
-  { id: 'org-brain-updated', label: 'Org Brain entry created / updated', step: 7 },
+  { id: 'org-brain-updated', label: 'Cortex entry created / updated', step: 7 },
   { id: 'manual', label: 'Manual trigger', step: null },
 ]
 
@@ -183,7 +183,7 @@ export const WORKFLOW_TEMPLATES = [
   {
     id: 't4',
     name: 'Sync to knowledge base',
-    description: 'Create a Confluence page when a new Org Brain entry is added.',
+    description: 'Create a Confluence page when a new Cortex entry is added.',
     trigger: 'org-brain-updated',
     condition: null,
     actions: [{ connectorId: 'confluence', actionId: 'cf-page', config: { space: 'KNOW', title: '{{entry.title}}', body: '{{entry.content}}' } }],

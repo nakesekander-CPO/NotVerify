@@ -19,7 +19,7 @@ NotVerify (working name "product-x") is a **clickable frontend prototype** for a
 5. **Campaign Hub** — Bulk document ingestion with pre-flight validation
 6. **Agent Marketplace** — Browse/hire/deploy specialized AI translation agents
 7. **Human Review** — In-the-loop review for flagged segments
-8. **Org Brain** — Organizational knowledge base (glossaries, patterns, translation memory)
+8. **Cortex** — Organizational knowledge base (glossaries, patterns, translation memory)
 9. **Settings & Integrations** — Credits/billing, workflow builder, security permissions
 
 **Key distinction:** This is a **simulation-only prototype**. All data is generated client-side. No real translation, AI processing, or API calls occur.

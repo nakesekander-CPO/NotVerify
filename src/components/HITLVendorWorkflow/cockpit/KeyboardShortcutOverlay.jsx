@@ -19,7 +19,7 @@ const ROWS = [
     ['Shift + F', 'Previous flagged segment'],
   ]},
   { group: 'Inspect', items: [
-    ['G',     'Toggle Org Brain matches panel'],
+    ['G',     'Toggle Cortex matches panel'],
     ['B',     'Toggle back-translation panel'],
     ['Q',     'Toggle QA-diff panel'],
     ['T',     'Toggle trust-score explainer'],

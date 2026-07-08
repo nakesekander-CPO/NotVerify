@@ -55,7 +55,7 @@ export default function AgentStudioDashboard({ go }) {
     <div className="space-y-5">
       <SectionHeading
         title="Agent Studio"
-        subtitle="Create governed AI agents that use your Org Brain and work inside arbitr."
+        subtitle="Create governed AI agents that use your Cortex and work inside arbitr."
         actions={
           <div className="flex items-center gap-2">
             <SecondaryButton onClick={() => go('new')}>Browse Templates</SecondaryButton>
@@ -191,7 +191,7 @@ function EmptyDashboard({ go }) {
         <EmptyState
           icon={Bot}
           title="Build your first governed agent"
-          description="Agent Studio lets you create AI agents that use your Org Brain, only do what you allow, cite their sources, and escalate to humans when it matters. Start from a template below."
+          description="Agent Studio lets you create AI agents that use your Cortex, only do what you allow, cite their sources, and escalate to humans when it matters. Start from a template below."
         />
       </Card>
       <div>

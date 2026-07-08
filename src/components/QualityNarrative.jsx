@@ -507,7 +507,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
   const handleInlineResolve = (segId, action, data) => {
     setInlineResolutions(prev => ({ ...prev, [segId]: { action, ...data, timestamp: new Date().toLocaleTimeString() } }))
     if (action === 'confirm' || action === 'edit') {
-      addToast('\u2713 Fixed & Committed to Org Brain \u2014 Model JP-FIN-3 will incorporate this correction', 'success', 3000)
+      addToast('\u2713 Fixed & Committed to Cortex \u2014 Model JP-FIN-3 will incorporate this correction', 'success', 3000)
     }
   }
 
@@ -928,7 +928,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
                 <p className="text-[13px] text-gray-700 mb-2">
                   This project added <span className="font-semibold text-straker-600">{newTermsCount} terms</span>,{' '}
                   <span className="font-semibold text-straker-600">{cumulative.patternsThisProject || 12} patterns</span>, and{' '}
-                  <span className="font-semibold text-straker-600">{cumulative.segmentsThisProject || 86} segments</span> to your org brain.
+                  <span className="font-semibold text-straker-600">{cumulative.segmentsThisProject || 86} segments</span> to your Cortex.
                 </p>
                 <div className="flex items-center gap-4 text-[11px] text-gray-500">
                   <span>File: {data.fileName}</span>
@@ -938,10 +938,10 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
 
               <div className="bg-straker-500/[0.04] border border-straker-500/15 rounded-lg p-4 mb-4">
                 <p className="text-[14px] text-gray-900 mb-1">
-                  This project contributed <span className="font-semibold text-straker-600">{newTermsCount}</span> new entries to your Org Brain
+                  This project contributed <span className="font-semibold text-straker-600">{newTermsCount}</span> new entries to your Cortex
                 </p>
                 <p className="text-[12px] text-gray-500 mb-3">
-                  Org Brain: {(cumulative.glossaryTermsLearned || 1247).toLocaleString()} entries
+                  Cortex: {(cumulative.glossaryTermsLearned || 1247).toLocaleString()} entries
                 </p>
                 <div>
                   <div className="flex items-center justify-between mb-1">
@@ -978,7 +978,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
               </div>
             </div>
 
-            {/* Explore Org Brain CTA */}
+            {/* Explore Cortex CTA */}
             <div className="bg-gradient-to-r from-straker-500/[0.06] to-violet-500/[0.06] border border-straker-500/15 rounded-lg p-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -986,7 +986,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
                     <Brain className="w-5 h-5 text-straker-600" />
                   </div>
                   <div>
-                    <p className="text-[14px] font-semibold text-gray-900">Explore your Org Brain</p>
+                    <p className="text-[14px] font-semibold text-gray-900">Explore your Cortex</p>
                     <p className="text-[12px] text-gray-500">Visualize your knowledge graph, domain models, and learning history</p>
                   </div>
                 </div>
@@ -994,7 +994,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
                   onClick={() => onOpenOrgBrain?.()}
                   className="group inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-amber hover:bg-amber-deep text-white text-[13px] font-semibold transition-all cursor-pointer"
                 >
-                  Explore Org Brain
+                  Explore Cortex
                   <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
                 </button>
               </div>
@@ -1074,7 +1074,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
 
       </div>
 
-      {/* Org Brain now rendered at App level via onOpenOrgBrain prop */}
+      {/* Cortex now rendered at App level via onOpenOrgBrain prop */}
 
       {/* Diagnostic Modal — always rendered (outside tabs) */}
       <AnimatePresence>

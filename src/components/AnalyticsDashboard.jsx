@@ -190,13 +190,13 @@ export default function AnalyticsDashboard({ onBack }) {
         </div>
       </div>
 
-      {/* Row 3: Org Brain reuse + Credit consumption */}
+      {/* Row 3: Cortex reuse + Credit consumption */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
-        {/* Org Brain reuse */}
+        {/* Cortex reuse */}
         <div className="rounded-xl border border-black/[0.08] bg-white p-5">
           <div className="flex items-center gap-2 mb-4">
             <Brain className="w-4 h-4 text-[#009eda]" />
-            <h3 className="text-[12px] font-semibold uppercase tracking-widest text-gray-400">Org Brain reuse</h3>
+            <h3 className="text-[12px] font-semibold uppercase tracking-widest text-gray-400">Cortex reuse</h3>
           </div>
           <div className="space-y-3">
             {ORG_BRAIN_REUSE.map(domain => (

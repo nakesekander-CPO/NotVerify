@@ -23,7 +23,7 @@ import {
 
 const COMMANDS = [
   { id: 'intelligence-search', label: 'Intelligence Search',     hint: 'Cross-corpus semantic search',  icon: Search,     keywords: 'intelligence search ai semantic' },
-  { id: 'knowledge-graph',     label: 'Search Knowledge Graph',  hint: 'Org Brain entities & relations',icon: GitBranch,  keywords: 'knowledge graph kg org brain entities' },
+  { id: 'knowledge-graph',     label: 'Search Knowledge Graph',  hint: 'Cortex entities & relations',icon: GitBranch,  keywords: 'knowledge graph kg Cortex entities' },
   { id: 'find-in-document',    label: 'Find in document',         hint: 'Find & Replace · this document',icon: FileSearch, keywords: 'find replace document local' },
   { id: 'find-in-corpus',      label: 'Find in corpus',           hint: 'Find across the entire corpus', icon: Globe,      keywords: 'find replace corpus everywhere' },
   { id: 'open-glossary',       label: 'Open glossary',            hint: 'Focus the Live TB panel',       icon: BookOpen,   keywords: 'glossary tb termbase terms' },

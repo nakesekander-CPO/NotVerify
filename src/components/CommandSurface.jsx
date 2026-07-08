@@ -249,7 +249,7 @@ function LaunchBriefing({ file, defaultLocales, onConfirm, onCancel, prefersRedu
           <p className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" /> Detected: {docTypeLabel} ({industry})</p>
           <p className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" /> Applicable intelligence: {regulations.join(', ') || 'General'}{industry === 'Financial Services' ? ', Meridian Capital voice policy' : ''}</p>
           <p className="flex items-center gap-1.5"><Shield className="w-3 h-3 text-amber-500 shrink-0" /> High-risk areas: {docType === 'Financial' ? 'financial terminology, legal disclaimers, investor messaging' : docType === 'Legal' ? 'contractual terms, regulatory references, jurisdiction language' : 'domain terminology, brand voice, cultural adaptation'}</p>
-          <p className="flex items-center gap-1.5"><Bot className="w-3 h-3 text-[#009eda] shrink-0" /> {ensemble?.name || 'General Purpose'} ensemble &middot; {TRUST_POLICIES.find(t => t.id === trustPolicy)?.label.toLowerCase()} trust &middot; Org Brain memory reuse</p>
+          <p className="flex items-center gap-1.5"><Bot className="w-3 h-3 text-[#009eda] shrink-0" /> {ensemble?.name || 'General Purpose'} ensemble &middot; {TRUST_POLICIES.find(t => t.id === trustPolicy)?.label.toLowerCase()} trust &middot; Cortex memory reuse</p>
         </div>
       </div>
 
@@ -339,7 +339,7 @@ const DEFAULT_WIDGETS = [
 const WIDGET_LABELS = {
   'intelligence': 'Intelligence',
   'org-health': 'Org Health',
-  'org-brain': 'Org Brain',
+  'org-brain': 'Cortex',
   'auto-publish': 'Auto-Publish',
   'smart-defaults': 'Smart Defaults',
   'connected-tools': 'Connected Tools',
@@ -832,7 +832,7 @@ export default function CommandSurface({ onFileAccepted, onFileWithLocales, orgI
             Good morning, {userName || 'Alex'}.
           </h1>
           <p className="text-sm text-gray-500">
-            {totalProjectsCompleted.toLocaleString()} analyses complete &middot; Org Brain: 1,247 intelligence entries
+            {totalProjectsCompleted.toLocaleString()} analyses complete &middot; Cortex: 1,247 intelligence entries
           </p>
         </div>
 
@@ -958,7 +958,7 @@ export default function CommandSurface({ onFileAccepted, onFileWithLocales, orgI
           <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#009eda] shrink-0 transition-colors" />
         </button>
 
-        {/* Create with Org Brain CTA */}
+        {/* Create with Cortex CTA */}
         <button
           type="button"
           onClick={() => onCreateContent?.()}
@@ -973,7 +973,7 @@ export default function CommandSurface({ onFileAccepted, onFileWithLocales, orgI
                 Create new content
               </p>
               <p className="text-[11px] text-gray-400">
-                Generate from Org Brain intelligence &middot; on-brand, compliant, locale-ready
+                Generate from Cortex intelligence &middot; on-brand, compliant, locale-ready
               </p>
             </div>
           </div>
@@ -1084,11 +1084,11 @@ export default function CommandSurface({ onFileAccepted, onFileWithLocales, orgI
             </WidgetCard>
           )}
 
-          {/* Org Brain */}
+          {/* Cortex */}
           {getWidget('org-brain')?.visible && (
             <WidgetCard
               id="org-brain"
-              title="Org Brain"
+              title="Cortex"
               icon={Brain}
               badge="34%"
               collapsed={getWidget('org-brain')?.collapsed}
@@ -1125,7 +1125,7 @@ export default function CommandSurface({ onFileAccepted, onFileWithLocales, orgI
                   onClick={onOpenOrgBrain}
                   className="group flex items-center gap-1.5 text-[12px] font-medium text-straker-600 hover:text-straker-500 transition-colors cursor-pointer"
                 >
-                  View Org Brain
+                  View Cortex
                   <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
                 </button>
               </div>

@@ -441,7 +441,7 @@ export default function IntelligenceTriage({ onApprove }) {
       next.add(id);
       return next;
     });
-    addToast('\u2713 Approved & queued for Org Brain', 'success', 2500);
+    addToast('\u2713 Approved & queued for Cortex', 'success', 2500);
   }, [addToast]);
 
   const handleDiscardOne = useCallback((id) => {
@@ -495,7 +495,7 @@ export default function IntelligenceTriage({ onApprove }) {
         }
         onApprove(approved);
       }
-      addToast('\u2713 All intelligence committed to Org Brain \u2014 Models will retrain on next cycle', 'success', 3000);
+      addToast('\u2713 All intelligence committed to Cortex \u2014 Models will retrain on next cycle', 'success', 3000);
     }, 1500);
   }, [allResolved, committing, committed, approvedIds, autoCommittedIds, onApprove, addToast]);
 
@@ -545,7 +545,7 @@ export default function IntelligenceTriage({ onApprove }) {
               </option>
             ))}
           </select>
-          <span className="text-sm text-gray-500">to Org Brain</span>
+          <span className="text-sm text-gray-500">to Cortex</span>
         </div>
         <p className="mt-2 text-xs text-gray-400">
           Items exceeding this threshold are automatically committed. You can undo any auto-committed item within 48 hours.
@@ -669,7 +669,7 @@ export default function IntelligenceTriage({ onApprove }) {
                         {tierKey === 'mediumConfidence' && item.source === 'Operating Income' && (
                           <p className="text-[11px] text-emerald-600/80 mt-1 flex items-center gap-1">
                             <Sparkles size={10} />
-                            Recommended: Matches 12 previous Org Brain patterns
+                            Recommended: Matches 12 previous Cortex patterns
                           </p>
                         )}
                         {tierKey === 'mediumConfidence' && item.source === 'Cash Flow Statement' && (
@@ -740,7 +740,7 @@ export default function IntelligenceTriage({ onApprove }) {
           ) : (
             <>
               <Shield className="h-4 w-4" />
-              Confirm & Commit to Org Brain
+              Confirm & Commit to Cortex
             </>
           )}
         </button>

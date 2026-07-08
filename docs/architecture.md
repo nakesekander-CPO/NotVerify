@@ -423,7 +423,7 @@ Consistent attention to accessibility throughout:
 
 ### Strengths
 
-1. **Product vision is exceptional.** The prototype demonstrates a compelling, differentiated enterprise localization product. The predictive co-pilot, explainable quality narratives, agent marketplace, and Org Brain concepts are genuinely novel for this space.
+1. **Product vision is exceptional.** The prototype demonstrates a compelling, differentiated enterprise localization product. The predictive co-pilot, explainable quality narratives, agent marketplace, and Cortex concepts are genuinely novel for this space.
 
 2. **UI/UX polish is high.** Framer Motion animations are smooth and purposeful. The design system is consistent — a single blue brand scale with clear semantic color tokens. Typography hierarchy is clean. The "Security Theatre" processing visualization is exactly the kind of trust-building theatre enterprise buyers need.
 

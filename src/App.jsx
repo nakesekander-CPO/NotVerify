@@ -325,7 +325,7 @@ export default function App() {
   }, [phase])
 
   // Entry Point 1a-self: Review Now — skip assignment, go directly to review phase
-  // Create with Org Brain
+  // Create with Cortex
   const handleCreateContent = useCallback(() => {
     setPreviousPhase(phase)
     setPhase('create')
@@ -635,7 +635,7 @@ export default function App() {
             />
           )}
 
-          {/* Org Brain — top-level phase accessible from dashboard or narrative */}
+          {/* Cortex — top-level phase accessible from dashboard or narrative */}
           {phase === 'org-brain' && (
             <OrgBrain
               onClose={() => setPhase(previousPhase || 'dashboard')}
@@ -644,14 +644,14 @@ export default function App() {
             />
           )}
 
-          {/* Create with Org Brain */}
+          {/* Create with Cortex */}
           {phase === 'create' && (
             <ContentCreator
               onBack={() => setPhase(previousPhase || 'dashboard')}
             />
           )}
 
-          {/* Agent Studio — governed custom agents, nav sibling of Org Brain */}
+          {/* Agent Studio — governed custom agents, nav sibling of Cortex */}
           {phase === 'agent-studio' && (
             <AgentStudio
               onBack={() => setPhase(previousPhase || 'dashboard')}

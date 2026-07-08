@@ -104,7 +104,7 @@ export default function ProjectCockpit({ activeProjectId, setActiveProjectId, na
           </div>
           <ul className="px-5 py-3 text-[12.5px] space-y-2">
             <li className="flex items-center justify-between"><span>Retraining allowed</span><span className={project.requirements.retrainingAllowed ? 'text-teal' : 'text-error'}>{project.requirements.retrainingAllowed ? 'Yes' : 'No'}</span></li>
-            <li className="flex items-center justify-between"><span>Org Brain feed</span><span className={project.requirements.orgBrainAllowed ? 'text-teal' : 'text-error'}>{project.requirements.orgBrainAllowed ? 'Yes' : 'No'}</span></li>
+            <li className="flex items-center justify-between"><span>Cortex feed</span><span className={project.requirements.orgBrainAllowed ? 'text-teal' : 'text-error'}>{project.requirements.orgBrainAllowed ? 'Yes' : 'No'}</span></li>
             <li className="flex items-center justify-between"><span>Model suggestions</span><span className={project.requirements.modelSuggestionsAllowed ? 'text-teal' : 'text-error'}>{project.requirements.modelSuggestionsAllowed ? 'Yes' : 'No'}</span></li>
             <li className="flex items-center justify-between"><span>Auto-publish threshold</span><span>{project.requirements.autoPublishThreshold}%</span></li>
             <li className="flex items-center justify-between"><span>Review level</span><span>{project.requirements.requiredReviewLevel}</span></li>

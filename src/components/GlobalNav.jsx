@@ -2,7 +2,7 @@ import { Home, Brain, BarChart3, Scale, Bot } from 'lucide-react'
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: Home, phases: ['dashboard'] },
-  { id: 'org-brain', label: 'Org Brain', icon: Brain, phases: ['org-brain'] },
+  { id: 'org-brain', label: 'Cortex', icon: Brain, phases: ['org-brain'] },
   { id: 'agent-studio', label: 'Agent Studio', icon: Bot, phases: ['agent-studio'] },
   { id: 'analytics', label: 'Analytics', icon: BarChart3, phases: ['analytics'] },
   { id: 'governance', label: 'Governance', icon: Scale, phases: ['governance'] },

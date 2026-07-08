@@ -59,7 +59,7 @@ const WALKTHROUGH_MESSAGES = [
   {
     id: 'intro',
     section: 'Overview',
-    text: "You're on Org Brain — Step 7 of 7. This is where all of Meridian Capital's translation and localization intelligence lives and grows. Think of it as your organization's translation memory, compliance rulebook, and style guide — all rolled into one, and getting smarter with every project.",
+    text: "You're on Cortex — Step 7 of 7. This is where all of Meridian Capital's translation and localization intelligence lives and grows. Think of it as your organization's translation memory, compliance rulebook, and style guide — all rolled into one, and getting smarter with every project.",
   },
   {
     id: 'stats',
@@ -74,7 +74,7 @@ const WALKTHROUGH_MESSAGES = [
   {
     id: 'growth',
     section: 'Growth Chart',
-    text: "This chart shows the Org Brain getting smarter over time. Growth was steady through the first half of the year, then accelerated sharply from August onward. That hockey-stick curve is the compounding effect of intelligence — each project you run feeds new knowledge back in. The longer you use the platform, the more it knows about your organization specifically.",
+    text: "This chart shows the Cortex getting smarter over time. Growth was steady through the first half of the year, then accelerated sharply from August onward. That hockey-stick curve is the compounding effect of intelligence — each project you run feeds new knowledge back in. The longer you use the platform, the more it knows about your organization specifically.",
   },
   {
     id: 'heatmap',
@@ -89,12 +89,12 @@ const WALKTHROUGH_MESSAGES = [
   {
     id: 'timeline',
     section: 'Learning Events',
-    text: "The Recent Learning Events feed is the pulse of the Org Brain. Every entry represents the system absorbing something new from a real project — 23 financial terms from Q3 Earnings, 12 patterns from a product launch in Germany, regulatory updates from CSRC. This isn't a static database. It's actively learning every time you process a document.",
+    text: "The Recent Learning Events feed is the pulse of the Cortex. Every entry represents the system absorbing something new from a real project — 23 financial terms from Q3 Earnings, 12 patterns from a product launch in Germany, regulatory updates from CSRC. This isn't a static database. It's actively learning every time you process a document.",
   },
   {
     id: 'closing',
     section: 'The Bottom Line',
-    text: "Org Brain is what makes arbitr a platform that **compounds in value**. Unlike a one-off translation tool, every project you run makes the next one faster, more accurate, and less work for your team. All of this institutional knowledge is protected with **SOC 2 Type II** compliance, **AES-256** encryption, and in-region data storage.",
+    text: "Cortex is what makes arbitr a platform that **compounds in value**. Unlike a one-off translation tool, every project you run makes the next one faster, more accurate, and less work for your team. All of this institutional knowledge is protected with **SOC 2 Type II** compliance, **AES-256** encryption, and in-region data storage.",
   },
 ]
 
@@ -811,7 +811,7 @@ function ContentLibrary({ prefersReducedMotion, onCreateContent }) {
         <div className="flex flex-col items-center justify-center py-6 text-center">
           <FileText className="w-6 h-6 text-gray-300 mb-2" />
           <p className="text-[13px] font-medium text-gray-500">No content created yet</p>
-          <p className="text-[11px] text-gray-400 mt-0.5 mb-3">Use Create with Org Brain to generate your first document</p>
+          <p className="text-[11px] text-gray-400 mt-0.5 mb-3">Use Create with Cortex to generate your first document</p>
           <button type="button" onClick={() => onCreateContent?.()} className="flex items-center gap-1.5 text-[12px] text-[#009eda] hover:text-[#007bb5] font-medium cursor-pointer transition-colors">
             Create content <ChevronRight className="w-3 h-3" />
           </button>
@@ -967,7 +967,7 @@ export default function OrgBrain({ onClose, onNavigateBack, onCreateContent }) {
             </div>
             <div>
               <h2 className="text-lg font-bold text-gray-900" style={{ fontFamily: 'Inter, sans-serif' }}>
-                Org Brain
+                Cortex
               </h2>
               <p className="text-xs text-gray-500 mt-0.5">
                 Your organization's accumulated intelligence
@@ -991,7 +991,7 @@ export default function OrgBrain({ onClose, onNavigateBack, onCreateContent }) {
             <button
               onClick={() => onCreateContent?.()}
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-black/[0.03] hover:bg-[#009eda]/[0.08] border border-black/[0.12] hover:border-[#009eda]/30 text-[13px] font-medium text-gray-700 hover:text-[#009eda] transition-colors cursor-pointer"
-              aria-label="Create with Org Brain"
+              aria-label="Create with Cortex"
             >
               <Pen className="w-3.5 h-3.5" />
               Create

@@ -39,13 +39,13 @@ export default function GlobalAdminSettings() {
             <Lock className="w-4 h-4 text-amber" />
             <p className="text-[14px] font-semibold text-ink">Retraining governance</p>
           </div>
-          <p className="text-[12.5px] text-slate mt-2">Retraining and Org Brain updates require approval by a final-validator or arbitr global admin. Unapproved corrections are never used.</p>
+          <p className="text-[12.5px] text-slate mt-2">Retraining and Cortex updates require approval by a final-validator or arbitr global admin. Unapproved corrections are never used.</p>
           <div className="mt-3">
             <KeyValueRow label="Required approval role" value="final-validator / arbitr-global-admin" />
             <KeyValueRow label="Regression test before promotion" value="Required" />
             <KeyValueRow label="Model version history" value="Retained per agent" />
             <KeyValueRow label="Retraining sources" value="Validated, signed-off only" />
-            <KeyValueRow label="Org Brain feed" value="Per-project policy" />
+            <KeyValueRow label="Cortex feed" value="Per-project policy" />
           </div>
         </Card>
       </div>

@@ -67,7 +67,7 @@ export default function CreateAgentWizard({ initialTemplate, onCancel, onCreated
     <div className="space-y-5">
       <SectionHeading
         title="Create Agent"
-        subtitle="Governed, Org-Brain-aware, and testable before it goes live."
+        subtitle="Governed, Cortex-aware, and testable before it goes live."
         actions={<SecondaryButton onClick={onCancel}>Cancel</SecondaryButton>}
       />
 

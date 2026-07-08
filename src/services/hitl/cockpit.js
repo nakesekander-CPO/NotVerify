@@ -5,7 +5,7 @@
  * summaries.
  *
  * Everything here is a derivation over primary records (segments,
- * decisions, candidates, Org Brain entries). No mutation. Cheap.
+ * decisions, candidates, Cortex entries). No mutation. Cheap.
  */
 
 import {
@@ -104,7 +104,7 @@ export function explainFlagCategory(key, segment, project, candidates) {
     case 'potential-hallucination': return 'An agent proposal contains a numeric or proper-noun token absent from source.';
     case 'numerical-inconsistency': return 'Numeric tokens differ between candidate proposals — at least one is wrong.';
     case 'brand-voice-drift': return 'Brand Voice Sentry confidence is below the voice-match threshold for this project.';
-    case 'missing-org-brain': return 'No prior canonical rendering exists in Org Brain for this concept in this domain.';
+    case 'missing-org-brain': return 'No prior canonical rendering exists in Cortex for this concept in this domain.';
     case 'agent-disagreement': return 'Panel divergence is high — agents materially disagree about the right rendering.';
     case 'low-provenance': return 'Composite pedigree falls below the platform floor for high-stakes content.';
     case 'length-formatting': return 'Candidate length differs from source by more than 25%, risking layout or trust signals.';

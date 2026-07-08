@@ -309,7 +309,7 @@ function LearningToast({ toast, onDismiss, onTriggerRealignment, reduced }) {
       }
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-gray-900">
-          {toast.isPropagation ? 'Truth Propagated' : toast.isKnowledgeRule ? 'Knowledge Rule saved' : 'Segment resolved & committed to Org Brain'}
+          {toast.isPropagation ? 'Truth Propagated' : toast.isKnowledgeRule ? 'Knowledge Rule saved' : 'Segment resolved & committed to Cortex'}
         </p>
         <p className="text-[11px] text-gray-900/40 mt-0.5">{toast.segLabel}</p>
         {toast.isKnowledgeRule && onTriggerRealignment && (

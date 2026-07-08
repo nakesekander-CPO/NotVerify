@@ -42,7 +42,7 @@ const READINESS_ITEMS = (locales, vertical, connectedCount, onOpenIntegrations) 
   { done: true, label: 'Tone calibrated', value: 'Formal' },
   { done: true, label: 'Locales activated', value: `${locales.length} ${locales.length === 1 ? 'target' : 'targets'}` },
   { done: false, label: 'Quality Baseline', value: 'builds with first project' },
-  { done: false, label: 'Org Brain', value: 'grows automatically as you run projects' },
+  { done: false, label: 'Cortex', value: 'grows automatically as you run projects' },
   {
     done: connectedCount > 0,
     label: 'Integrations connected',
@@ -54,7 +54,7 @@ const READINESS_ITEMS = (locales, vertical, connectedCount, onOpenIntegrations) 
 const FIRST_MISSION_ITEMS = [
   { id: 'upload', icon: Upload, label: 'Upload your first document', unlocked: true, action: 'file' },
   { id: 'ensemble', icon: Layers, label: 'Review your agent ensemble', unlocked: true, action: 'tooltip' },
-  { id: 'brain', icon: Brain, label: 'Explore your Org Brain', unlocked: false, action: 'locked' },
+  { id: 'brain', icon: Brain, label: 'Explore your Cortex', unlocked: false, action: 'locked' },
   { id: 'invite', icon: UserPlus, label: 'Invite a team member', unlocked: false, action: 'locked' },
   { id: 'integrate', icon: Puzzle, label: 'Connect your first integration', unlocked: true, action: 'integrations' },
 ];
@@ -560,7 +560,7 @@ export default function ColdStartDashboard({
         </button>
       </motion.div>
 
-      {/* ── Create with Org Brain ── */}
+      {/* ── Create with Cortex ── */}
       <motion.div className="mb-6" {...m(fadeUp(0.2))}>
         <button
           type="button"
@@ -573,7 +573,7 @@ export default function ColdStartDashboard({
             </div>
             <div>
               <p className="text-[13px] font-semibold text-gray-800">Create new content</p>
-              <p className="text-[11px] text-gray-400 leading-snug">Generate reports, memos, and disclosures from Org Brain intelligence</p>
+              <p className="text-[11px] text-gray-400 leading-snug">Generate reports, memos, and disclosures from Cortex intelligence</p>
             </div>
           </div>
           <ChevronRight size={16} className="text-gray-300 group-hover:text-[#009eda] transition-colors shrink-0" />
@@ -581,13 +581,13 @@ export default function ColdStartDashboard({
       </motion.div>
 
       {/* ── Widget Grid ── */}
-      {/* ── Org Brain — Pre-seeded Intelligence ── */}
+      {/* ── Cortex — Pre-seeded Intelligence ── */}
       <motion.div {...m(fadeUp(0.4))} className="rounded-xl border border-black/[0.08] bg-white overflow-hidden">
         {/* Header */}
         <div className="px-6 pt-5 pb-4 border-b border-black/[0.06]">
           <div className="flex items-center gap-2.5 mb-1">
             <Brain size={18} className="text-[#009eda]" />
-            <h2 className="text-[15px] font-semibold text-gray-900">Your Org Brain</h2>
+            <h2 className="text-[15px] font-semibold text-gray-900">Your Cortex</h2>
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-semibold border border-emerald-200">
               <CheckCircle2 size={10} /> 147 entries pre-loaded
             </span>
@@ -681,7 +681,7 @@ export default function ColdStartDashboard({
             onClick={onStartFirstProject}
             className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-amber hover:bg-amber-deep text-white text-[13px] font-semibold transition-colors cursor-pointer"
           >
-            Analyze your first document to grow your Org Brain
+            Analyze your first document to grow your Cortex
             <ArrowRight size={14} />
           </button>
         </div>

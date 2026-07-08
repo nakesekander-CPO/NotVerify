@@ -37,7 +37,7 @@ function visibilityFor(currentUserId) {
 const PANELS = [
   { id: 'surrounding',  icon: Layers,         label: 'Surrounding segments' },
   { id: 'source',       icon: FileText,       label: 'Source anchor preview' },
-  { id: 'orgbrain',     icon: BookOpen,       label: 'Org Brain matches' },
+  { id: 'orgbrain',     icon: BookOpen,       label: 'Cortex matches' },
   { id: 'policy',       icon: FileCheck2,     label: 'Policy citations' },
   { id: 'back',         icon: ArrowLeftRight, label: 'Back-translation' },
   { id: 'qa',           icon: Stethoscope,    label: 'QA diff' },
@@ -176,7 +176,7 @@ function SourceAnchor({ segment }) {
   )
 }
 
-/* ─── Panel: Org Brain matches (RBAC-redacted) ──────────────────
+/* ─── Panel: Cortex matches (RBAC-redacted) ──────────────────
  * Vendor-scope visibility:
  *   - approvedFragment shown as approved-glossary term only
  *   - sourceFragment / contributor / approval-history redacted
@@ -197,7 +197,7 @@ function OrgBrainMatches({ segment, project, visibility = 'standard' }) {
     })
     .slice(0, 3)
   if (matches.length === 0) {
-    return <p className="text-[11.5px] text-mist italic">No Org Brain matches in this domain yet.</p>
+    return <p className="text-[11.5px] text-mist italic">No Cortex matches in this domain yet.</p>
   }
   const isRestricted = visibility === 'restricted'
   return (

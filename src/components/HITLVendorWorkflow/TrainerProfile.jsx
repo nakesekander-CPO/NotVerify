@@ -10,7 +10,7 @@ import { SectionHeading, Card, MonoLabel, ScoreBar, KeyValueRow } from './shared
 /**
  * Trainer Profile — the "Contributor Footprint" surface.
  *
- * Shows: lifetime impact stats, the Org Brain entries the trainer is
+ * Shows: lifetime impact stats, the Cortex entries the trainer is
  * attributed to, the rationale tags they most often apply, and the
  * confidence lifts they have generated. Replaces the ephemeral
  * piecework view with a durable intellectual contribution record.
@@ -80,7 +80,7 @@ export default function TrainerProfile({ currentUserId }) {
               <KeyValueRow label="Lifetime adjudications" value={impact.adjudicated} mono />
               <KeyValueRow label="Authored rulings" value={impact.authored} mono />
               <KeyValueRow label="Tagged decisions" value={impact.tagged} mono />
-              <KeyValueRow label="Org Brain entries" value={impact.memoryEntries} mono />
+              <KeyValueRow label="Cortex entries" value={impact.memoryEntries} mono />
               <KeyValueRow label="Confidence lifts (pts)" value={impact.confidenceLiftsRaw} mono />
               <KeyValueRow label="Domains touched" value={impact.memoryDomains.length ? impact.memoryDomains.join(', ') : '—'} />
             </div>
@@ -119,11 +119,11 @@ export default function TrainerProfile({ currentUserId }) {
           <Card padding="p-0">
             <div className="px-5 py-3 border-b border-rule flex items-center gap-2">
               <Brain className="w-4 h-4 text-ocean" />
-              <p className="text-[13px] font-semibold text-ink">Contributor footprint · Org Brain</p>
+              <p className="text-[13px] font-semibold text-ink">Contributor footprint · Cortex</p>
             </div>
             <div className="px-5 py-3">
               {memoryEntries.length === 0 ? (
-                <p className="text-[12px] text-mist">No Org Brain entries attributed to this trainer yet. Memory promotions appear here after sign-off.</p>
+                <p className="text-[12px] text-mist">No Cortex entries attributed to this trainer yet. Memory promotions appear here after sign-off.</p>
               ) : (
                 <ul className="space-y-2.5">
                   {memoryEntries.slice(-8).reverse().map(o => (

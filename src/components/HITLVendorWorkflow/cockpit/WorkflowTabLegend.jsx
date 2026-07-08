@@ -8,7 +8,7 @@ import { useState } from 'react'
 import { Info } from 'lucide-react'
 
 const LEGEND = {
-  'External Review':       { label: 'External Review',       detail: 'Assigned to an external vendor agency (e.g., Nihon Linguistics K.K.). Vendor reviewers see redacted Org Brain and policy details under RBAC.' },
+  'External Review':       { label: 'External Review',       detail: 'Assigned to an external vendor agency (e.g., Nihon Linguistics K.K.). Vendor reviewers see redacted Cortex and policy details under RBAC.' },
   'Internal Review 1':     { label: 'Internal Review 1',     detail: 'One internal reviewer takes the whole project. Fast-lane for low-volume / high-stakes work.' },
   'Internal Final Review': { label: 'Internal Final Review', detail: 'Multiple internal reviewers work tasks in parallel; managed in Task Assignment.' },
 }

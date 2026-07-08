@@ -893,7 +893,7 @@ function Stat({ label, value }) {
 
 /* ─── Adjudication Header ─────────────────────────────────────────
  *
- * Shows: (a) the validator's Org Brain footprint (Trainer status), and
+ * Shows: (a) the validator's Cortex footprint (Trainer status), and
  * (b) live segment difficulty as a multiple of the segment-set's avg
  * dwell. "3.2× avg dwell" = this segment is taking 3.2× longer than the
  * mean, which is a real-time difficulty proxy that helps the validator
@@ -921,7 +921,7 @@ function AdjudicationHeader({ segment, currentUserId, segments, dwellStart }) {
       <div className="flex items-center gap-3">
         <span className="inline-flex items-center gap-1.5 text-[11.5px] text-slate">
           <Brain className="w-3.5 h-3.5 text-ocean" />
-          <span><strong className="text-ink">{impact.memoryEntries}</strong> Org Brain entries · <strong className="text-ink">{impact.adjudicated + impact.authored}</strong> rulings</span>
+          <span><strong className="text-ink">{impact.memoryEntries}</strong> Cortex entries · <strong className="text-ink">{impact.adjudicated + impact.authored}</strong> rulings</span>
         </span>
         <span className="text-mist">·</span>
         <span className="inline-flex items-center gap-1.5 text-[11.5px] text-slate">
@@ -984,7 +984,7 @@ function ValidatorsRulingPanel({
           onClick={glossaryClick}
           className="text-[11px] text-ocean hover:text-ocean-deep cursor-pointer inline-flex items-center gap-1"
         >
-          <Book className="w-3 h-3" /> Consult Org Brain glossary
+          <Book className="w-3 h-3" /> Consult Cortex glossary
         </button>
       </div>
 

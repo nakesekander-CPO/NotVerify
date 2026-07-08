@@ -7,7 +7,7 @@
  * happen against module-level arrays; screens call `bumpStore()` via the
  * `useAgentStore` hook to re-render. No backend, no real LLM calls.
  *
- * arbitr vocabulary is intentional: Org Brain, Content Maps, terminology,
+ * arbitr vocabulary is intentional: Cortex, Content Maps, terminology,
  * translation memory, reviewer corrections, Verify / Not Verify / Need Review,
  * Intelligence Credits / Trust Credits.
  */
@@ -74,7 +74,7 @@ export const PERMISSION_LEVELS = [
 
 // requiresApproval: risky actions gated on a human in V1.
 export const TOOL_CATALOG = [
-  { id: 'search_org_brain', label: 'Search Org Brain', permission: 'read_only', requiresApproval: false },
+  { id: 'search_org_brain', label: 'Search Cortex', permission: 'read_only', requiresApproval: false },
   { id: 'search_terminology', label: 'Search terminology', permission: 'read_only', requiresApproval: false },
   { id: 'search_tm', label: 'Search translation memory', permission: 'read_only', requiresApproval: false },
   { id: 'search_content_maps', label: 'Search Content Maps', permission: 'read_only', requiresApproval: false },
@@ -95,7 +95,7 @@ export const TOOL_CATALOG = [
 /* ─── Knowledge sources ────────────────────────────────────────── */
 
 export const KNOWLEDGE_CATALOG = [
-  { id: 'org_brain', name: 'Org Brain', desc: 'Governed customer memory: approved corrections + decisions.', records: 4120, citations: true },
+  { id: 'org_brain', name: 'Cortex', desc: 'Governed customer memory: approved corrections + decisions.', records: 4120, citations: true },
   { id: 'terminology', name: 'Approved terminology', desc: 'Client-approved term base.', records: 1832, citations: true },
   { id: 'translation_memory', name: 'Translation memory', desc: 'Verified sentence pairs.', records: 58210, citations: true },
   { id: 'brand_rules', name: 'Brand rules', desc: 'Voice, tone, forbidden phrasings.', records: 96, citations: true },
@@ -250,7 +250,7 @@ Use only the knowledge sources granted to you:
 ${kn.map(n => `- ${n}`).join('\n') || '- (none granted)'}
 
 Trust rules:
-- Prefer approved Org Brain knowledge over unverified context.
+- Prefer approved Cortex knowledge over unverified context.
 - Cite sources whenever possible.
 - If you cannot find enough support, say the item needs review.
 - Do not invent policies, terminology, translations, or customer commitments.
@@ -633,7 +633,7 @@ export function simulateAgentRun(version, input) {
 
   const creditEstimate = 2 + kn.length + toolCalls.length
   const trace = [
-    { step: 'Retrieve knowledge', detail: `${sourcesUsed.length} approved source(s), ${orgBrainHits} Org Brain hit(s)` },
+    { step: 'Retrieve knowledge', detail: `${sourcesUsed.length} approved source(s), ${orgBrainHits} Cortex hit(s)` },
     ...(termMatches ? [{ step: 'Terminology lookup', detail: `${termMatches} approved term match(es)` }] : []),
     ...(tmMatches ? [{ step: 'Translation memory', detail: `${tmMatches} TM match(es)` }] : []),
     ...toolCalls.map(t => ({ step: `Tool: ${t.label}`, detail: t.requiresApproval ? 'awaiting human approval' : 'completed' })),

@@ -327,7 +327,7 @@ export default function OnboardingFlow({ onComplete }) {
         `Got it \u2014 ${vertical} (${sub}) across ${targetLocales.length} market${targetLocales.length !== 1 ? 's' : ''}.`,
         complianceMsg,
         "Great \u2014 I'll configure your **Readiness Core** with those markets. That's how we track your setup progress.",
-        "These files will seed your **Org Brain** \u2014 your organization's living knowledge base that improves with every project.",
+        "These files will seed your **Cortex** \u2014 your organization's living knowledge base that improves with every project.",
         "Almost done. Any existing knowledge base files? And what are your brand quality standards?"
       ]
     )

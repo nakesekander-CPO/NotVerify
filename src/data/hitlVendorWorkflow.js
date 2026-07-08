@@ -208,7 +208,7 @@ export const FLAG_CATEGORIES = {
   'potential-hallucination':{ label: 'Potential hallucination',  tone: 'error'  },
   'numerical-inconsistency':{ label: 'Numerical inconsistency',  tone: 'error'  },
   'brand-voice-drift':      { label: 'Brand voice drift',        tone: 'amber'  },
-  'missing-org-brain':      { label: 'Missing Org Brain support',tone: 'mist'   },
+  'missing-org-brain':      { label: 'Missing Cortex support',tone: 'mist'   },
   'agent-disagreement':     { label: 'Agent disagreement',       tone: 'amber'  },
   'low-provenance':         { label: 'Low provenance confidence',tone: 'mist'   },
   'length-formatting':      { label: 'Length or formatting risk',tone: 'amber'  },
@@ -1082,7 +1082,7 @@ export const ORG_BRAIN_UPDATES = [
     approvedAt: '2025-10-04T11:30:00Z',
     contributorFootprint: [{ userId: 'sarah', role: 'final-validator' }],
     status: 'preferred',
-    sourceTermbase: 'Org Brain',
+    sourceTermbase: 'Cortex',
     usageNote: 'Preferred rendering aligned with prior earnings releases.',
   },
   {

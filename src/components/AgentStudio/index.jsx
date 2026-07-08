@@ -1,7 +1,7 @@
 /**
  * Agent Studio — module shell + internal view router.
  *
- * Mounted as the `agent-studio` phase (nav sibling of Org Brain / Analytics).
+ * Mounted as the `agent-studio` phase (nav sibling of Cortex / Analytics).
  * This app is phase-driven (no react-router), so the module's 8 "routes" are
  * held as local view state: { view, agentId, runId }. A breadcrumb provides
  * back-navigation within the module; `onBack` returns to the app.
@@ -93,7 +93,7 @@ export default function AgentStudio({ onBack, currentUserId = 'You' }) {
           </div>
           <div>
             <h1 className="text-[18px] font-bold text-ink leading-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Agent Studio</h1>
-            <MonoLabel>Governed AI agents · powered by your Org Brain</MonoLabel>
+            <MonoLabel>Governed AI agents · powered by your Cortex</MonoLabel>
           </div>
         </div>
         <button

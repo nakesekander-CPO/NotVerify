@@ -385,7 +385,7 @@ export default function MissionControl({
             {/* Governance context */}
             <div className="px-6 py-3 border-t border-black/[0.06] bg-gray-50/60">
               <div className="space-y-1 text-[11px] text-gray-500">
-                <p className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" /> Org Brain: 1,247 entries loaded for domain memory</p>
+                <p className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" /> Cortex: 1,247 entries loaded for domain memory</p>
                 <p className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" /> {(plan.guardrails || []).length || 5} guardrails active: {(plan.guardrails || ['J-GAAP compliance', 'TSE terminology', 'Currency formatting']).slice(0, 3).join(', ')}</p>
                 <p className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" /> Escalation: segments below confidence threshold routed to human review</p>
               </div>

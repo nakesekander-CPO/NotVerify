@@ -12,7 +12,7 @@ const SPRING = { type: 'spring', stiffness: 300, damping: 20 }
 const MOCK_LOG = [
   { id: 1, workflow: 'Notify team on completion', trigger: 'Human review approved', ts: '2026-03-30 14:22', status: 'success', duration: '0.8s' },
   { id: 2, workflow: 'Flag compliance issues', trigger: 'Compliance review flagged', ts: '2026-03-30 11:05', status: 'success', duration: '1.2s' },
-  { id: 3, workflow: 'Sync to knowledge base', trigger: 'Org Brain entry updated', ts: '2026-03-29 16:48', status: 'success', duration: '0.5s' },
+  { id: 3, workflow: 'Sync to knowledge base', trigger: 'Cortex entry updated', ts: '2026-03-29 16:48', status: 'success', duration: '0.5s' },
   { id: 4, workflow: 'Quality alert — JA', trigger: 'Quality score threshold met', ts: '2026-03-28 09:33', status: 'failed', duration: '—' },
   { id: 5, workflow: 'Notify team on completion', trigger: 'Human review approved', ts: '2026-03-27 15:10', status: 'success', duration: '0.9s' },
 ]

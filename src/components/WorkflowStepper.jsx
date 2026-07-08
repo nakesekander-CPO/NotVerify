@@ -9,7 +9,7 @@ const steps = [
   { key: 'processing', label: 'Processing' },
   { key: 'narrative', label: 'Quality Check' },
   { key: 'human-review', label: 'Review' },
-  { key: 'org-brain', label: 'Org Brain', icon: Brain },
+  { key: 'org-brain', label: 'Cortex', icon: Brain },
 ]
 
 const stateToStep = { dashboard: 0, reading: 1, processing: 2, narrative: 3, 'human-review': 4, 'org-brain': 5 }
