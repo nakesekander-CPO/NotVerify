@@ -22,9 +22,12 @@ import PromptLibrary from './PromptLibrary'
 import KnowledgeLayer from './KnowledgeLayer'
 import Recommendations from './Recommendations'
 import ContentApprovals from './ContentApprovals'
+import Experiments from './Experiments'
+import Outcomes from './Outcomes'
+import Reports from './Reports'
+import Alerts from './Alerts'
+import Settings from './Settings'
 
-// Sections are registered here as each ships. Unregistered sections fall back
-// to a titled placeholder so the nav never dead-ends.
 const SCREENS = {
   overview: Overview,
   explorer: VisibilityExplorer,
@@ -35,6 +38,11 @@ const SCREENS = {
   knowledge: KnowledgeLayer,
   recommendations: Recommendations,
   content: ContentApprovals,
+  experiments: Experiments,
+  outcomes: Outcomes,
+  reports: Reports,
+  alerts: Alerts,
+  settings: Settings,
 }
 
 export default function EnterpriseAIVisibility({ onBack }) {
