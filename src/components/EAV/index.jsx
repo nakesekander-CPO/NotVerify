@@ -14,11 +14,21 @@ import {
 } from '../../data/eav'
 import { MonoLabel, Card, SectionHeading, ProvenanceBadge } from './shared'
 import Overview from './Overview'
+import VisibilityExplorer from './VisibilityExplorer'
+import Competitors from './Competitors'
+import Languages from './Languages'
+import Citations from './Citations'
+import PromptLibrary from './PromptLibrary'
 
 // Sections are registered here as each ships. Unregistered sections fall back
 // to a titled placeholder so the nav never dead-ends.
 const SCREENS = {
   overview: Overview,
+  explorer: VisibilityExplorer,
+  competitors: Competitors,
+  languages: Languages,
+  citations: Citations,
+  prompts: PromptLibrary,
 }
 
 export default function EnterpriseAIVisibility({ onBack }) {
