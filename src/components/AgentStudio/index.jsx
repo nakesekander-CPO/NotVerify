@@ -2,9 +2,10 @@
  * Agent Studio — module shell + internal view router.
  *
  * Mounted as the `agent-studio` phase (nav sibling of Cortex / Analytics).
- * This app is phase-driven (no react-router), so the module's 8 "routes" are
- * held as local view state: { view, agentId, runId }. A breadcrumb provides
- * back-navigation within the module; `onBack` returns to the app.
+ * This app is phase-driven (no react-router), so the module's views are held
+ * as local state: { view, agentId, runId }. Five surfaces: dashboard, the
+ * 3-step wizard, the tabbed agent page (Overview · Configure · Analytics —
+ * legacy view ids map onto its tabs), the playground, and the run trace.
  */
 
 import { useState, useCallback } from 'react'
@@ -13,21 +14,15 @@ import { useAgentStore, getAgentById } from '../../data/agentStudio'
 import { MonoLabel } from './shared'
 import AgentStudioDashboard from './AgentStudioDashboard'
 import CreateAgentWizard from './CreateAgentWizard'
-import AgentOverview from './AgentOverview'
-import AgentConfiguration from './AgentConfiguration'
+import AgentDetail from './AgentDetail'
 import AgentPlayground from './AgentPlayground'
-import AgentDeployments from './AgentDeployments'
-import AgentAnalytics from './AgentAnalytics'
 import AgentRunTrace from './AgentRunTrace'
 
+// Legacy agent-scoped view ids → tabs on the single agent page.
+const AGENT_TABS = { overview: 'overview', configure: 'configure', analytics: 'analytics', deployments: 'configure' }
+
 const VIEW_LABEL = {
-  dashboard: 'Agents',
-  new: 'New agent',
-  overview: 'Overview',
-  configure: 'Configure',
   playground: 'Playground',
-  deployments: 'Deployments',
-  analytics: 'Analytics',
   'run-trace': 'Run trace',
 }
 
@@ -47,40 +42,25 @@ export default function AgentStudio({ onBack, currentUserId = 'You' }) {
 
   const agent = nav.agentId ? getAgentById(nav.agentId) : null
 
-  // Breadcrumb trail: Agent Studio › [Agent name] › View
+  // Breadcrumb trail: Agent Studio › [Agent name] › (Playground / Run trace)
   const crumbs = [{ label: 'Agent Studio', onClick: () => go('dashboard', { agentId: null, runId: null }) }]
   if (agent && nav.view !== 'dashboard' && nav.view !== 'new') {
     crumbs.push({ label: agent.name, onClick: () => go('overview') })
   }
   if (nav.view === 'new') crumbs.push({ label: 'New agent' })
-  else if (nav.view !== 'dashboard' && nav.view !== 'overview') crumbs.push({ label: VIEW_LABEL[nav.view] })
+  else if (VIEW_LABEL[nav.view]) crumbs.push({ label: VIEW_LABEL[nav.view] })
 
   let screen
-  switch (nav.view) {
-    case 'new':
-      screen = <CreateAgentWizard initialTemplate={nav.template} onCancel={() => go('dashboard')} onCreated={(id) => go('overview', { agentId: id })} currentUserId={currentUserId} />
-      break
-    case 'overview':
-      screen = <AgentOverview agentId={nav.agentId} go={go} />
-      break
-    case 'configure':
-      screen = <AgentConfiguration agentId={nav.agentId} go={go} />
-      break
-    case 'playground':
-      screen = <AgentPlayground agentId={nav.agentId} go={go} />
-      break
-    case 'deployments':
-      screen = <AgentDeployments agentId={nav.agentId} go={go} />
-      break
-    case 'analytics':
-      screen = <AgentAnalytics agentId={nav.agentId} go={go} />
-      break
-    case 'run-trace':
-      screen = <AgentRunTrace runId={nav.runId} go={go} />
-      break
-    case 'dashboard':
-    default:
-      screen = <AgentStudioDashboard go={go} />
+  if (nav.view === 'new') {
+    screen = <CreateAgentWizard initialTemplate={nav.template} onCancel={() => go('dashboard')} onCreated={(id) => go('overview', { agentId: id })} currentUserId={currentUserId} />
+  } else if (AGENT_TABS[nav.view]) {
+    screen = <AgentDetail agentId={nav.agentId} tab={AGENT_TABS[nav.view]} go={go} />
+  } else if (nav.view === 'playground') {
+    screen = <AgentPlayground agentId={nav.agentId} go={go} />
+  } else if (nav.view === 'run-trace') {
+    screen = <AgentRunTrace runId={nav.runId} go={go} />
+  } else {
+    screen = <AgentStudioDashboard go={go} />
   }
 
   return (

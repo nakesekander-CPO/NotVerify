@@ -13,7 +13,7 @@ import {
   Scale, ShieldCheck, Inbox, Sparkles, Boxes, MapPin,
 } from 'lucide-react'
 import {
-  useAgentStore, TEMPLATES, DEPLOYMENT_SURFACES, activeVersion, ACTIVE_CUSTOMER,
+  useAgentStore, TEMPLATES, activeVersion, ACTIVE_CUSTOMER,
 } from '../../data/agentStudio'
 import {
   SectionHeading, Card, MonoLabel, PrimaryButton, SecondaryButton, EmptyState,
@@ -26,9 +26,6 @@ const TEMPLATE_ICON = {
 }
 const AGENT_TYPE_LABEL = Object.fromEntries(TEMPLATES.map(t => [t.type, t.name]))
 
-function surfaceLabel(id) {
-  return DEPLOYMENT_SURFACES.find(s => s.id === id)?.label || id
-}
 function relTime(iso) {
   if (!iso) return '—'
   const d = new Date(iso)

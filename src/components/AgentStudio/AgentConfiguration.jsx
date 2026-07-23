@@ -21,7 +21,7 @@ import {
 } from './parts'
 import AgentVersionHistory from './AgentVersionHistory'
 
-const TABS = ['Basics', 'Instructions', 'Knowledge', 'Capabilities', 'Guardrails', 'Deployment', 'Versions', 'Advanced']
+const TABS = ['Basics', 'Instructions', 'Knowledge', 'Capabilities', 'Guardrails', 'Deployment', 'Versions']
 
 export default function AgentConfiguration({ agentId, go }) {
   const { refresh } = useAgentStore()
@@ -42,6 +42,8 @@ export default function AgentConfiguration({ agentId, go }) {
   const editDeploy = (patch) => {
     const target = agent.draftVersionId ? v : ensureDraftVersion(agent.id)
     target.deploymentSettings = { ...target.deploymentSettings, ...patch }
+    // Mirror surfaces onto the agent so the dashboard/overview chips stay true.
+    if (patch.surfaces) agent._deployedSurfaces = patch.surfaces
     refresh()
   }
 
@@ -52,7 +54,7 @@ export default function AgentConfiguration({ agentId, go }) {
         subtitle="Changes are saved to a draft version. Publish to make them live."
         actions={hasDraft
           ? <PrimaryButton onClick={() => { publishAgent(agent.id); go('overview') }}><Rocket className="w-3.5 h-3.5" /> Publish draft</PrimaryButton>
-          : <SecondaryButton onClick={() => go('overview')}>Back to overview</SecondaryButton>}
+          : null}
       />
 
       {hasDraft && (
@@ -104,17 +106,6 @@ export default function AgentConfiguration({ agentId, go }) {
             </div>
           )}
           {tab === 'Versions' && <AgentVersionHistory agent={agent} />}
-          {tab === 'Advanced' && (
-            <div className="space-y-4">
-              <MonoLabel>Advanced</MonoLabel>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Model"><input value={v.modelConfig?.model || ''} onChange={e => edit({ modelConfig: { ...v.modelConfig, model: e.target.value } })} className="w-full text-[13px] border border-rule rounded-md px-2.5 py-2 focus:outline-none focus:border-ocean/50" /></Field>
-                <Field label="Temperature"><input type="number" step="0.1" value={v.modelConfig?.temperature ?? 0.2} onChange={e => edit({ modelConfig: { ...v.modelConfig, temperature: Number(e.target.value) } })} className="w-full text-[13px] border border-rule rounded-md px-2.5 py-2 focus:outline-none focus:border-ocean/50" /></Field>
-                <Field label="Credits / day"><input type="number" value={v.creditPolicy?.perDay ?? 0} onChange={e => edit({ creditPolicy: { ...v.creditPolicy, perDay: Number(e.target.value) } })} className="w-full text-[13px] border border-rule rounded-md px-2.5 py-2 focus:outline-none focus:border-ocean/50" /></Field>
-                <Field label="Credits / month"><input type="number" value={v.creditPolicy?.perMonth ?? 0} onChange={e => edit({ creditPolicy: { ...v.creditPolicy, perMonth: Number(e.target.value) } })} className="w-full text-[13px] border border-rule rounded-md px-2.5 py-2 focus:outline-none focus:border-ocean/50" /></Field>
-              </div>
-            </div>
-          )}
         </Card>
 
         <div className="xl:sticky xl:top-4">

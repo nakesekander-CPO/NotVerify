@@ -48,7 +48,6 @@ export default function AgentAnalytics({ agentId, go }) {
   const failureReasons = [
     { label: 'No supporting source', n: m.notVerified },
     { label: 'Low confidence', n: m.needReview },
-    { label: 'Missing terminology', n: Math.max(0, Math.round(m.needReview / 2)) },
     { label: 'Requires approval', n: m.requiresApproval },
   ].filter(f => f.n > 0)
 
@@ -57,7 +56,6 @@ export default function AgentAnalytics({ agentId, go }) {
       <SectionHeading
         title={`Analytics · ${agent.name}`}
         subtitle="Usage, quality, feedback, and credit consumption."
-        actions={<SecondaryButton onClick={() => go('overview')}>Back to overview</SecondaryButton>}
       />
 
       {/* KPI cards */}

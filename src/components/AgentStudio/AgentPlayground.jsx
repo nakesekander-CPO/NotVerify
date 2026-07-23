@@ -8,7 +8,7 @@
  * suggested status (Verified / Need Review / Not Verified / Requires Approval).
  */
 
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import {
   Play, ThumbsUp, ThumbsDown, Save, Sparkles, Check, X, AlertTriangle, Lock,
   BookOpen, Wrench, ShieldCheck, Coins, ListChecks, Rocket,
@@ -126,34 +126,23 @@ export default function AgentPlayground({ agentId, go }) {
 
 function EvidenceRail({ result, version }) {
   const knCount = version?.knowledgeScope?.length || 0
+  // Demo-first: show the three signals that matter (status, sources, guardrails);
+  // the deeper diagnostics live behind one toggle.
+  const [showDiagnostics, setShowDiagnostics] = useState(false)
   return (
     <Card padding="p-0">
-      <div className="px-4 py-2.5 border-b border-rule flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-ocean" /><MonoLabel>Evidence &amp; diagnostics</MonoLabel></div>
+      <div className="px-4 py-2.5 border-b border-rule flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-ocean" /><MonoLabel>Evidence</MonoLabel></div>
       {!result ? (
-        <p className="text-[12px] text-mist p-4">The evidence rail shows sources, tool calls, guardrail checks, QA warnings, credits, and the runtime trace once you run a test.</p>
+        <p className="text-[12px] text-mist p-4">Run a test to see the answer’s sources, guardrail checks, and suggested status.</p>
       ) : (
         <div className="p-4 space-y-4 text-[12px]">
           <RailBlock icon={ListChecks} label="Suggested status">
             <div className="flex items-center gap-2"><OutputStatusBadge status={result.outputStatus} /><ConfidenceBadge value={result.confidence} /></div>
           </RailBlock>
 
-          <RailBlock icon={BookOpen} label={`Knowledge (${result.sourcesUsed.length}/${knCount})`}>
+          <RailBlock icon={BookOpen} label={`Sources (${result.sourcesUsed.length}/${knCount})`}>
             {result.sourcesUsed.length === 0 ? <Muted>No approved source matched → Need Review.</Muted> : (
               <ul className="space-y-1">{result.sourcesUsed.map((s, i) => <li key={i} className="text-slate">{s.name} {s.cites && <span className="text-[9px] text-teal bg-teal/10 px-1 rounded">cites</span>}</li>)}</ul>
-            )}
-            <div className="flex flex-wrap gap-2 mt-1.5 text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-              <span>Cortex: {result.orgBrainHits}</span><span>Terminology: {result.termMatches}</span><span>TM: {result.tmMatches}</span>
-            </div>
-          </RailBlock>
-
-          <RailBlock icon={Wrench} label={`Tool calls (${result.toolCalls.length})`}>
-            {result.toolCalls.length === 0 ? <Muted>None</Muted> : (
-              <ul className="space-y-1">{result.toolCalls.map((t, i) => (
-                <li key={i} className="flex items-center gap-1.5 text-slate">
-                  {t.requiresApproval ? <Lock className="w-3 h-3 text-amber-deep" /> : <Check className="w-3 h-3 text-teal" />}
-                  {t.label} {t.requiresApproval && <span className="text-[9px] text-amber-deep bg-amber/15 px-1 rounded">awaiting approval</span>}
-                </li>
-              ))}</ul>
             )}
           </RailBlock>
 
@@ -165,23 +154,52 @@ function EvidenceRail({ result, version }) {
             ))}</ul>
           </RailBlock>
 
-          {result.qaIssues.length > 0 && (
-            <RailBlock icon={AlertTriangle} label="QA warnings">
-              <ul className="space-y-1">{result.qaIssues.map((q, i) => (
-                <li key={i} className="text-amber-deep flex items-start gap-1.5"><AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" /> {q.text}</li>
-              ))}</ul>
-            </RailBlock>
+          <button
+            type="button"
+            onClick={() => setShowDiagnostics(o => !o)}
+            className="text-[11.5px] text-ocean hover:text-ocean/80 cursor-pointer"
+          >
+            {showDiagnostics ? 'Hide diagnostics' : 'Show diagnostics'}
+          </button>
+
+          {showDiagnostics && (
+            <>
+              <RailBlock icon={BookOpen} label="Knowledge matches">
+                <div className="flex flex-wrap gap-2 text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                  <span>Cortex: {result.orgBrainHits}</span><span>Terminology: {result.termMatches}</span><span>TM: {result.tmMatches}</span>
+                </div>
+              </RailBlock>
+
+              <RailBlock icon={Wrench} label={`Tool calls (${result.toolCalls.length})`}>
+                {result.toolCalls.length === 0 ? <Muted>None</Muted> : (
+                  <ul className="space-y-1">{result.toolCalls.map((t, i) => (
+                    <li key={i} className="flex items-center gap-1.5 text-slate">
+                      {t.requiresApproval ? <Lock className="w-3 h-3 text-amber-deep" /> : <Check className="w-3 h-3 text-teal" />}
+                      {t.label} {t.requiresApproval && <span className="text-[9px] text-amber-deep bg-amber/15 px-1 rounded">awaiting approval</span>}
+                    </li>
+                  ))}</ul>
+                )}
+              </RailBlock>
+
+              {result.qaIssues.length > 0 && (
+                <RailBlock icon={AlertTriangle} label="QA warnings">
+                  <ul className="space-y-1">{result.qaIssues.map((q, i) => (
+                    <li key={i} className="text-amber-deep flex items-start gap-1.5"><AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" /> {q.text}</li>
+                  ))}</ul>
+                </RailBlock>
+              )}
+
+              <RailBlock icon={Coins} label="Credit estimate">
+                <span className="text-slate" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>~{result.creditEstimate} Intelligence Credits</span>
+              </RailBlock>
+
+              <RailBlock icon={ListChecks} label="Runtime trace">
+                <ol className="space-y-1">{result.trace.map((s, i) => (
+                  <li key={i} className="text-slate"><span className="text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{i + 1}.</span> <span className="text-ink">{s.step}</span> — {s.detail}</li>
+                ))}</ol>
+              </RailBlock>
+            </>
           )}
-
-          <RailBlock icon={Coins} label="Credit estimate">
-            <span className="text-slate" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>~{result.creditEstimate} Intelligence Credits</span>
-          </RailBlock>
-
-          <RailBlock icon={ListChecks} label="Runtime trace">
-            <ol className="space-y-1">{result.trace.map((s, i) => (
-              <li key={i} className="text-slate"><span className="text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{i + 1}.</span> <span className="text-ink">{s.step}</span> — {s.detail}</li>
-            ))}</ol>
-          </RailBlock>
         </div>
       )}
     </Card>

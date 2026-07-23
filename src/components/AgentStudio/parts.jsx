@@ -5,8 +5,12 @@
  * wizard and the Configuration editor so both edit the same shape. Each is a
  * controlled component: { value, onChange }. Governance is visible in-place
  * (approval-required tools flagged, locked guardrails non-togglable).
+ *
+ * The long catalogs collapse by default to what's SELECTED (+ "Show all (N)")
+ * so a template-prefilled agent reads as a short summary, not a checklist wall.
  */
 
+import { useState } from 'react'
 import {
   Check, ShieldCheck, Lock, AlertTriangle, BookOpen, Wrench, Boxes, Coins,
 } from 'lucide-react'
@@ -20,15 +24,40 @@ function toggle(list, id) {
   return list.includes(id) ? list.filter(x => x !== id) : [...list, id]
 }
 
+/**
+ * Collapse a catalog to the selected entries unless expanded (or nothing is
+ * selected yet, in which case show everything so a blank agent can choose).
+ */
+function useCollapsedCatalog(catalog, selectedIds) {
+  const [showAll, setShowAll] = useState(false)
+  const collapsible = selectedIds.length > 0 && selectedIds.length < catalog.length
+  const visible = !collapsible || showAll ? catalog : catalog.filter(x => selectedIds.includes(x.id))
+  return { visible, showAll, setShowAll, collapsible, hidden: catalog.length - visible.length }
+}
+
+function ShowAllToggle({ state, total }) {
+  if (!state.collapsible) return null
+  return (
+    <button
+      type="button"
+      onClick={() => state.setShowAll(!state.showAll)}
+      className="text-[11.5px] text-ocean hover:text-ocean/80 cursor-pointer"
+    >
+      {state.showAll ? 'Show selected only' : `+ Show all (${total})`}
+    </button>
+  )
+}
+
 /* ─── Knowledge sources ────────────────────────────────────────── */
 
 export function KnowledgeSourceSelector({ value = [], onChange }) {
+  const list = useCollapsedCatalog(KNOWLEDGE_CATALOG, value)
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5 text-ocean" /><MonoLabel>Knowledge scope</MonoLabel></div>
       <p className="text-[12px] text-slate">Grant only the approved sources this agent may use. It must cite them and say when it doesn’t know.</p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-        {KNOWLEDGE_CATALOG.map(k => {
+        {list.visible.map(k => {
           const on = value.includes(k.id)
           return (
             <button key={k.id} type="button" onClick={() => onChange(toggle(value, k.id))}
@@ -50,6 +79,7 @@ export function KnowledgeSourceSelector({ value = [], onChange }) {
           )
         })}
       </div>
+      <ShowAllToggle state={list} total={KNOWLEDGE_CATALOG.length} />
     </div>
   )
 }
@@ -57,11 +87,12 @@ export function KnowledgeSourceSelector({ value = [], onChange }) {
 /* ─── Capabilities ─────────────────────────────────────────────── */
 
 export function CapabilitySelector({ value = [], onChange }) {
+  const list = useCollapsedCatalog(CAPABILITY_CATALOG, value)
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-1.5"><Boxes className="w-3.5 h-3.5 text-ocean" /><MonoLabel>Capabilities</MonoLabel></div>
       <div className="flex flex-wrap gap-1.5">
-        {CAPABILITY_CATALOG.map(c => {
+        {list.visible.map(c => {
           const on = value.includes(c.id)
           return (
             <button key={c.id} type="button" onClick={() => onChange(toggle(value, c.id))}
@@ -71,6 +102,7 @@ export function CapabilitySelector({ value = [], onChange }) {
           )
         })}
       </div>
+      <ShowAllToggle state={list} total={CAPABILITY_CATALOG.length} />
     </div>
   )
 }
@@ -80,12 +112,13 @@ export function CapabilitySelector({ value = [], onChange }) {
 const PERM_LABEL = Object.fromEntries(PERMISSION_LEVELS.map(p => [p.id, p.label]))
 
 export function ToolPermissionSelector({ value = [], onChange }) {
+  const list = useCollapsedCatalog(TOOL_CATALOG, value)
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-1.5"><Wrench className="w-3.5 h-3.5 text-ocean" /><MonoLabel>Tools &amp; actions</MonoLabel></div>
       <p className="text-[12px] text-slate">Risky actions require human approval in V1. Fully-autonomous actions are disabled.</p>
       <div className="space-y-1.5">
-        {TOOL_CATALOG.map(t => {
+        {list.visible.map(t => {
           const on = value.includes(t.id)
           return (
             <button key={t.id} type="button" onClick={() => onChange(toggle(value, t.id))}
@@ -102,6 +135,7 @@ export function ToolPermissionSelector({ value = [], onChange }) {
           )
         })}
       </div>
+      <ShowAllToggle state={list} total={TOOL_CATALOG.length} />
     </div>
   )
 }
@@ -114,12 +148,21 @@ export function GuardrailBuilder({ value, onChange }) {
   const setField = (k, v) => onChange({ ...value, [k]: v })
   const escalation = value?.escalationRules || []
 
+  // Collapse to the guardrails actually being ENFORCED (locked or on);
+  // "Show all" reveals the switched-off ones for editing.
+  const [showAllRails, setShowAllRails] = useState(false)
+  const isOn = (g) => g.locked ? true : (enabled[g.id] ?? g.defaultOn)
+  const visibleRails = showAllRails ? GUARDRAIL_CATALOG : GUARDRAIL_CATALOG.filter(isOn)
+  const railsCollapsible = visibleRails.length < GUARDRAIL_CATALOG.length || showAllRails
+
+  const escList = useCollapsedCatalog(ESCALATION_RULES, escalation)
+
   return (
     <div className="space-y-4">
       <div>
         <div className="flex items-center gap-1.5 mb-2"><ShieldCheck className="w-3.5 h-3.5 text-ocean" /><MonoLabel>Guardrails</MonoLabel></div>
         <div className="space-y-1.5">
-          {GUARDRAIL_CATALOG.map(g => {
+          {visibleRails.map(g => {
             const on = g.locked ? true : (enabled[g.id] ?? g.defaultOn)
             return (
               <div key={g.id} className={`rounded-lg border p-2.5 flex items-center gap-3 ${on ? 'border-rule bg-white' : 'border-rule bg-pale/40'}`}>
@@ -139,12 +182,21 @@ export function GuardrailBuilder({ value, onChange }) {
             )
           })}
         </div>
+        {railsCollapsible && (
+          <button
+            type="button"
+            onClick={() => setShowAllRails(!showAllRails)}
+            className="text-[11.5px] text-ocean hover:text-ocean/80 cursor-pointer mt-1.5"
+          >
+            {showAllRails ? 'Show enforced only' : `+ Show all (${GUARDRAIL_CATALOG.length})`}
+          </button>
+        )}
       </div>
 
       <div>
         <MonoLabel>Escalate to Need Review when</MonoLabel>
         <div className="flex flex-wrap gap-1.5 mt-2">
-          {ESCALATION_RULES.map(e => {
+          {escList.visible.map(e => {
             const on = escalation.includes(e.id)
             return (
               <button key={e.id} type="button" onClick={() => setField('escalationRules', toggle(escalation, e.id))}
@@ -154,6 +206,7 @@ export function GuardrailBuilder({ value, onChange }) {
             )
           })}
         </div>
+        <div className="mt-1.5"><ShowAllToggle state={escList} total={ESCALATION_RULES.length} /></div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">

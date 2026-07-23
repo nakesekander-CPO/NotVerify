@@ -16,12 +16,6 @@ import { useState, useCallback } from 'react'
 
 /* ─── Enums / statuses ─────────────────────────────────────────── */
 
-export const AGENT_STATUS = ['draft', 'active', 'paused', 'archived']
-export const OUTPUT_STATUS = [
-  'verified', 'need_review', 'not_verified', 'draft', 'blocked', 'requires_approval',
-]
-export const VERSION_STATUS = ['draft', 'published', 'archived']
-
 export const OUTPUT_STATUS_LABEL = {
   verified: 'Verified',
   need_review: 'Need Review',
@@ -274,7 +268,10 @@ Return:
 - Sources
 - Confidence
 - Suggested status
-- Any warnings or next actions`
+- Any warnings or next actions${version.systemInstructions?.trim() ? `
+
+Additional instructions:
+${version.systemInstructions.trim()}` : ''}`
 }
 
 /* ─── Version + Agent factories ────────────────────────────────── */
@@ -301,7 +298,6 @@ export function createVersion(overrides = {}, { versionNumber = 1, status = 'dra
     allowedTasks: overrides.allowedTasks || [],
     disallowedTasks: overrides.disallowedTasks || [],
     responseStyle: overrides.responseStyle || 'Clear, concise, professional.',
-    outputFormat: overrides.outputFormat || 'Answer + sources + confidence',
     systemInstructions: overrides.systemInstructions || '',
     knowledgeScope: overrides.knowledgeScope || [],
     capabilities: overrides.capabilities || [],
@@ -401,23 +397,23 @@ export const AGENTS = [
     name: 'Disclosure Policy Assistant', description: 'Answers from Meridian’s approved disclosure + compliance policies with citations.',
     status: 'active', qualityScore: 91, creditsUsed: 2980, surfaces: ['workspace_assistant'],
   }),
-  seedAgent('AG-1003', 'support', CUSTOMERS.helio, {
-    name: 'Helio Support Copilot', description: 'Drafts support replies from approved docs and past resolutions.',
+  seedAgent('AG-1003', 'support', CUSTOMERS.meridian, {
+    name: 'Support Copilot', description: 'Drafts support replies from approved docs and past resolutions.',
     status: 'active', qualityScore: 89, creditsUsed: 7420, openIssues: 1, surfaces: ['support_copilot'],
     supportedLanguages: ['en', 'de', 'fr'],
   }),
-  seedAgent('AG-1004', 'content_qa', CUSTOMERS.lumen, {
-    name: 'Lumen Brand QA', description: 'Reviews campaign content for brand, terminology, tone, and locale issues.',
+  seedAgent('AG-1004', 'content_qa', CUSTOMERS.meridian, {
+    name: 'Brand QA', description: 'Reviews campaign content for brand, terminology, tone, and locale issues.',
     status: 'paused', qualityScore: 87, creditsUsed: 3110, openIssues: 4, surfaces: ['qa_panel', 'project_sidebar'],
     supportedLanguages: ['en', 'fr', 'es', 'de'],
   }),
-  seedAgent('AG-1005', 'intake_triage', CUSTOMERS.vitalink, {
-    name: 'VitaLink Intake Triage', description: 'Classifies incoming regulated content, detects language/type/priority, recommends workflow.',
+  seedAgent('AG-1005', 'intake_triage', CUSTOMERS.meridian, {
+    name: 'Intake Triage', description: 'Classifies incoming regulated content, detects language/type/priority, recommends workflow.',
     status: 'active', qualityScore: 90, creditsUsed: 1620, surfaces: ['intake_workflow'],
     supportedLanguages: ['en', 'de', 'ja'],
   }),
-  seedAgent('AG-1006', 'brand_voice', CUSTOMERS.cartway, {
-    name: 'Cartway Brand Voice', description: 'Rewrites product copy to Cartway brand rules and explains the rule applied.',
+  seedAgent('AG-1006', 'brand_voice', CUSTOMERS.meridian, {
+    name: 'Brand Voice', description: 'Rewrites product copy to approved brand rules and explains the rule applied.',
     status: 'draft', qualityScore: null, creditsUsed: 0, surfaces: [],
     supportedLanguages: ['en'], updatedAt: '2026-07-01T16:00:00Z',
   }),
@@ -474,7 +470,6 @@ export function useAgentStore() {
 }
 
 export function getAgentById(id) { return AGENTS.find(a => a.id === id) || null }
-export function getRunById(id) { return RUNS.find(r => r.id === id) || null }
 export function runsForAgent(id) { return RUNS.filter(r => r.agentId === id) }
 export function activeVersion(agent) {
   if (!agent) return null

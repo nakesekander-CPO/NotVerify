@@ -1,24 +1,25 @@
 /**
- * Agent Studio — agent overview.
+ * Agent Studio — agent overview (tab of the agent page).
  *
- * Summary of the agent + its active version, the trust/governance signals, and
- * the lifecycle CTAs (Edit / Test / Publish / Pause / Duplicate / Archive).
- * Recent runs + feedback link into the trace. Editing routes to the config
- * editor, which creates a draft version rather than mutating the published one.
+ * Summary of the agent + its active version and the three CTAs that matter
+ * (Edit / Test / Publish); the rest live in an overflow menu. Recent runs link
+ * into the trace. Editing routes to the Configure tab, which creates a draft
+ * version rather than mutating the published one.
  */
 
+import { useState } from 'react'
 import {
   Pencil, Play, Rocket, Pause, Copy, Archive, RotateCcw, BookOpen, Boxes,
-  Wrench, ShieldCheck, MapPin, ArrowRight,
+  ShieldCheck, MapPin, ArrowRight, MoreHorizontal,
 } from 'lucide-react'
 import {
   getAgentById, activeVersion, runsForAgent, publishAgent, setAgentStatus,
   duplicateAgent, DEPLOYMENT_SURFACES, KNOWLEDGE_CATALOG, CAPABILITY_CATALOG,
-  GUARDRAIL_CATALOG, OUTPUT_STATUS_LABEL,
+  GUARDRAIL_CATALOG,
 } from '../../data/agentStudio'
 import {
   SectionHeading, Card, MonoLabel, KeyValueRow, PrimaryButton, SecondaryButton,
-  DangerButton, AgentStatusBadge, OutputStatusBadge, ConfidenceBadge, CreditUsageBadge,
+  OutputStatusBadge, ConfidenceBadge, CreditUsageBadge,
 } from './shared'
 
 const nameOf = (catalog, id) => catalog.find(x => x.id === id)?.name || catalog.find(x => x.id === id)?.label || id
@@ -26,13 +27,15 @@ const surfaceName = (id) => DEPLOYMENT_SURFACES.find(s => s.id === id)?.label ||
 
 export default function AgentOverview({ agentId, go }) {
   const agent = getAgentById(agentId)
+  const [menuOpen, setMenuOpen] = useState(false)
   if (!agent) return <Card><p className="text-[13px] text-mist">Agent not found.</p></Card>
   const v = activeVersion(agent)
   const runs = runsForAgent(agent.id).slice(0, 5)
   const hasDraft = !!agent.draftVersionId
   const enabledGuardrails = GUARDRAIL_CATALOG.filter(g => g.locked || v?.guardrails?.enabled?.[g.id])
 
-  const doDuplicate = () => { const c = duplicateAgent(agent.id); if (c) go('overview', { agentId: c.id }) }
+  const doDuplicate = () => { setMenuOpen(false); const c = duplicateAgent(agent.id); if (c) go('overview', { agentId: c.id }) }
+  const doStatus = (s) => { setMenuOpen(false); setAgentStatus(agent.id, s) }
 
   return (
     <div className="space-y-5">
@@ -40,32 +43,37 @@ export default function AgentOverview({ agentId, go }) {
         title={agent.name}
         subtitle={agent.description}
         actions={
-          <div className="flex items-center gap-2 flex-wrap justify-end">
+          <div className="relative flex items-center gap-2 justify-end">
             <SecondaryButton onClick={() => go('configure')}><Pencil className="w-3.5 h-3.5" /> Edit</SecondaryButton>
             <SecondaryButton onClick={() => go('playground')}><Play className="w-3.5 h-3.5" /> Test</SecondaryButton>
-            <SecondaryButton onClick={() => go('deployments')}><MapPin className="w-3.5 h-3.5" /> Deploy</SecondaryButton>
             {hasDraft && <PrimaryButton onClick={() => publishAgent(agent.id)}><Rocket className="w-3.5 h-3.5" /> Publish draft</PrimaryButton>}
-            {agent.status === 'active'
-              ? <SecondaryButton onClick={() => setAgentStatus(agent.id, 'paused')}><Pause className="w-3.5 h-3.5" /> Pause</SecondaryButton>
-              : agent.status === 'paused'
-                ? <SecondaryButton onClick={() => setAgentStatus(agent.id, 'active')}><Play className="w-3.5 h-3.5" /> Resume</SecondaryButton>
-                : null}
-            <SecondaryButton onClick={doDuplicate}><Copy className="w-3.5 h-3.5" /> Duplicate</SecondaryButton>
-            {agent.status !== 'archived'
-              ? <DangerButton onClick={() => setAgentStatus(agent.id, 'archived')}><Archive className="w-3.5 h-3.5" /> Archive</DangerButton>
-              : <SecondaryButton onClick={() => setAgentStatus(agent.id, 'draft')}><RotateCcw className="w-3.5 h-3.5" /> Restore</SecondaryButton>}
+            <button
+              type="button"
+              aria-label="More actions"
+              onClick={() => setMenuOpen(o => !o)}
+              className="inline-flex items-center px-2.5 py-2 rounded-lg text-[13px] font-medium border border-rule-strong bg-white hover:bg-pale text-ink transition-colors cursor-pointer"
+            >
+              <MoreHorizontal className="w-3.5 h-3.5" />
+            </button>
+            {menuOpen && (
+              <div className="absolute right-0 top-full mt-1.5 z-20 w-44 bg-white border border-rule rounded-lg shadow-lg py-1">
+                {agent.status === 'active' && <MenuItem icon={Pause} label="Pause" onClick={() => doStatus('paused')} />}
+                {agent.status === 'paused' && <MenuItem icon={Play} label="Resume" onClick={() => doStatus('active')} />}
+                <MenuItem icon={Copy} label="Duplicate" onClick={doDuplicate} />
+                {agent.status !== 'archived'
+                  ? <MenuItem icon={Archive} label="Archive" onClick={() => doStatus('archived')} danger />
+                  : <MenuItem icon={RotateCcw} label="Restore" onClick={() => doStatus('draft')} />}
+              </div>
+            )}
           </div>
         }
       />
 
-      {/* Status strip */}
+      {/* Status strip — the essentials only */}
       <div className="flex items-center gap-3 flex-wrap">
-        <AgentStatusBadge status={agent.status} />
         <span className="text-[11px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>v{v?.versionNumber} · {v?.status}{hasDraft ? ' (draft pending)' : ''}</span>
-        <span className="text-[11px] text-mist">Owner {agent.owner}</span>
         {agent.qualityScore != null && <span className="text-[11px] text-teal" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>Quality {agent.qualityScore}</span>}
         <CreditUsageBadge value={agent.creditsUsed} />
-        {agent.openIssues > 0 && <span className="text-[10.5px] text-amber-deep bg-amber/15 px-1.5 py-0.5 rounded-full">{agent.openIssues} open issue{agent.openIssues === 1 ? '' : 's'}</span>}
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-[1.5fr_1fr] gap-5 items-start">
@@ -76,8 +84,8 @@ export default function AgentOverview({ agentId, go }) {
             <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 text-[12.5px]">
               <KeyValueRow label="Type" value={agent.type.replace(/_/g, ' ')} />
               <KeyValueRow label="Mission" value={v?.mission || '—'} />
-              <KeyValueRow label="Default language" value={agent.defaultLanguage} mono />
-              <KeyValueRow label="Supported" value={(agent.supportedLanguages || []).join(', ')} mono />
+              <KeyValueRow label="Owner" value={agent.owner} />
+              <KeyValueRow label="Languages" value={(agent.supportedLanguages || [agent.defaultLanguage]).join(', ')} mono />
             </div>
             <div className="px-5 pb-5 space-y-3">
               <SummaryChips icon={BookOpen} label="Knowledge" items={(v?.knowledgeScope || []).map(id => nameOf(KNOWLEDGE_CATALOG, id))} />
@@ -110,17 +118,8 @@ export default function AgentOverview({ agentId, go }) {
           </Card>
         </div>
 
-        {/* Right rail: quick actions + guardrail posture */}
+        {/* Right rail: version */}
         <div className="space-y-4">
-          <Card>
-            <MonoLabel>Governance posture</MonoLabel>
-            <ul className="mt-2 space-y-1.5 text-[12px] text-slate">
-              <li className="flex items-center gap-2"><ShieldCheck className="w-3.5 h-3.5 text-teal" /> {enabledGuardrails.length} guardrails enforced</li>
-              <li className="flex items-center gap-2"><Wrench className="w-3.5 h-3.5 text-ocean" /> {(v?.tools || []).length} tools granted</li>
-              <li className="flex items-center gap-2"><BookOpen className="w-3.5 h-3.5 text-ocean" /> {(v?.knowledgeScope || []).length} knowledge sources</li>
-              <li className="flex items-center gap-2 text-mist">Cross-workspace access blocked (always)</li>
-            </ul>
-          </Card>
           <Card>
             <MonoLabel>Version</MonoLabel>
             <p className="text-[13px] text-ink mt-1">v{v?.versionNumber} · <span className="text-slate">{v?.changeSummary}</span></p>
@@ -130,6 +129,17 @@ export default function AgentOverview({ agentId, go }) {
         </div>
       </div>
     </div>
+  )
+}
+
+function MenuItem({ icon: Icon, label, onClick, danger }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full text-left px-3 py-1.5 text-[12.5px] cursor-pointer flex items-center gap-2 hover:bg-pale ${danger ? 'text-error' : 'text-ink'}`}
+    >
+      <Icon className="w-3.5 h-3.5" /> {label}
+    </button>
   )
 }
 
