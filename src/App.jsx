@@ -16,7 +16,7 @@ import ColdStartDashboard from './components/ColdStartDashboard'
 import TeamDirectory from './components/TeamDirectory'
 import HITLVendorWorkflow from './components/HITLVendorWorkflow'
 import HumanReview from './components/HumanReview'
-import OrgBrain from './components/OrgBrain'
+import Cortex from './components/Cortex'
 import AgentProfile from './components/AgentProfile'
 import IntelligenceAssistant from './components/IntelligenceAssistant'
 import IntegrationsHub from './components/Integrations'
@@ -638,7 +638,7 @@ export default function App() {
 
           {/* Cortex — top-level phase accessible from dashboard or narrative */}
           {phase === 'org-brain' && (
-            <OrgBrain
+            <Cortex
               onClose={() => setPhase(previousPhase || 'dashboard')}
               onNavigateBack={() => setPhase(previousPhase || 'dashboard')}
               onCreateContent={handleCreateContent}
