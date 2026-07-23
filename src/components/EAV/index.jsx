@@ -3,14 +3,14 @@
  *
  * Mounted as the `ai-visibility` phase (nav sibling of Cortex / Analytics).
  * 14 sections grouped by lifecycle (Measure · Improve · Monitor · Measure
- * Outcomes). Everything is FIXTURE data for the seeded Northstar workspace —
- * a persistent "Demo data" banner makes that unmistakable.
+ * Outcomes). Everything is FIXTURE data for the seeded Northstar workspace
+ * (the header carries a "Demo data" provenance label).
  */
 
 import { useState } from 'react'
-import { Radar, ArrowLeft, Info } from 'lucide-react'
+import { Radar, ArrowLeft } from 'lucide-react'
 import {
-  EAV_NAV, EAV_NAV_GROUPS, WORKSPACE, METHODOLOGY_VERSION, BENCHMARK_HASH, EAVI_DISCLAIMER,
+  EAV_NAV, EAV_NAV_GROUPS, WORKSPACE, METHODOLOGY_VERSION, BENCHMARK_HASH,
 } from '../../data/eav'
 import { MonoLabel, Card, SectionHeading, ProvenanceBadge } from './shared'
 import Overview from './Overview'
@@ -69,14 +69,6 @@ export default function EnterpriseAIVisibility({ onBack }) {
             <ArrowLeft className="w-3.5 h-3.5" /> Back to arbitr
           </button>
         </div>
-      </div>
-
-      {/* Persistent demo + disclaimer banner */}
-      <div className="mb-5 rounded-lg border border-amber/30 bg-amber/10 px-3.5 py-2 flex items-start gap-2">
-        <Info className="w-3.5 h-3.5 text-amber-deep shrink-0 mt-0.5" />
-        <p className="text-[11.5px] text-amber-deep leading-relaxed">
-          <strong>Demo data.</strong> {EAVI_DISCLAIMER}
-        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[210px_1fr] gap-6 items-start">
