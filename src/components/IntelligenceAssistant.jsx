@@ -137,21 +137,12 @@ export default function IntelligenceAssistant({ companyName, userName, currentPh
   const [input, setInput] = useState('')
   const [typing, setTyping] = useState(false)
   const [hasOpened, setHasOpened] = useState(false)
-  const [showFabOnDashboard, setShowFabOnDashboard] = useState(false)
   const scrollRef = useRef(null)
   const inputRef = useRef(null)
   const reduced = useReducedMotion()
 
-  // On dashboard, delay FAB appearance by 45s so it doesn't compete with primary CTA
-  useEffect(() => {
-    if (currentPhase !== 'dashboard' || hasOpened) return
-    setShowFabOnDashboard(false)
-    const t = setTimeout(() => setShowFabOnDashboard(true), 45000)
-    return () => clearTimeout(t)
-  }, [currentPhase, hasOpened])
-
-  // FAB is visible when: user has already opened Sage, OR not on dashboard, OR idle timer fired
-  const fabVisible = hasOpened || currentPhase !== 'dashboard' || showFabOnDashboard
+  // Sage is a persistent companion — the FAB is always available, dashboard included
+  const fabVisible = true
 
   // Auto-scroll on new messages
   useEffect(() => {

@@ -570,6 +570,7 @@ export default function App() {
               onFileAccepted={handleFileAccepted}
               connectedIntegrations={connectedIntegrations}
               onOpenIntegrations={() => { setPreviousPhase('dashboard'); setPhase('integrations') }}
+              onOpenCortex={() => { setPreviousPhase('dashboard'); setPhase('org-brain') }}
             />
           ) : phase === 'dashboard' && (
             <CommandSurface

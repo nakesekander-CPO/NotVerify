@@ -202,6 +202,7 @@ export default function ColdStartDashboard({
   onFileAccepted,
   connectedIntegrations = [],
   onOpenIntegrations,
+  onOpenCortex,
 }) {
   const prefersReduced = useReducedMotion();
   const [isDragOver, setIsDragOver] = useState(false);
@@ -595,49 +596,8 @@ export default function ColdStartDashboard({
           <p className="text-[12px] text-gray-500">Industry-standard knowledge bases loaded from your {configuredVertical} configuration. Every analysis adds more.</p>
         </div>
 
-        {/* Knowledge graph — partially filled nodes */}
-        <div className="px-6 py-6">
-          <div className="flex items-center justify-center">
-            <svg width="480" height="220" viewBox="0 0 480 220" className="max-w-full">
-              {/* Connections — solid for seeded, dashed for growing */}
-              <line x1="240" y1="50" x2="100" y2="130" stroke="#009eda" strokeWidth="1.5" opacity="0.5" />
-              <line x1="240" y1="50" x2="380" y2="130" stroke="#a78bfa" strokeWidth="1.5" opacity="0.5" />
-              <line x1="100" y1="130" x2="180" y2="190" stroke="#fbbf24" strokeWidth="1.5" opacity="0.3" strokeDasharray="4 4" />
-              <line x1="380" y1="130" x2="300" y2="190" stroke="#34d399" strokeWidth="1.5" opacity="0.3" strokeDasharray="4 4" />
-              <line x1="240" y1="50" x2="440" y2="75" stroke="#94a3b8" strokeWidth="1" opacity="0.25" strokeDasharray="3 3" />
-              <line x1="100" y1="130" x2="380" y2="130" stroke="#94a3b8" strokeWidth="1" opacity="0.2" strokeDasharray="3 3" />
-
-              {/* Compliance — partially filled (strongest pre-seed) */}
-              <circle cx="240" cy="50" r="28" fill="#009eda" fillOpacity="0.08" stroke="#009eda" strokeWidth="2" opacity="0.7" />
-              <text x="240" y="46" textAnchor="middle" fill="#009eda" fontSize="9" fontWeight="700">Compliance</text>
-              <text x="240" y="58" textAnchor="middle" fill="#009eda" fontSize="8" opacity="0.6">54 entries</text>
-
-              {/* Financial — partially filled */}
-              <circle cx="100" cy="130" r="24" fill="#fbbf24" fillOpacity="0.08" stroke="#fbbf24" strokeWidth="2" opacity="0.6" />
-              <text x="100" y="127" textAnchor="middle" fill="#92400e" fontSize="9" fontWeight="700">Financial</text>
-              <text x="100" y="138" textAnchor="middle" fill="#92400e" fontSize="8" opacity="0.6">43 entries</text>
-
-              {/* Regulatory — partially filled */}
-              <circle cx="380" cy="130" r="24" fill="#a78bfa" fillOpacity="0.08" stroke="#a78bfa" strokeWidth="2" opacity="0.6" />
-              <text x="380" y="127" textAnchor="middle" fill="#6d28d9" fontSize="9" fontWeight="700">Regulatory</text>
-              <text x="380" y="138" textAnchor="middle" fill="#6d28d9" fontSize="8" opacity="0.6">31 entries</text>
-
-              {/* Cultural — lightly seeded */}
-              <circle cx="180" cy="190" r="20" fill="#34d399" fillOpacity="0.04" stroke="#34d399" strokeWidth="1.5" opacity="0.35" strokeDasharray="4 4" />
-              <text x="180" y="187" textAnchor="middle" fill="#64748b" fontSize="8" fontWeight="600" opacity="0.5">Cultural</text>
-              <text x="180" y="197" textAnchor="middle" fill="#64748b" fontSize="7" opacity="0.4">12 entries</text>
-
-              {/* Brand — lightly seeded */}
-              <circle cx="300" cy="190" r="20" fill="#f87171" fillOpacity="0.04" stroke="#f87171" strokeWidth="1.5" opacity="0.35" strokeDasharray="4 4" />
-              <text x="300" y="187" textAnchor="middle" fill="#64748b" fontSize="8" fontWeight="600" opacity="0.5">Brand</text>
-              <text x="300" y="197" textAnchor="middle" fill="#64748b" fontSize="7" opacity="0.4">7 entries</text>
-
-              {/* Legal — empty, growing */}
-              <circle cx="440" cy="75" r="16" fill="none" stroke="#94a3b8" strokeWidth="1.5" opacity="0.25" strokeDasharray="4 4" />
-              <text x="440" y="78" textAnchor="middle" fill="#94a3b8" fontSize="7" fontWeight="600" opacity="0.4">Legal</text>
-            </svg>
-          </div>
-        </div>
+        {/* Mini constellation — cold-start version of the Cortex page's starfield */}
+        <MiniConstellation onOpenCortex={onOpenCortex} />
 
         {/* Pre-seeded intelligence detail */}
         <div className="px-6 pb-4">
@@ -707,4 +667,103 @@ export default function ColdStartDashboard({
       </motion.div>
     </div>
   );
+}
+
+/* ── Mini constellation ───────────────────────────────────────────
+   Cold-start edition of the Cortex page's starfield: one point per
+   pre-loaded entry (147 total), clustered by knowledge base, plus two
+   dim placeholder clusters that only fill in once humans start
+   reviewing. Static render (no animation loop); click opens Cortex. */
+
+const MINI_CLUSTERS = [
+  { label: 'J-GAAP Terminology', n: 54, x: 0.22, y: 0.42, spread: 0.09, color: '#D4860A' },
+  { label: 'TSE Conventions', n: 43, x: 0.5, y: 0.3, spread: 0.08, color: '#1B5E8F' },
+  { label: 'IFRS Mappings', n: 31, x: 0.78, y: 0.46, spread: 0.07, color: '#1B5E8F' },
+  { label: 'Brand & Cultural', n: 19, x: 0.36, y: 0.72, spread: 0.06, color: '#1B5E8F' },
+]
+const MINI_EMPTY = [
+  { label: 'Reviewer Corrections', x: 0.62, y: 0.74 },
+  { label: 'Verified Answers', x: 0.88, y: 0.78 },
+]
+
+function MiniConstellation({ onOpenCortex }) {
+  const elRef = useRef(null)
+  const canvasRef = useRef(null)
+
+  useEffect(() => {
+    const el = elRef.current
+    const canvas = canvasRef.current
+    const ctx = canvas.getContext('2d')
+    let seed = 7
+    const paint = () => {
+      const s = el.getBoundingClientRect()
+      const dpr = window.devicePixelRatio || 1
+      canvas.width = s.width * dpr
+      canvas.height = s.height * dpr
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      seed = 7
+      const rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff }
+      const gauss = () => (rnd() + rnd() + rnd()) / 3 - 0.5
+      const hexA = (hex, a) => {
+        const n = parseInt(hex.slice(1), 16)
+        return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a.toFixed(3)})`
+      }
+      ctx.clearRect(0, 0, s.width, s.height)
+      for (const c of MINI_CLUSTERS) {
+        for (let i = 0; i < c.n; i++) {
+          const recent = rnd() < 0.2
+          ctx.beginPath()
+          ctx.fillStyle = hexA(c.color, recent ? 0.85 : 0.4)
+          ctx.arc(
+            (c.x + gauss() * c.spread * 2.4) * s.width,
+            (c.y + gauss() * c.spread * 2.2) * s.height,
+            (1 + rnd() * 1.2) * (recent ? 1.4 : 1),
+            0, Math.PI * 2,
+          )
+          ctx.fill()
+        }
+      }
+    }
+    paint()
+    const ro = new ResizeObserver(paint)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
+  return (
+    <div className="px-6 py-4">
+      <button
+        ref={elRef}
+        type="button"
+        onClick={() => onOpenCortex?.()}
+        aria-label="Open Cortex"
+        className="relative w-full h-[210px] rounded-lg border border-black/[0.06] overflow-hidden cursor-pointer group text-left bg-[radial-gradient(ellipse_at_50%_40%,#FFFDF8_0%,#FAF7EF_60%,#F4EFE3_100%)]"
+      >
+        <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
+        {MINI_CLUSTERS.map(c => (
+          <span
+            key={c.label}
+            className="absolute -translate-x-1/2 text-center pointer-events-none"
+            style={{ left: `${c.x * 100}%`, top: `${(c.y - c.spread * 2.2) * 100}%` }}
+          >
+            <span className="block text-[10.5px] font-semibold text-gray-700 leading-tight">{c.label}</span>
+            <span className="block text-[9px] text-gray-400" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{c.n} entries</span>
+          </span>
+        ))}
+        {MINI_EMPTY.map(c => (
+          <span
+            key={c.label}
+            className="absolute -translate-x-1/2 text-center pointer-events-none"
+            style={{ left: `${c.x * 100}%`, top: `${c.y * 100}%` }}
+          >
+            <span className="block text-[10px] font-medium text-gray-400/70 leading-tight">{c.label}</span>
+            <span className="block text-[8.5px] text-gray-300" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>grows as you review</span>
+          </span>
+        ))}
+        <span className="absolute right-3 bottom-3 text-[10px] text-gray-400 bg-white/85 border border-black/[0.06] rounded-full px-2.5 py-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+          open Cortex →
+        </span>
+      </button>
+    </div>
+  )
 }
