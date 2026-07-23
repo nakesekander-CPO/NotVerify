@@ -33,6 +33,7 @@ import CampaignResultsView from './components/CampaignResultsView'
 import ContentCreator from './components/ContentCreator'
 import AnalyticsDashboard from './components/AnalyticsDashboard'
 import AgentStudio from './components/AgentStudio'
+import EnterpriseAIVisibility from './components/EAV'
 import GovernanceAudit from './components/GovernanceAudit'
 import useMediaQuery from './hooks/useMediaQuery'
 import useQualityCalculator from './hooks/useQualityCalculator'
@@ -656,6 +657,13 @@ export default function App() {
             <AgentStudio
               onBack={() => setPhase(previousPhase || 'dashboard')}
               currentUserId="alex"
+            />
+          )}
+
+          {/* Enterprise AI Visibility — governed EAVI measurement module */}
+          {phase === 'ai-visibility' && (
+            <EnterpriseAIVisibility
+              onBack={() => setPhase(previousPhase || 'dashboard')}
             />
           )}
 
