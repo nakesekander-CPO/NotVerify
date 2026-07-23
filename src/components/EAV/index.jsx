@@ -19,6 +19,9 @@ import Competitors from './Competitors'
 import Languages from './Languages'
 import Citations from './Citations'
 import PromptLibrary from './PromptLibrary'
+import KnowledgeLayer from './KnowledgeLayer'
+import Recommendations from './Recommendations'
+import ContentApprovals from './ContentApprovals'
 
 // Sections are registered here as each ships. Unregistered sections fall back
 // to a titled placeholder so the nav never dead-ends.
@@ -29,6 +32,9 @@ const SCREENS = {
   languages: Languages,
   citations: Citations,
   prompts: PromptLibrary,
+  knowledge: KnowledgeLayer,
+  recommendations: Recommendations,
+  content: ContentApprovals,
 }
 
 export default function EnterpriseAIVisibility({ onBack }) {
