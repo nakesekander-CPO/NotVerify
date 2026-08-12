@@ -14,10 +14,11 @@ describe('SLA targets — the relaunch headline numbers', () => {
     expect(SLA_BY_DOC_TYPE['annual-securities'].hours).toBe(240)
   })
 
-  it('every demo project derives its SLA from its document type', () => {
+  it('every demo project derives its SLA from its document type + prep choice', async () => {
+    const { slaWithPrep } = await import('../swiftbridgeModel')
     const { projects } = getSwiftBridgeDemo()
     for (const p of projects) {
-      expect(p.slaHours).toBe(slaFor(p.docType).hours)
+      expect(p.slaHours).toBe(slaWithPrep(p.docType, p.prepChoice || null).hours)
     }
   })
 
@@ -177,5 +178,80 @@ describe('demo seed consistency — the sales story holds up', () => {
   it('the custom agent binds the client glossary to a real marketplace base agent', () => {
     expect(demo.customAgent.baseAgentId).toBe('JP-FIN-3')
     expect(demo.customAgent.glossaryId).toBe(demo.glossary.id)
+  })
+})
+
+/* ── File Marshall intake (PPTX prep) ─────────────────────────── */
+
+describe('File Marshall — PPTX intake scan and prep choice', () => {
+  it('scan reports 8 slides and a stable issue list with severities', async () => {
+    const { marshallScan } = await import('../swiftbridgeModel')
+    const scan = marshallScan('kessan_setsumei_2Q.pptx')
+    expect(scan.slides).toBe(8)
+    expect(scan.issues.length).toBe(6)
+    expect(scan.critical + scan.major + scan.minor).toBe(scan.issues.length)
+    expect(scan.scannedBy.id).toBe('FILE-MARSHALL-1')
+    // deterministic: same file, same report
+    expect(marshallScan('kessan_setsumei_2Q.pptx').issues).toEqual(scan.issues)
+  })
+
+  it('self_fix keeps the 72h commitment; dtp_fix extends to 96h', async () => {
+    const { slaWithPrep } = await import('../swiftbridgeModel')
+    expect(slaWithPrep('powerpoint', 'self_fix').hours).toBe(72)
+    expect(slaWithPrep('powerpoint', 'dtp_fix').hours).toBe(96)
+    expect(slaWithPrep('powerpoint', null).hours).toBe(72)
+  })
+
+  it('dtp_fix injects a DTP pre-flight step before translation; self_fix injects a customer gate', () => {
+    const dtp = buildWorkflow('powerpoint', ['translation', 'dtp', 'qa'], { prepChoice: 'dtp_fix' })
+    const keys = dtp.map(s => s.key)
+    expect(keys.indexOf('marshall-scan')).toBe(0)
+    expect(keys.indexOf('dtp-preflight')).toBe(1)
+    expect(keys.indexOf('dtp-preflight')).toBeLessThan(keys.indexOf('translation'))
+    expect(dtp.find(s => s.key === 'dtp-preflight').kind).toBe('agent')
+
+    const self = buildWorkflow('powerpoint', ['translation', 'dtp', 'qa'], { prepChoice: 'self_fix' })
+    const selfKeys = self.map(s => s.key)
+    expect(self.find(s => s.key === 'source-fixes').kind).toBe('customer_action')
+    expect(selfKeys.indexOf('source-fixes')).toBeLessThan(selfKeys.indexOf('intake'))
+
+    // no prep choice → chain unchanged
+    const plain = buildWorkflow('powerpoint', ['translation', 'dtp', 'qa'])
+    expect(plain.map(s => s.key)).not.toContain('marshall-scan')
+  })
+
+  it('the marshall scan step arrives completed — the work already happened at intake', () => {
+    const wf = buildWorkflow('powerpoint', ['translation'], { prepChoice: 'dtp_fix' })
+    expect(wf.find(s => s.key === 'marshall-scan').status).toBe('completed')
+  })
+})
+
+describe('terminology evidence — check AND apply, per term', () => {
+  it('summary counts reconcile with the evidence rows', async () => {
+    const { buildTermEvidence } = await import('../swiftbridgeModel')
+    const { glossary } = getSwiftBridgeDemo()
+    const ev = buildTermEvidence(glossary)
+    expect(ev.rows.length).toBe(ev.applied + ev.passed + ev.held)
+    expect(ev.applied).toBe(3)
+    expect(ev.held).toBe(1)
+    expect(ev.violationsRemaining).toBe(0)
+  })
+
+  it('every applied row carries before→after and a slide number', async () => {
+    const { buildTermEvidence } = await import('../swiftbridgeModel')
+    const { glossary } = getSwiftBridgeDemo()
+    for (const r of buildTermEvidence(glossary).rows.filter(x => x.action === 'applied')) {
+      expect(r.before).toBeTruthy()
+      expect(r.after).toBeTruthy()
+      expect(r.slide).toBeGreaterThan(0)
+    }
+  })
+
+  it('pending glossary terms are held, never silently applied', async () => {
+    const { buildTermEvidence } = await import('../swiftbridgeModel')
+    const { glossary } = getSwiftBridgeDemo()
+    const held = buildTermEvidence(glossary).rows.find(r => r.action === 'held')
+    expect(held.term.status).toBe('pending')
+    expect(held.after).toBeNull()
   })
 })

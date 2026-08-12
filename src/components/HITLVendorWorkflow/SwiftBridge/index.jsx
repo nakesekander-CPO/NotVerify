@@ -17,7 +17,7 @@ import {
   Languages, Sparkles, Bird, Landmark, Eye, Star, Download, ChevronRight,
 } from 'lucide-react'
 import {
-  getSwiftBridgeDemo, slaCountdown, slaFor, buildWorkflow,
+  getSwiftBridgeDemo, slaCountdown, slaWithPrep, buildWorkflow, buildTermEvidence,
 } from '../../../services/swiftbridge/swiftbridgeModel'
 import { appendAuditEvent } from '../../../services/hitl/auditLog'
 import { SectionHeading, Card, MonoLabel, StatusBadge } from '../shared'
@@ -55,8 +55,14 @@ export default function SwiftBridge({ currentUserId, navigate }) {
     } catch { /* best-effort in prototype */ }
   }
 
-  const createProject = ({ fileName, fileSize, docType, services }) => {
-    const sla = slaFor(docType)
+  const createProject = ({ fileName, fileSize, docType, services, prepChoice = null, marshall = null }) => {
+    const sla = slaWithPrep(docType, prepChoice)
+    // First pending step goes live (Marshall-path scans arrive already completed)
+    let started = false
+    const steps = buildWorkflow(docType, services, { prepChoice }).map(s => {
+      if (!started && s.status === 'pending') { started = true; return { ...s, status: 'in_progress', startedAt: new Date().toISOString() } }
+      return s
+    })
     const p = {
       id: `SB-2026-${Math.floor(Math.random() * 900) + 100}`,
       name: fileName.replace(/\.[a-z]+$/i, ''), nameJa: null,
@@ -64,13 +70,16 @@ export default function SwiftBridge({ currentUserId, navigate }) {
       slaHours: sla.hours, slaLabel: sla.label, slaLabelJa: sla.labelJa,
       createdAt: new Date().toISOString(), deliveredAt: null,
       status: 'in_progress',
-      steps: buildWorkflow(docType, services).map((s, i) => i === 0 ? { ...s, status: 'in_progress', startedAt: new Date().toISOString() } : s),
+      steps,
       files: [{ name: fileName, size: fileSize }],
+      ...(prepChoice ? { prepChoice, marshall, termEvidence: buildTermEvidence(demo.glossary) } : {}),
     }
     setProjects(ps => [p, ...ps])
     setSelectedId(p.id)
     setTab('workflow')
     audit('swiftbridge.project.created', p.id, `${docType} · ${sla.label}`)
+    if (marshall) audit('swiftbridge.marshall.scan', p.id, `${marshall.slides} slides · ${marshall.issues.length} issues`)
+    if (prepChoice) audit('swiftbridge.prep.choice', p.id, prepChoice === 'self_fix' ? 'Customer self-fix · 72h clock on re-upload' : 'DTP pre-flight · 96h commitment')
   }
 
   const updateSteps = (projectId, steps, note) => {

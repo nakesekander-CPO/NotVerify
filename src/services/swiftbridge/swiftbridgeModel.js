@@ -70,6 +70,49 @@ export const STEP_AGENTS = {
   translation:    { id: 'JP-FIN-3',         name: 'J-GAAP Specialist' },
   dubbing:        { id: 'SUBTITLE-AV-1',    name: 'Subtitle & Media Localizer' },
   qa:             { id: 'LQA-AUDIT-1',      name: 'Localization QA Auditor' },
+  marshall:       { id: 'FILE-MARSHALL-1',  name: 'File Marshall' },
+}
+
+/* ── File Marshall — PPTX intake scan ────────────────────────────
+   Scans an uploaded deck before the workflow starts and reports the
+   source-file issues that would break translation or blow the layout.
+   Deterministic fixture scan for the demo (same file → same report). */
+
+export const MARSHALL_ISSUES = [
+  { id: 'fm1', slide: 1, severity: 'major',  issue: 'Locked slide-master elements', issueJa: 'スライドマスターがロックされています', detail: 'Title block and footer live on a locked master — translated text cannot be placed without unlocking.' },
+  { id: 'fm2', slide: 2, severity: 'major',  issue: 'Embedded font missing (Yu Gothic)', issueJa: '埋め込みフォント欠落（游ゴシック）', detail: 'Also affects slide 5. Rendering will substitute fonts and shift every line break.' },
+  { id: 'fm3', slide: 3, severity: 'critical', issue: 'Text baked into images', issueJa: '画像化されたテキスト', detail: 'Chart labels are flattened pixels — untranslatable without source artwork or DTP redraw.' },
+  { id: 'fm4', slide: 4, severity: 'major',  issue: 'Overset text boxes', issueJa: 'テキストボックスあふれ', detail: 'Also slide 7. EN runs ~30% longer than JA; these frames already overflow at current size.' },
+  { id: 'fm5', slide: 6, severity: 'minor',  issue: 'Ungrouped SmartArt, mixed JA/EN', issueJa: 'SmartArt未グループ化', detail: 'Twelve loose shapes; two already contain English placeholders.' },
+  { id: 'fm6', slide: 8, severity: 'minor',  issue: 'Full-width digits in tables', issueJa: '全角数字', detail: '２０２６ → 2026 normalization needed for IR numeral style.' },
+]
+
+/** marshallScan(fileName) — File Marshall report for a deck. */
+export function marshallScan(fileName = '') {
+  return {
+    fileName,
+    slides: 8,
+    scannedBy: STEP_AGENTS.marshall,
+    issues: MARSHALL_ISSUES,
+    critical: MARSHALL_ISSUES.filter(i => i.severity === 'critical').length,
+    major: MARSHALL_ISSUES.filter(i => i.severity === 'major').length,
+    minor: MARSHALL_ISSUES.filter(i => i.severity === 'minor').length,
+  }
+}
+
+/** Prep-choice → delivery commitment. Choice 1 (customer fixes) keeps the
+ *  standard 72h clock (starts on re-upload); choice 2 adds a 24h DTP
+ *  pre-flight ahead of the same 72h workflow. */
+export const PREP_CHOICES = {
+  self_fix: { id: 'self_fix', hours: 72, label: '72-hour delivery', labelJa: '72時間以内', note: 'Clock starts when the fixed file is re-uploaded' },
+  dtp_fix:  { id: 'dtp_fix',  hours: 96, label: '96-hour delivery', labelJa: '96時間以内', note: 'Includes 24h DTP pre-flight before translation' },
+}
+
+export function slaWithPrep(docType, prepChoice = null) {
+  const base = slaFor(docType)
+  if (!prepChoice) return base
+  const p = PREP_CHOICES[prepChoice]
+  return p ? { hours: p.hours, label: p.label, labelJa: p.labelJa } : base
 }
 
 /* ── Workflow templates ──────────────────────────────────────── */
@@ -90,14 +133,30 @@ const step = (id, name, nameJa, kind, agentKey = null, extra = {}) => ({
 })
 
 /**
- * buildWorkflow(docType, services) — the canonical chain. Every
+ * buildWorkflow(docType, services, opts) — the canonical chain. Every
  * workflow includes at least one human_review gate and exactly one
  * customer_action gate; they cannot be configured away.
+ *
+ * opts.prepChoice ('self_fix' | 'dtp_fix') — File Marshall intake path:
+ *   self_fix → a customer_action "source fixes" gate precedes the chain
+ *   dtp_fix  → an arbitr DTP pre-flight agent step precedes the chain
  */
-export function buildWorkflow(docType, services = []) {
+export function buildWorkflow(docType, services = [], opts = {}) {
   const isDubbing = services.includes('dubbing') || docType === 'media-dubbing'
   const needsDtp = ['powerpoint', 'annual-securities'].includes(docType) || services.includes('dtp')
+  const prep = opts.prepChoice === 'self_fix'
+    ? [
+        step('marshall-scan', 'File Marshall scan', 'ファイル診断', 'agent', 'marshall', { status: 'completed', completedAt: new Date().toISOString(), notes: '8 slides · 6 source issues reported to customer' }),
+        step('source-fixes', 'Source fixes & re-upload', 'お客様による修正・再アップロード', 'customer_action', null, { notes: 'Prep checklist sent — 72h clock starts on re-upload' }),
+      ]
+    : opts.prepChoice === 'dtp_fix'
+      ? [
+          step('marshall-scan', 'File Marshall scan', 'ファイル診断', 'agent', 'marshall', { status: 'completed', completedAt: new Date().toISOString(), notes: '8 slides · 6 source issues routed to DTP' }),
+          step('dtp-preflight', 'DTP pre-flight fixes', 'DTP事前修正', 'agent', null, { owner: 'arbitr DTP pipeline', notes: 'Unlock master · re-embed fonts · redraw baked text · resize overset frames · regroup SmartArt · normalize digits' }),
+        ]
+      : []
   const steps = [
+    ...prep,
     step('intake', 'File intake', 'ファイル受領', 'agent'),
     step('classification', 'Document classification', '文書分類', 'agent', 'classification'),
     step('glossary-match', 'Terminology / glossary matching', '用語集マッチング', 'agent', 'glossary'),
@@ -173,6 +232,35 @@ export function checkGlossaryCompliance(text = '', terms = []) {
     })
 }
 
+/* ── Terminology evidence — check AND apply, per term ────────────
+   What the Terminology Guardian actually did on a deck: every glossary
+   term checked, corrections applied with before→after and slide
+   numbers, pending terms held (never silently applied). This is the
+   evidence panel behind the glossary-match workflow step. */
+
+export function buildTermEvidence(glossary) {
+  const t = (id) => glossary.terms.find(x => x.id === id)
+  const rows = [
+    { term: t('g1'),  action: 'applied', slide: 4, before: 'goodwill premium', after: 'Goodwill', reason: 'Forbidden legacy V1 rendering corrected' },
+    { term: t('g5'),  action: 'applied', slide: 7, before: 'full-year forecast', after: 'full-year guidance', reason: 'Glossary-preferred rendering enforced' },
+    { term: t('g9'),  action: 'applied', slide: 6, before: 'treasury stock acquisition', after: 'share buyback', reason: 'IR-copy rule from glossary note' },
+    { term: t('g6'),  action: 'pass', slide: 2, before: null, after: 'net revenue', reason: 'Already compliant (also slide 5)' },
+    { term: t('g7'),  action: 'pass', slide: 5, before: null, after: 'operating income', reason: 'Already compliant' },
+    { term: t('g2'),  action: 'pass', slide: 1, before: null, after: 'timely disclosure', reason: 'Already compliant' },
+    { term: t('g11'), action: 'held', slide: 3, before: '中期経営計画', after: null, reason: 'Term pending client approval — flagged to Sage, not applied' },
+  ].filter(r => r.term)
+  return {
+    glossaryName: `${glossary.name} ${glossary.version}`,
+    agent: STEP_AGENTS.glossary,
+    checked: glossary.terms.filter(x => x.status !== 'pending').length,
+    applied: rows.filter(r => r.action === 'applied').length,
+    passed: rows.filter(r => r.action === 'pass').length,
+    held: rows.filter(r => r.action === 'held').length,
+    violationsRemaining: 0,
+    rows,
+  }
+}
+
 /* ── AI Dubbing ──────────────────────────────────────────────── */
 
 export const DUBBING_STAGES = [
@@ -209,10 +297,10 @@ export function summarizeQa(results = []) {
 const H = 3600_000
 const iso = (ms) => new Date(ms).toISOString()
 
-function seededProject({ id, name, nameJa, docType, services, langPair, ageHours, deliveredAfterHours = null, completeThrough = 0, blockedKey = null, files }, now) {
-  const sla = slaFor(docType)
+function seededProject({ id, name, nameJa, docType, services, langPair, ageHours, deliveredAfterHours = null, completeThrough = 0, blockedKey = null, prepChoice = null, files }, now) {
+  const sla = slaWithPrep(docType, prepChoice)
   const createdAt = iso(now - ageHours * H)
-  let steps = buildWorkflow(docType, services)
+  let steps = buildWorkflow(docType, services, { prepChoice })
   steps = steps.map((s, i) => {
     if (deliveredAfterHours != null) {
       return { ...s, status: 'completed', startedAt: createdAt, completedAt: iso(now - ageHours * H + (i + 1) * H) }
@@ -236,6 +324,12 @@ function seededProject({ id, name, nameJa, docType, services, langPair, ageHours
 
 export function getSwiftBridgeDemo(now = Date.now()) {
   const projects = [
+    seededProject({
+      id: 'SB-2026-043', name: '2Q FY2026 Earnings Deck', nameJa: '2026年度第2四半期 決算説明資料',
+      docType: 'powerpoint', services: ['translation', 'dtp', 'qa', 'glossary'], langPair: 'JA → EN',
+      ageHours: 8, completeThrough: 5, prepChoice: 'dtp_fix',
+      files: [{ name: 'kessan_setsumei_2Q.pptx', size: '21.7 MB' }],
+    }, now),
     seededProject({
       id: 'SB-2026-041', name: '1Q FY2026 Timely Disclosure', nameJa: '2026年度第1四半期 適時開示',
       docType: 'timely-disclosure', services: ['translation', 'qa'], langPair: 'JA → EN',
@@ -305,6 +399,12 @@ export function getSwiftBridgeDemo(now = Date.now()) {
     { id: 'qa4', projectId: 'SB-2026-041', category: 'missing',       severity: 'major',    description: 'Footnote 7 untranslated', location: 'p. 12', resolution: 'approved', comment: 'Fixed in v2 draft' },
     { id: 'qa5', projectId: 'SB-2026-041', category: 'terminology',   severity: 'minor',    description: '通期業績予想 → “full-year forecast” (glossary prefers “full-year guidance”)', location: 'Section 4 · seg 31', resolution: 'open', comment: null },
   ]
+
+  // The seeded Marshall-path deck carries its scan + terminology evidence
+  const deck = projects.find(p => p.id === 'SB-2026-043')
+  deck.marshall = marshallScan(deck.files[0].name)
+  deck.prepChoice = 'dtp_fix'
+  deck.termEvidence = buildTermEvidence(glossary)
 
   return { projects, dubbingJob, glossary, customAgent, qaResults }
 }
