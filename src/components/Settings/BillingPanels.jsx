@@ -24,7 +24,7 @@ import { downloadCsv, downloadHtml } from '../../utils/demoFiles'
 /* ── Plans / Contract ─────────────────────────────────────────── */
 
 const PUBLIC_PLANS = {
-  standard:   { name: 'Standard', price: 20,  blurb: 'Fast AI intelligence for everyday work.', features: ['1,000 Intelligence Credits / month', 'Standard AI Translation'] },
+  standard:   { name: 'Standard', price: 20,  blurb: 'Fast AI intelligence for everyday work.', features: ['1,000 Intelligence Credits / month', 'Standard AI checks'] },
   plus:       { name: 'Plus',     price: 35,  blurb: 'More credits and Specialty Verification.', features: ['2,000 Intelligence Credits / month', 'AI Agent Specialty Verification'] },
   pro_team:   { name: 'Team',     price: 100, blurb: 'Full platform with Trust Credits and priority.', features: ['5,000 Intelligence Credits / month', 'All AI features', '2 Trust Credits', 'Priority & rollovers'] },
   enterprise: { name: 'Enterprise', price: null, blurb: 'Contract pricing, governance, and scale.', features: ['Committed credit pool', 'Invoice / PO / ACH / net terms', 'SSO + advanced security', 'Dedicated support'] },

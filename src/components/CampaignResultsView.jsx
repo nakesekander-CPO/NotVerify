@@ -216,7 +216,7 @@ export default function CampaignResultsView({ campaign, threshold = 85, onReset,
           <div className="w-14 h-14 rounded-lg bg-emerald-50 flex items-center justify-center">
             <CheckCircle2 className="w-7 h-7 text-emerald-400" />
           </div>
-          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Campaign Complete</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Batch check complete</h1>
           <p className="text-[14px] text-gray-500">
             {campaign.name || 'Campaign'} &middot; {totalDocs} document{totalDocs !== 1 ? 's' : ''} &middot; {allLocales.map(l => l.toUpperCase()).join(' \u00b7 ')}
           </p>
@@ -228,7 +228,7 @@ export default function CampaignResultsView({ campaign, threshold = 85, onReset,
         <div className="flex items-center gap-6">
           {avgScore != null && <ScoreRing score={avgScore} size={72} strokeWidth={6} prefersReducedMotion={prefersReduced} />}
           <div className="flex-1 min-w-0">
-            <h2 className="text-[18px] font-semibold text-gray-900 mb-1">{avgScore ?? '\u2014'}% Overall Quality</h2>
+            <h2 className="text-[18px] font-semibold text-gray-900 mb-1">{avgScore ?? '\u2014'}% cleared the checks</h2>
             <p className="text-[13px] text-gray-500 leading-relaxed mb-3">
               {totalDocs} documents processed across {allLocales.length} locale{allLocales.length !== 1 ? 's' : ''}.
               {readyCount > 0 && ` ${readyCount} ready for delivery.`}

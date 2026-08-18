@@ -251,7 +251,7 @@ export default function CampaignHub({
 
         <motion.div {...m(fadeUp(0))}>
           <h1 className="text-[22px] font-bold text-gray-900 mb-1">
-            {isFirstRun ? 'Bring in your first documents' : 'Start a campaign'}
+            {isFirstRun ? 'Bring in your first documents' : 'Check a batch'}
           </h1>
           <p className="text-[13px] text-gray-500 mb-6">
             {isFirstRun

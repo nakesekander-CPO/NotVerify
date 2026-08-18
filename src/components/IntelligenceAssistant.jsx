@@ -33,7 +33,7 @@ const CREATION_RESPONSES = {
   'cr-score': ['The **93% confidence score** breaks down as: **Terminology accuracy: 96%** (412 J-GAAP entries matched), **Brand voice alignment: 94%** (198 entries), **Regulatory compliance: 91%** (287 TSE entries, 1 minor currency flag), **Cultural adaptation: 89%** (regional conventions verified). The single compliance note about mixed currency formatting is what keeps it from 95%+.'],
   'cr-compliance': ['I found **1 minor compliance flag**: mixed currency denominations (\u00A5 and JPY) in the Financial Highlights section. To fix this, standardize all currency references to \u00A5 format per TSE filing conventions. This would likely push the confidence score from 93% to **95%**. Want me to apply this fix?'],
   'cr-tone': ['The current content uses **Formal** tone as configured. I can adjust to: \u2022 **Semi-formal** \u2014 slightly less rigid, suitable for internal distribution \u2022 **Executive** \u2014 more concise, action-oriented phrasing \u2022 **Client-facing** \u2014 warmer while maintaining professionalism. Which direction would you prefer?'],
-  'cr-export': ['Available export formats: \u2022 **Word (.docx)** \u2014 editable document with formatting \u2022 **PDF** \u2014 final distribution format \u2022 **Clipboard** \u2014 plain text copy. You can export the version for any locale (EN, JA, DE, ZH) from the Content tab.'],
+  'cr-export': ['Available export formats: \u2022 **Word (.docx)** \u2014 editable document with formatting \u2022 **PDF** \u2014 final distribution format \u2022 **Clipboard** \u2014 plain text copy. You can export any language version from the Content tab — every export carries its evidence trail.'],
   'cr-regen': ['Your **Brand Voice model** was updated 2 days ago (v1.8 \u2192 v1.9) with 12 new entries from the Q3 compliance review. Regenerating with the latest version would cost **~30 credits** and may improve brand alignment by 2-3 points. Want me to proceed?'],
 }
 
@@ -67,7 +67,7 @@ const CANNED_RESPONSES = {
     "It looks like that tool isn't connected yet. Head to **Connected Tools** to set it up — I'll be able to use it automatically once it's linked.",
   ],
   default: [
-    "I'm your Intelligence Assistant. I can help you understand confidence scores, choose the right agents, track your Cortex growth, and navigate compliance requirements.",
+    "I'm Sage. I can explain why a change was flagged or held, help you choose the right agents, track your Cortex growth, and walk you through what publishes and why.",
     "Try asking me about any of those topics, or use the quick actions below.",
   ],
 }
@@ -167,8 +167,8 @@ export default function IntelligenceAssistant({ companyName, userName, currentPh
         ? ` I just helped generate your ${activeSession.contentTitle || 'document'} using ${activeSession.entriesUsed} knowledge entries across ${activeSession.domainsUsed?.join(', ') || 'multiple domains'}. The confidence score is ${activeSession.confidenceScore}%${activeSession.complianceNoteCount > 0 ? ` with ${activeSession.complianceNoteCount} minor compliance note${activeSession.complianceNoteCount > 1 ? 's' : ''}` : ''}. How can I help you refine it?`
         : currentPhase === 'dashboard'
           ? connectedIntegrations.length === 0
-            ? " You're on the Intelligence Hub. Tip: connect tools like Slack and Google Drive so I can deliver your finished projects automatically."
-            : " You're on the Intelligence Hub. Ready to start your first project?"
+            ? " You're on your dashboard. Tip: connect tools like Slack and Google Drive so I can deliver cleared changes automatically."
+            : " You're on your dashboard — actions start here. Ready to run your first check?"
         : currentPhase === 'narrative' ? " You're reviewing the Governance report. I can explain any scores or flags."
         : currentPhase === 'human-review' ? " You're on the Review step. Need help with any flagged segments?"
         : currentPhase === 'org-brain' && connectedIntegrations.some(c => c.id === 'confluence')
@@ -217,7 +217,7 @@ export default function IntelligenceAssistant({ companyName, userName, currentPh
     let responseKey = 'default'
     if (lower.includes('quality') || lower.includes('score')) responseKey = 'quality'
     else if (lower.includes('agent') || lower.includes('ensemble')) responseKey = 'agents'
-    else if (lower.includes('Cortex') || lower.includes('knowledge') || lower.includes('brain')) responseKey = 'orgbrain'
+    else if (lower.includes('cortex') || lower.includes('knowledge') || lower.includes('brain')) responseKey = 'orgbrain'
     else if (lower.includes('compliance') || lower.includes('flag') || lower.includes('review')) responseKey = 'compliance'
     else if (lower.includes('automat') || lower.includes('workflow') || lower.includes('integrat') || lower.includes('connect')) responseKey = 'integrations'
     else if (lower.includes('slack') || lower.includes('jira') || lower.includes('drive') || lower.includes('salesforce')) {

@@ -460,7 +460,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
               <Loader2 className="w-8 h-8 text-straker-600 animate-spin" />
             </div>
             <div className="text-center">
-              <p className="text-[15px] font-medium text-gray-900 mb-1">Full execution in progress</p>
+              <p className="text-[15px] font-medium text-gray-900 mb-1">Checks in progress — every change against your rules</p>
               <p className="text-[13px] text-gray-500">Processing all {pageCount} pages with {data.agent?.name}...</p>
             </div>
 
@@ -531,7 +531,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
             <CheckCircle2 className="w-7 h-7 text-emerald-400" />
           </div>
           <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
-            Orchestrated Translation Complete
+            Publish Decision Ready
           </h1>
           <p className="text-[14px] text-gray-500">
             {data.fileName} &middot; JA &middot; DE &middot; ZH &middot; 4m 12s

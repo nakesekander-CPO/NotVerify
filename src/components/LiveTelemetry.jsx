@@ -41,12 +41,12 @@ function buildLogScript(agents, locales, totalSegments) {
 
   return [
     { t: 1, text: 'AES-256 encryption handshake established', type: 'success' },
-    { t: 2, text: `Regional routing: ${localeList.join(', ')}`, type: 'info' },
+    { t: 2, text: `Checks running for: ${localeList.join(', ')}`, type: 'info' },
     { t: 3, text: 'Zero-retention pipeline activated', type: 'success' },
     { t: 5, text: `${agentNames[0] || 'Agent-1'}: ASBJ Rule 29 pattern detected in seg 12`, type: 'agent', agentIdx: 0 },
-    { t: 7, text: `${agentNames[1] || 'Agent-2'}: 42 knowledge entries synced for locale ${locales[0]?.toUpperCase() || 'JA'}`, type: 'agent', agentIdx: 1 },
+    { t: 7, text: `${agentNames[1] || 'Agent-2'}: 42 Cortex rules loaded for ${locales[0]?.toUpperCase() || 'JA'} checks`, type: 'agent', agentIdx: 1 },
     { t: 9, text: `${agentNames[2] || 'Agent-3'}: Tone deviation detected in seg 42`, type: 'warning', agentIdx: 2 },
-    { t: 11, text: `${agentNames[0] || 'Agent-1'}: Currency conversion \u00a5630\u767e\u4e07 applied`, type: 'agent', agentIdx: 0 },
+    { t: 11, text: `${agentNames[0] || 'Agent-1'}: Numeric-format rule applied: \u00a5630\u767e\u4e07 standardized`, type: 'agent', agentIdx: 0 },
     { t: 12, text: `\u26a0 CONFLICT: ${agentNames[0] || 'Agent-1'} vs ${agentNames[2] || 'Agent-3'} on segment 42`, type: 'conflict' },
     { t: 14, text: `${agentNames[0] || 'Agent-1'}: ASC 606\u2192ASBJ 29 mapping completed`, type: 'agent', agentIdx: 0 },
     { t: 15, text: `All ${totalSegments} segments processed \u2713`, type: 'complete' },

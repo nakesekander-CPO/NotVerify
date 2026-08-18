@@ -329,7 +329,7 @@ export default function OperationsControlRoom({ onCancel, campaign, onComplete }
             <h1 className="text-[20px] font-bold text-gray-900 mb-0.5">Operations Control Room</h1>
           {onCancel && <button onClick={onCancel} className="text-[11.5px] text-gray-400 hover:text-gray-600 cursor-pointer mt-1">Cancel run and return to dashboard</button>}
             <p className="text-[13px] text-gray-500">
-              Campaign: <span className="font-medium text-gray-700">{campaign.name}</span>
+              Batch check: <span className="font-medium text-gray-700">{campaign.name}</span>
               {' '}· {overallPct}% complete
             </p>
           </div>

@@ -301,7 +301,7 @@ export default function OnboardingFlow({ onComplete }) {
       `${langName} · ${userRole.trim()}`,
       [
         `Great — **${langName}** speaker and **${userRole.trim()}** at Meridian Capital. I'll tailor your experience accordingly.`,
-        `Now, what markets does Meridian Capital need to reach, and what content do you need to take global?`
+        `Now — what content should never publish without a check, and where does it go out?`
       ]
     )
   }
@@ -318,7 +318,7 @@ export default function OnboardingFlow({ onComplete }) {
     const { vertical, sub } = inferVertical(contentTypes)
     const compliance = COMPLIANCE_MAP[vertical] || []
     const complianceMsg = compliance.length > 0
-      ? `Since you work with ${sub}, I'll activate **${compliance.join('** and **')}** compliance guardrails. These ensure your translations meet regulatory standards.`
+      ? `Since you work with ${sub}, I'll activate **${compliance.join('** and **')}** compliance guardrails. These ensure what publishes meets your rules.`
       : "No specific regulatory frameworks needed for your content type \u2014 I'll monitor general quality standards."
 
     advanceStage(
@@ -327,7 +327,7 @@ export default function OnboardingFlow({ onComplete }) {
       [
         `Got it \u2014 ${vertical} (${sub}) across ${targetLocales.length} market${targetLocales.length !== 1 ? 's' : ''}.`,
         complianceMsg,
-        "Great \u2014 I'll configure your **Readiness Core** with those markets. That's how we track your setup progress.",
+        "Great \u2014 I'll seed your rules for those markets.",
         "These files will seed your **Cortex** \u2014 your organization's living knowledge base that improves with every project.",
         "Almost done. Any existing knowledge base files? And what are your brand quality standards?"
       ]
@@ -356,7 +356,7 @@ export default function OnboardingFlow({ onComplete }) {
 
     setTimeout(() => {
       setMessages(prev => [...prev,
-        { type: 'bot', key: 'bot-dashboard-preview', text: "On your dashboard, you'll see your **Readiness Core** checklist and **Org Health** metrics. Both start empty \u2014 they'll come alive after your first project." },
+        { type: 'bot', key: 'bot-dashboard-preview', text: "Your dashboard opens on the held-changes queue \u2014 every hold with a named reason and reviewer. It fills in the moment your first check runs." },
         {
         type: 'completion',
         key: 'completion',
@@ -398,7 +398,7 @@ export default function OnboardingFlow({ onComplete }) {
 
     setTimeout(() => {
       setMessages(prev => [...prev,
-        { type: 'bot', key: 'bot-dashboard-preview-skip', text: "On your dashboard, you'll see your **Readiness Core** checklist and **Org Health** metrics. Both start empty \u2014 they'll come alive after your first project." },
+        { type: 'bot', key: 'bot-dashboard-preview-skip', text: "Your dashboard opens on the held-changes queue \u2014 every hold with a named reason and reviewer. It fills in the moment your first check runs." },
         {
         type: 'completion',
         key: 'completion',

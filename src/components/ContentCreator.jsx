@@ -273,7 +273,7 @@ function PromptStudio({ onGenerate, prefersReduced }) {
         </div>
         {/* Locales + Tone */}
         <div className="text-right">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">Markets &middot; Tone</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">Languages &middot; Tone</p>
           <div className="flex items-center gap-1.5 justify-end">
             {locales.map(code => (
               <span key={code} className="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-medium">

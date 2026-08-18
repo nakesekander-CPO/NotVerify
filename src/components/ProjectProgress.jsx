@@ -3,9 +3,9 @@ import { motion } from 'framer-motion'
 import useReducedMotion from '../hooks/useReducedMotion'
 
 const steps = [
-  { key: 'reading', label: 'Agent Selection' },
+  { key: 'reading', label: 'Checks' },
   { key: 'processing', label: 'Processing' },
-  { key: 'narrative', label: 'Quality Check' },
+  { key: 'narrative', label: 'Flags & Review' },
   { key: 'human-review', label: 'Review' },
 ]
 
