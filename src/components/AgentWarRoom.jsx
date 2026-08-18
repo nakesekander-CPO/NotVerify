@@ -213,7 +213,7 @@ function AgentCard({ agent, isProcessing, prefersReducedMotion, onViewProfile })
       tabIndex={0}
       onClick={() => setExpanded((prev) => !prev)}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpanded((prev) => !prev) } }}
-      className={`w-full text-left rounded-lg bg-[#f5f5f5] ${borderClass} p-3.5 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-straker-500/60`}
+      className={`w-full text-left rounded-lg bg-[#EDEFFB] ${borderClass} p-3.5 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-straker-500/60`}
       whileHover={prefersReducedMotion ? {} : { y: -2 }}
       transition={springTransition}
       aria-expanded={expanded}

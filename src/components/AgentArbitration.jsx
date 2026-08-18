@@ -27,7 +27,7 @@ const DEFAULT_CONFLICTS = [
       id: 'BV-SENT-1',
       name: 'Brand Voice Sentry',
       icon: 'Mic',
-      color: '#f59e0b',
+      color: '#FFB000',
       output: 'のれんの減損費用として合計630百万円を認識いたしました。',
       reasoning:
         'Adjusted to Meridian Capital corporate voice. "認識いたしました" (ninshiki itashimashita) is softer and aligns with Meridian\'s established tone for investor communications. Avoids the blunt accounting register.',
@@ -55,7 +55,7 @@ const DEFAULT_CONFLICTS = [
       id: 'MER-DT-1',
       name: 'Meridian Capital Digital Twin',
       icon: 'Building2',
-      color: '#8b5cf6',
+      color: '#A38DFF',
       output: '営業利益率は前年度比3.2パーセントポイント向上いたしました。',
       reasoning:
         'Meridian Capital prefers "向上いたしました" over "改善しました" per style guide §3.1. Using "パーセントポイント" for clarity with non-financial readers.',
@@ -193,7 +193,7 @@ function ConflictCard({ conflict, index, resolution, onResolve, reducedMotion })
       transition={
         reducedMotion ? { duration: 0 } : { ...spring, delay: index * 0.1 }
       }
-      className="rounded-lg border border-black/[0.12] bg-[#f5f5f5] p-6"
+      className="rounded-lg border border-black/[0.12] bg-[#EDEFFB] p-6"
     >
       {/* Card header */}
       <div className="mb-4 flex items-center justify-between">
@@ -367,7 +367,7 @@ export default function AgentArbitration({
         transition={
           reducedMotion ? { duration: 0 } : { ...spring, delay: conflicts.length * 0.1 + 0.1 }
         }
-        className="mt-6 flex items-center justify-between rounded-lg border border-black/[0.12] bg-[#f5f5f5] px-6 py-4"
+        className="mt-6 flex items-center justify-between rounded-lg border border-black/[0.12] bg-[#EDEFFB] px-6 py-4"
       >
         <div className="flex flex-1 flex-col gap-2">
           <span className="text-xs text-gray-500">

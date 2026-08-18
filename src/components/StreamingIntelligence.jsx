@@ -54,7 +54,7 @@ function LogLine({ text, success, reducedMotion }) {
     return (
       <p
         className="font-mono text-xs leading-relaxed"
-        style={{ color: success ? '#34d399' : '#6b7280', fontFamily: "'JetBrains Mono', monospace" }}
+        style={{ color: success ? '#00B887' : '#8087AC', fontFamily: "'JetBrains Mono', monospace" }}
       >
         {success ? '\u2713 ' : '> '}{text}
       </p>
@@ -67,7 +67,7 @@ function LogLine({ text, success, reducedMotion }) {
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3 }}
       className="font-mono text-xs leading-relaxed"
-      style={{ color: success ? '#34d399' : '#6b7280', fontFamily: "'JetBrains Mono', monospace" }}
+      style={{ color: success ? '#00B887' : '#8087AC', fontFamily: "'JetBrains Mono', monospace" }}
     >
       {success ? '\u2713 ' : '> '}{text}
     </motion.p>
@@ -92,18 +92,18 @@ function AgentIcon({ agent, index, ensembleLocked, reducedMotion }) {
         <div
           className="rounded-full p-2"
           style={{
-            backgroundColor: ensembleLocked ? 'rgba(52,211,153,0.15)' : 'rgba(61,22,250,0.15)',
-            border: `1px solid ${ensembleLocked ? '#34d399' : '#3D16FA'}`,
+            backgroundColor: ensembleLocked ? 'rgba(0,184,135,0.15)' : 'rgba(61,22,250,0.15)',
+            border: `1px solid ${ensembleLocked ? '#00B887' : '#3D16FA'}`,
           }}
         >
           <IconComponent
             size={20}
-            style={{ color: ensembleLocked ? '#34d399' : '#3D16FA' }}
+            style={{ color: ensembleLocked ? '#00B887' : '#3D16FA' }}
           />
         </div>
         <span
           className="text-[10px] whitespace-nowrap"
-          style={{ color: '#6b7280', fontFamily: "'JetBrains Mono', monospace" }}
+          style={{ color: '#8087AC', fontFamily: "'JetBrains Mono', monospace" }}
         >
           {agent.id}
         </span>
@@ -130,26 +130,26 @@ function AgentIcon({ agent, index, ensembleLocked, reducedMotion }) {
         animate={ensembleLocked ? { scale: [1, 1.5, 1], opacity: [0.6, 0, 0.6] } : {}}
         transition={{ duration: 0.5 }}
         style={{
-          backgroundColor: ensembleLocked ? 'rgba(52,211,153,0.1)' : 'transparent',
+          backgroundColor: ensembleLocked ? 'rgba(0,184,135,0.1)' : 'transparent',
         }}
       />
       <motion.div
         className="rounded-full p-2"
         style={{
-          backgroundColor: ensembleLocked ? 'rgba(52,211,153,0.15)' : 'rgba(61,22,250,0.15)',
-          border: `1px solid ${ensembleLocked ? '#34d399' : '#3D16FA'}`,
+          backgroundColor: ensembleLocked ? 'rgba(0,184,135,0.15)' : 'rgba(61,22,250,0.15)',
+          border: `1px solid ${ensembleLocked ? '#00B887' : '#3D16FA'}`,
         }}
         initial={{ boxShadow: '0 0 0px rgba(61,22,250,0)' }}
         animate={{
           boxShadow: ensembleLocked
-            ? '0 0 16px rgba(52,211,153,0.5)'
+            ? '0 0 16px rgba(0,184,135,0.5)'
             : '0 0 12px rgba(61,22,250,0.4)',
         }}
         transition={{ duration: 0.4 }}
       >
         <IconComponent
           size={20}
-          style={{ color: ensembleLocked ? '#34d399' : '#3D16FA' }}
+          style={{ color: ensembleLocked ? '#00B887' : '#3D16FA' }}
         />
       </motion.div>
       <motion.span
@@ -157,7 +157,7 @@ function AgentIcon({ agent, index, ensembleLocked, reducedMotion }) {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
         className="text-[10px] whitespace-nowrap"
-        style={{ color: '#6b7280', fontFamily: "'JetBrains Mono', monospace" }}
+        style={{ color: '#8087AC', fontFamily: "'JetBrains Mono', monospace" }}
       >
         {agent.id}
       </motion.span>
@@ -277,7 +277,7 @@ export default function StreamingIntelligence({ fileName, onComplete, agents = [
           >
             <div
               className="rounded-lg p-4"
-              style={{ backgroundColor: '#f5f5f5', border: '1px solid rgba(61,22,250,0.3)' }}
+              style={{ backgroundColor: '#EDEFFB', border: '1px solid rgba(61,22,250,0.3)' }}
             >
               <FileText size={48} style={{ color: '#3D16FA' }} />
             </div>
@@ -302,7 +302,7 @@ export default function StreamingIntelligence({ fileName, onComplete, agents = [
             <div
               className="rounded-lg p-4"
               style={{
-                backgroundColor: '#f5f5f5',
+                backgroundColor: '#EDEFFB',
                 border: '1px solid rgba(61,22,250,0.3)',
                 boxShadow: '0 0 24px rgba(61,22,250,0.15)',
               }}
@@ -333,7 +333,7 @@ export default function StreamingIntelligence({ fileName, onComplete, agents = [
       {/* ---- File name label ---- */}
       <p
         className="mt-2 text-sm"
-        style={{ color: '#374151', fontFamily: "'JetBrains Mono', monospace" }}
+        style={{ color: '#322D5C', fontFamily: "'JetBrains Mono', monospace" }}
       >
         {fileName}
       </p>
@@ -342,7 +342,7 @@ export default function StreamingIntelligence({ fileName, onComplete, agents = [
       <div
         className="mt-6 w-full max-w-lg rounded-lg p-4 space-y-1.5 overflow-hidden"
         style={{
-          backgroundColor: '#f5f5f5',
+          backgroundColor: '#EDEFFB',
           border: '1px solid rgba(61,22,250,0.15)',
           minHeight: 140,
         }}
@@ -366,7 +366,7 @@ export default function StreamingIntelligence({ fileName, onComplete, agents = [
           className="h-full rounded-full"
           style={{
             width: `${progress}%`,
-            backgroundColor: ensembleLocked ? '#34d399' : '#3D16FA',
+            backgroundColor: ensembleLocked ? '#00B887' : '#3D16FA',
           }}
           layout={false}
         />

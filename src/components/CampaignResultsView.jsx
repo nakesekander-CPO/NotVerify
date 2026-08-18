@@ -39,7 +39,7 @@ function ScoreRing({ score, size = 80, strokeWidth = 6, color, prefersReducedMot
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const progress = (score / 100) * circumference;
-  const scoreColor = color || (score >= 85 ? '#34d399' : score >= 70 ? '#fbbf24' : '#f87171');
+  const scoreColor = color || (score >= 85 ? '#00B887' : score >= 70 ? '#FFBD59' : '#E53935');
   return (
     <div className="relative" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90">
@@ -375,7 +375,7 @@ export default function CampaignResultsView({ campaign, threshold = 85, onReset,
                   {selectedSummary.localeCards.map((card, cardIdx) => {
                     const isAmber = card.score < 85;
                     const borderColor = isAmber ? 'border-l-amber-400' : 'border-l-emerald-400';
-                    const ringColor = isAmber ? '#fbbf24' : '#34d399';
+                    const ringColor = isAmber ? '#FFBD59' : '#00B887';
                     return (
                       <motion.div
                         key={card.locale}
@@ -736,7 +736,7 @@ function ReviewerInlineForm({ dest, onChange, onRemove, onSend, defaultNote = ''
         type="button"
         onClick={() => onSend(dest.id)}
         disabled={isSending || !dest.emails?.trim()}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#3D16FA] hover:bg-[#007bb5] text-white text-[13px] font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#3D16FA] hover:bg-[#2E10C4] text-white text-[13px] font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isSending ? <><Loader2 size={13} className="animate-spin" /> Sending...</> : <><Send size={13} /> Send for Review</>}
       </button>
@@ -768,7 +768,7 @@ function DeliveryDestinationForm({ dest, onChange, onRemove, onSend }) {
       </div>
       <div className="px-4 pb-3">
         <button type="button" onClick={() => onSend(dest.id)} disabled={dest.status === 'sending' || dest.status === 'sent'}
-          className={`flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 ${dest.type === 'straker' ? 'bg-[#3D16FA] hover:bg-[#007bb5] text-white' : 'bg-gray-900 hover:bg-gray-800 text-white'}`}>
+          className={`flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 ${dest.type === 'straker' ? 'bg-[#3D16FA] hover:bg-[#2E10C4] text-white' : 'bg-gray-900 hover:bg-gray-800 text-white'}`}>
           {dest.status === 'sending' ? <><Loader2 size={11} className="animate-spin" /> Sending...</> : dest.status === 'sent' ? <><CheckCheck size={11} /> Sent</> : <><Send size={11} /> {dest.type === 'straker' ? 'Submit to arbitr' : 'Deliver'}</>}
         </button>
       </div>
@@ -827,7 +827,7 @@ function ExportWizard({ campaign, onDone }) {
       </div>)}
       {step === 3 && (<div className="space-y-3">
         <div className="rounded-lg border border-black/[0.08] bg-white p-3 space-y-2 text-[12px]">{[{l:'Campaign',v:campaign.name},{l:'Documents',v:campaign.documents?.length},{l:'Format',v:EXPORT_FORMATS.find(f=>f.id===formatId)?.label},{l:'Structure',v:FOLDER_STRUCTURE_TEMPLATES.find(s=>s.id===structureId)?.label}].map(r=>(<div key={r.l} className="flex justify-between"><span className="text-gray-500">{r.l}</span><span className="text-gray-800 font-medium">{r.v}</span></div>))}</div>
-        <div className="flex gap-2"><button onClick={() => setStep(2)} className="flex-1 px-4 py-2.5 rounded-lg border border-black/[0.10] text-gray-600 text-[13px] font-medium cursor-pointer hover:bg-gray-50">Back</button><button onClick={handleDownload} disabled={downloading} className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-[#3D16FA] text-white text-[13px] font-semibold cursor-pointer hover:bg-[#007bb5] disabled:opacity-60">{downloading ? <><Loader2 size={13} className="animate-spin" /> Generating...</> : <><Download size={13} /> Download .zip</>}</button></div>
+        <div className="flex gap-2"><button onClick={() => setStep(2)} className="flex-1 px-4 py-2.5 rounded-lg border border-black/[0.10] text-gray-600 text-[13px] font-medium cursor-pointer hover:bg-gray-50">Back</button><button onClick={handleDownload} disabled={downloading} className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-[#3D16FA] text-white text-[13px] font-semibold cursor-pointer hover:bg-[#2E10C4] disabled:opacity-60">{downloading ? <><Loader2 size={13} className="animate-spin" /> Generating...</> : <><Download size={13} /> Download .zip</>}</button></div>
       </div>)}
     </div>
   );

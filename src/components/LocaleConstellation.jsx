@@ -108,9 +108,9 @@ export default function LocaleConstellation({
   };
 
   const getComplexityColor = (complexity) => {
-    if (complexity > 0.7) return '#f59e0b';
-    if (complexity > 0.5) return '#94a3b8';
-    return '#34d399';
+    if (complexity > 0.7) return '#FFB000';
+    if (complexity > 0.5) return '#8087AC';
+    return '#00B887';
   };
 
   // Build set of already-drawn connections to avoid duplicates
@@ -174,12 +174,12 @@ export default function LocaleConstellation({
     const complexity = Math.round((locale.complexity || 0) * 100);
     return (
       <g transform="translate(5, -5)">
-        <rect x="0" y="-2.5" width="7" height="4" rx="1" fill="#b45309" fillOpacity="0.85" />
+        <rect x="0" y="-2.5" width="7" height="4" rx="1" fill="#996800" fillOpacity="0.85" />
         <text
           x="3.5"
           y="0"
           fontSize="2"
-          fill="#fbbf24"
+          fill="#FFBD59"
           textAnchor="middle"
           dominantBaseline="central"
           fontWeight="700"
@@ -317,7 +317,7 @@ export default function LocaleConstellation({
                     y1={locale.y}
                     x2={locale.x}
                     y2="100"
-                    stroke="#164D75"
+                    stroke="#2B0FAF"
                     strokeOpacity="0.25"
                     strokeWidth="0.35"
                     strokeDasharray="1.5 1"
@@ -358,7 +358,7 @@ export default function LocaleConstellation({
                       <circle
                         r="6"
                         fill="none"
-                        stroke="#f59e0b"
+                        stroke="#FFB000"
                         strokeWidth="0.6"
                         filter="url(#lc-amber-glow)"
                         style={{
@@ -372,7 +372,7 @@ export default function LocaleConstellation({
                       <circle
                         r={nodeRadius + 1.5}
                         fill="none"
-                        stroke="#164D75"
+                        stroke="#2B0FAF"
                         strokeOpacity="0.5"
                         strokeWidth="0.4"
                         strokeDasharray="2 2"
@@ -401,14 +401,14 @@ export default function LocaleConstellation({
                     {/* Main circle */}
                     <circle
                       r={nodeRadius}
-                      fill={selected ? '#164D75' : '#e5e7eb'}
+                      fill={selected ? '#2B0FAF' : '#D8DCF5'}
                       stroke={
                         selected
                           ? hovered
-                            ? '#91a7ff'
-                            : '#4F94C4'
+                            ? '#9E8BFD'
+                            : '#5A39FB'
                           : docRelevant
-                            ? '#f59e0b'
+                            ? '#FFB000'
                             : hovered
                               ? 'rgba(0,0,0,0.35)'
                               : 'rgba(0,0,0,0.15)'
@@ -420,7 +420,7 @@ export default function LocaleConstellation({
                     {/* Locale code text */}
                     <text
                       fontSize={docRelevant ? '2.6' : '2.2'}
-                      fill={selected ? '#ffffff' : docRelevant ? '#b45309' : '#6b7280'}
+                      fill={selected ? '#ffffff' : docRelevant ? '#996800' : '#8087AC'}
                       textAnchor="middle"
                       dominantBaseline="central"
                       fontWeight="600"
@@ -683,7 +683,7 @@ export default function LocaleConstellation({
                   <div className="flex items-center gap-1.5">
                     <span
                       className="w-2 h-2 rounded-full shrink-0"
-                      style={{ backgroundColor: family.color || '#64748b' }}
+                      style={{ backgroundColor: family.color || '#8087AC' }}
                     />
                     <span className="text-[12px] text-gray-500 truncate">
                       {family.label || family.name || '\u2014'}

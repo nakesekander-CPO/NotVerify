@@ -254,7 +254,7 @@ function RailControl({ account, entRail, setEntRail }) {
       <div className="flex items-center gap-2">
         <span className="text-[12px] font-semibold text-gray-900">{RAIL_LABEL[account.paymentRail]}</span>
         {perms.canRequestPaymentRailChange && !request && (
-          <button onClick={() => setOpen(o => !o)} className="text-[11px] text-[#3D16FA] hover:text-[#0089c4] cursor-pointer">
+          <button onClick={() => setOpen(o => !o)} className="text-[11px] text-[#3D16FA] hover:text-[#2E10C4] cursor-pointer">
             Request change
           </button>
         )}
@@ -364,7 +364,7 @@ function AlertStack({ account, onOpenInvoices, onTopUp, onViewExpiring, onPayPas
   const tones = {
     red:     'bg-red-50 border-red-200 text-red-800',
     amber:   'bg-amber-50 border-amber-200 text-amber-800',
-    info:    'bg-[#3D16FA]/8 border-[#3D16FA]/20 text-[#0089c4]',
+    info:    'bg-[#3D16FA]/8 border-[#3D16FA]/20 text-[#2E10C4]',
     neutral: 'bg-gray-50 border-black/[0.08] text-gray-700',
     success: 'bg-emerald-50 border-emerald-200 text-emerald-800',
   }
@@ -373,7 +373,7 @@ function AlertStack({ account, onOpenInvoices, onTopUp, onViewExpiring, onPayPas
   const primaryTones = {
     red:     'bg-red-600 hover:bg-red-700 text-white',
     amber:   'bg-amber-500 hover:bg-amber-600 text-white',
-    info:    'bg-[#3D16FA] hover:bg-[#0089c4] text-white',
+    info:    'bg-[#3D16FA] hover:bg-[#2E10C4] text-white',
     neutral: 'bg-gray-900 hover:bg-black text-white',
     success: 'bg-emerald-600 hover:bg-emerald-700 text-white',
   }
@@ -466,7 +466,7 @@ function OverviewPanel({ account, onTopUp, onChangePlan, onViewLedger, onViewInv
           <div className="flex items-center gap-2 mb-1">
             <Wallet className="w-4 h-4 text-[#3D16FA]" />
             <h4 className="text-[13px] font-semibold text-gray-900">Credit wallet</h4>
-            <button onClick={onTopUp} className="ml-auto inline-flex items-center gap-1 text-[11px] text-[#3D16FA] hover:text-[#0089c4] cursor-pointer">
+            <button onClick={onTopUp} className="ml-auto inline-flex items-center gap-1 text-[11px] text-[#3D16FA] hover:text-[#2E10C4] cursor-pointer">
               <Plus className="w-3 h-3" /> {isCard ? 'Buy credits' : 'Request top-up'}
             </button>
           </div>
@@ -545,7 +545,7 @@ function OverviewPanel({ account, onTopUp, onChangePlan, onViewLedger, onViewInv
         <Card>
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-[13px] font-semibold text-gray-900">Recent activity</h4>
-            <button onClick={onViewLedger} className="text-[11px] text-[#3D16FA] hover:text-[#0089c4] cursor-pointer">View ledger →</button>
+            <button onClick={onViewLedger} className="text-[11px] text-[#3D16FA] hover:text-[#2E10C4] cursor-pointer">View ledger →</button>
           </div>
           <ul className="divide-y divide-black/[0.06]">
             {account.ledger.slice(-5).reverse().map((e, i) => (
@@ -564,7 +564,7 @@ function OverviewPanel({ account, onTopUp, onChangePlan, onViewLedger, onViewInv
         <Card>
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-[13px] font-semibold text-gray-900">{isCard ? 'Payments & receipts' : 'Recent invoices'}</h4>
-            <button onClick={isCard ? onViewPayments : onViewInvoices} className="text-[11px] text-[#3D16FA] hover:text-[#0089c4] cursor-pointer">View all →</button>
+            <button onClick={isCard ? onViewPayments : onViewInvoices} className="text-[11px] text-[#3D16FA] hover:text-[#2E10C4] cursor-pointer">View all →</button>
           </div>
           <ul className="divide-y divide-black/[0.06]">
             {(isCard ? account.receipts : account.invoices).slice(0, 4).map(r => (

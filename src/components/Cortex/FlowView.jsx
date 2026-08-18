@@ -19,7 +19,7 @@ const TONE_HEX = { slate: '#8087AC', blue: '#5A39FB', gold: '#FFBD59', violet: '
 const CARD_TONE = {
   slate: 'border-rule bg-white',
   blue: 'border-ocean/30 bg-ocean/[0.04]',
-  gold: 'border-[#FFBD59]/60 bg-[#FFBD59]/10 shadow-[0_0_24px_rgba(255,176,89,0.2)]',
+  gold: 'border-[#FFBD59]/60 bg-[#FFBD59]/10 shadow-[0_0_24px_rgba(255,189,89,0.2)]',
   violet: 'border-violet-500/30 bg-violet-500/[0.05]',
 }
 const NUM_TONE = { slate: 'text-slate', blue: 'text-ocean', gold: 'text-[#B3843E]', violet: 'text-violet-700' }

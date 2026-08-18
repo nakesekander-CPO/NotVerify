@@ -122,7 +122,7 @@ export default function AgentCard({ agent, index, reducedMotion, onSelect, onTes
         </button>
         <button
           onClick={e => { e.stopPropagation(); onDeploy(agent) }}
-          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#3D16FA] text-[12px] font-medium text-white hover:bg-[#0089c4] transition-colors cursor-pointer"
+          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#3D16FA] text-[12px] font-medium text-white hover:bg-[#2E10C4] transition-colors cursor-pointer"
         >
           Deploy
         </button>

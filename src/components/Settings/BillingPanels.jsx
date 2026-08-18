@@ -65,7 +65,7 @@ export function PlansPanel({ account }) {
               {isCurrent ? (
                 <div aria-label={cta.ariaLabel} className="mt-auto px-4 py-2.5 rounded-lg text-center text-[13px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Current plan</div>
               ) : cta.emphasis === 'primary' ? (
-                <button aria-label={cta.ariaLabel} className="mt-auto w-full px-4 py-2.5 rounded-lg text-[13px] font-semibold bg-[#3D16FA] text-white hover:bg-[#0089c4] cursor-pointer">
+                <button aria-label={cta.ariaLabel} className="mt-auto w-full px-4 py-2.5 rounded-lg text-[13px] font-semibold bg-[#3D16FA] text-white hover:bg-[#2E10C4] cursor-pointer">
                   {cta.label}
                 </button>
               ) : (
@@ -102,7 +102,7 @@ function ContractPanel({ account }) {
           <Metric label="Available now" value={w.availableTotal.toLocaleString()} sub="all buckets" />
         </div>
         <div className="mt-4 pt-4 border-t border-black/[0.06] flex items-center gap-2 flex-wrap">
-          <button aria-label="Contact account team about Enterprise plan" className="px-4 py-2 rounded-lg bg-[#3D16FA] text-white text-[12.5px] font-semibold hover:bg-[#0089c4] cursor-pointer inline-flex items-center gap-1.5">
+          <button aria-label="Contact account team about Enterprise plan" className="px-4 py-2 rounded-lg bg-[#3D16FA] text-white text-[12.5px] font-semibold hover:bg-[#2E10C4] cursor-pointer inline-flex items-center gap-1.5">
             <Phone className="w-3.5 h-3.5" /> Contact account team
           </button>
           <button className="px-4 py-2 rounded-lg border border-black/[0.12] text-[12.5px] font-medium text-gray-700 hover:bg-black/[0.03] cursor-pointer">View contract</button>
@@ -199,7 +199,7 @@ function TrustCardTopUp({ account, appendTrustLedger, appendReceipt }) {
             {o.bundle && <span className="ml-1.5 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Bundle</span>}
           </button>
         ))}
-        <button onClick={buy} className="ml-auto px-4 py-2 rounded-lg bg-[#3D16FA] text-white text-[12.5px] font-semibold hover:bg-[#0089c4] cursor-pointer">
+        <button onClick={buy} className="ml-auto px-4 py-2 rounded-lg bg-[#3D16FA] text-white text-[12.5px] font-semibold hover:bg-[#2E10C4] cursor-pointer">
           Pay {fmtMoney(price)}
         </button>
       </div>
@@ -268,7 +268,7 @@ function CardTopUp({ account, appendLedger, appendReceipt }) {
             <p className="text-[16px] font-bold text-gray-900">{pkg.credits.toLocaleString()} credits · {fmtMoney(pkg.price)}</p>
             <p className="text-[10.5px] text-gray-400">${pkg.rate.toFixed(4)} per credit{pkg.save > 0 ? ` · ${pkg.save}% below baseline` : ' · baseline rate'}</p>
           </div>
-          <button onClick={buy} className="px-5 py-2.5 rounded-lg bg-[#3D16FA] text-white text-[13px] font-semibold hover:bg-[#0089c4] cursor-pointer">
+          <button onClick={buy} className="px-5 py-2.5 rounded-lg bg-[#3D16FA] text-white text-[13px] font-semibold hover:bg-[#2E10C4] cursor-pointer">
             Pay {fmtMoney(pkg.price)}
           </button>
         </div>
@@ -448,13 +448,13 @@ function InvoiceTopUp({ account, appendLedger, appendTrustLedger }) {
             )}
             <button onClick={submit} disabled={!validation.ok}
               title={validation.ok ? undefined : validation.errors.join(' ')}
-              className="px-4 py-2.5 rounded-lg bg-[#3D16FA] text-white text-[13px] font-semibold hover:bg-[#0089c4] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+              className="px-4 py-2.5 rounded-lg bg-[#3D16FA] text-white text-[13px] font-semibold hover:bg-[#2E10C4] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
               Submit purchase request
             </button>
             </div>
           </div>
         </div>
-        {done && <p className="mt-3 text-[12px] text-[#0089c4] inline-flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 shrink-0" />{done}</p>}
+        {done && <p className="mt-3 text-[12px] text-[#2E10C4] inline-flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 shrink-0" />{done}</p>}
       </Card>
 
       <Card>
@@ -466,7 +466,7 @@ function InvoiceTopUp({ account, appendLedger, appendTrustLedger }) {
                 <div className="min-w-0">
                   <p className="text-gray-900 font-medium">
                     {r.id}
-                    {r.items.length > 1 && <span className="ml-1.5 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#3D16FA]/10 text-[#0089c4] border border-[#3D16FA]/20 font-semibold">Combined</span>}
+                    {r.items.length > 1 && <span className="ml-1.5 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#3D16FA]/10 text-[#2E10C4] border border-[#3D16FA]/20 font-semibold">Combined</span>}
                   </p>
                   {/* Separate, itemized line items per credit type */}
                   <ul className="mt-1 space-y-0.5">
@@ -491,7 +491,7 @@ function InvoiceTopUp({ account, appendLedger, appendTrustLedger }) {
                   <StatusPill status={r.status} />
                   {r.status !== 'completed' && (
                     <button onClick={() => grant(r)}
-                      className="text-[10.5px] text-[#3D16FA] hover:text-[#0089c4] cursor-pointer whitespace-nowrap font-medium">
+                      className="text-[10.5px] text-[#3D16FA] hover:text-[#2E10C4] cursor-pointer whitespace-nowrap font-medium">
                       Mark paid &amp; grant →
                     </button>
                   )}
@@ -647,7 +647,7 @@ export function InvoicesPanel({ account, filter = 'all', setFilter, onPayAll, pa
           {filter === 'past_due' && (
             <span className="ml-2 text-[11px] font-normal text-gray-500">
               showing past-due only ·{' '}
-              <button onClick={() => setFilter?.('all')} className="text-[#3D16FA] hover:text-[#0089c4] cursor-pointer underline underline-offset-2">Show all</button>
+              <button onClick={() => setFilter?.('all')} className="text-[#3D16FA] hover:text-[#2E10C4] cursor-pointer underline underline-offset-2">Show all</button>
             </span>
           )}
         </h4>
@@ -707,8 +707,8 @@ export function InvoicesPanel({ account, filter = 'all', setFilter, onPayAll, pa
                 <td className="px-4 py-2.5"><StatusPill status={inv.status} /></td>
                 <td className={`px-4 py-2.5 tabular-nums whitespace-nowrap hidden md:table-cell ${inv.status === 'past_due' ? 'text-red-600 font-medium' : 'text-gray-500'}`}>{fmtDate(inv.dueDate)}</td>
                 <td className="px-4 py-2.5 whitespace-nowrap text-right min-w-[132px] sticky right-0 bg-white shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.12)]">
-                  <button aria-label={`Download invoice ${inv.id}`} className="text-[11px] text-[#3D16FA] hover:text-[#0089c4] cursor-pointer mr-3 px-1 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3D16FA]/40">Download</button>
-                  {inv.status !== 'paid' && <button onClick={() => setPayOpen(inv.id)} aria-label={`Pay invoice ${inv.id}`} className="text-[11px] text-[#3D16FA] hover:text-[#0089c4] cursor-pointer px-1 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3D16FA]/40">Pay</button>}
+                  <button aria-label={`Download invoice ${inv.id}`} className="text-[11px] text-[#3D16FA] hover:text-[#2E10C4] cursor-pointer mr-3 px-1 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3D16FA]/40">Download</button>
+                  {inv.status !== 'paid' && <button onClick={() => setPayOpen(inv.id)} aria-label={`Pay invoice ${inv.id}`} className="text-[11px] text-[#3D16FA] hover:text-[#2E10C4] cursor-pointer px-1 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3D16FA]/40">Pay</button>}
                 </td>
               </tr>
             ))}
@@ -757,7 +757,7 @@ export function PaymentsReceiptsPanel({ account }) {
                 <td className="px-4 py-2.5 text-gray-500 tabular-nums whitespace-nowrap">{fmtDate(r.date)}</td>
                 <td className="px-4 py-2.5 text-gray-700 whitespace-nowrap hidden md:table-cell">
                   {r.type}
-                  {r.creditType === 'trust' && <span className="ml-1.5 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#3D16FA]/10 text-[#0089c4] border border-[#3D16FA]/20 font-semibold">Trust</span>}
+                  {r.creditType === 'trust' && <span className="ml-1.5 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#3D16FA]/10 text-[#2E10C4] border border-[#3D16FA]/20 font-semibold">Trust</span>}
                 </td>
                 <td className="px-4 py-2.5 text-gray-500 max-w-[150px] truncate hidden md:table-cell" title={r.method}>{r.method}</td>
                 <td className="px-4 py-2.5 text-gray-900 tabular-nums whitespace-nowrap">{fmtMoney(r.amount)}</td>
@@ -765,7 +765,7 @@ export function PaymentsReceiptsPanel({ account }) {
                 <td className="px-4 py-2.5 text-right whitespace-nowrap min-w-[104px] sticky right-0 bg-white shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.12)]">
                   <button
                     aria-label={`Download receipt ${r.id}`}
-                    className="text-[11px] text-[#3D16FA] hover:text-[#0089c4] cursor-pointer px-1 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3D16FA]/40"
+                    className="text-[11px] text-[#3D16FA] hover:text-[#2E10C4] cursor-pointer px-1 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3D16FA]/40"
                   >
                     Download
                   </button>

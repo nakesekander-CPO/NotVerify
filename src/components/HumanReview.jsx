@@ -197,7 +197,7 @@ function Avatar({ initials, size = 36, className = '' }) {
       className={`shrink-0 rounded-full flex items-center justify-center font-semibold text-xs ${className}`}
       style={{
         width: size, height: size,
-        background: 'linear-gradient(135deg, #2E78AC 0%, #3D16FA 100%)',
+        background: 'linear-gradient(135deg, #3D16FA 0%, #3D16FA 100%)',
         color: '#fff',
       }}
     >
@@ -301,7 +301,7 @@ function LearningToast({ toast, onDismiss, onTriggerRealignment, reduced }) {
       exit={reduced ? { opacity: 0 } : { opacity: 0, y: 40 }}
       transition={reduced ? { duration: 0 } : springTransition}
       className="flex items-center gap-3 px-4 py-3 rounded-lg border border-black/[0.12] "
-      style={{ background: '#f5f5f5', borderLeft: toast.isPropagation ? '3px solid #3b82f6' : toast.isKnowledgeRule ? '3px solid #a855f7' : '3px solid #22c55e' }}
+      style={{ background: '#EDEFFB', borderLeft: toast.isPropagation ? '3px solid #0088FF' : toast.isKnowledgeRule ? '3px solid #A38DFF' : '3px solid #00B887' }}
     >
       {toast.isPropagation
         ? <Zap className="w-5 h-5 shrink-0 text-blue-500" />
@@ -448,7 +448,7 @@ function AssignPhase({ reviewRequest, teamMembers, onAssign, onBack, reduced }) 
         {/* Left: Context */}
         <div className="w-[60%] overflow-y-auto pr-2 space-y-5" style={{ scrollbarWidth: 'thin' }}>
           {/* Project card */}
-          <div className="rounded-lg p-5 space-y-4" style={{ background: '#f5f5f5' }}>
+          <div className="rounded-lg p-5 space-y-4" style={{ background: '#EDEFFB' }}>
             <div className="flex items-start justify-between">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
@@ -500,7 +500,7 @@ function AssignPhase({ reviewRequest, teamMembers, onAssign, onBack, reduced }) 
         </div>
 
         {/* Right: Reviewer picker */}
-        <div className="w-[40%] flex flex-col overflow-hidden rounded-lg" style={{ background: '#f5f5f5' }}>
+        <div className="w-[40%] flex flex-col overflow-hidden rounded-lg" style={{ background: '#EDEFFB' }}>
           <div className="px-4 pt-4 pb-3 border-b border-black/[0.12]">
             <h2 className="text-sm font-semibold text-gray-900 mb-3">Assign Reviewer</h2>
             <div className="relative">
@@ -632,7 +632,7 @@ function MemberRow({ member, selected, onSelect, showRelevance }) {
     >
       <div className="relative">
         <Avatar initials={member.initials} size={32} />
-        <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-[#f5f5f5] ${statusColor[member.status]}`} />
+        <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-[#EDEFFB] ${statusColor[member.status]}`} />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-900 truncate">{member.name}</p>
@@ -1020,7 +1020,7 @@ function ReviewPhase({ reviewRequest, onSubmitReview, onBack, reduced, reviewerP
         <div
           ref={docAreaRef}
           className="shrink-0 overflow-y-auto"
-          style={{ width: leftWidth, scrollbarWidth: 'thin', background: '#fafafa' }}
+          style={{ width: leftWidth, scrollbarWidth: 'thin', background: '#F4F5FF' }}
           onScroll={(e) => {
             // Sync scroll source → narrative (proportional)
             const narrativeEl = document.getElementById('narrative-canvas')
@@ -1033,7 +1033,7 @@ function ReviewPhase({ reviewRequest, onSubmitReview, onBack, reduced, reviewerP
           }}
         >
           {/* Source header */}
-          <div className="sticky top-0 z-10 px-4 py-2 border-b border-black/[0.08]" style={{ background: '#fafafa' }}>
+          <div className="sticky top-0 z-10 px-4 py-2 border-b border-black/[0.08]" style={{ background: '#F4F5FF' }}>
             <p className="text-[10px] font-semibold text-gray-900/40 uppercase tracking-wider">Source Document</p>
           </div>
           <div className="p-4 space-y-0">
@@ -1067,7 +1067,7 @@ function ReviewPhase({ reviewRequest, onSubmitReview, onBack, reduced, reviewerP
         {/* ─── Left resize handle ─── */}
         <div
           className="w-[5px] shrink-0 cursor-col-resize group relative flex items-center justify-center border-x border-black/[0.12] hover:border-[#3D16FA]/40 transition-colors"
-          style={{ background: '#f0f0f0' }}
+          style={{ background: '#EDEFFB' }}
           onMouseDown={(e) => startPanelDrag('left', e)}
         >
           <div className="w-px h-8 rounded-full bg-black/[0.15] group-hover:bg-[#3D16FA]/50 transition-colors" />
@@ -1365,14 +1365,14 @@ function ReviewPhase({ reviewRequest, onSubmitReview, onBack, reduced, reviewerP
         {/* ─── Right resize handle ─── */}
         <div
           className="w-[5px] shrink-0 cursor-col-resize group relative flex items-center justify-center border-x border-black/[0.12] hover:border-[#3D16FA]/40 transition-colors"
-          style={{ background: '#f0f0f0' }}
+          style={{ background: '#EDEFFB' }}
           onMouseDown={(e) => startPanelDrag('right', e)}
         >
           <div className="w-px h-8 rounded-full bg-black/[0.15] group-hover:bg-[#3D16FA]/50 transition-colors" />
         </div>
 
         {/* ─── Intelligence + Navigation Sidebar (right) ─── */}
-        <div className="shrink-0 overflow-y-auto" style={{ width: rightWidth, background: '#f5f5f5', scrollbarWidth: 'thin' }}>
+        <div className="shrink-0 overflow-y-auto" style={{ width: rightWidth, background: '#EDEFFB', scrollbarWidth: 'thin' }}>
           <div className="p-4 space-y-4">
             {/* Intelligence Search (Story 1 + 4) */}
             <SemanticSearchPanel
@@ -1627,9 +1627,9 @@ function SegmentActionBar({ segment, expandedAction, onExpandAction, onDecide, r
                 className="w-full px-3 py-2 rounded-lg bg-black/[0.03] border border-black/[0.12] text-sm text-gray-900 outline-none focus:border-emerald-500/50 transition-colors appearance-none cursor-pointer"
                 style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.3)' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
               >
-                <option value="" disabled className="bg-[#f5f5f5] text-gray-900/50">Select reason...</option>
+                <option value="" disabled className="bg-[#EDEFFB] text-gray-900/50">Select reason...</option>
                 {acceptReasons.map(r => (
-                  <option key={r} value={r} className="bg-[#f5f5f5] text-gray-900">{r}</option>
+                  <option key={r} value={r} className="bg-[#EDEFFB] text-gray-900">{r}</option>
                 ))}
               </select>
               <button
@@ -1880,7 +1880,7 @@ function CompletePhase({ reviewRequest, results, onBack, reduced, connectedInteg
           animate={{ opacity: 1, y: 0 }}
           transition={reduced ? { duration: 0 } : { ...springTransition, delay: 0.2 }}
           className="rounded-lg p-5 space-y-4"
-          style={{ background: '#f5f5f5' }}
+          style={{ background: '#EDEFFB' }}
         >
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-[#3D16FA]" />
@@ -1969,7 +1969,7 @@ export default function HumanReview({
   return (
     <div
       className="h-full flex flex-col"
-      style={{ background: '#ffffff', color: '#1a1a1a', fontFamily: 'Inter, system-ui, sans-serif' }}
+      style={{ background: '#ffffff', color: '#1A1640', fontFamily: 'Inter, system-ui, sans-serif' }}
     >
       <AnimatePresence mode="wait">
         {phase === 'assign' && (

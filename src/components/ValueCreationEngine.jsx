@@ -27,7 +27,7 @@ const DEFAULT_AGENTS = [
   {
     id: 'MER-DT-1',
     name: 'Meridian Capital Digital Twin',
-    color: '#8b5cf6',
+    color: '#A38DFF',
     icon: 'Building2',
     errorsFound: 3,
     qualityLift: 3,
@@ -39,7 +39,7 @@ const DEFAULT_AGENTS = [
   {
     id: 'BV-SENT-1',
     name: 'Brand Voice Sentry',
-    color: '#f59e0b',
+    color: '#FFB000',
     icon: 'Mic',
     errorsFound: 2,
     qualityLift: 2,
@@ -81,7 +81,7 @@ function ScoreRing({ score, size = 80, strokeWidth = 6, color, prefersReducedMot
   const radius = (size - strokeWidth) / 2
   const circumference = 2 * Math.PI * radius
   const progress = (score / 100) * circumference
-  const scoreColor = color || (score >= 85 ? '#34d399' : score >= 70 ? '#fbbf24' : '#f87171')
+  const scoreColor = color || (score >= 85 ? '#00B887' : score >= 70 ? '#FFBD59' : '#E53935')
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
@@ -140,8 +140,8 @@ export default function ValueCreationEngine({
   /* waterfall segments */
   const segments = useMemo(() => {
     const segs = [
-      { label: 'Baseline', value: beforeScore, color: '#64748b', isBase: true },
-      { label: 'AI Guardrails', value: AI_GUARDRAILS_LIFT, color: '#34d399', isBase: false },
+      { label: 'Baseline', value: beforeScore, color: '#8087AC', isBase: true },
+      { label: 'AI Guardrails', value: AI_GUARDRAILS_LIFT, color: '#00B887', isBase: false },
       ...agents.map((a) => ({
         label: a.name.split(' ').slice(0, 2).join(' '),
         value: a.qualityLift,
@@ -155,7 +155,7 @@ export default function ValueCreationEngine({
   const barTotal = segments.reduce((s, seg) => s + seg.value, 0)
 
   return (
-    <div className="w-full rounded-lg bg-[#f5f5f5] border border-black/[0.12] overflow-hidden">
+    <div className="w-full rounded-lg bg-[#EDEFFB] border border-black/[0.12] overflow-hidden">
       {/* ---------- SCORE HERO ROW ---------- */}
       <div className="px-6 pt-6 pb-4">
         <p className="text-xs font-medium uppercase tracking-widest text-gray-500 mb-5">
@@ -171,7 +171,7 @@ export default function ValueCreationEngine({
             transition={{ duration: dur ?? 0.5, ...SPRING }}
           >
             <p className="text-[11px] font-medium uppercase tracking-wider text-gray-400">Baseline</p>
-            <ScoreRing score={beforeScore} size={90} strokeWidth={7} color="#94a3b8" prefersReducedMotion={prefersReducedMotion} />
+            <ScoreRing score={beforeScore} size={90} strokeWidth={7} color="#8087AC" prefersReducedMotion={prefersReducedMotion} />
           </motion.div>
 
           {/* Arrow + lift badge */}
@@ -199,7 +199,7 @@ export default function ValueCreationEngine({
             transition={{ delay: dur === 0 ? 0 : 1.0, duration: dur ?? 0.5, ...SPRING }}
           >
             <p className="text-[11px] font-medium uppercase tracking-wider text-gray-400">Final</p>
-            <ScoreRing score={finalScore} size={90} strokeWidth={7} color="#34d399" prefersReducedMotion={prefersReducedMotion} />
+            <ScoreRing score={finalScore} size={90} strokeWidth={7} color="#00B887" prefersReducedMotion={prefersReducedMotion} />
           </motion.div>
         </div>
 
@@ -272,8 +272,8 @@ export default function ValueCreationEngine({
 
         {/* Legend */}
         <div className="flex items-center gap-4 mt-2.5 flex-wrap">
-          <LegendDot color="#64748b" label={`Baseline: ${beforeScore}`} />
-          <LegendDot color="#34d399" label={`AI Guardrails: +${AI_GUARDRAILS_LIFT}`} />
+          <LegendDot color="#8087AC" label={`Baseline: ${beforeScore}`} />
+          <LegendDot color="#00B887" label={`AI Guardrails: +${AI_GUARDRAILS_LIFT}`} />
           {agents.map((a) => (
             <LegendDot key={a.id} color={a.color} label={`${a.name.split(' ').slice(0, 2).join(' ')}: +${a.qualityLift}`} />
           ))}

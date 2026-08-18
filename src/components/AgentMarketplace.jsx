@@ -302,7 +302,7 @@ function TestDrivePanel({ agent, onHire, spring, prefersReducedMotion }) {
   return (
     <motion.div
       className="mt-6 rounded-lg overflow-hidden"
-      style={{ backgroundColor: '#f5f5f5' }}
+      style={{ backgroundColor: '#EDEFFB' }}
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: 'auto' }}
       exit={{ opacity: 0, height: 0 }}
@@ -337,7 +337,7 @@ function TestDrivePanel({ agent, onHire, spring, prefersReducedMotion }) {
                   </span>
                   <span
                     className="text-xs font-mono font-bold px-2 py-0.5 rounded"
-                    style={{ backgroundColor: 'rgba(239,68,68,0.15)', color: '#f87171' }}
+                    style={{ backgroundColor: 'rgba(229,57,53,0.15)', color: '#E53935' }}
                   >
                     {sample.baselineScore}%
                   </span>
@@ -348,8 +348,8 @@ function TestDrivePanel({ agent, onHire, spring, prefersReducedMotion }) {
               <div
                 className="rounded-lg p-4"
                 style={{
-                  backgroundColor: 'rgba(52,211,153,0.06)',
-                  border: '1px solid rgba(52,211,153,0.15)',
+                  backgroundColor: 'rgba(0,184,135,0.06)',
+                  border: '1px solid rgba(0,184,135,0.15)',
                 }}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -358,7 +358,7 @@ function TestDrivePanel({ agent, onHire, spring, prefersReducedMotion }) {
                   </span>
                   <span
                     className="text-xs font-mono font-bold px-2 py-0.5 rounded"
-                    style={{ backgroundColor: 'rgba(52,211,153,0.15)', color: '#34d399' }}
+                    style={{ backgroundColor: 'rgba(0,184,135,0.15)', color: '#00B887' }}
                   >
                     {sample.boostedScore}%
                   </span>
@@ -370,7 +370,7 @@ function TestDrivePanel({ agent, onHire, spring, prefersReducedMotion }) {
             <div className="flex items-center justify-between flex-wrap gap-4">
               <span
                 className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full"
-                style={{ backgroundColor: 'rgba(52,211,153,0.15)', color: '#34d399' }}
+                style={{ backgroundColor: 'rgba(0,184,135,0.15)', color: '#00B887' }}
               >
                 <ArrowRight size={12} />
                 +{delta}% {sample.metric}
@@ -378,7 +378,7 @@ function TestDrivePanel({ agent, onHire, spring, prefersReducedMotion }) {
               <button
                 onClick={() => onHire(agent)}
                 className="flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-lg text-white transition-colors hover:brightness-110"
-                style={{ backgroundColor: '#059669' }}
+                style={{ backgroundColor: '#00805A' }}
               >
                 <UserPlus size={16} />
                 Hire This Agent
@@ -413,7 +413,7 @@ function ComparisonPanel({ agents, onHire, spring }) {
   return (
     <motion.div
       className="mt-6 rounded-lg overflow-hidden"
-      style={{ backgroundColor: '#f5f5f5' }}
+      style={{ backgroundColor: '#EDEFFB' }}
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 30 }}
@@ -434,7 +434,7 @@ function ComparisonPanel({ agents, onHire, spring }) {
           {/* Agent B radar */}
           <div className="text-center">
             <p className="text-gray-900 font-semibold text-sm mb-2">{b.name}</p>
-            <RadarChart scores={b.scores} color="#f59e0b" />
+            <RadarChart scores={b.scores} color="#FFB000" />
           </div>
         </div>
 
@@ -456,7 +456,7 @@ function ComparisonPanel({ agents, onHire, spring }) {
                   <td className="text-center px-4 py-2.5">
                     <span
                       className="font-mono font-bold"
-                      style={{ color: winners[axis] === a.id ? '#34d399' : '#94a3b8' }}
+                      style={{ color: winners[axis] === a.id ? '#00B887' : '#8087AC' }}
                     >
                       {a.scores[axis]}
                     </span>
@@ -464,7 +464,7 @@ function ComparisonPanel({ agents, onHire, spring }) {
                   <td className="text-center px-4 py-2.5">
                     <span
                       className="font-mono font-bold"
-                      style={{ color: winners[axis] === b.id ? '#34d399' : '#94a3b8' }}
+                      style={{ color: winners[axis] === b.id ? '#00B887' : '#8087AC' }}
                     >
                       {b.scores[axis]}
                     </span>
@@ -475,7 +475,7 @@ function ComparisonPanel({ agents, onHire, spring }) {
                     ) : (
                       <span
                         className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
-                        style={{ backgroundColor: 'rgba(52,211,153,0.15)', color: '#34d399' }}
+                        style={{ backgroundColor: 'rgba(0,184,135,0.15)', color: '#00B887' }}
                       >
                         <CheckCircle size={10} />
                         {winners[axis] === a.id ? a.name.split(' ')[0] : b.name.split(' ')[0]}
@@ -493,7 +493,7 @@ function ComparisonPanel({ agents, onHire, spring }) {
             <button
               onClick={() => onHire(overallWinner)}
               className="flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-lg text-white transition-colors hover:brightness-110"
-              style={{ backgroundColor: '#059669' }}
+              style={{ backgroundColor: '#00805A' }}
             >
               <UserPlus size={16} />
               Hire {overallWinner.name}
@@ -528,14 +528,14 @@ function MyAgentsTab({ hiredAgents, onRemoveAgent, spring, prefersReducedMotion 
       {hiredAgents.map((agent, idx) => {
         const AgentIcon = ICON_MAP[agent.icon] || Star
         const iconColorMap = {
-          Megaphone: '#f59e0b',
-          Scale: '#8b5cf6',
-          Code: '#3b82f6',
-          Heart: '#ef4444',
-          FileText: '#6366f1',
-          Globe: '#0ea5e9',
-          Shield: '#a855f7',
-          Activity: '#ec4899',
+          Megaphone: '#FFB000',
+          Scale: '#A38DFF',
+          Code: '#0088FF',
+          Heart: '#E53935',
+          FileText: '#5A39FB',
+          Globe: '#0088FF',
+          Shield: '#A38DFF',
+          Activity: '#A38DFF',
         }
         const iconBg = iconColorMap[agent.icon] || '#3D16FA'
         // Simulated performance data
@@ -546,7 +546,7 @@ function MyAgentsTab({ hiredAgents, onRemoveAgent, spring, prefersReducedMotion 
           <motion.div
             key={agent.id}
             className="rounded-lg p-5 flex flex-col"
-            style={{ backgroundColor: '#f5f5f5' }}
+            style={{ backgroundColor: '#EDEFFB' }}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
@@ -568,8 +568,8 @@ function MyAgentsTab({ hiredAgents, onRemoveAgent, spring, prefersReducedMotion 
                 <span
                   className="text-[11px] font-medium px-2 py-0.5 rounded-full inline-block mt-0.5"
                   style={{
-                    backgroundColor: 'rgba(52,211,153,0.15)',
-                    color: '#34d399',
+                    backgroundColor: 'rgba(0,184,135,0.15)',
+                    color: '#00B887',
                   }}
                 >
                   Active
@@ -604,7 +604,7 @@ function MyAgentsTab({ hiredAgents, onRemoveAgent, spring, prefersReducedMotion 
               <button
                 onClick={() => onRemoveAgent(agent.id)}
                 className="w-full flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg text-red-600 transition-colors hover:bg-red-50"
-                style={{ backgroundColor: 'rgba(239,68,68,0.08)' }}
+                style={{ backgroundColor: 'rgba(229,57,53,0.08)' }}
               >
                 <Trash2 size={14} />
                 Remove
@@ -701,14 +701,14 @@ export default function AgentMarketplace({
   const IconForAgent = (iconName) => ICON_MAP[iconName] || Star
 
   const iconColorMap = {
-    Megaphone: '#f59e0b',
-    Scale: '#8b5cf6',
-    Code: '#3b82f6',
-    Heart: '#ef4444',
-    FileText: '#6366f1',
-    Globe: '#0ea5e9',
-    Shield: '#a855f7',
-    Activity: '#ec4899',
+    Megaphone: '#FFB000',
+    Scale: '#A38DFF',
+    Code: '#0088FF',
+    Heart: '#E53935',
+    FileText: '#5A39FB',
+    Globe: '#0088FF',
+    Shield: '#A38DFF',
+    Activity: '#A38DFF',
   }
 
   return (
@@ -764,7 +764,7 @@ export default function AgentMarketplace({
                   placeholder="Search agents by name, specialty, or description..."
                   className="w-full pl-9 pr-4 py-2.5 rounded-lg text-sm text-gray-900 placeholder-gray-400 outline-none focus:ring-2 transition-shadow"
                   style={{
-                    backgroundColor: '#f5f5f5',
+                    backgroundColor: '#EDEFFB',
                     focusRingColor: '#3D16FA',
                   }}
                   onFocus={(e) => (e.target.style.boxShadow = '0 0 0 2px #3D16FA')}
@@ -785,7 +785,7 @@ export default function AgentMarketplace({
                     style={{
                       backgroundColor:
                         activeTab === tab.key ? '#3D16FA' : 'transparent',
-                      color: activeTab === tab.key ? '#fff' : '#94a3b8',
+                      color: activeTab === tab.key ? '#fff' : '#8087AC',
                     }}
                   >
                     {tab.label}
@@ -806,7 +806,7 @@ export default function AgentMarketplace({
                           activeCategory === cat
                             ? 'rgba(61,22,250,0.2)'
                             : 'rgba(255,255,255,0.06)',
-                        color: activeCategory === cat ? '#3D16FA' : '#94a3b8',
+                        color: activeCategory === cat ? '#3D16FA' : '#8087AC',
                         border:
                           activeCategory === cat
                             ? '1px solid rgba(61,22,250,0.3)'
@@ -843,7 +843,7 @@ export default function AgentMarketplace({
                             key={agent.id}
                             className="rounded-lg p-5 flex flex-col"
                             style={{
-                              backgroundColor: '#f5f5f5',
+                              backgroundColor: '#EDEFFB',
                               border: isComparing
                                 ? '1px solid rgba(61,22,250,0.4)'
                                 : '1px solid transparent',
@@ -874,10 +874,10 @@ export default function AgentMarketplace({
                               </label>
                               {/* Star rating */}
                               <div className="flex items-center gap-1">
-                                <Star size={11} fill="#f59e0b" stroke="#f59e0b" />
+                                <Star size={11} fill="#FFB000" stroke="#FFB000" />
                                 <span
                                   className="text-[11px] font-semibold"
-                                  style={{ color: '#f59e0b' }}
+                                  style={{ color: '#FFB000' }}
                                 >
                                   {agent.rating}
                                 </span>
@@ -950,7 +950,7 @@ export default function AgentMarketplace({
                                 style={{
                                   backgroundColor:
                                     testDriveAgent?.id === agent.id
-                                      ? '#164D75'
+                                      ? '#2B0FAF'
                                       : '#3D16FA',
                                 }}
                               >
@@ -960,7 +960,7 @@ export default function AgentMarketplace({
                               <button
                                 onClick={() => handleHire(agent)}
                                 className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg text-white transition-colors hover:brightness-110"
-                                style={{ backgroundColor: '#059669' }}
+                                style={{ backgroundColor: '#00805A' }}
                               >
                                 <UserPlus size={14} />
                                 Hire

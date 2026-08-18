@@ -837,7 +837,7 @@ export default function CommandSurface({ onFileAccepted, onFileWithLocales, orgI
         </div>
 
         {/* Predictive CTA */}
-        <div className="w-full max-w-lg rounded-lg border border-black/[0.12] bg-[#f8f9ff] p-5">
+        <div className="w-full max-w-lg rounded-lg border border-black/[0.12] bg-[#F4F5FF] p-5">
           <div className="flex flex-col items-center text-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-straker-50 border border-straker-500/15 flex items-center justify-center">
               <Bot className="w-5 h-5 text-straker-600" />
@@ -1219,7 +1219,7 @@ export default function CommandSurface({ onFileAccepted, onFileWithLocales, orgI
                   <p className="text-[12px] text-gray-400 text-center">Connect your team's tools to unlock automated workflows</p>
                   <button
                     onClick={onOpenIntegrations}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-[#3D16FA] text-white hover:bg-[#0089bf] cursor-pointer transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-[#3D16FA] text-white hover:bg-[#2E10C4] cursor-pointer transition-colors"
                   >
                     <Plus size={13} />
                     Get Started

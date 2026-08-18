@@ -147,7 +147,7 @@ export default function AnalyticsDashboard({ onBack }) {
       {/* KPI Cards — top row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <MetricCard icon={FileText} label="Jobs processed" value={totalJobs} trend="+48% vs prior period" sparkData={MONTHLY_JOBS.map(m => m.jobs)} />
-        <MetricCard icon={Shield} label="Avg quality score" value={`${avgQuality}%`} trend="+6 pts" sparkData={MONTHLY_JOBS.map(m => m.quality)} sparkColor="#34d399" iconColor="text-emerald-600" iconBg="bg-emerald-50" />
+        <MetricCard icon={Shield} label="Avg quality score" value={`${avgQuality}%`} trend="+6 pts" sparkData={MONTHLY_JOBS.map(m => m.quality)} sparkColor="#00B887" iconColor="text-emerald-600" iconBg="bg-emerald-50" />
         <MetricCard icon={Users} label="Escalation rate" value={`${escalationRate}%`} sub={`${totalEscalations} of ${totalJobs} jobs`} trend="-12% vs prior" trendColor="text-emerald-600" iconColor="text-amber-600" iconBg="bg-amber-50" />
         <MetricCard icon={Clock} label="Avg turnaround" value={`${avgTurnaround}m`} sub="Per document" trend="-1.3m vs prior" trendColor="text-emerald-600" iconColor="text-purple-600" iconBg="bg-purple-50" />
       </div>
@@ -159,7 +159,7 @@ export default function AnalyticsDashboard({ onBack }) {
           <h3 className="text-[12px] font-semibold uppercase tracking-widest text-gray-400 mb-4">Quality score by locale</h3>
           <div className="space-y-4">
             {QUALITY_BY_LOCALE.map(locale => {
-              const color = locale.current >= 90 ? '#34d399' : locale.current >= 80 ? '#fbbf24' : '#f87171'
+              const color = locale.current >= 90 ? '#00B887' : locale.current >= 80 ? '#FFBD59' : '#E53935'
               return (
                 <div key={locale.locale} className="flex items-center gap-4">
                   <span className="text-[13px] font-bold text-gray-800 w-8">{locale.locale}</span>

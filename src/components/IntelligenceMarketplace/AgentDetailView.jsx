@@ -70,7 +70,7 @@ function RadarChart({ scores, size = 140 }) {
       {axes.map((_, i) => {
         const p = polar((360 / axes.length) * i, maxR + 14)
         return (
-          <text key={i} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="central" fontSize="9" fill="#9ca3af">
+          <text key={i} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="central" fontSize="9" fill="#8087AC">
             {labels[i]}
           </text>
         )
@@ -179,7 +179,7 @@ function CapabilitiesTab({ agent }) {
         <div>
           <button
             onClick={() => setShowTestDrive(v => !v)}
-            className="flex items-center gap-1.5 text-[12px] font-medium text-[#3D16FA] hover:text-[#0089c4] transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 text-[12px] font-medium text-[#3D16FA] hover:text-[#2E10C4] transition-colors cursor-pointer"
           >
             <Eye className="w-3.5 h-3.5" />
             {showTestDrive ? 'Hide Test Drive' : 'Show Test Drive'}
@@ -496,7 +496,7 @@ export default function AgentDetailView({ agent, isOpen, onClose, onDeploy, redu
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={() => onDeploy(agent)}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#3D16FA] text-[13px] font-medium text-white hover:bg-[#0089c4] transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#3D16FA] text-[13px] font-medium text-white hover:bg-[#2E10C4] transition-colors cursor-pointer"
                 >
                   Deploy <ArrowRight className="w-3.5 h-3.5" />
                 </button>

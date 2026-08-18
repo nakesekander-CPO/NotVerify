@@ -236,7 +236,7 @@ function InviteModal({ tenantId, onInvite, onClose }) {
         <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-black/[0.06] bg-gray-50">
           <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg border border-black/[0.10] text-gray-600 text-[13px] font-medium hover:bg-white cursor-pointer transition-colors">Cancel</button>
           <button type="button" onClick={() => { if (canSubmit) onInvite({ name: name.trim(), email: email.trim(), roleId, scopeId }) }} disabled={!canSubmit}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#3D16FA] text-white text-[13px] font-semibold hover:bg-[#007bb5] cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#3D16FA] text-white text-[13px] font-semibold hover:bg-[#2E10C4] cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             <UserPlus className="w-3.5 h-3.5" /> Invite
           </button>
         </div>
@@ -272,7 +272,7 @@ function AddRoleForm({ tenantId, onAdd, onCancel }) {
       </select>
       <div className="flex items-center gap-2">
         <button type="button" onClick={() => { if (scopeId) onAdd({ roleId, scopeId }) }}
-          disabled={!scopeId} className="px-3 py-1.5 rounded-lg bg-[#3D16FA] text-white text-[11px] font-semibold cursor-pointer hover:bg-[#007bb5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          disabled={!scopeId} className="px-3 py-1.5 rounded-lg bg-[#3D16FA] text-white text-[11px] font-semibold cursor-pointer hover:bg-[#2E10C4] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
           Assign
         </button>
         <button type="button" onClick={onCancel} className="px-3 py-1.5 rounded-lg border border-black/[0.08] text-gray-500 text-[11px] font-medium cursor-pointer hover:bg-gray-50 transition-colors">Cancel</button>
@@ -312,7 +312,7 @@ function MembersTab({ tenantId, users, assignments, onInvite, onAddRole, onRemov
                 className="w-full pl-9 pr-3 py-2 rounded-lg border border-black/[0.08] bg-gray-50 text-[12px] placeholder:text-gray-400 outline-none focus:border-[#3D16FA] transition" />
             </div>
             <button type="button" onClick={() => setShowInvite(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#3D16FA] text-white text-[12px] font-semibold hover:bg-[#007bb5] cursor-pointer transition-colors shrink-0">
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#3D16FA] text-white text-[12px] font-semibold hover:bg-[#2E10C4] cursor-pointer transition-colors shrink-0">
               <UserPlus className="w-3.5 h-3.5" /> Invite member
             </button>
           </div>
@@ -371,7 +371,7 @@ function MembersTab({ tenantId, users, assignments, onInvite, onAddRole, onRemov
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Role Assignments ({selRoles.length})</p>
                   {!showAddRole && (
-                    <button type="button" onClick={() => setShowAddRole(true)} className="flex items-center gap-1 text-[11px] text-[#3D16FA] hover:text-[#007bb5] font-medium cursor-pointer transition-colors">
+                    <button type="button" onClick={() => setShowAddRole(true)} className="flex items-center gap-1 text-[11px] text-[#3D16FA] hover:text-[#2E10C4] font-medium cursor-pointer transition-colors">
                       <Plus className="w-3 h-3" /> Add role
                     </button>
                   )}

@@ -59,10 +59,10 @@ const ACCURACY_DATA = [94, 95, 96, 95, 97, 97, 98, 97]
 
 /* ─── Domain badge colors ─── */
 const DOMAIN_COLORS = {
-  Financial: { bg: 'rgba(59,130,246,0.15)', text: '#60a5fa' },
-  'Brand Voice': { bg: 'rgba(168,85,247,0.15)', text: '#c084fc' },
-  Regulatory: { bg: 'rgba(245,158,11,0.15)', text: '#fbbf24' },
-  Formatting: { bg: 'rgba(20,184,166,0.15)', text: '#2dd4bf' },
+  Financial: { bg: 'rgba(0,136,255,0.15)', text: '#0088FF' },
+  'Brand Voice': { bg: 'rgba(163,141,255,0.15)', text: '#A38DFF' },
+  Regulatory: { bg: 'rgba(255,176,0,0.15)', text: '#FFBD59' },
+  Formatting: { bg: 'rgba(0,184,135,0.15)', text: '#00B887' },
 }
 
 /* ─── Simple SVG line chart ─── */
@@ -145,7 +145,7 @@ function AccuracyChart({ data }) {
 /* ─── Stat Card ─── */
 function StatCard({ label, value, icon: Icon }) {
   return (
-    <div className="flex-1 min-w-[140px] rounded-lg p-4" style={{ backgroundColor: '#f5f5f5' }}>
+    <div className="flex-1 min-w-[140px] rounded-lg p-4" style={{ backgroundColor: '#EDEFFB' }}>
       <div className="flex items-center gap-2 mb-2">
         <Icon size={14} className="text-gray-500" />
         <span className="text-[11px] text-gray-400 uppercase tracking-wider font-medium">{label}</span>
@@ -238,7 +238,7 @@ export default function AgentProfile({ isOpen, onClose, agent, onContinueTrainin
                     <span className="flex items-center gap-1.5 text-xs text-gray-400">
                       <span
                         className="w-2 h-2 rounded-full inline-block"
-                        style={{ backgroundColor: isActive ? '#34d399' : '#fbbf24' }}
+                        style={{ backgroundColor: isActive ? '#00B887' : '#FFBD59' }}
                       />
                       {isActive ? 'Active' : 'Training'}
                     </span>
@@ -273,7 +273,7 @@ export default function AgentProfile({ isOpen, onClose, agent, onContinueTrainin
                   <StatCard label="Avg Quality Lift" value="+3.4 pts" icon={TrendingUp} />
                 </div>
 
-                <div className="mt-5 rounded-lg p-4" style={{ backgroundColor: '#f5f5f5' }}>
+                <div className="mt-5 rounded-lg p-4" style={{ backgroundColor: '#EDEFFB' }}>
                   <span className="text-[11px] text-gray-400 uppercase tracking-wider font-medium block mb-3">
                     Accuracy over last 8 projects
                   </span>
@@ -305,14 +305,14 @@ export default function AgentProfile({ isOpen, onClose, agent, onContinueTrainin
                     value={knowledgeSearch}
                     onChange={(e) => setKnowledgeSearch(e.target.value)}
                     className="w-full pl-9 pr-4 py-2 rounded-lg text-sm text-gray-900 placeholder-gray-400 outline-none focus:ring-1 focus:ring-[#3D16FA]"
-                    style={{ backgroundColor: '#f5f5f5', border: '1px solid rgba(0,0,0,0.06)' }}
+                    style={{ backgroundColor: '#EDEFFB', border: '1px solid rgba(0,0,0,0.06)' }}
                   />
                 </div>
 
                 {/* Scrollable list */}
                 <div
                   className="max-h-[240px] overflow-y-auto rounded-lg"
-                  style={{ backgroundColor: '#f5f5f5' }}
+                  style={{ backgroundColor: '#EDEFFB' }}
                 >
                   {filteredKnowledge.length === 0 ? (
                     <div className="p-6 text-center text-sm text-gray-500">No entries match your search.</div>
@@ -364,7 +364,7 @@ export default function AgentProfile({ isOpen, onClose, agent, onContinueTrainin
                   Voice & Style Profile
                 </h3>
 
-                <div className="rounded-lg p-5" style={{ backgroundColor: '#f5f5f5' }}>
+                <div className="rounded-lg p-5" style={{ backgroundColor: '#EDEFFB' }}>
                   <div className="space-y-5">
                     {/* Register */}
                     <div>
@@ -444,7 +444,7 @@ export default function AgentProfile({ isOpen, onClose, agent, onContinueTrainin
                   How this agent differs from baseline
                 </h3>
 
-                <div className="rounded-lg overflow-hidden" style={{ backgroundColor: '#f5f5f5' }}>
+                <div className="rounded-lg overflow-hidden" style={{ backgroundColor: '#EDEFFB' }}>
                   <table className="w-full text-left">
                     <thead>
                       <tr style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>

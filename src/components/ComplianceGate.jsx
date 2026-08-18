@@ -107,7 +107,7 @@ function ReviewerSegmentCard({ segment, resolution, onAccept, onEdit, prefersRed
     <motion.div
       layout={!prefersReducedMotion}
       transition={spring}
-      className={`border-l-4 ${sev.border} rounded-lg bg-[#f5f5f5] p-5 relative ${
+      className={`border-l-4 ${sev.border} rounded-lg bg-[#EDEFFB] p-5 relative ${
         isResolved ? 'opacity-70' : ''
       }`}
     >
@@ -239,7 +239,7 @@ function FlaggedSegmentCard({ segment, prefersReducedMotion }) {
     <motion.div
       layout={!prefersReducedMotion}
       transition={spring}
-      className={`border-l-4 ${sev.border} rounded-lg bg-[#f5f5f5] p-5`}
+      className={`border-l-4 ${sev.border} rounded-lg bg-[#EDEFFB] p-5`}
     >
       <div className="flex items-center gap-2 mb-3">
         <span className="font-mono text-sm text-gray-500">
@@ -415,7 +415,7 @@ export default function ComplianceGate({
         </div>
 
         {/* Bottom Bar */}
-        <div className="p-6 border-t border-slate-700/60 bg-[#f5f5f5]/50">
+        <div className="p-6 border-t border-slate-700/60 bg-[#EDEFFB]/50">
           {/* Progress */}
           <div className="mb-4">
             <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
@@ -597,7 +597,7 @@ export default function ComplianceGate({
       </div>
 
       {/* Locked Publish Footer */}
-      <div className="p-6 border-t border-slate-700/60 bg-[#f5f5f5]/50">
+      <div className="p-6 border-t border-slate-700/60 bg-[#EDEFFB]/50">
         <div className="flex items-center gap-3">
           <button
             disabled

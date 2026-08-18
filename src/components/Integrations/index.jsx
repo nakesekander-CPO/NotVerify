@@ -98,7 +98,7 @@ function MergeLinkModal({ connector, onConnect, onClose }) {
               )}
               <button
                 onClick={handleAuthorise}
-                className="w-full py-2.5 rounded-lg bg-[#3D16FA] text-white text-[13px] font-medium hover:bg-[#0089bf] cursor-pointer transition-colors"
+                className="w-full py-2.5 rounded-lg bg-[#3D16FA] text-white text-[13px] font-medium hover:bg-[#2E10C4] cursor-pointer transition-colors"
               >
                 Authorise {connector.name}
               </button>
@@ -128,7 +128,7 @@ function MergeLinkModal({ connector, onConnect, onClose }) {
               </div>
               <button
                 onClick={() => { onConnect(connector); onClose() }}
-                className="w-full py-2.5 rounded-lg bg-[#3D16FA] text-white text-[13px] font-medium hover:bg-[#0089bf] cursor-pointer transition-colors"
+                className="w-full py-2.5 rounded-lg bg-[#3D16FA] text-white text-[13px] font-medium hover:bg-[#2E10C4] cursor-pointer transition-colors"
               >
                 Done
               </button>
@@ -246,7 +246,7 @@ function ConnectorCard({ connector, isConnected, onConnect, onManage }) {
         className={`w-full py-1.5 rounded-lg text-[12px] font-medium transition-colors cursor-pointer ${
           isConnected
             ? 'bg-gray-50 border border-black/[0.08] text-gray-600 hover:bg-black/[0.04]'
-            : 'bg-[#3D16FA] text-white hover:bg-[#0089bf]'
+            : 'bg-[#3D16FA] text-white hover:bg-[#2E10C4]'
         }`}
       >
         {isConnected ? 'Manage' : 'Connect'}

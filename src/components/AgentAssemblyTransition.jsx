@@ -132,7 +132,7 @@ export default function AgentAssemblyTransition({ agents: _agents, onComplete, o
                   ? { duration: 0 }
                   : { type: 'spring', stiffness: 300, damping: 20, delay: i * STAGGER_DELAY }
               }
-              className="flex items-center gap-3.5 rounded-lg border border-black/[0.12] bg-[#f0f1f3] px-4 py-3.5"
+              className="flex items-center gap-3.5 rounded-lg border border-black/[0.12] bg-[#EDEFFB] px-4 py-3.5"
             >
               <div className="w-9 h-9 rounded-lg bg-straker-50 flex items-center justify-center shrink-0">
                 <Bot className="w-4.5 h-4.5 text-straker-600" />

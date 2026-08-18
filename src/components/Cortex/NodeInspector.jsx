@@ -31,7 +31,7 @@ export default function NodeInspector({ fact, onClose }) {
   return (
     <aside
       aria-hidden={!open}
-      className={`absolute inset-y-0 right-0 w-[360px] max-w-full z-20 bg-white/95 backdrop-blur-sm border-l border-rule shadow-[-12px_0_32px_rgba(15,20,25,0.08)] transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'} overflow-y-auto`}
+      className={`absolute inset-y-0 right-0 w-[360px] max-w-full z-20 bg-white/95 backdrop-blur-sm border-l border-rule shadow-[-12px_0_32px_rgba(13,9,42,0.08)] transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'} overflow-y-auto`}
     >
       {fact && (
         <div className="p-5 space-y-5">

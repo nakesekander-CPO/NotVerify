@@ -70,9 +70,9 @@ function computeRelevance(agentId, profile) {
 }
 
 function getQualityColor(v) {
-  if (v < 70) return '#ef4444'
-  if (v <= 85) return '#f59e0b'
-  return '#10b981'
+  if (v < 70) return '#E53935'
+  if (v <= 85) return '#FFB000'
+  return '#00B887'
 }
 
 function AgentIcon({ iconName, size = 18, className = '' }) {
@@ -250,7 +250,7 @@ export default function MissionControl({
   const potentialScore = qualityScore?.potential || 0
   const dimensions = qualityScore?.dimensions || []
   const ringOffset = ringCircumference - (overallScore / 100) * ringCircumference
-  const ringStroke = overallScore >= 85 ? '#34d399' : overallScore >= 65 ? '#3D16FA' : '#f87171'
+  const ringStroke = overallScore >= 85 ? '#00B887' : overallScore >= 65 ? '#3D16FA' : '#E53935'
 
   /* ── Choreographed analysis sequence ── */
   useEffect(() => {
@@ -395,7 +395,7 @@ export default function MissionControl({
           {/* Primary CTA */}
           <motion.button
             onClick={handleDeploy}
-            className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-[#3D16FA] hover:bg-[#0089c4] text-white text-[15px] font-semibold shadow-sm shadow-[#3D16FA]/20 cursor-pointer transition-all"
+            className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-[#3D16FA] hover:bg-[#2E10C4] text-white text-[15px] font-semibold shadow-sm shadow-[#3D16FA]/20 cursor-pointer transition-all"
             animate={!prefersReducedMotion ? { scale: [1, 1.015, 1] } : {}}
             transition={{ duration: 0.3 }}
           >
@@ -854,7 +854,7 @@ export default function MissionControl({
               disabled={!isReady}
               className={`w-full flex items-center justify-center gap-2 px-6 py-4 rounded-lg text-[15px] font-semibold transition-all cursor-pointer ${
                 isReady
-                  ? 'bg-[#3D16FA] hover:bg-[#0089c4] text-white shadow-sm shadow-[#3D16FA]/20'
+                  ? 'bg-[#3D16FA] hover:bg-[#2E10C4] text-white shadow-sm shadow-[#3D16FA]/20'
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               }`}
               animate={isReady && !prefersReducedMotion ? { scale: [1, 1.015, 1] } : {}}

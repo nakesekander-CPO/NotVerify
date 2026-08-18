@@ -195,7 +195,7 @@ export default function TimeJumpTransition({ onComplete }) {
                           animate={
                             i <= activeMonth
                               ? { scale: 1, opacity: 1, backgroundColor: '#3D16FA' }
-                              : { scale: 0.6, opacity: 0.25, backgroundColor: '#d1d5db' }
+                              : { scale: 0.6, opacity: 0.25, backgroundColor: '#D8DCF5' }
                           }
                           transition={SPRING}
                           className="w-3 h-3 rounded-full"

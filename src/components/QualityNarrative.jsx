@@ -117,7 +117,7 @@ function CampaignExportWizard({ campaign, onClose }) {
             <button
               onClick={handleDownload}
               disabled={downloading}
-              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-[#3D16FA] text-white text-[13px] font-semibold cursor-pointer hover:bg-[#007bb5] transition-colors disabled:opacity-60"
+              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-[#3D16FA] text-white text-[13px] font-semibold cursor-pointer hover:bg-[#2E10C4] transition-colors disabled:opacity-60"
             >
               {downloading ? <><Loader2 size={13} className="animate-spin" /> Generating…</> : <><Download size={13} /> Download .zip</>}
             </button>
@@ -255,7 +255,7 @@ function ScoreRing({ score, size = 80, strokeWidth = 6, color, animate = true, p
   const radius = (size - strokeWidth) / 2
   const circumference = 2 * Math.PI * radius
   const progress = (score / 100) * circumference
-  const scoreColor = color || (score >= 85 ? '#34d399' : score >= 70 ? '#fbbf24' : '#f87171')
+  const scoreColor = color || (score >= 85 ? '#00B887' : score >= 70 ? '#FFBD59' : '#E53935')
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
@@ -578,7 +578,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
                   score={88}
                   size={80}
                   strokeWidth={6}
-                  color="#fbbf24"
+                  color="#FFBD59"
                   prefersReducedMotion={prefersReducedMotion}
                 />
                 <div className="flex-1 min-w-0">
@@ -617,7 +617,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
                         <p className="text-[10px] text-gray-500 leading-relaxed mb-2">These flags do not block publication but require acknowledgment for audit trail.</p>
                         <button
                           onClick={() => setActiveTab('compliance')}
-                          className="text-[10px] font-medium text-[#3D16FA] hover:text-[#4F94C4] transition-colors cursor-pointer"
+                          className="text-[10px] font-medium text-[#3D16FA] hover:text-[#5A39FB] transition-colors cursor-pointer"
                         >
                           View in Review tab →
                         </button>
@@ -658,7 +658,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
                         <p className="text-[10px] text-gray-500 leading-relaxed">Resolve blockers or assign to human review to proceed.</p>
                         <button
                           onClick={() => setActiveTab('compliance')}
-                          className="mt-2 text-[10px] font-medium text-[#3D16FA] hover:text-[#4F94C4] transition-colors cursor-pointer"
+                          className="mt-2 text-[10px] font-medium text-[#3D16FA] hover:text-[#5A39FB] transition-colors cursor-pointer"
                         >
                           Resolve on Review tab →
                         </button>
@@ -679,7 +679,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
               {localeHealthCards.map((card, cardIdx) => {
                 const isAmber = card.score < 85
                 const borderColor = isAmber ? 'border-l-amber-400' : 'border-l-emerald-400'
-                const ringColor = isAmber ? '#fbbf24' : '#34d399'
+                const ringColor = isAmber ? '#FFBD59' : '#00B887'
 
                 return (
                   <motion.div

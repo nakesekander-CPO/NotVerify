@@ -65,7 +65,7 @@ export function DocumentPedigreeCard({ pedigree }) {
           score={pedigree.depthScore.toFixed(1)}
           tone="teal"
           desc={`${pedigree.distribution.untouchedPct}% Untouched · ${pedigree.distribution.adjudicatedPct}% Adjudicated · ${pedigree.distribution.authoredPct}% Authored${pedigree.voiceCount ? ` · ${pedigree.voiceCount} voice rationale${pedigree.voiceCount === 1 ? '' : 's'}` : ''}`}
-          sparkline={<TrustSparkline values={series.depthScore.map(v => v / 100)} color="#1A7A5E" />}
+          sparkline={<TrustSparkline values={series.depthScore.map(v => v / 100)} color="#00805A" />}
         />
       </div>
 
@@ -116,13 +116,13 @@ export function SegmentPedigreeCard({ pedigree }) {
   return (
     <div className={
       sealed
-        ? 'rounded-md p-4 relative overflow-hidden bg-slate text-cream border border-[#FFB000]/40 shadow-[inset_0_0_0_1px_rgba(212,134,10,0.25)]'
+        ? 'rounded-md p-4 relative overflow-hidden bg-slate text-cream border border-[#FFB000]/40 shadow-[inset_0_0_0_1px_rgba(255,176,0,0.25)]'
         : 'bg-cream/60 border border-rule rounded-md p-4'
-    } style={sealed ? { backgroundImage: 'linear-gradient(135deg, #2A3F52 0%, #1B2A37 100%)' } : undefined}>
+    } style={sealed ? { backgroundImage: 'linear-gradient(135deg, #322D5C 0%, #1A1640 100%)' } : undefined}>
       {/* Wax-seal ornament */}
       {sealed && (
         <div className="absolute top-3 right-3 w-8 h-8 rounded-full border-2 border-[#FFB000]/60 flex items-center justify-center text-[#FFBD59]"
-             style={{ background: 'radial-gradient(circle at 30% 30%, #B3843E, #8a5408)' }}>
+             style={{ background: 'radial-gradient(circle at 30% 30%, #B3843E, #805F2D)' }}>
           <span className="text-[10px] font-semibold text-cream" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>ar</span>
         </div>
       )}
@@ -179,7 +179,7 @@ function Track({ label, value, color, placeholder, sealed, variant }) {
   // Sealed = wax-seal aesthetic: charcoal track with a gold fill on the human row.
   const trackBg = sealed ? 'bg-cream/15' : 'bg-rule'
   const fillStyle = sealed && variant === 'human'
-    ? { width: `${Math.min(100, (value || 0) * 100)}%`, backgroundImage: 'linear-gradient(90deg, #B3843E, #B5720A)' }
+    ? { width: `${Math.min(100, (value || 0) * 100)}%`, backgroundImage: 'linear-gradient(90deg, #B3843E, #996800)' }
     : { width: `${Math.min(100, (value || 0) * 100)}%` }
   const fillClass = sealed
     ? (variant === 'human' ? 'h-full rounded-full' : 'h-full rounded-full bg-cream/70')

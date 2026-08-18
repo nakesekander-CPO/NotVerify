@@ -531,7 +531,7 @@ export default function ColdStartDashboard({
                 <button
                   type="button"
                   onClick={() => onStartFirstProject?.()}
-                  className="mt-2 text-[11px] font-medium text-[#3D16FA] hover:text-[#007bb5] transition-colors cursor-pointer"
+                  className="mt-2 text-[11px] font-medium text-[#3D16FA] hover:text-[#2E10C4] transition-colors cursor-pointer"
                 >
                   Explore the pipeline →
                 </button>

@@ -416,7 +416,7 @@ function WorkflowBuilder({ connectedIntegrations }) {
             onClick={saveWorkflow}
             disabled={!canSave}
             className={`px-4 py-1.5 rounded-lg text-[12px] font-medium transition-colors ${
-              canSave ? 'bg-[#3D16FA] text-white hover:bg-[#0089bf] cursor-pointer' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              canSave ? 'bg-[#3D16FA] text-white hover:bg-[#2E10C4] cursor-pointer' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             }`}
           >
             Save workflow
@@ -494,7 +494,7 @@ function WorkflowBuilder({ connectedIntegrations }) {
             disabled={connectedIntegrations.length === 0}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors ${
               connectedIntegrations.length > 0
-                ? 'bg-[#3D16FA] text-white hover:bg-[#0089bf] cursor-pointer'
+                ? 'bg-[#3D16FA] text-white hover:bg-[#2E10C4] cursor-pointer'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             }`}
           >
@@ -632,7 +632,7 @@ function WorkflowBuilder({ connectedIntegrations }) {
                         </div>
                         <button
                           onClick={() => cloneTemplate(template)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-[#3D16FA] text-white hover:bg-[#0089bf] cursor-pointer shrink-0"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-[#3D16FA] text-white hover:bg-[#2E10C4] cursor-pointer shrink-0"
                         >
                           <Copy className="w-3 h-3" />
                           Use

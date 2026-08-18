@@ -239,7 +239,7 @@ export default function GovernanceScorecard({
           return (
             <motion.div
               key={agent.id}
-              className="rounded-lg bg-[#f5f5f5] p-5"
+              className="rounded-lg bg-[#EDEFFB] p-5"
               {...animateProps(0.3 + i * 0.12)}
             >
               {/* Card Header */}
@@ -270,7 +270,7 @@ export default function GovernanceScorecard({
 
               {/* Key Stat */}
               <p className="mb-4 text-sm text-gray-500">
-                <span className="font-bold text-[#34d399]">
+                <span className="font-bold text-[#00B887]">
                   {agent.errorsFound} errors caught
                 </span>{' '}
                 that the generic model missed
@@ -291,7 +291,7 @@ export default function GovernanceScorecard({
                     <span className="flex-1 text-sm text-gray-700">
                       {contribution.text}
                     </span>
-                    <span className="shrink-0 font-['JetBrains_Mono'] text-xs font-medium text-[#34d399]">
+                    <span className="shrink-0 font-['JetBrains_Mono'] text-xs font-medium text-[#00B887]">
                       {contribution.impact}
                     </span>
                   </div>
@@ -313,7 +313,7 @@ export default function GovernanceScorecard({
                       return (
                         <div
                           key={correction.id}
-                          className="flex items-center justify-between gap-3 rounded-md bg-[#f5f5f5]/80 px-3 py-2"
+                          className="flex items-center justify-between gap-3 rounded-md bg-[#EDEFFB]/80 px-3 py-2"
                         >
                           <div className="flex items-center gap-2 text-sm">
                             <span className="font-['JetBrains_Mono'] text-gray-400">
@@ -328,7 +328,7 @@ export default function GovernanceScorecard({
                             </span>
                           </div>
                           {isPromoted ? (
-                            <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-[#34d399]">
+                            <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-[#00B887]">
                               <CheckCircle2 className="h-3.5 w-3.5" />
                               Promoted
                             </span>
@@ -354,11 +354,11 @@ export default function GovernanceScorecard({
 
       {/* Summary Footer */}
       <motion.div
-        className="mt-6 rounded-lg border border-[#34d399]/20 bg-[#34d399]/5 p-5"
+        className="mt-6 rounded-lg border border-[#00B887]/20 bg-[#00B887]/5 p-5"
         {...animateProps(0.6)}
       >
         <div className="mb-2 flex items-center gap-4">
-          <span className="font-['JetBrains_Mono'] text-lg font-bold text-[#34d399]">
+          <span className="font-['JetBrains_Mono'] text-lg font-bold text-[#00B887]">
             {totalErrors} errors caught
           </span>
           <span className="text-sm text-gray-400">
@@ -366,7 +366,7 @@ export default function GovernanceScorecard({
           </span>
         </div>
         <div className="mb-3 flex items-center gap-4">
-          <span className="font-['JetBrains_Mono'] text-lg font-bold text-[#34d399]">
+          <span className="font-['JetBrains_Mono'] text-lg font-bold text-[#00B887]">
             +{totalImpact} points
           </span>
           <span className="text-sm text-gray-400">

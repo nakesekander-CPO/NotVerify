@@ -66,6 +66,78 @@
   --color-text-secondary: #5E6582;
   --color-text-disabled: #8087AC;
   --color-hover: rgba(13,9,42,0.04);
+
+  /* ══ DS v2 override of Tailwind's default scales ═══════════════
+     Legacy components use numbered default classes (emerald-500,
+     gray-700, …). Redefining the scales here re-points every such
+     call site at v2-derived ramps — no component edits needed.
+     black/white alpha utilities are left untouched (scrims). */
+
+  /* neutrals → v2 neutral ramp */
+  --color-gray-50:#F4F5FF;  --color-gray-100:#EDEFFB; --color-gray-200:#D8DCF5;
+  --color-gray-300:#C3C7EA; --color-gray-400:#8087AC; --color-gray-500:#5E6582;
+  --color-gray-600:#444B70; --color-gray-700:#322D5C; --color-gray-800:#1A1640;
+  --color-gray-900:#0D092A; --color-gray-950:#0D092A;
+  --color-slate-50:#F4F5FF;  --color-slate-100:#EDEFFB; --color-slate-200:#D8DCF5;
+  --color-slate-300:#C3C7EA; --color-slate-400:#8087AC; --color-slate-500:#5E6582;
+  --color-slate-600:#444B70; --color-slate-700:#322D5C; --color-slate-800:#1A1640;
+  --color-slate-900:#0D092A; --color-slate-950:#0D092A;
+
+  /* success family → ok set */
+  --color-emerald-50:#E6F8F3;  --color-emerald-100:#E6F8F3; --color-emerald-200:#99E3CF;
+  --color-emerald-300:#66D6B7; --color-emerald-400:#00B887; --color-emerald-500:#00B887;
+  --color-emerald-600:#00805A; --color-emerald-700:#00805A; --color-emerald-800:#00593F;
+  --color-emerald-900:#004D3A;
+  --color-green-50:#E6F8F3;  --color-green-100:#E6F8F3; --color-green-400:#00B887;
+  --color-green-500:#00B887; --color-green-600:#00805A; --color-green-700:#00805A;
+  --color-teal-50:#E6F8F3;  --color-teal-100:#E6F8F3; --color-teal-300:#66D6B7;
+  --color-teal-400:#00B887; --color-teal-500:#00B887; --color-teal-600:#00805A;
+  --color-teal-700:#00805A;
+
+  /* warning family → warn/gold set */
+  --color-amber-50:#FFF7E6;  --color-amber-100:#FFF7E6; --color-amber-200:#FFEFD1;
+  --color-amber-300:#FFDEAC; --color-amber-400:#FFBD59; --color-amber-500:#FFB000;
+  --color-amber-600:#996800; --color-amber-700:#996800; --color-amber-800:#805428;
+  --color-amber-900:#664411;
+  --color-yellow-50:#FFF7E6;  --color-yellow-100:#FFF7E6; --color-yellow-400:#FFBD59;
+  --color-yellow-500:#FFB000; --color-yellow-600:#996800; --color-yellow-700:#996800;
+  --color-orange-50:#FFF7E6;  --color-orange-100:#FFF7E6; --color-orange-400:#FFB000;
+  --color-orange-500:#FFB000; --color-orange-600:#996800; --color-orange-700:#996800;
+
+  /* critical family → crit set */
+  --color-red-50:#FDECEA;  --color-red-100:#FDECEA; --color-red-200:#F9C6C2;
+  --color-red-300:#F0938E; --color-red-400:#E53935; --color-red-500:#E53935;
+  --color-red-600:#C62828; --color-red-700:#C62828; --color-red-800:#A32020;
+  --color-red-900:#7F1919;
+  --color-rose-50:#FDECEA;  --color-rose-100:#FDECEA; --color-rose-400:#E53935;
+  --color-rose-500:#E53935; --color-rose-600:#C62828; --color-rose-700:#C62828;
+
+  /* info family → info set */
+  --color-blue-50:#E6F3FF;  --color-blue-100:#E6F3FF; --color-blue-200:#B9DFFF;
+  --color-blue-300:#66B8FF; --color-blue-400:#0088FF; --color-blue-500:#0088FF;
+  --color-blue-600:#0066CC; --color-blue-700:#0066CC; --color-blue-800:#00509E;
+  --color-blue-900:#003C77;
+  --color-sky-50:#E6F3FF;  --color-sky-100:#E6F3FF; --color-sky-400:#0088FF;
+  --color-sky-500:#0088FF; --color-sky-600:#0066CC; --color-sky-700:#0066CC;
+  --color-cyan-50:#D9FDFF;  --color-cyan-100:#D9FDFF; --color-cyan-300:#26F2FF;
+  --color-cyan-400:#00CCD9; --color-cyan-500:#00A8B3; --color-cyan-600:#007880;
+  --color-cyan-700:#007880;
+
+  /* violet/purple/pink → soft-violet ramp · indigo scale → brand indigo */
+  --color-violet-50:#F1EEFF;  --color-violet-100:#E3DDFF; --color-violet-200:#D1C6FF;
+  --color-violet-300:#BFAFFF; --color-violet-400:#A38DFF; --color-violet-500:#A38DFF;
+  --color-violet-600:#8B78D9; --color-violet-700:#7263B3; --color-violet-800:#524780;
+  --color-violet-900:#312A4D;
+  --color-purple-50:#F1EEFF;  --color-purple-100:#E3DDFF; --color-purple-200:#D1C6FF;
+  --color-purple-300:#BFAFFF; --color-purple-400:#A38DFF; --color-purple-500:#A38DFF;
+  --color-purple-600:#8B78D9; --color-purple-700:#7263B3; --color-purple-800:#524780;
+  --color-purple-900:#312A4D;
+  --color-pink-50:#F1EEFF;  --color-pink-100:#E3DDFF; --color-pink-400:#A38DFF;
+  --color-pink-500:#A38DFF; --color-pink-600:#8B78D9; --color-pink-700:#7263B3;
+  --color-indigo-50:#F4F5FF;  --color-indigo-100:#EDEFFB; --color-indigo-200:#D8DCF5;
+  --color-indigo-300:#C3C7EA; --color-indigo-400:#9E8BFD; --color-indigo-500:#5A39FB;
+  --color-indigo-600:#3D16FA; --color-indigo-700:#2E10C4; --color-indigo-800:#2B0FAF;
+  --color-indigo-900:#1A1640;
 }
 
 @layer base {
@@ -129,17 +201,17 @@
     border-bottom: 1px solid rgba(61,22,250, 0.55);
   }
   .gloss-mark.gloss-required {
-    background-color: rgba(212, 134, 10, 0.14);
-    border-bottom: 1px dashed rgba(181, 114, 10, 0.85);
+    background-color: rgba(255,176,0,0.14);
+    border-bottom: 1px dashed rgba(153,104,0,0.85);
   }
   .gloss-mark.gloss-forbidden {
-    background-color: rgba(176, 56, 51, 0.10);
-    border-bottom: 1px dotted rgba(176, 56, 51, 0.85);
-    color: rgb(118, 38, 35);
+    background-color: rgba(229,57,53,0.10);
+    border-bottom: 1px dotted rgba(229,57,53,0.85);
+    color: rgb(198,40,40);
   }
   .gloss-mark.gloss-dnt {
-    background-color: rgba(82, 100, 120, 0.10);
-    border-bottom: 1px solid rgba(82, 100, 120, 0.7);
+    background-color: rgba(94,101,130,0.10);
+    border-bottom: 1px solid rgba(94,101,130,0.7);
     font-feature-settings: "tnum";
   }
   /* Cross-pane pair highlight — neutral darken so all states pair clearly. */
@@ -151,9 +223,9 @@
   .gloss-mark.gloss-preferred:hover,
   .gloss-mark.gloss-preferred.gloss-active { background-color: rgba(61,22,250, 0.22); }
   .gloss-mark.gloss-required:hover,
-  .gloss-mark.gloss-required.gloss-active  { background-color: rgba(212, 134, 10, 0.30); }
+  .gloss-mark.gloss-required.gloss-active  { background-color: rgba(255,176,0,0.30); }
   .gloss-mark.gloss-forbidden:hover,
-  .gloss-mark.gloss-forbidden.gloss-active { background-color: rgba(176, 56, 51, 0.22); }
+  .gloss-mark.gloss-forbidden.gloss-active { background-color: rgba(229,57,53,0.22); }
   .gloss-mark.gloss-dnt:hover,
-  .gloss-mark.gloss-dnt.gloss-active       { background-color: rgba(82, 100, 120, 0.22); }
+  .gloss-mark.gloss-dnt.gloss-active       { background-color: rgba(94,101,130,0.22); }
 }

@@ -665,7 +665,7 @@ function TrainingState({ completedSteps, activeStep, logMessages }) {
         <motion.div
           animate={{ rotate: [0, 360] }}
           transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-          className="rounded-full bg-gradient-to-br from-[#3D16FA] to-[#34d399] p-5"
+          className="rounded-full bg-gradient-to-br from-[#3D16FA] to-[#00B887] p-5"
         >
           <Brain size={48} className="text-white" />
         </motion.div>
@@ -673,7 +673,7 @@ function TrainingState({ completedSteps, activeStep, logMessages }) {
         {/* Overall progress bar */}
         <div className="h-1.5 w-48 overflow-hidden rounded-full bg-gray-200">
           <motion.div
-            className="h-full rounded-full bg-gradient-to-r from-[#3D16FA] to-[#34d399]"
+            className="h-full rounded-full bg-gradient-to-r from-[#3D16FA] to-[#00B887]"
             initial={{ width: 0 }}
             animate={{ width: `${overallProgress}%` }}
             transition={{ duration: 0.4 }}
@@ -1014,7 +1014,7 @@ function CompleteState({ agentName, trainingRound, trainingHistory, previousScor
       >
         {/* Icon area */}
         <div className="mb-6 flex flex-col items-center gap-4">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[#3D16FA] to-[#34d399]">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[#3D16FA] to-[#00B887]">
             <Building2 size={40} className="text-white" />
           </div>
           <div className="text-center">

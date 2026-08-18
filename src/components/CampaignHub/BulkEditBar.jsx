@@ -95,7 +95,7 @@ export default function BulkEditBar({ selectedCount, campaignLocales, onApply, o
         type="button"
         onClick={handleApply}
         disabled={!canApply}
-        className={`text-[12px] font-semibold px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer ${canApply ? 'bg-[#3D16FA] text-white hover:bg-[#007bb5]' : 'bg-white/10 text-gray-500 cursor-not-allowed'}`}
+        className={`text-[12px] font-semibold px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer ${canApply ? 'bg-[#3D16FA] text-white hover:bg-[#2E10C4]' : 'bg-white/10 text-gray-500 cursor-not-allowed'}`}
       >
         Apply
       </button>

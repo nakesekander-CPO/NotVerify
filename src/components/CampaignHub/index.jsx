@@ -347,7 +347,7 @@ export default function CampaignHub({
               setCampaign(sample);
               setView('preflight');
             }}
-            className="flex items-center gap-2 text-[13px] text-[#3D16FA] hover:text-[#007bb5] transition-colors cursor-pointer"
+            className="flex items-center gap-2 text-[13px] text-[#3D16FA] hover:text-[#2E10C4] transition-colors cursor-pointer"
           >
             <Sparkles size={13} />
             Try with sample campaign (3 documents)
@@ -451,7 +451,7 @@ export default function CampaignHub({
         ) : (
           <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-black/[0.08] py-12 text-center">
             <p className="text-[13px] text-gray-400">No documents added yet.</p>
-            <button type="button" onClick={() => fileInputRef.current?.click()} className="mt-3 text-[13px] text-[#3D16FA] hover:text-[#007bb5] cursor-pointer transition-colors">Add files →</button>
+            <button type="button" onClick={() => fileInputRef.current?.click()} className="mt-3 text-[13px] text-[#3D16FA] hover:text-[#2E10C4] cursor-pointer transition-colors">Add files →</button>
           </div>
         )}
 

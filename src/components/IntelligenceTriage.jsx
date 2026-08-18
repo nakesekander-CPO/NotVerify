@@ -161,7 +161,7 @@ function StatCard({ icon: Icon, value, label, colorClass, index, reduced }) {
       initial={reduced ? false : { opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={reduced ? { duration: 0 } : { ...SPRING, delay: index * 0.08 }}
-      className="flex-1 rounded-lg border border-black/[0.12] bg-[#f5f5f5] p-4"
+      className="flex-1 rounded-lg border border-black/[0.12] bg-[#EDEFFB] p-4"
     >
       <div className="flex items-center gap-3">
         <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${colorClass}`}>
@@ -252,7 +252,7 @@ function TriageRow({ item, isApproved, isAutoCommitted, isDiscarded, onApprove, 
       transition={reduced ? { duration: 0 } : { ...SPRING, delay }}
       className={`group flex items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors ${
         isAutoCommitted
-          ? 'border-emerald-500/30 bg-emerald-500/5 border-l-2 border-l-emerald-400 shadow-[inset_2px_0_8px_-2px_rgba(16,185,129,0.2)]'
+          ? 'border-emerald-500/30 bg-emerald-500/5 border-l-2 border-l-emerald-400 shadow-[inset_2px_0_8px_-2px_rgba(0,184,135,0.2)]'
           : isApproved
             ? 'border-emerald-500/20 bg-emerald-500/5'
             : 'border-black/[0.06] bg-black/[0.02] hover:bg-black/[0.04]'
@@ -524,7 +524,7 @@ export default function IntelligenceTriage({ onApprove }) {
         initial={reduced ? false : { opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={reduced ? { duration: 0 } : { ...SPRING, delay: 0.05 }}
-        className="rounded-lg border border-black/[0.12] bg-[#f5f5f5] p-4"
+        className="rounded-lg border border-black/[0.12] bg-[#EDEFFB] p-4"
       >
         <div className="flex items-center gap-2 mb-3">
           <Settings className="h-4 w-4 text-gray-500" />
@@ -704,7 +704,7 @@ export default function IntelligenceTriage({ onApprove }) {
         initial={reduced ? false : { opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={reduced ? { duration: 0 } : { ...SPRING, delay: 0.4 }}
-        className="flex items-center justify-between rounded-lg border border-black/[0.12] bg-[#f5f5f5] px-5 py-3"
+        className="flex items-center justify-between rounded-lg border border-black/[0.12] bg-[#EDEFFB] px-5 py-3"
       >
         <p className="text-sm text-gray-500">
           <span className="font-medium text-emerald-600">{autoCommittedCount}</span> auto-committed

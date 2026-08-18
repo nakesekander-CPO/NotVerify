@@ -110,7 +110,7 @@ export default function AgentLibraryCard({ agent, index, isAssigned, onSelect, r
             <>
               <TrustScoreBadge score={agent.trustScore} size="sm" reducedMotion={reducedMotion} />
               <button
-                className="flex items-center gap-1 text-[11px] font-semibold text-[#3D16FA] hover:text-[#0089c4] transition-colors"
+                className="flex items-center gap-1 text-[11px] font-semibold text-[#3D16FA] hover:text-[#2E10C4] transition-colors"
                 onClick={(e) => { e.stopPropagation(); onSelect(agent) }}
                 tabIndex={-1}
                 aria-hidden="true"

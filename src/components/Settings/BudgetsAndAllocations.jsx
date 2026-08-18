@@ -47,7 +47,7 @@ export default function BudgetsAndAllocations() {
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-[#3D16FA] text-white hover:bg-[#0089bf] transition-colors cursor-pointer shrink-0"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-[#3D16FA] text-white hover:bg-[#2E10C4] transition-colors cursor-pointer shrink-0"
         >
           <Plus className="w-3.5 h-3.5" />
           Create budget
@@ -346,7 +346,7 @@ function CreateBudgetModal({ onClose, onCreate }) {
           <button
             onClick={() => valid && onCreate(form)}
             disabled={!valid}
-            className={`px-4 py-1.5 rounded-lg text-[12px] font-medium transition-colors ${valid ? 'bg-[#3D16FA] text-white hover:bg-[#0089bf] cursor-pointer' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
+            className={`px-4 py-1.5 rounded-lg text-[12px] font-medium transition-colors ${valid ? 'bg-[#3D16FA] text-white hover:bg-[#2E10C4] cursor-pointer' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
           >
             Create budget
           </button>

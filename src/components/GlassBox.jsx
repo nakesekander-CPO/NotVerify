@@ -159,8 +159,8 @@ function DocumentCore({ phase, hasCritical, reducedMotion }) {
             width: 100,
             height: 100,
             background: hasCritical
-              ? `radial-gradient(circle, rgba(239,68,68,${glowIntensity}) 0%, transparent 70%)`
-              : `radial-gradient(circle, rgba(99,200,170,${glowIntensity}) 0%, transparent 70%)`,
+              ? `radial-gradient(circle, rgba(229,57,53,${glowIntensity}) 0%, transparent 70%)`
+              : `radial-gradient(circle, rgba(0,184,135,${glowIntensity}) 0%, transparent 70%)`,
           }}
           animate={
             isActive

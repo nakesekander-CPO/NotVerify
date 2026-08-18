@@ -78,9 +78,9 @@ function computeRelevance(agentId, profile) {
 
 /* ── Helpers ── */
 function getQualityColor(value) {
-  if (value < 70) return '#ef4444'   // red
-  if (value <= 85) return '#f59e0b'  // amber
-  return '#10b981'                    // emerald
+  if (value < 70) return '#E53935'   // red
+  if (value <= 85) return '#FFB000'  // amber
+  return '#00B887'                    // emerald
 }
 
 function AgentIcon({ iconName, size = 18, className = '' }) {
@@ -106,7 +106,7 @@ function AutoDetectionPhase({ fileName, reducedMotion, onComplete }) {
   return (
     <motion.div
       className="fixed inset-0 z-50 flex flex-col items-center justify-center"
-      style={{ backgroundColor: '#f9fafb' }}
+      style={{ backgroundColor: '#F4F5FF' }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -188,7 +188,7 @@ function AutoModeSummary({
   return (
     <motion.div
       className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ backgroundColor: '#f9fafb' }}
+      style={{ backgroundColor: '#F4F5FF' }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: reducedMotion ? 0 : 0.35 }}
@@ -296,7 +296,7 @@ function AutoModeSummary({
           <button
             onClick={onDeploy}
             className="flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white transition-colors hover:opacity-90"
-            style={{ backgroundColor: '#164D75' }}
+            style={{ backgroundColor: '#2B0FAF' }}
           >
             Deploy Agents <ArrowRight size={16} />
           </button>
@@ -653,7 +653,7 @@ export default function PreFlightSimulator({
         <motion.div
           key="simulator"
           className="fixed inset-0 z-50 flex flex-col overflow-hidden"
-          style={{ backgroundColor: '#f9fafb' }}
+          style={{ backgroundColor: '#F4F5FF' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: reducedMotion ? 0 : 0.35 }}
@@ -675,7 +675,7 @@ export default function PreFlightSimulator({
             <button
               onClick={handleDeploy}
               className="flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ backgroundColor: '#164D75' }}
+              style={{ backgroundColor: '#2B0FAF' }}
             >
               Deploy Ensemble <ArrowRight size={16} />
             </button>
@@ -791,7 +791,7 @@ export default function PreFlightSimulator({
                 label="Estimated Cost"
                 value={estimatedCost}
                 max={MAX_COST}
-                color="#a78bfa"
+                color="#A38DFF"
                 displayValue={`${estimatedCost}cr`}
                 icon={Coins}
                 reducedMotion={reducedMotion}

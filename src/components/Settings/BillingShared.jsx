@@ -33,9 +33,9 @@ export function Field({ label, children }) {
 export function StatusPill({ status }) {
   const map = {
     paid:      ['Paid', 'bg-emerald-100 text-emerald-700 border-emerald-200'],
-    open:      ['Open', 'bg-[#3D16FA]/10 text-[#0089c4] border-[#3D16FA]/20'],
+    open:      ['Open', 'bg-[#3D16FA]/10 text-[#2E10C4] border-[#3D16FA]/20'],
     past_due:  ['Past due', 'bg-red-50 text-red-700 border-red-200'],
-    invoiced:  ['Invoiced', 'bg-[#3D16FA]/10 text-[#0089c4] border-[#3D16FA]/20'],
+    invoiced:  ['Invoiced', 'bg-[#3D16FA]/10 text-[#2E10C4] border-[#3D16FA]/20'],
     requested: ['Requested', 'bg-violet-50 text-violet-700 border-violet-200'],
     completed: ['Completed', 'bg-emerald-100 text-emerald-700 border-emerald-200'],
     rejected:  ['Rejected', 'bg-red-50 text-red-700 border-red-200'],

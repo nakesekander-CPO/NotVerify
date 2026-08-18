@@ -14,12 +14,12 @@ const SPRING = { type: 'spring', stiffness: 300, damping: 20 }
 /* ─── Domain Nodes ───────────────────────────────────────────── */
 
 const DOMAIN_NODES = [
-  { id: 'financial', label: 'Financial (J-GAAP)', entries: 412, color: '#f59e0b', patterns: 89 },
-  { id: 'regulatory', label: 'Regulatory (TSE)', entries: 287, color: '#8b5cf6', patterns: 64 },
-  { id: 'brand', label: 'Brand Voice', entries: 198, color: '#06b6d4', patterns: 42 },
-  { id: 'cultural', label: 'Cultural Adaptation', entries: 156, color: '#10b981', patterns: 38 },
-  { id: 'currency', label: 'Currency Patterns', entries: 94, color: '#f43f5e', patterns: 27 },
-  { id: 'legal', label: 'Legal Compliance', entries: 143, color: '#64748b', patterns: 31 },
+  { id: 'financial', label: 'Financial (J-GAAP)', entries: 412, color: '#FFB000', patterns: 89 },
+  { id: 'regulatory', label: 'Regulatory (TSE)', entries: 287, color: '#A38DFF', patterns: 64 },
+  { id: 'brand', label: 'Brand Voice', entries: 198, color: '#0088FF', patterns: 42 },
+  { id: 'cultural', label: 'Cultural Adaptation', entries: 156, color: '#00B887', patterns: 38 },
+  { id: 'currency', label: 'Currency Patterns', entries: 94, color: '#E53935', patterns: 27 },
+  { id: 'legal', label: 'Legal Compliance', entries: 143, color: '#8087AC', patterns: 31 },
 ]
 
 const KEYWORD_MAP = {
@@ -128,7 +128,7 @@ function ScoreRing({ score, size = 80, strokeWidth = 6, prefersReducedMotion = f
   const radius = (size - strokeWidth) / 2
   const circumference = 2 * Math.PI * radius
   const progress = (score / 100) * circumference
-  const color = score >= 85 ? '#34d399' : score >= 70 ? '#fbbf24' : '#f87171'
+  const color = score >= 85 ? '#00B887' : score >= 70 ? '#FFBD59' : '#E53935'
   return (
     <div className="relative" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90">
@@ -294,7 +294,7 @@ function PromptStudio({ onGenerate, prefersReduced }) {
           type="button"
           onClick={() => onGenerate({ promptText, activeNodes: [...activeNodes], selectedType, locales })}
           disabled={promptText.length < 10}
-          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#3D16FA] hover:bg-[#0089c4] text-white text-[14px] font-semibold shadow-sm shadow-[#3D16FA]/20 cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#3D16FA] hover:bg-[#2E10C4] text-white text-[14px] font-semibold shadow-sm shadow-[#3D16FA]/20 cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Sparkles className="w-4 h-4" /> Generate
         </button>
@@ -395,7 +395,7 @@ function GenerationProgress({ config, onComplete, prefersReduced }) {
         </div>
         <div className="w-full max-w-sm">
           <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-            <motion.div className="h-full bg-gradient-to-r from-[#3D16FA] to-[#34d399] rounded-full"
+            <motion.div className="h-full bg-gradient-to-r from-[#3D16FA] to-[#00B887] rounded-full"
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.1 }}
             />
@@ -638,7 +638,7 @@ function ReviewRefine({ config, onAccept, onBack, prefersReduced }) {
 
         <div className="flex-1" />
         <button type="button" onClick={() => onAccept(feedback, refinementCount)}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#3D16FA] hover:bg-[#0089c4] text-white text-[13px] font-semibold cursor-pointer transition-colors">
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#3D16FA] hover:bg-[#2E10C4] text-white text-[13px] font-semibold cursor-pointer transition-colors">
           <CheckCircle2 className="w-4 h-4" /> Accept &amp; Save
         </button>
       </div>
@@ -730,7 +730,7 @@ export default function ContentCreator({ onBack }) {
     if (refinementCount > 0) eventDesc = `${typeName} generated using ${domains} (accepted, ${refinementCount} refinement${refinementCount > 1 ? 's' : ''})`
     if (feedback === 'up') eventDesc += ' \u2014 positive signal captured'
     if (feedback === 'down') eventDesc += ' \u2014 improvement signal captured'
-    addLearningEvent(eventDesc, '#06b6d4', 'creation')
+    addLearningEvent(eventDesc, '#0088FF', 'creation')
 
     // Clear session + toast + navigate
     clearActiveSession()

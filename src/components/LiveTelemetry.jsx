@@ -27,8 +27,8 @@ const LOCALE_META = {
 
 const DEFAULT_AGENTS = [
   { id: 'JP-FIN-3', name: 'JP-FIN-3', color: '#3D16FA' },
-  { id: 'MER-DT-1', name: 'MER-DT-1', color: '#38bdf8' },
-  { id: 'BV-SENT-1', name: 'BV-SENT-1', color: '#a78bfa' },
+  { id: 'MER-DT-1', name: 'MER-DT-1', color: '#0088FF' },
+  { id: 'BV-SENT-1', name: 'BV-SENT-1', color: '#A38DFF' },
 ];
 
 // Scripted log templates keyed by phase-relative offsets (in seconds)
@@ -71,7 +71,7 @@ function ProgressHeader({ fileName, progress, totalSegments, elapsed, duration }
   const isComplete = pct >= 100;
 
   return (
-    <div className="sticky top-0 z-20 rounded-lg border border-black/[0.12] bg-[#f5f5f5]/95 px-6 py-5">
+    <div className="sticky top-0 z-20 rounded-lg border border-black/[0.12] bg-[#EDEFFB]/95 px-6 py-5">
       <div className="mb-2 flex items-center gap-2 font-mono text-xs tracking-widest text-gray-500 uppercase">
         <Radio className="h-3.5 w-3.5 animate-pulse text-[#3D16FA]" />
         <span>Processing: {fileName}</span>
@@ -84,8 +84,8 @@ function ProgressHeader({ fileName, progress, totalSegments, elapsed, duration }
           style={{
             width: `${pct}%`,
             background: isComplete
-              ? 'linear-gradient(90deg, #10b981, #34d399)'
-              : 'linear-gradient(90deg, #3D16FA, #4F94C4)',
+              ? 'linear-gradient(90deg, #00B887, #00B887)'
+              : 'linear-gradient(90deg, #3D16FA, #5A39FB)',
           }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
         />
@@ -130,7 +130,7 @@ function SecurityPanel({ phase, elapsed, duration }) {
   ];
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-black/[0.12] bg-[#f5f5f5] p-5">
+    <div className="flex flex-col gap-4 rounded-lg border border-black/[0.12] bg-[#EDEFFB] p-5">
       <div className="flex items-center gap-2 text-xs font-semibold tracking-widest text-gray-700 uppercase">
         <Shield className="h-4 w-4 text-[#3D16FA]" />
         Security
@@ -230,7 +230,7 @@ function LocaleRoutingCard({ locale, meta, status, reducedMotion }) {
 
 function RoutingPanel({ locales, phase, progress, reducedMotion }) {
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-black/[0.12] bg-[#f5f5f5] p-5">
+    <div className="flex flex-col gap-4 rounded-lg border border-black/[0.12] bg-[#EDEFFB] p-5">
       <div className="flex items-center gap-2 text-xs font-semibold tracking-widest text-gray-700 uppercase">
         <Globe className="h-4 w-4 text-[#3D16FA]" />
         Routing
@@ -284,7 +284,7 @@ function AgentCard({ agent, segNum, agentProgress, flash, reducedMotion }) {
           className="h-full rounded-full"
           style={{
             width: `${pct}%`,
-            backgroundColor: isComplete ? '#10b981' : agent.color,
+            backgroundColor: isComplete ? '#00B887' : agent.color,
           }}
           transition={{ duration: 0.4, ease: 'easeOut' }}
         />
@@ -298,7 +298,7 @@ function AgentCard({ agent, segNum, agentProgress, flash, reducedMotion }) {
 
 function AgentPanel({ agents, agentStates, reducedMotion }) {
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-black/[0.12] bg-[#f5f5f5] p-5">
+    <div className="flex flex-col gap-4 rounded-lg border border-black/[0.12] bg-[#EDEFFB] p-5">
       <div className="flex items-center gap-2 text-xs font-semibold tracking-widest text-gray-700 uppercase">
         <Bot className="h-4 w-4 text-[#3D16FA]" />
         Agent Activity
@@ -364,7 +364,7 @@ function ActivityLog({ logLines, reducedMotion }) {
   }, [logLines.length]);
 
   return (
-    <div className="rounded-lg border border-black/[0.12] bg-[#f5f5f5] p-5">
+    <div className="rounded-lg border border-black/[0.12] bg-[#EDEFFB] p-5">
       <div className="mb-3 flex items-center gap-2 text-xs font-semibold tracking-widest text-gray-700 uppercase">
         <Terminal className="h-4 w-4 text-[#3D16FA]" />
         Live Activity Log

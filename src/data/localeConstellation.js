@@ -25,9 +25,9 @@ export const localeConstellationData = {
     { code: 'hi', name: 'Hindi', family: 'other', complexity: 0.62, x: 65, y: 55, relatedTo: [], flags: ['devanagari', 'script-change'], qualityPrediction: { base: 82, withEnhancements: 90 } },
   ],
   families: [
-    { id: 'CJK', label: 'CJK Languages', color: '#f59e0b', members: ['ja', 'ko', 'zh', 'zh-tw'] },
-    { id: 'romance', label: 'Romance Languages', color: '#8b5cf6', members: ['fr', 'es', 'it', 'pt', 'pt-br'] },
-    { id: 'germanic', label: 'Germanic Languages', color: '#3b82f6', members: ['de', 'nl', 'sv', 'no', 'da'] },
-    { id: 'other', label: 'Other Languages', color: '#6b7280', members: ['fi', 'ar', 'ru', 'pl', 'tr', 'th', 'vi', 'id', 'hi'] },
+    { id: 'CJK', label: 'CJK Languages', color: '#FFB000', members: ['ja', 'ko', 'zh', 'zh-tw'] },
+    { id: 'romance', label: 'Romance Languages', color: '#A38DFF', members: ['fr', 'es', 'it', 'pt', 'pt-br'] },
+    { id: 'germanic', label: 'Germanic Languages', color: '#0088FF', members: ['de', 'nl', 'sv', 'no', 'da'] },
+    { id: 'other', label: 'Other Languages', color: '#8087AC', members: ['fi', 'ar', 'ru', 'pl', 'tr', 'th', 'vi', 'id', 'hi'] },
   ],
 }

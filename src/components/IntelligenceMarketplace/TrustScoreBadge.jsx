@@ -14,7 +14,7 @@ export default function TrustScoreBadge({ score, size = 'sm', reducedMotion = fa
   const color = getScoreColor(score)
 
   // Map Tailwind class to hex for SVG stroke
-  const strokeColor = score >= 85 ? '#34d399' : score >= 70 ? '#fbbf24' : '#f87171'
+  const strokeColor = score >= 85 ? '#00B887' : score >= 70 ? '#FFBD59' : '#E53935'
 
   return (
     <div className="relative shrink-0" style={{ width: s.w, height: s.w }}>

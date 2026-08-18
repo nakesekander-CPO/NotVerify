@@ -130,7 +130,7 @@ export default function AgentAssignDrawer({ agent, isOpen, onClose, onAssign, is
             className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-[14px] font-semibold transition-all ${
               isAlreadyAssigned
                 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-default'
-                : 'bg-[#3D16FA] hover:bg-[#0089c4] text-white cursor-pointer'
+                : 'bg-[#3D16FA] hover:bg-[#2E10C4] text-white cursor-pointer'
             }`}
           >
             {isAlreadyAssigned ? (

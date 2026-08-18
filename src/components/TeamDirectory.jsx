@@ -9,7 +9,7 @@ import useReducedMotion from '../hooks/useReducedMotion';
 const DEPARTMENTS = [
   {
     label: 'Leadership',
-    color: '#a78bfa', // violet for avatars
+    color: '#A38DFF', // violet for avatars
     members: [
       {
         id: 'alex',
@@ -77,7 +77,7 @@ const DEPARTMENTS = [
   },
   {
     label: 'Compliance & Legal',
-    color: '#22d3ee', // cyan
+    color: '#26F2FF', // cyan
     members: [
       {
         id: 'thomas',
@@ -116,7 +116,7 @@ const DEPARTMENTS = [
   },
   {
     label: 'Quality & Linguistics',
-    color: '#34d399', // emerald
+    color: '#00B887', // emerald
     members: [
       {
         id: 'yuki',

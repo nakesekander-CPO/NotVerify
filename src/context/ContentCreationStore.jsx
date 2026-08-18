@@ -48,7 +48,7 @@ export default function ContentCreationProvider({ children }) {
     return item
   }, [])
 
-  const addLearningEvent = useCallback((description, color = '#06b6d4', type = 'creation') => {
+  const addLearningEvent = useCallback((description, color = '#0088FF', type = 'creation') => {
     dispatch({
       type: 'ADD_LEARNING_EVENT',
       payload: { date: formatDate(), description, color, type },

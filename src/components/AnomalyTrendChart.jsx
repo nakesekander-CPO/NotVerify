@@ -126,8 +126,8 @@ export default function AnomalyTrendChart({
           {!prefersReduced && (
             <>
               <radialGradient id="pulseGlow">
-                <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.5" />
-                <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
+                <stop offset="0%" stopColor="#FFB000" stopOpacity="0.5" />
+                <stop offset="100%" stopColor="#FFB000" stopOpacity="0" />
               </radialGradient>
             </>
           )}
@@ -143,7 +143,7 @@ export default function AnomalyTrendChart({
                 y1={y}
                 x2={VIEW_W - PAD.right}
                 y2={y}
-                stroke="#e5e7eb"
+                stroke="#D8DCF5"
                 strokeWidth="1"
               />
               <text
@@ -179,7 +179,7 @@ export default function AnomalyTrendChart({
           y1={benchmarkY}
           x2={VIEW_W - PAD.right}
           y2={benchmarkY}
-          stroke="#f59e0b"
+          stroke="#FFB000"
           strokeWidth="1"
           strokeDasharray="6 4"
           opacity="0.6"
@@ -225,7 +225,7 @@ export default function AnomalyTrendChart({
               >
                 {/* Pulsing outer ring */}
                 {!prefersReduced && (
-                  <circle cx={p.x} cy={p.y} r="5" fill="none" stroke="#f59e0b" strokeWidth="1.5" opacity="0.5">
+                  <circle cx={p.x} cy={p.y} r="5" fill="none" stroke="#FFB000" strokeWidth="1.5" opacity="0.5">
                     <animate
                       attributeName="r"
                       values="5;12;5"
@@ -245,8 +245,8 @@ export default function AnomalyTrendChart({
                   cx={p.x}
                   cy={p.y}
                   r="5"
-                  fill="#f59e0b"
-                  stroke={isActive ? '#fbbf24' : '#ffffff'}
+                  fill="#FFB000"
+                  stroke={isActive ? '#FFBD59' : '#ffffff'}
                   strokeWidth={isActive ? 2 : 1.5}
                 />
                 {/* AlertTriangle icon above dot */}
@@ -254,7 +254,7 @@ export default function AnomalyTrendChart({
                   <polygon
                     points="7,0 14,12 0,12"
                     fill="none"
-                    stroke="#f59e0b"
+                    stroke="#FFB000"
                     strokeWidth="1.2"
                     strokeLinejoin="round"
                   />
@@ -263,11 +263,11 @@ export default function AnomalyTrendChart({
                     y1="4"
                     x2="7"
                     y2="7.5"
-                    stroke="#f59e0b"
+                    stroke="#FFB000"
                     strokeWidth="1.2"
                     strokeLinecap="round"
                   />
-                  <circle cx="7" cy="9.5" r="0.7" fill="#f59e0b" />
+                  <circle cx="7" cy="9.5" r="0.7" fill="#FFB000" />
                 </g>
               </g>
             )
@@ -282,7 +282,7 @@ export default function AnomalyTrendChart({
                   cy={p.y}
                   r="9"
                   fill="none"
-                  stroke="#10b981"
+                  stroke="#00B887"
                   strokeWidth="1"
                   opacity="0.3"
                 />
@@ -290,7 +290,7 @@ export default function AnomalyTrendChart({
                   cx={p.x}
                   cy={p.y}
                   r="5"
-                  fill="#10b981"
+                  fill="#00B887"
                   stroke="#ffffff"
                   strokeWidth="1.5"
                 />
@@ -400,7 +400,7 @@ export default function AnomalyTrendChart({
                 <button
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] font-medium text-white transition-colors"
                   style={{ backgroundColor: '#3D16FA' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#164D75')}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2B0FAF')}
                   onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3D16FA')}
                 >
                   {meta.action}

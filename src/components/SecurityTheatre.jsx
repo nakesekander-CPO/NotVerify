@@ -51,7 +51,7 @@ function TypewriterText({ text, startDelay = 1200, charDelay = 40, reducedMotion
   return (
     <span
       className="font-mono text-xs tracking-[0.15em]"
-      style={{ color: '#4F94C4', fontFamily: 'JetBrains Mono, monospace' }}
+      style={{ color: '#5A39FB', fontFamily: 'JetBrains Mono, monospace' }}
     >
       {displayed}
       {!reducedMotion && displayed.length < text.length && (
@@ -118,7 +118,7 @@ function OrbitingRing({ radius, duration, direction, icons, IconComponent, iconS
             >
               <IconComponent
                 size={iconSize}
-                style={{ color: 'rgba(116,143,252,0.6)' }}
+                style={{ color: 'rgba(158,139,253,0.6)' }}
               />
             </div>
           )
@@ -149,7 +149,7 @@ function CountdownTimer() {
       className="font-mono"
       style={{
         fontFamily: 'JetBrains Mono, monospace',
-        color: seconds > 43200 ? '#fbbf24' : '#f87171',
+        color: seconds > 43200 ? '#FFBD59' : '#E53935',
       }}
     >
       {h}:{m}:{s} remaining
@@ -169,7 +169,7 @@ function PhaseCard({ title, badge, status, children, reducedMotion }) {
       layout={!reducedMotion}
       className="rounded-lg border overflow-hidden"
       style={{
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#EDEFFB',
         borderColor: isActive
           ? 'rgba(61,22,250,0.3)'
           : 'rgba(255,255,255,0.06)',
@@ -178,7 +178,7 @@ function PhaseCard({ title, badge, status, children, reducedMotion }) {
       <div className="flex items-center gap-3 px-4 py-3">
         {/* Status indicator */}
         {isComplete && (
-          <CheckCircle2 size={16} style={{ color: '#34d399', flexShrink: 0 }} />
+          <CheckCircle2 size={16} style={{ color: '#00B887', flexShrink: 0 }} />
         )}
         {isActive && (
           <Loader2
@@ -199,9 +199,9 @@ function PhaseCard({ title, badge, status, children, reducedMotion }) {
           className="text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded"
           style={{
             backgroundColor: isComplete
-              ? 'rgba(52,211,153,0.15)'
+              ? 'rgba(0,184,135,0.15)'
               : 'rgba(61,22,250,0.15)',
-            color: isComplete ? '#34d399' : '#4F94C4',
+            color: isComplete ? '#00B887' : '#5A39FB',
           }}
         >
           {badge}
@@ -239,7 +239,7 @@ function LocaleBar({ code, progress, reducedMotion }) {
         className="text-xs font-semibold w-6 text-right"
         style={{
           fontFamily: 'JetBrains Mono, monospace',
-          color: isComplete ? '#34d399' : '#111827',
+          color: isComplete ? '#00B887' : '#322D5C',
         }}
       >
         {code}
@@ -252,8 +252,8 @@ function LocaleBar({ code, progress, reducedMotion }) {
           className="h-full rounded-full relative"
           style={{
             background: isComplete
-              ? '#34d399'
-              : 'linear-gradient(90deg, #3D16FA, #34d399)',
+              ? '#00B887'
+              : 'linear-gradient(90deg, #3D16FA, #00B887)',
             width: `${progress}%`,
           }}
           initial={reducedMotion ? false : { width: 0 }}
@@ -276,7 +276,7 @@ function LocaleBar({ code, progress, reducedMotion }) {
         className="text-xs w-8 text-right"
         style={{
           fontFamily: 'JetBrains Mono, monospace',
-          color: isComplete ? '#34d399' : 'rgba(0,0,0,0.5)',
+          color: isComplete ? '#00B887' : 'rgba(0,0,0,0.5)',
         }}
       >
         {Math.round(progress)}%
@@ -287,7 +287,7 @@ function LocaleBar({ code, progress, reducedMotion }) {
           animate={{ scale: 1 }}
           transition={{ type: 'spring', ...spring }}
         >
-          <CheckCircle2 size={14} style={{ color: '#34d399' }} />
+          <CheckCircle2 size={14} style={{ color: '#00B887' }} />
         </motion.div>
       )}
     </div>
@@ -480,19 +480,19 @@ export default function SecurityTheatre({ data, onComplete, structuredContext })
           {fileName} &rarr; {localeStr}
         </p>
         <div className="flex items-center gap-2 text-sm text-gray-700">
-          <Bot size={16} style={{ color: '#4F94C4' }} />
+          <Bot size={16} style={{ color: '#5A39FB' }} />
           <span>Agent {agentName}</span>
           <span className="flex items-center gap-1">
             &middot;
             <span
               className="inline-block w-2 h-2 rounded-full"
               style={{
-                backgroundColor: '#34d399',
+                backgroundColor: '#00B887',
                 animation: reducedMotion ? 'none' : 'pulse 2s ease-in-out infinite',
-                boxShadow: '0 0 6px rgba(52,211,153,0.5)',
+                boxShadow: '0 0 6px rgba(0,184,135,0.5)',
               }}
             />
-            <span style={{ color: '#34d399' }}>Active</span>
+            <span style={{ color: '#00B887' }}>Active</span>
           </span>
         </div>
       </motion.div>
@@ -515,7 +515,7 @@ export default function SecurityTheatre({ data, onComplete, structuredContext })
               exit={{ scale: 0, opacity: 0 }}
               transition={{ type: 'spring', ...spring }}
             >
-              <Lock size={32} style={{ color: '#4F94C4' }} />
+              <Lock size={32} style={{ color: '#5A39FB' }} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -583,7 +583,7 @@ export default function SecurityTheatre({ data, onComplete, structuredContext })
                 <motion.div
                   className="absolute inset-0 rounded-lg"
                   style={{
-                    backgroundColor: 'rgba(52,211,153,0.2)',
+                    backgroundColor: 'rgba(0,184,135,0.2)',
                     animation: 'greenFlash 0.6s ease-out forwards',
                   }}
                 />
@@ -626,13 +626,13 @@ export default function SecurityTheatre({ data, onComplete, structuredContext })
                   animate={{ scale: 1 }}
                   transition={{ type: 'spring', ...spring }}
                 >
-                  <CheckCircle2 size={16} style={{ color: '#34d399' }} />
+                  <CheckCircle2 size={16} style={{ color: '#00B887' }} />
                 </motion.div>
               ) : (
                 <span
                   className="inline-block w-4 h-4 text-center leading-4"
                   style={{
-                    color: '#fbbf24',
+                    color: '#FFBD59',
                     animation: reducedMotion
                       ? 'none'
                       : 'pulse 2s ease-in-out infinite',
@@ -733,14 +733,14 @@ export default function SecurityTheatre({ data, onComplete, structuredContext })
                     style={{
                       backgroundColor:
                         state === 'passed'
-                          ? 'rgba(52,211,153,0.05)'
+                          ? 'rgba(0,184,135,0.05)'
                           : state === 'validating'
-                            ? 'rgba(251,191,36,0.05)'
+                            ? 'rgba(255,189,89,0.05)'
                             : 'transparent',
                     }}
                     animate={
                       state === 'passed'
-                        ? { backgroundColor: ['rgba(52,211,153,0.15)', 'rgba(52,211,153,0.05)'] }
+                        ? { backgroundColor: ['rgba(0,184,135,0.15)', 'rgba(0,184,135,0.05)'] }
                         : {}
                     }
                     transition={{ duration: 0.6 }}
@@ -751,14 +751,14 @@ export default function SecurityTheatre({ data, onComplete, structuredContext })
                         animate={{ scale: 1, rotate: 0 }}
                         transition={{ type: 'spring', ...spring }}
                       >
-                        <CheckCircle2 size={14} style={{ color: '#34d399' }} />
+                        <CheckCircle2 size={14} style={{ color: '#00B887' }} />
                       </motion.div>
                     )}
                     {state === 'validating' && (
                       <Loader2
                         size={14}
                         className="animate-spin"
-                        style={{ color: '#fbbf24' }}
+                        style={{ color: '#FFBD59' }}
                       />
                     )}
                     {state === 'pending' && (
@@ -771,9 +771,9 @@ export default function SecurityTheatre({ data, onComplete, structuredContext })
                       style={{
                         color:
                           state === 'passed'
-                            ? '#34d399'
+                            ? '#00B887'
                             : state === 'validating'
-                              ? '#fbbf24'
+                              ? '#FFBD59'
                               : 'rgba(0,0,0,0.35)',
                       }}
                     >
@@ -782,9 +782,9 @@ export default function SecurityTheatre({ data, onComplete, structuredContext })
                     <span className="ml-auto text-[10px]" style={{
                       color:
                         state === 'passed'
-                          ? '#34d399'
+                          ? '#00B887'
                           : state === 'validating'
-                            ? '#fbbf24'
+                            ? '#FFBD59'
                             : 'rgba(0,0,0,0.2)',
                     }}>
                       {state === 'passed' ? 'Passed' : state === 'validating' ? 'Validating...' : 'Pending'}
@@ -804,7 +804,7 @@ export default function SecurityTheatre({ data, onComplete, structuredContext })
             className="text-lg font-semibold"
             style={{
               fontFamily: 'JetBrains Mono, monospace',
-              color: masterProgress >= 100 ? '#34d399' : '#111827',
+              color: masterProgress >= 100 ? '#00B887' : '#322D5C',
             }}
           >
             {Math.round(masterProgress)}%
@@ -813,7 +813,7 @@ export default function SecurityTheatre({ data, onComplete, structuredContext })
             className="text-sm"
             style={{
               fontFamily: 'JetBrains Mono, monospace',
-              color: 'rgba(148,163,184,1)',
+              color: 'rgba(128,135,172,1)',
             }}
           >
             {getTimeRemaining()}
@@ -829,11 +829,11 @@ export default function SecurityTheatre({ data, onComplete, structuredContext })
             style={{
               background:
                 masterProgress >= 100
-                  ? '#34d399'
-                  : 'linear-gradient(90deg, #3D16FA, #4F94C4, #34d399)',
+                  ? '#00B887'
+                  : 'linear-gradient(90deg, #3D16FA, #5A39FB, #00B887)',
               boxShadow:
                 masterProgress >= 100
-                  ? '0 0 8px rgba(52,211,153,0.5)'
+                  ? '0 0 8px rgba(0,184,135,0.5)'
                   : 'none',
             }}
             initial={reducedMotion ? { width: `${masterProgress}%` } : { width: '0%' }}

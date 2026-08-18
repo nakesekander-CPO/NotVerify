@@ -170,7 +170,7 @@ export default function CommandUpload({
   const priorProjects = 42 // prototype data
 
   const scoreColor = overallScore >= 85 ? 'text-emerald-400' : overallScore >= 65 ? 'text-straker-600' : 'text-red-400'
-  const ringStroke = overallScore >= 85 ? '#34d399' : overallScore >= 65 ? '#4F94C4' : '#f87171'
+  const ringStroke = overallScore >= 85 ? '#00B887' : overallScore >= 65 ? '#5A39FB' : '#E53935'
 
   // Score ring SVG
   const ringRadius = 26

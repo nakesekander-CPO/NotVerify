@@ -113,7 +113,7 @@ export default function FilterBar({ filters, onFilterChange }) {
           <span className="text-[10px] text-gray-400">{activeCount} filter{activeCount !== 1 ? 's' : ''} active</span>
           <button
             onClick={clearAll}
-            className="flex items-center gap-0.5 text-[10px] text-[#3D16FA] hover:text-[#0089c4] transition-colors cursor-pointer"
+            className="flex items-center gap-0.5 text-[10px] text-[#3D16FA] hover:text-[#2E10C4] transition-colors cursor-pointer"
           >
             <X className="w-2.5 h-2.5" /> Clear all
           </button>
