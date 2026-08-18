@@ -12,7 +12,7 @@ import { Radar, ArrowLeft } from 'lucide-react'
 import {
   EAV_NAV, EAV_NAV_GROUPS, WORKSPACE, METHODOLOGY_VERSION, BENCHMARK_HASH,
 } from '../../data/eav'
-import { MonoLabel, Card, SectionHeading, ProvenanceBadge } from './shared'
+import { MonoLabel, Card, SectionHeading } from './shared'
 import { PageHeader } from '../ui'
 import Overview from './Overview'
 import VisibilityExplorer from './VisibilityExplorer'
@@ -28,6 +28,7 @@ import Outcomes from './Outcomes'
 import Reports from './Reports'
 import Alerts from './Alerts'
 import Settings from './Settings'
+import NewScan from './NewScan'
 
 const SCREENS = {
   overview: Overview,
@@ -44,9 +45,10 @@ const SCREENS = {
   reports: Reports,
   alerts: Alerts,
   settings: Settings,
+  'new-scan': NewScan,
 }
 
-export default function EnterpriseAIVisibility({ onBack }) {
+export default function EnterpriseAIVisibility({ onBack, onNavigate }) {
   const [active, setActive] = useState('overview')
   const [ctx, setCtx] = useState({})          // cross-section jump payload (e.g. recId, promptId)
   const go = (view, extra = {}) => { setCtx(extra); setActive(view); if (typeof window !== 'undefined') window.scrollTo({ top: 0 }) }
@@ -63,7 +65,11 @@ export default function EnterpriseAIVisibility({ onBack }) {
           subtitle={`${WORKSPACE.organisation} · ${METHODOLOGY_VERSION} · ${BENCHMARK_HASH}`}
           onBack={onBack}
           backLabel="Back to arbitr"
-          actions={<ProvenanceBadge provenance="fixture" />}
+          actions={(
+            <button onClick={() => go('new-scan')} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-semibold bg-amber hover:bg-amber-deep text-white cursor-pointer">
+              <Radar className="w-4 h-4" /> New scan
+            </button>
+          )}
         />
       </div>
 
@@ -92,7 +98,7 @@ export default function EnterpriseAIVisibility({ onBack }) {
         {/* Active section */}
         <div className="min-w-0">
           {Screen ? (
-            <Screen go={go} ctx={ctx} />
+            <Screen go={go} ctx={ctx} onNavigate={onNavigate} />
           ) : (
             <div className="space-y-4">
               <SectionHeading title={activeLabel} subtitle="This section is part of the Enterprise AI Visibility module." />

@@ -39,9 +39,15 @@ export default function NodeInspector({ fact, onClose }) {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-1.5">
-                <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#B3843E] bg-[#FFBD59]/20 border border-[#FFBD59]/45 rounded-full px-2 py-0.5" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-                  <BadgeCheck className="w-3 h-3" /> Verified
-                </span>
+                {fact.flagged ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#996800] bg-[#FFF7E6] border border-[#FFB000]/45 rounded-full px-2 py-0.5" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                    <BadgeCheck className="w-3 h-3" /> Flagged
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#B3843E] bg-[#FFBD59]/20 border border-[#FFBD59]/45 rounded-full px-2 py-0.5" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                    <BadgeCheck className="w-3 h-3" /> Verified
+                  </span>
+                )}
                 <MonoLabel>{fact.s}</MonoLabel>
               </div>
               <h3 className="text-[17px] font-semibold text-ink leading-snug">{fact.t}</h3>

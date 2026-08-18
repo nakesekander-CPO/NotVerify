@@ -543,6 +543,7 @@ export default function App() {
           {phase === 'ai-visibility' && (
             <EnterpriseAIVisibility
               onBack={() => goBack()}
+              onNavigate={(target) => { setPreviousPhase('ai-visibility'); setPhase(target) }}
             />
           )}
 

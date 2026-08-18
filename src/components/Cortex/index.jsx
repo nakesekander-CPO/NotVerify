@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Brain, Search, Pen, ShieldCheck, TrendingUp } from 'lucide-react'
 import { PageHeader } from '../ui'
 import { METRICS, WORKSPACE_LINE } from '../../data/cortex'
+import { CORTEX_FLAGS } from '../../data/eavScan'
 import ConstellationView from './ConstellationView'
 import NodeInspector from './NodeInspector'
 
@@ -84,9 +85,16 @@ export default function Cortex({ onClose, onNavigateBack, onCreateContent }) {
         </div>
       </div>
 
-      {/* ── Caption ── */}
-      <div className="px-6 pt-4">
+      {/* ── Caption + recently flagged ── */}
+      <div className="px-6 pt-4 flex items-center gap-3 flex-wrap">
         <p className="text-[12px] text-mist">How much Cortex knows — every light is a human-verified fact</p>
+        {CORTEX_FLAGS.map(f => (
+          <button key={f.sub} onClick={() => openInspector(f)}
+            className="inline-flex items-center gap-1.5 text-[11px] text-[#996800] bg-[#FFF7E6] border border-[#FFB000]/40 rounded-full px-2.5 py-1 cursor-pointer hover:bg-[#FFEFD1]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#FFB000]" aria-hidden />
+            Recently flagged: {f.t}
+          </button>
+        ))}
       </div>
 
       {/* ── Stage ── */}
