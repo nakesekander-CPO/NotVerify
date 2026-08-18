@@ -45,7 +45,7 @@ export default function SwiftBridge({ currentUserId, navigate }) {
   const [projects, setProjects] = useState(demo.projects)
   const [tab, setTab] = useState('dashboard')
   const [selectedId, setSelectedId] = useState(demo.projects[0].id)
-  const [mascot, setMascot] = useState('tsuru')
+  const [mascot] = useState('tsuru') // Tsuru kept for the Delivery empty state
 
   const selected = projects.find(p => p.id === selectedId) || projects[0]
 
@@ -127,7 +127,7 @@ export default function SwiftBridge({ currentUserId, navigate }) {
       </nav>
 
       {tab === 'dashboard' && (
-        <Dashboard projects={projects} mascot={mascot} setMascot={setMascot}
+        <Dashboard projects={projects}
           onOpen={(id) => { setSelectedId(id); setTab('workflow') }}
           onNew={() => setTab('new')} />
       )}
@@ -166,7 +166,7 @@ const V2_EVOLUTION = [
   'Transparent workflows with human review',
 ]
 
-function Dashboard({ projects, mascot, setMascot, onOpen, onNew }) {
+function Dashboard({ projects, onOpen, onNew }) {
   const active = projects.filter(p => p.status !== 'delivered')
   const delivered = projects.filter(p => p.status === 'delivered')
   const pendingReviews = projects.flatMap(p => p.steps.filter(s => (s.kind === 'human_review' || s.kind === 'customer_action') && ['in_progress', 'needs_review'].includes(s.status)))
@@ -229,30 +229,6 @@ function Dashboard({ projects, mascot, setMascot, onOpen, onNew }) {
         </ul>
       </Card>
 
-      {/* Mascot exploration */}
-      <Card padding="p-0">
-        <div className="px-5 py-3 border-b border-rule">
-          <p className="text-[13px] font-semibold text-ink">Character exploration · キャラクター案</p>
-          <p className="text-[11.5px] text-slate mt-0.5">Three concepts for onboarding, guidance, and empty states. Professional and trustworthy — appropriate for corporate IR. Select one to preview it in empty states.</p>
-        </div>
-        <div className="grid grid-cols-3 gap-4 p-5">
-          {MASCOTS.map(m => {
-            const Icon = m.icon
-            const activeM = mascot === m.id
-            return (
-              <button key={m.id} onClick={() => setMascot(m.id)}
-                className={`text-left rounded-xl border p-4 cursor-pointer transition-colors ${activeM ? 'border-ocean bg-ocean/5' : 'border-rule hover:border-ocean/40'}`}>
-                <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${m.tone} flex items-center justify-center mb-3`}>
-                  <Icon className="w-6 h-6 text-white" />
-                </div>
-                <p className="text-[13px] font-semibold text-ink">{m.name} <span className="text-mist font-normal">{m.nameJa}</span></p>
-                <p className="text-[11.5px] text-slate mt-1 leading-relaxed">{m.desc}</p>
-                {activeM && <p className="text-[10px] text-ocean mt-2 font-semibold uppercase tracking-wider">Selected concept</p>}
-              </button>
-            )
-          })}
-        </div>
-      </Card>
     </div>
   )
 }

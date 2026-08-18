@@ -38,7 +38,9 @@ export default function Header({ companyName, onOpenSettings, onOpenMarketplace,
           className="flex items-center gap-3 shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
           aria-label="Go to dashboard"
         >
-          <img src="/logo.svg" alt="arbitr" className="h-6 w-auto brightness-0 invert" />
+          {/* DS v2 reversed wordmark — white letterforms + cyan lens ring,
+              the released artwork for dark grounds (no CSS filter needed) */}
+          <img src="/wordmark-reversed.svg" alt="arbitr" className="h-[18px] w-auto" />
           {companyName && (
             <>
               <div className="h-4 w-px bg-white/15" />
