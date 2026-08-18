@@ -1,6 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import Header from './components/Header'
-import OnboardingFlow from './components/OnboardingFlow'
 import GovernanceDashboard from './components/GovernanceDashboard'
 import MissionControl from './components/MissionControl'
 import AgentWarRoom from './components/AgentWarRoom'
@@ -15,7 +14,6 @@ import Cortex from './components/Cortex'
 import AgentProfile from './components/AgentProfile'
 import IntelligenceAssistant from './components/IntelligenceAssistant'
 import IntegrationsHub from './components/Integrations'
-import AgentAssemblyTransition from './components/AgentAssemblyTransition'
 import TimeJumpTransition from './components/TimeJumpTransition'
 import MobileBlocker from './components/MobileBlocker'
 import GlobalNav from './components/GlobalNav'
@@ -45,11 +43,14 @@ export default function App() {
   // Organizational intelligence (simulated — loaded once)
   const orgIntelligence = useMemo(() => generateOrgIntelligence(), [])
 
-  // Core flow: onboarding → dashboard → reading → upload → processing → narrative
-  const [phase, setPhase] = useState('onboarding')
+  // Core flow: dashboard → reading → processing → narrative
+  const [phase, setPhase] = useState('dashboard')
   // Debug: expose phase setter for testing (remove in production)
   if (typeof window !== 'undefined') { window.__setPhase = setPhase }
-  const [onboardingConfig, setOnboardingConfig] = useState(null)
+  // Onboarding removed 2026-08-18 — the demo boots as Alex @ Meridian Capital,
+  // straight onto the day-0 governance dashboard (actions start here).
+  const DEMO_USER = 'Alex'
+  const DEMO_ORG = 'Meridian Capital'
   const [file, setFile] = useState(null)
   const [structuredContext, setStructuredContext] = useState({
     targetLocales: [],
@@ -173,27 +174,7 @@ export default function App() {
     setPhase('reading')
   }, [structuredContext])
 
-  // Onboarding complete → transition to dashboard
-  const handleOnboardingComplete = useCallback((config) => {
-    setOnboardingConfig(config)
-    // Pre-populate structured context from onboarding
-    if (config.targetLocales?.length > 0) {
-      setStructuredContext(prev => ({
-        ...prev,
-        targetLocales: config.targetLocales,
-        industryVertical: config.industryVertical || '',
-        toneGuidelines: {
-          ...prev.toneGuidelines,
-          tone: config.tone || '',
-          styleGuideUrl: config.styleGuideUrl || '',
-          dntTerms: config.dntTerms || '',
-          glossaryFile: config.glossaryFile || null,
-        },
-      }))
-    }
-    setPhase('agent-assembly')
-  }, [])
-
+  // First check complete → time-jump to the live dashboard
   // Mission Control complete → skip upload, go directly to processing
   const handleReadingComplete = useCallback((deployConfig) => {
     // If the simulator passes back a custom agent set, use it
@@ -301,7 +282,7 @@ export default function App() {
       locale,
       localeCode: locale,
       classification: docType,
-      assignedBy: { name: onboardingConfig?.userName || 'Alex', initials: (onboardingConfig?.userName || 'Alex').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() },
+      assignedBy: { name: DEMO_USER, initials: (DEMO_USER).split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() },
       createdAt: new Date().toISOString(),
       allSegments: mockSegments,
       flaggedSegments: mockSegments.filter(s => s.flagged),
@@ -309,7 +290,7 @@ export default function App() {
     setPreviousPhase(phase)
     setHumanReviewMode('assign')
     setPhase('human-review')
-  }, [phase, activeCampaign, onboardingConfig])
+  }, [phase, activeCampaign])
 
   // Assignment complete → switch to reviewer view
   const handleReviewAssigned = useCallback((reviewerId, note) => {
@@ -403,41 +384,16 @@ export default function App() {
     )
   }
 
-  // Onboarding is a full-screen experience — no header/stepper/footer
-  if (phase === 'onboarding') {
-    return (
-      <div className="min-h-screen bg-white">
-        <OnboardingFlow onComplete={handleOnboardingComplete} />
-      </div>
-    )
-  }
-
-  // Agent assembly transition — plays between onboarding and dashboard
-  if (phase === 'agent-assembly') {
-    return (
-      <div className="min-h-screen bg-white">
-        <AgentAssemblyTransition
-          agents={defaultAgents}
-          userName={onboardingConfig?.userName || 'Alex'}
-          onComplete={() => setPhase('dashboard')}
-          onSkipToDashboard={() => setPhase('dashboard')}
-        />
-      </div>
-    )
-  }
-
   return (
     <div className="min-h-screen flex flex-col">
       <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-straker-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:text-[13px] focus:font-medium">
         Skip to main content
       </a>
-      <Header companyName={onboardingConfig?.orgName || 'Meridian Capital'} onOpenSettings={() => { setPreviousPhase(phase); setPhase('settings') }} onOpenMarketplace={() => setShowMarketplace(true)} onOpenHitlWorkflow={() => setShowHitlWorkflow(true)} onNavigateHome={() => setPhase('dashboard')} />
-      {phase !== 'onboarding' && phase !== 'agent-assembly' && (
-        <GlobalNav
-          currentPhase={phase}
-          onNavigate={(target) => { setPreviousPhase(phase); setPhase(target); }}
-        />
-      )}
+      <Header companyName={DEMO_ORG} onOpenSettings={() => { setPreviousPhase(phase); setPhase('settings') }} onOpenMarketplace={() => setShowMarketplace(true)} onOpenHitlWorkflow={() => setShowHitlWorkflow(true)} onNavigateHome={() => setPhase('dashboard')} />
+      <GlobalNav
+        currentPhase={phase}
+        onNavigate={(target) => { setPreviousPhase(phase); setPhase(target); }}
+      />
       <main id="main-content" tabIndex={-1} className={`flex-1 flex outline-none ${isHumanReview ? 'overflow-hidden' : 'items-start justify-center px-6 lg:px-8 xl:px-12 2xl:px-16 pt-8 xl:pt-10 pb-12 xl:pb-16'}`}>
         <div className={containerClass}>
           {/* Project progress — inline indicator during active project */}
@@ -472,7 +428,7 @@ export default function App() {
             />
           )}
 
-          {/* First campaign — post-onboarding entry point */}
+          {/* First campaign — batch entry point */}
           {phase === 'first-campaign' && (
             <CampaignHub
               structuredContext={structuredContext}
@@ -485,8 +441,8 @@ export default function App() {
           {/* Screen 1: Governance dashboard — one surface, two data states */}
           {phase === 'dashboard' && (
             <GovernanceDashboard
-              userName={onboardingConfig?.userName || 'Alex'}
-              companyName={onboardingConfig?.orgName || 'Meridian Capital'}
+              userName={DEMO_USER}
+              companyName={DEMO_ORG}
               projectsCompleted={projectsCompleted}
               onFileAccepted={handleFileAccepted}
               onStartCampaign={() => setPhase('campaign-hub')}
@@ -518,7 +474,7 @@ export default function App() {
               structuredContext={structuredContext}
               documentProfile={{
                 vertical: structuredContext.industryVertical || 'Financial Services',
-                contentTypes: onboardingConfig?.contentTypes || ['earnings reports'],
+                contentTypes: ['earnings reports'],
                 locales: structuredContext.targetLocales?.length > 0 ? structuredContext.targetLocales : ['ja'],
               }}
               onDeploy={handleReadingComplete}
@@ -691,14 +647,14 @@ export default function App() {
       </main>
       <Footer />
 
-      {/* Persistent Intelligence Assistant — available on all post-onboarding screens,
+      {/* Persistent Intelligence Assistant — available on all screens,
           except while the HITL Vendor Workflow overlay is open (Quick Review is a
           secure focused-edit surface and the Sage FAB introduces a competing AI entry
           point + visual noise that conflicts with the workspace's secure-session promise). */}
       {!showHitlWorkflow && (
         <IntelligenceAssistant
-          userName={onboardingConfig?.userName || 'Alex'}
-          companyName={onboardingConfig?.orgName || 'Meridian Capital'}
+          userName={DEMO_USER}
+          companyName={DEMO_ORG}
           currentPhase={phase}
           connectedIntegrations={connectedIntegrations}
           onOpenIntegrations={() => { setPreviousPhase(phase); setPhase('integrations') }}
@@ -714,7 +670,7 @@ export default function App() {
         onRemoveAgent={handleRemoveAgent}
         documentProfile={{
           vertical: structuredContext.industryVertical || 'Financial Services',
-          contentTypes: onboardingConfig?.contentTypes || ['earnings reports'],
+          contentTypes: ['earnings reports'],
           locales: structuredContext.targetLocales?.length > 0 ? structuredContext.targetLocales : ['ja'],
         }}
         connectedIntegrations={connectedIntegrations}
