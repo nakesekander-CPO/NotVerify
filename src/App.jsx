@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import Header from './components/Header'
 import OnboardingFlow from './components/OnboardingFlow'
-import CommandSurface from './components/CommandSurface'
+import GovernanceDashboard from './components/GovernanceDashboard'
 import CommandUpload from './components/CommandUpload'
 import MissionControl from './components/MissionControl'
 import AgentWarRoom from './components/AgentWarRoom'
@@ -12,7 +12,6 @@ import CustomAgentStudio from './components/CustomAgentStudio'
 import LiveTelemetry from './components/LiveTelemetry'
 import QualityNarrative from './components/QualityNarrative'
 import AgentArbitration from './components/AgentArbitration'
-import ColdStartDashboard from './components/ColdStartDashboard'
 import TeamDirectory from './components/TeamDirectory'
 import HITLVendorWorkflow from './components/HITLVendorWorkflow'
 import HumanReview from './components/HumanReview'
@@ -72,7 +71,7 @@ export default function App() {
   const [selectedAgent, setSelectedAgent] = useState(null)
   const [showTeamDirectory, setShowTeamDirectory] = useState(false)
   const [showHitlWorkflow, setShowHitlWorkflow] = useState(false)
-  const [teamDirectoryContext, setTeamDirectoryContext] = useState({ itemId: null, itemTitle: '' })
+  const [teamDirectoryContext] = useState({ itemId: null, itemTitle: '' })
   const [activeAgents, setActiveAgents] = useState([])
   const [hiredMarketplaceAgents, setHiredMarketplaceAgents] = useState([])
   const [projectsCompleted, setProjectsCompleted] = useState(0) // tracks if Day 0
@@ -194,50 +193,6 @@ export default function App() {
       }))
     }
     setPhase('agent-assembly')
-  }, [])
-
-  // Screen 1: "Start Q3 Earnings Project" clicked — go to upload with preloaded config
-  const handleStartPredicted = useCallback((prediction) => {
-    // Pre-populate context from prediction
-    const newContext = {
-      targetLocales: prediction.locales || ['ja', 'de', 'zh'],
-      industryVertical: prediction.vertical || 'Financial Services',
-      toneGuidelines: { enabled: false, glossaryFile: null, styleGuideUrl: '', dntTerms: '', tone: '' },
-    }
-    setStructuredContext(newContext)
-    setPreloadedConfig(prediction)
-
-    // Generate simulated triage data for the predicted project
-    const simulatedFile = { name: prediction.fileName || 'Q3_Earnings_Final.docx', size: 575000, type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }
-    const triageResult = {
-      fileName: simulatedFile.name,
-      fileSize: simulatedFile.size,
-      fileType: simulatedFile.type,
-      classification: getClassification(simulatedFile),
-      intent: getIntent(simulatedFile, newContext),
-      agent: getAgent(simulatedFile, newContext),
-      plan: getPlan(simulatedFile, newContext),
-      sourceIQ: getSourceIQ(simulatedFile, newContext),
-      qualityScore: getQualityScore(simulatedFile, newContext),
-      upsellOptions: getUpsellOptions(simulatedFile, newContext),
-      sandboxPreview: getSandboxPreview(simulatedFile, newContext),
-    }
-    setTriageData(triageResult)
-
-    const findings = generateDiscoveryStream(simulatedFile, newContext)
-    setDiscoveryFindings(findings)
-
-    // Go through reading phase first
-    setPhase('reading')
-  }, [])
-
-  // Screen 1: Re-run a recent project
-  const handleRerun = useCallback((project) => {
-    setStructuredContext(prev => ({
-      ...prev,
-      targetLocales: project.locales || [],
-      industryVertical: project.industry || '',
-    }))
   }, [])
 
   // Mission Control complete → skip upload, go directly to processing
@@ -371,14 +326,6 @@ export default function App() {
     setHumanReviewMode('assign')
     setPhase('human-review')
   }, [phase, activeCampaign, onboardingConfig])
-
-  // Entry Point 2: Manual delegate from Intelligence Feed → human review assignment
-  const handleOpenTeamDirectory = useCallback((itemId, itemTitle) => {
-    setTeamDirectoryContext({ itemId, itemTitle })
-    setPreviousPhase(phase)
-    setHumanReviewMode('assign')
-    setPhase('human-review')
-  }, [phase])
 
   // Assignment complete → switch to reviewer view
   const handleReviewAssigned = useCallback((reviewerId, note) => {
@@ -557,43 +504,19 @@ export default function App() {
             />
           )}
 
-          {/* Screen 1: Intelligent Dashboard (or Cold Start for Day 0) */}
-          {phase === 'dashboard' && projectsCompleted === 0 && !onboardingConfig?.skipColdStart ? (
-            <ColdStartDashboard
+          {/* Screen 1: Governance dashboard — one surface, two data states */}
+          {phase === 'dashboard' && (
+            <GovernanceDashboard
               userName={onboardingConfig?.userName || 'Alex'}
               companyName={onboardingConfig?.orgName || 'Meridian Capital'}
-              configuredLocales={structuredContext.targetLocales?.length > 0 ? structuredContext.targetLocales : ['ja', 'de', 'zh']}
-              configuredVertical={structuredContext.industryVertical || 'Financial Services'}
-              onStartFirstProject={() => setPhase('time-jump')}
+              projectsCompleted={projectsCompleted}
+              onFileAccepted={handleFileAccepted}
+              onStartSample={() => setPhase('time-jump')}
               onStartCampaign={() => setPhase('campaign-hub')}
               onCreateContent={handleCreateContent}
-              onFileAccepted={handleFileAccepted}
-              connectedIntegrations={connectedIntegrations}
-              onOpenIntegrations={() => { setPreviousPhase('dashboard'); setPhase('integrations') }}
               onOpenCortex={() => { setPreviousPhase('dashboard'); setPhase('org-brain') }}
-            />
-          ) : phase === 'dashboard' && (
-            <CommandSurface
-              onFileAccepted={handleFileAccepted}
-              onFileWithLocales={(file, locales) => {
-                // Update structuredContext with user-chosen locales before processing
-                setStructuredContext(prev => ({ ...prev, targetLocales: locales }))
-                handleFileAccepted(file)
-              }}
-              defaultLocales={structuredContext.targetLocales?.length > 0 ? structuredContext.targetLocales : ['ja', 'de', 'zh']}
-              orgIntelligence={orgIntelligence}
-              onRerun={handleRerun}
-              onStartPredicted={handleStartPredicted}
-              onOpenTeamDirectory={handleOpenTeamDirectory}
-              onOpenOrgBrain={() => { setPreviousPhase('dashboard'); setPhase('org-brain') }}
-              onOpenMarketplace={() => setShowMarketplace(true)}
-              onOpenAgentStudio={() => setShowAgentStudio(true)}
-              userName={onboardingConfig?.userName || 'Alex'}
-              companyName={onboardingConfig?.orgName || 'Meridian Capital'}
-              connectedIntegrations={connectedIntegrations}
-              onOpenIntegrations={() => { setPreviousPhase('dashboard'); setPhase('integrations') }}
-              onStartCampaign={() => setPhase('campaign-hub')}
-              onCreateContent={handleCreateContent}
+              onOpenAgentStudio={() => { setPreviousPhase('dashboard'); setPhase('agent-studio') }}
+              onOpenAIVisibility={() => { setPreviousPhase('dashboard'); setPhase('ai-visibility') }}
             />
           )}
 
