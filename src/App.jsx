@@ -35,6 +35,7 @@ import AgentStudio from './components/AgentStudio'
 import EnterpriseAIVisibility from './components/EAV'
 import GovernanceAudit from './components/GovernanceAudit'
 import SwiftBridge from './components/HITLVendorWorkflow/SwiftBridge'
+import VideoDubbing from './components/VideoDubbing'
 import useMediaQuery from './hooks/useMediaQuery'
 import useQualityCalculator from './hooks/useQualityCalculator'
 import { generateOrgIntelligence } from './data/orgIntelligence'
@@ -519,6 +520,7 @@ export default function App() {
               onOpenAgentStudio={() => { setPreviousPhase('dashboard'); setPhase('agent-studio') }}
               onOpenAIVisibility={() => { setPreviousPhase('dashboard'); setPhase('ai-visibility') }}
               onOpenSwiftBridge={() => { setPreviousPhase('dashboard'); setPhase('swiftbridge') }}
+              onOpenVideoDubbing={() => { setPreviousPhase('dashboard'); setPhase('video-dubbing') }}
             />
           )}
 
@@ -588,6 +590,13 @@ export default function App() {
 
           {/* SwiftBridge — first-class page (moved out of the HITL overlay);
               its review deep-link opens the HITL Review Workspace overlay */}
+          {/* Video Dubbing — governed video localization (lip-sync engine: LipDub) */}
+          {phase === 'video-dubbing' && (
+            <div className="w-full max-w-[1280px] xl:max-w-[1440px] 2xl:max-w-[1600px] mx-auto px-6 lg:px-8 xl:px-12 2xl:px-16 py-6">
+              <VideoDubbing onBack={() => setPhase(previousPhase || 'dashboard')} />
+            </div>
+          )}
+
           {phase === 'swiftbridge' && (
             <div className="w-full max-w-[1280px] xl:max-w-[1440px] 2xl:max-w-[1600px] mx-auto px-6 lg:px-8 xl:px-12 2xl:px-16 py-6">
               <SwiftBridge

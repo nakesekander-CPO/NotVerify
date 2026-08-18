@@ -21,6 +21,7 @@ import StatRow from './StatRow'
 import HeldQueue from './HeldQueue'
 import MiniConstellation from './MiniConstellation'
 import SwiftBridgeCard from './SwiftBridgeCard'
+import VideoDubbingCard from './VideoDubbingCard'
 
 const ACCEPTED_EXTENSIONS = '.docx, .pdf, .pptx, .xlsx, .mp4'
 
@@ -36,6 +37,7 @@ export default function GovernanceDashboard({
   onOpenAgentStudio,
   onOpenAIVisibility,
   onOpenSwiftBridge,
+  onOpenVideoDubbing,
 }) {
   const { mode, stats, heldChanges } = getDashboardState(projectsCompleted)
   const fileInputRef = useRef(null)
@@ -134,8 +136,9 @@ export default function GovernanceDashboard({
             </div>
           </Card>
 
-          {/* SwiftBridge — a specific workflow, surfaced where actions start */}
+          {/* Specific workflows, surfaced where actions start */}
           <SwiftBridgeCard onOpenSwiftBridge={onOpenSwiftBridge} />
+          <VideoDubbingCard onOpenVideoDubbing={onOpenVideoDubbing} />
 
           {/* Module shortcuts */}
           <Card padding="p-0">
