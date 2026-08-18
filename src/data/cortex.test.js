@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { CLUSTERS, TOTAL_FACTS, generateStars, FLOW_STAGES, METRICS } from './cortex'
+import { CLUSTERS, TOTAL_FACTS, generateStars, FLOW_STAGES, METRICS, GRAPH_SATELLITES, GRAPH_AGENTS, GRAPH_HUB_FACT_KEYS, MEMORY_AT_WORK, FACTS } from './cortex'
 
 describe('cortex data', () => {
   it('cluster counts sum to the advertised total', () => {
@@ -32,5 +32,35 @@ describe('cortex data', () => {
     expect(byId.cl).toBeGreaterThanOrEqual(byId.rev)
     expect(byId.rev).toBeGreaterThanOrEqual(byId.mem)
     expect(byId.mem).toBe(METRICS.verifiedEntries)
+  })
+
+  it('every graph satellite points at a hub and a real fact', () => {
+    const hubIds = new Set(CLUSTERS.map(c => c.id))
+    for (const s of GRAPH_SATELLITES) {
+      expect(hubIds.has(s.hub)).toBe(true)
+      expect(FACTS[s.factKey]).toBeDefined()
+    }
+  })
+
+  it('every satellite/hub agent edge resolves to a known graph agent', () => {
+    const agentNames = new Set(GRAPH_AGENTS.map(a => a.name))
+    for (const s of GRAPH_SATELLITES) {
+      for (const name of FACTS[s.factKey].agents || []) {
+        expect(agentNames.has(name)).toBe(true)
+      }
+    }
+    for (const factKey of Object.values(GRAPH_HUB_FACT_KEYS)) {
+      for (const name of FACTS[factKey].agents || []) {
+        expect(agentNames.has(name)).toBe(true)
+      }
+    }
+  })
+
+  it('every memory-at-work card links to a real fact with a highlight', () => {
+    for (const m of MEMORY_AT_WORK) {
+      expect(FACTS[m.factKey]).toBeDefined()
+      expect(m.value).toBeTruthy()
+      expect(m.meta).toBeTruthy()
+    }
   })
 })

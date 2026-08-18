@@ -19,6 +19,7 @@ export const METRICS = {
   trustScore: 98.4,
   compoundingPct: 12,
   verifiedEntries: 4120,
+  caughtThisWeek: 36,
 }
 
 export const WORKSPACE_LINE = 'Living Knowledge Mesh · Meridian Capital'
@@ -49,6 +50,48 @@ export const FACTS = {
     versions: ['v1.0', 'v2.1', 'v3.0', 'v3.2 Current'],
     note: '“Updated threshold to ¥15M following board resolution.”',
   },
+  forwardLooking: {
+    t: 'Forward-Looking Statements',
+    s: 'Policy',
+    sub: 'Hedging & safe-harbor language standard',
+    who: 'Sarah Jenkins',
+    role: 'Lead Compliance',
+    date: '18 Jun 2026',
+    src: 'forward-looking-standard-v2.pdf',
+    impact: 'Guides 2 agents',
+    agents: ['Meridian JA Reviewer', 'Disclosure Policy Assistant'],
+    versions: ['v1.0', 'v2.0 Current'],
+    highlight: { value: '11', label: 'unhedged claims' },
+    meta: 'Held this quarter · Marcus Lee',
+  },
+  numericFormat: {
+    t: 'Numeric Format Rules',
+    s: 'Policy',
+    sub: '¥ / % formatting & rounding standard',
+    who: 'Yuki Tanaka',
+    role: 'Compliance Reviewer',
+    date: '05 Jun 2026',
+    src: 'numeric-format-standard.pdf',
+    impact: 'Guides 1 agent',
+    agents: ['Meridian JA Reviewer'],
+    versions: ['v1.0', 'v2.0 Current'],
+    highlight: { value: '41', label: 'tables' },
+    meta: 'Auto-fixed · Yuki Tanaka',
+  },
+  visLang: {
+    t: '“future-ready learning ecosystem”',
+    s: 'Flagged phrase',
+    sub: 'VIS-LANG-001 · vision-language drift',
+    who: 'Emma Ross',
+    role: 'Brand Lead',
+    date: '14 Aug 2026',
+    src: 'campaign-copy-review',
+    impact: 'Held in 1 campaign',
+    agents: ['Brand QA', 'Disclosure Policy Assistant'],
+    flagged: true,
+    versions: ['v1.0 Flagged'],
+    meta: 'Watched everywhere · Emma Ross',
+  },
   term: {
     t: 'のれん → Goodwill',
     s: 'Term',
@@ -59,6 +102,32 @@ export const FACTS = {
     src: 'terminology-jp-v8.csv',
     impact: 'Cited by 4 agents',
     agents: ['Meridian JA Reviewer', 'Disclosure Policy Assistant'],
+    versions: ['v1.0', 'v2.0 Current'],
+    highlight: { value: '23', label: 'violations' },
+    meta: 'Caught this quarter · last hold 14 min ago · Yuki Tanaka',
+  },
+  timelyDisclosure: {
+    t: '適時開示 → timely disclosure',
+    s: 'Term',
+    sub: 'Approved terminology · JA',
+    who: 'Yuki Tanaka',
+    role: 'Compliance Reviewer',
+    date: '22 May 2026',
+    src: 'terminology-jp-v8.csv',
+    impact: 'Cited by 2 agents',
+    agents: ['Meridian JA Reviewer', 'Disclosure Policy Assistant'],
+    versions: ['v1.0', 'v2.0 Current'],
+  },
+  shareBuyback: {
+    t: '自己株式取得 → share buyback',
+    s: 'Term',
+    sub: 'Approved terminology · JA',
+    who: 'Yuki Tanaka',
+    role: 'Compliance Reviewer',
+    date: '22 May 2026',
+    src: 'terminology-jp-v8.csv',
+    impact: 'Cited by 1 agent',
+    agents: ['Meridian JA Reviewer'],
     versions: ['v1.0', 'v2.0 Current'],
   },
   corrections: {
@@ -72,6 +141,8 @@ export const FACTS = {
     impact: 'Feeds every agent',
     agents: CORTEX_AGENTS,
     versions: ['v1.0', 'v2.0 Current'],
+    highlight: { value: '47', label: 'corrections' },
+    meta: 'Committed in 30 days · Review Workspace',
   },
   answers: {
     t: 'Verified Answers',
@@ -84,6 +155,8 @@ export const FACTS = {
     impact: 'Cited by 3 agents',
     agents: ['Meridian JA Reviewer', 'Disclosure Policy Assistant', 'Brand QA'],
     versions: ['v1.0', 'v2.0 Current'],
+    highlight: { value: '318', label: 'responses' },
+    meta: 'Reused · Review Workspace',
   },
   brand: {
     t: 'Brand Style Guide',
@@ -176,17 +249,49 @@ export function agentFact(name) {
 
 /* ─── Constellation clusters ───────────────────────────────────── */
 
-// kind: 'gold' = memory/terminology · 'blue' = policies/rules
+// kind: 'memory' = memory/terminology · 'policy' = policies/rules
 export const CLUSTERS = [
-  { id: 'term', label: 'Terminology · JA', n: 700, x: 0.20, y: 0.30, spread: 0.10, kind: 'gold', rep: FACTS.term },
-  { id: 'corr', label: 'Reviewer Corrections', n: 620, x: 0.50, y: 0.62, spread: 0.11, kind: 'gold', rep: FACTS.corrections },
-  { id: 'va', label: 'Verified Answers', n: 420, x: 0.80, y: 0.32, spread: 0.09, kind: 'gold', rep: FACTS.answers },
-  { id: 'pol', label: 'Policies', n: 300, x: 0.36, y: 0.20, spread: 0.07, kind: 'blue', rep: FACTS.featured },
-  { id: 'brand', label: 'Brand Rules', n: 220, x: 0.68, y: 0.72, spread: 0.07, kind: 'blue', rep: FACTS.brand },
-  { id: 'fil', label: 'Filings Context', n: 240, x: 0.14, y: 0.72, spread: 0.07, kind: 'blue', rep: FACTS.filings },
+  { id: 'term', label: 'Terminology · JA', n: 700, x: 0.20, y: 0.30, spread: 0.10, kind: 'memory', rep: FACTS.term },
+  { id: 'corr', label: 'Reviewer Corrections', n: 620, x: 0.50, y: 0.62, spread: 0.11, kind: 'memory', rep: FACTS.corrections },
+  { id: 'va', label: 'Verified Answers', n: 420, x: 0.80, y: 0.32, spread: 0.09, kind: 'memory', rep: FACTS.answers },
+  { id: 'pol', label: 'Policies', n: 300, x: 0.36, y: 0.20, spread: 0.07, kind: 'policy', rep: FACTS.featured },
+  { id: 'brand', label: 'Brand Rules', n: 220, x: 0.68, y: 0.72, spread: 0.07, kind: 'policy', rep: FACTS.brand },
+  { id: 'fil', label: 'Filings Context', n: 240, x: 0.14, y: 0.72, spread: 0.07, kind: 'policy', rep: FACTS.filings },
 ]
 
 export const TOTAL_FACTS = CLUSTERS.reduce((a, c) => a + c.n, 0)
+
+/* ─── Graph view (hub + node) ───────────────────────────────────
+ * The curated alternative to the starfield: ~30 meaningful nodes instead
+ * of 2,500 dots. Hubs are the CLUSTERS above (sized by fact count);
+ * satellites are individual verified facts pinned near their hub;
+ * agents sit on their own row. Edges are membership (satellite → hub,
+ * solid) and guides/learned-from (satellite or hub → agent, dotted) —
+ * both derived from each fact's own `agents` list so the graph can never
+ * drift from what the Node Inspector shows. */
+
+export const GRAPH_SATELLITES = [
+  { id: 'goodwill', hub: 'term', x: 0.09, y: 0.06, factKey: 'term' },
+  { id: 'disclosure', hub: 'term', x: 0.04, y: 0.48, factKey: 'timelyDisclosure' },
+  { id: 'buyback', hub: 'term', x: 0.05, y: 0.60, factKey: 'shareBuyback' },
+  { id: 'revenue', hub: 'pol', x: 0.42, y: 0.02, factKey: 'featured' },
+  { id: 'forwardLooking', hub: 'pol', x: 0.56, y: 0.06, factKey: 'forwardLooking' },
+  { id: 'numericFormat', hub: 'pol', x: 0.49, y: 0.38, factKey: 'numericFormat' },
+  { id: 'brandStyle', hub: 'brand', x: 0.73, y: 0.20, factKey: 'brand' },
+  { id: 'visLang', hub: 'brand', x: 0.81, y: 0.55, factKey: 'visLang', flagged: true },
+  { id: 'q3earnings', hub: 'fil', x: 0.54, y: 0.93, factKey: 'filings' },
+]
+
+export const GRAPH_AGENTS = [
+  { id: 'meridian', x: 0.90, y: 0.11, name: 'Meridian JA Reviewer' },
+  { id: 'disclosureAgent', x: 0.94, y: 0.42, name: 'Disclosure Policy Assistant' },
+  { id: 'brandQA', x: 0.90, y: 0.68, name: 'Brand QA' },
+  { id: 'brandVoice', x: 0.86, y: 0.85, name: 'Brand Voice' },
+]
+
+// Hubs with no satellite that still feed agents directly (memory → agent,
+// "learned-from"): Reviewer Corrections and Verified Answers.
+export const GRAPH_HUB_FACT_KEYS = { corr: 'corrections', va: 'answers' }
 
 /**
  * Deterministic starfield (seeded LCG) so the constellation is identical on
@@ -230,4 +335,18 @@ export const FLOW_RIBBONS = [
   { from: 'cl', to: 'rev', w: 14, tone: 'blue' },
   { from: 'rev', to: 'mem', w: 12, tone: 'gold' },
   // mem → each agent card added dynamically (violet)
+]
+
+/* ─── Memory at work ─────────────────────────────────────────────
+ * "Cortex at work" card strip below the graph — a receipt per hold, not a
+ * new claim: each card points at a FACTS entry (or the flagged VIS-LANG-001
+ * phrase) and states what actually happened, dated and attributed. */
+
+export const MEMORY_AT_WORK = [
+  { tag: 'CORTEX', factKey: 'term', title: FACTS.term.t, value: FACTS.term.highlight.value, label: FACTS.term.highlight.label, meta: FACTS.term.meta },
+  { tag: 'CORTEX', factKey: 'forwardLooking', title: FACTS.forwardLooking.t, value: FACTS.forwardLooking.highlight.value, label: FACTS.forwardLooking.highlight.label, meta: FACTS.forwardLooking.meta },
+  { tag: 'VIS-LANG-001', factKey: 'visLang', title: FACTS.visLang.t, value: FACTS.visLang.impact, label: '', meta: FACTS.visLang.meta, tone: 'flagged' },
+  { tag: 'CORTEX', factKey: 'numericFormat', title: FACTS.numericFormat.t, value: FACTS.numericFormat.highlight.value, label: FACTS.numericFormat.highlight.label, meta: FACTS.numericFormat.meta },
+  { tag: 'CORTEX', factKey: 'corrections', title: 'Review writeback stream', value: FACTS.corrections.highlight.value, label: FACTS.corrections.highlight.label, meta: FACTS.corrections.meta },
+  { tag: 'CORTEX', factKey: 'answers', title: 'Verified answer index', value: FACTS.answers.highlight.value, label: FACTS.answers.highlight.label, meta: FACTS.answers.meta },
 ]
