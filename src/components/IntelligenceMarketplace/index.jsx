@@ -202,6 +202,7 @@ export default function IntelligenceMarketplace({
               </>
             ) : (
               <IntegrationsHub
+                embedded
                 connectedIntegrations={connectedIntegrations}
                 onConnectIntegration={onConnectIntegration}
                 onDisconnectIntegration={onDisconnectIntegration}

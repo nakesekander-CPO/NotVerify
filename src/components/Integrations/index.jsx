@@ -241,12 +241,14 @@ function ConnectorCard({ connector, isConnected, onConnect, onManage }) {
       </div>
       <p className="text-[13px] font-semibold text-gray-900">{connector.name}</p>
       <p className="text-[11px] text-gray-400 mb-3">{connector.category}</p>
+      {/* Repeated row-level action → indigo outline, not a grid of solid
+          primaries; the solid CTA lives in the authorise dialog. */}
       <button
         onClick={isConnected ? onManage : onConnect}
         className={`w-full py-1.5 rounded-lg text-[12px] font-medium transition-colors cursor-pointer ${
           isConnected
             ? 'bg-gray-50 border border-black/[0.08] text-gray-600 hover:bg-black/[0.04]'
-            : 'bg-[#3D16FA] text-white hover:bg-[#2E10C4]'
+            : 'bg-white border border-[#3D16FA]/35 text-[#3D16FA] hover:bg-[#3D16FA]/5'
         }`}
       >
         {isConnected ? 'Manage' : 'Connect'}
@@ -256,7 +258,7 @@ function ConnectorCard({ connector, isConnected, onConnect, onManage }) {
 }
 
 /* ── Main Integrations Hub ── */
-export default function IntegrationsHub({ onBack, connectedIntegrations, onConnectIntegration, onDisconnectIntegration }) {
+export default function IntegrationsHub({ onBack, connectedIntegrations, onConnectIntegration, onDisconnectIntegration, embedded = false }) {
   const [activeTab, setActiveTab] = useState('all')
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('All')
@@ -291,26 +293,29 @@ export default function IntegrationsHub({ onBack, connectedIntegrations, onConne
         </button>
       )}
 
-      {/* Page header */}
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <h1 className="text-[18px] font-semibold text-gray-900 flex items-center gap-2">
-            <Puzzle className="w-5 h-5 text-[#3D16FA]" />
-            Connected Tools
-          </h1>
-          <p className="text-[13px] text-gray-500 mt-1">
-            Connect your team's tools to enable automated agent workflows across the pipeline.
-          </p>
-        </div>
-        {connectedIntegrations.length > 0 && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-100">
-            <Check className="w-3.5 h-3.5 text-emerald-500" />
-            <span className="text-[12px] font-medium text-emerald-600">
-              {connectedIntegrations.length} tool{connectedIntegrations.length > 1 ? 's' : ''} connected
-            </span>
+      {/* Page header — suppressed when embedded (the host surface, e.g. the
+          Marketplace's Integrations tab, already provides the identity) */}
+      {!embedded && (
+        <div className="flex items-start justify-between mb-6">
+          <div>
+            <h1 className="text-[18px] font-semibold text-gray-900 flex items-center gap-2">
+              <Puzzle className="w-5 h-5 text-[#3D16FA]" />
+              Connected Tools
+            </h1>
+            <p className="text-[13px] text-gray-500 mt-1">
+              Connect your team's tools to enable automated agent workflows across the pipeline.
+            </p>
           </div>
-        )}
-      </div>
+          {connectedIntegrations.length > 0 && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-100">
+              <Check className="w-3.5 h-3.5 text-emerald-500" />
+              <span className="text-[12px] font-medium text-emerald-600">
+                {connectedIntegrations.length} tool{connectedIntegrations.length > 1 ? 's' : ''} connected
+              </span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex items-center gap-1 border-b border-black/[0.06] mb-6">
