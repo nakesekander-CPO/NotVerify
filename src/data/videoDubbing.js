@@ -91,3 +91,46 @@ export function dubbingSummary() {
 export function consentFor(project) {
   return project.speakers.map(id => CONSENT_RECORDS.find(c => c.id === id)).filter(Boolean)
 }
+
+/* ── New-project run (interactive walkthrough) ─────────────────── */
+
+// The sample source a new project starts from (real output video can be
+// dropped at public/sample-dub.mp4 — the player falls back gracefully).
+export const SAMPLE_SOURCE = {
+  name: 'CEO_Message_Q3.mp4',
+  duration: '2 min 58 s',
+  srcLang: 'JA',
+  speaker: 'K. Sato, CEO',
+  consentId: 'cr-01',
+}
+
+export const RUN_LANGS = ['EN', 'DE', 'ZH']
+
+/** Script-check evidence for the run — corrections applied BEFORE cloning. */
+export const RUN_SCRIPT_CHECKS = [
+  { id: 'sc1', action: 'applied', lang: 'EN', term: '通期業績予想', before: 'full-year forecast', after: 'full-year guidance', source: 'Meridian IR Glossary v3' },
+  { id: 'sc2', action: 'applied', lang: 'DE', term: 'のれん', before: 'Goodwill-Prämie', after: 'Geschäfts- oder Firmenwert', source: 'Meridian IR Glossary v3' },
+  { id: 'sc3', action: 'pass', lang: 'ZH', term: '純収益', before: null, after: '净收入', source: 'Approved terminology' },
+]
+
+/** Ordered stage ids for a run. Gates pause for human confirmation. */
+export const RUN_ORDER = DUB_STAGES.map(s => s.id)
+
+export function isGate(stageId) {
+  return DUB_STAGES.find(s => s.id === stageId)?.kind === 'gate'
+}
+
+/** nextRunStage — the only legal transition is forward, one stage at a time. */
+export function nextRunStage(current) {
+  const i = RUN_ORDER.indexOf(current)
+  if (i === -1 || i === RUN_ORDER.length - 1) return null
+  return RUN_ORDER[i + 1]
+}
+
+/** Guard: no synthetic voice or likeness before the consent gate clears. */
+export function canRunStage(stageId, clearedGates) {
+  const i = RUN_ORDER.indexOf(stageId)
+  if (['clone', 'lipsync'].includes(stageId) && !clearedGates.includes('consent')) return false
+  if (i > RUN_ORDER.indexOf('script') && !clearedGates.includes('script') && stageId !== 'script') return false
+  return true
+}

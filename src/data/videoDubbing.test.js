@@ -90,3 +90,29 @@ describe('copy discipline', () => {
     expect(all).not.toContain('coins')
   })
 })
+
+describe('new-project run — governed stage machine', () => {
+  it('runs forward one stage at a time, ending at export', async () => {
+    const { nextRunStage, RUN_ORDER } = await import('./videoDubbing')
+    let s = RUN_ORDER[0]
+    const walked = [s]
+    while ((s = nextRunStage(s))) walked.push(s)
+    expect(walked).toEqual(RUN_ORDER)
+    expect(walked[walked.length - 1]).toBe('export')
+  })
+
+  it('consent gate blocks voice clone and lip sync until cleared', async () => {
+    const { canRunStage } = await import('./videoDubbing')
+    expect(canRunStage('clone', ['script'])).toBe(false)
+    expect(canRunStage('lipsync', ['script'])).toBe(false)
+    expect(canRunStage('clone', ['script', 'consent'])).toBe(true)
+  })
+
+  it('script checks apply corrections before any cloning', async () => {
+    const { RUN_SCRIPT_CHECKS, RUN_ORDER } = await import('./videoDubbing')
+    expect(RUN_ORDER.indexOf('script')).toBeLessThan(RUN_ORDER.indexOf('clone'))
+    const applied = RUN_SCRIPT_CHECKS.filter(c => c.action === 'applied')
+    expect(applied.length).toBeGreaterThan(0)
+    for (const c of applied) { expect(c.before).toBeTruthy(); expect(c.after).toBeTruthy() }
+  })
+})

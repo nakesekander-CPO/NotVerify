@@ -9,11 +9,14 @@
  * the offering is arbitr's.
  */
 
-import { Clapperboard, ShieldCheck, FileCheck2, ArrowLeft, ArrowRight, Bot, BadgeCheck, Clock } from 'lucide-react'
+import { useState } from 'react'
+import { Clapperboard, ShieldCheck, FileCheck2, ArrowLeft, ArrowRight, Bot, BadgeCheck, Clock, Plus } from 'lucide-react'
 import {
   DUB_STAGES, DUB_PROJECTS, dubbingSummary, consentFor,
 } from '../../data/videoDubbing'
-import { Card, MonoLabel, SectionHeading, StatusBadge } from '../HITLVendorWorkflow/shared'
+import { Card, MonoLabel, SectionHeading, StatusBadge, PrimaryButton } from '../HITLVendorWorkflow/shared'
+import NewDubProject from './NewDubProject'
+import { SAMPLE_SOURCE, RUN_LANGS } from '../../data/videoDubbing'
 
 const TRACK_BADGE = {
   held: { status: 'awaiting-approval', label: 'Held' },
@@ -25,6 +28,27 @@ const STAGE_LABEL = Object.fromEntries(DUB_STAGES.map(s => [s.id, s.label]))
 
 export default function VideoDubbing({ onBack }) {
   const summary = dubbingSummary()
+  const [view, setView] = useState('overview')          // overview | new
+  const [extraProjects, setExtraProjects] = useState([])
+
+  const completeRun = () => {
+    setExtraProjects(ps => [{
+      id: `VD-2026-${String(20 + ps.length)}`,
+      name: SAMPLE_SOURCE.name.replace('.mp4', '').replace(/_/g, ' '),
+      source: `${SAMPLE_SOURCE.srcLang} · ${SAMPLE_SOURCE.duration} · 1 speaker (${SAMPLE_SOURCE.speaker})`,
+      speakers: [SAMPLE_SOURCE.consentId],
+      tracks: RUN_LANGS.map(lang => ({ lang, stage: 'export', status: 'cleared', note: 'Delivered — sample output' })),
+    }, ...ps])
+    setView('overview')
+  }
+
+  if (view === 'new') {
+    return (
+      <div className="space-y-5">
+        <NewDubProject onComplete={completeRun} onCancel={() => setView('overview')} />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-5">
@@ -42,6 +66,7 @@ export default function VideoDubbing({ onBack }) {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <PrimaryButton onClick={() => setView('new')}><Plus className="w-4 h-4" /> New dubbing project</PrimaryButton>
           <span className="text-[11.5px] px-3 py-1.5 rounded-full bg-white border border-rule text-slate">
             <span className="font-bold text-ink" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{summary.projects}</span> projects ·{' '}
             <span className="font-bold text-ink" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{summary.tracks}</span> language tracks ·{' '}
@@ -94,7 +119,7 @@ export default function VideoDubbing({ onBack }) {
         subtitle="Each language track moves through the pipeline on its own — a held track never blocks the others."
       />
       <div className="space-y-4">
-        {DUB_PROJECTS.map(p => {
+        {[...extraProjects, ...DUB_PROJECTS].map(p => {
           const consents = consentFor(p)
           return (
             <Card key={p.id} padding="p-0">
