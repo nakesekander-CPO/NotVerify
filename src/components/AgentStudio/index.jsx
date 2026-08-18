@@ -14,7 +14,7 @@ import { useAgentStore, getAgentById } from '../../data/agentStudio'
 import { MonoLabel } from './shared'
 import { PageHeader } from '../ui'
 import AgentStudioDashboard from './AgentStudioDashboard'
-import CreateAgentWizard from './CreateAgentWizard'
+import ConversationalBuilder from './ConversationalBuilder'
 import AgentDetail from './AgentDetail'
 import AgentPlayground from './AgentPlayground'
 import AgentRunTrace from './AgentRunTrace'
@@ -53,7 +53,7 @@ export default function AgentStudio({ onBack, currentUserId = 'You' }) {
 
   let screen
   if (nav.view === 'new') {
-    screen = <CreateAgentWizard initialTemplate={nav.template} onCancel={() => go('dashboard')} onCreated={(id) => go('overview', { agentId: id })} currentUserId={currentUserId} />
+    screen = <ConversationalBuilder onCancel={() => go('dashboard')} onCreated={(id) => go('overview', { agentId: id })} />
   } else if (AGENT_TABS[nav.view]) {
     screen = <AgentDetail agentId={nav.agentId} tab={AGENT_TABS[nav.view]} go={go} />
   } else if (nav.view === 'playground') {
