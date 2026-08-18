@@ -22,6 +22,7 @@ import { isRole } from '../../services/hitl/rbac'
 import QuickReviewWorkspace from './QuickReviewWorkspace'
 
 export default function SecureVendorWorkspace({ activeProjectId, setActiveProjectId, currentUserId, onExitReview, onGoToSignoff, reviewFocus, setReviewFocus }) {
+  const { addToast } = useToast()
   const project = HITL_PROJECTS.find(p => p.id === activeProjectId) || HITL_PROJECTS[0]
   const [scope, setScope] = useState('all') // 'all' | 'mine'
   const allTasks = HITL_TASKS.filter(t => t.projectId === project.id)
@@ -440,7 +441,7 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
           <button
             key={p.id}
             onClick={() => { setActiveProjectId?.(p.id); setActiveIdx(0) }}
-            className={`px-3 py-1.5 rounded-md border text-[12px] transition-colors cursor-pointer ${project.id === p.id ? 'bg-ocean text-white border-ocean' : 'bg-white border-rule text-ink hover:border-ocean/40'}`}
+            className={`px-3 py-1.5 rounded-md border text-[12px] transition-colors cursor-pointer ${project.id === p.id ? 'bg-pale text-ink font-semibold border-ocean/40' : 'bg-white border-rule text-ink hover:border-ocean/40'}`}
           >
             <span className={`text-[10px] uppercase tracking-wider mr-2 px-1.5 py-0.5 rounded-full ${
               p.requirements.reviewMode === 'external-vendor' ? 'bg-ocean/10 text-ocean'
@@ -455,11 +456,11 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
       <div className="flex items-center gap-2 mb-4">
         <button
           onClick={() => setScope('all')}
-          className={`px-3 py-1.5 rounded-md border text-[12px] cursor-pointer ${scope === 'all' ? 'bg-ocean text-white border-ocean' : 'bg-white border-rule text-slate hover:border-ocean/30'}`}
+          className={`px-3 py-1.5 rounded-md border text-[12px] cursor-pointer ${scope === 'all' ? 'bg-pale text-ink font-semibold border-ocean/40' : 'bg-white border-rule text-slate hover:border-ocean/30'}`}
         >All tasks ({allTasks.length})</button>
         <button
           onClick={() => setScope('mine')}
-          className={`px-3 py-1.5 rounded-md border text-[12px] cursor-pointer ${scope === 'mine' ? 'bg-ocean text-white border-ocean' : 'bg-white border-rule text-slate hover:border-ocean/30'}`}
+          className={`px-3 py-1.5 rounded-md border text-[12px] cursor-pointer ${scope === 'mine' ? 'bg-pale text-ink font-semibold border-ocean/40' : 'bg-white border-rule text-slate hover:border-ocean/30'}`}
         >My queue ({myTaskIds.size})</button>
       </div>
 
@@ -647,7 +648,7 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
                             <div className="flex items-center gap-2 min-w-0">
                               <span className="text-[11px] font-semibold text-ocean" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{c.agentName}</span>
                               <span className="text-[10px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{c.version}</span>
-                              {isAnchor && <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-ocean text-white" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>anchor</span>}
+                              {isAnchor && <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-pale text-ocean border border-ocean/30" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>anchor</span>}
                               {c.pedigreeTags?.slice(0, 2).map(tag => (
                                 <span key={tag} className="px-1.5 py-0.5 rounded-full bg-pale text-[10px] text-ocean" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{tag}</span>
                               ))}
@@ -870,12 +871,12 @@ function CockpitModeChip({ mode, onChange }) {
     <div className="inline-flex items-center rounded-full border border-rule bg-white overflow-hidden text-[11.5px]">
       <button
         onClick={() => onChange('quick')}
-        className={`px-3 py-1 cursor-pointer transition-colors ${mode === 'quick' ? 'bg-ocean text-white' : 'text-slate hover:bg-pale'}`}
+        className={`px-3 py-1 cursor-pointer transition-colors ${mode === 'quick' ? 'bg-pale text-ink font-semibold' : 'text-slate hover:bg-pale'}`}
         title="Quick Review · reviewer-first cockpit"
       >Quick Review</button>
       <button
         onClick={() => onChange('audit')}
-        className={`px-3 py-1 cursor-pointer transition-colors ${mode === 'audit' ? 'bg-ocean text-white' : 'text-slate hover:bg-pale'}`}
+        className={`px-3 py-1 cursor-pointer transition-colors ${mode === 'audit' ? 'bg-pale text-ink font-semibold' : 'text-slate hover:bg-pale'}`}
         title="Audit Review · full triangulated cockpit with agent panel, pedigree, posture"
       >Audit Review</button>
     </div>

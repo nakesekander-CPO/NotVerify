@@ -12,6 +12,7 @@ import { useState, useCallback } from 'react'
 import { Bot, ChevronRight, ArrowLeft } from 'lucide-react'
 import { useAgentStore, getAgentById } from '../../data/agentStudio'
 import { MonoLabel } from './shared'
+import { PageHeader } from '../ui'
 import AgentStudioDashboard from './AgentStudioDashboard'
 import CreateAgentWizard from './CreateAgentWizard'
 import AgentDetail from './AgentDetail'
@@ -67,21 +68,7 @@ export default function AgentStudio({ onBack, currentUserId = 'You' }) {
     <div className="w-full max-w-[1280px] xl:max-w-[1440px] 2xl:max-w-[1600px] mx-auto px-6 lg:px-8 xl:px-12 2xl:px-16 py-6">
       {/* Module header */}
       <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-ocean/10 flex items-center justify-center">
-            <Bot className="w-4.5 h-4.5 text-ocean" />
-          </div>
-          <div>
-            <h1 className="text-[18px] font-bold text-ink leading-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Agent Studio</h1>
-            <MonoLabel>Governed AI agents · powered by your Cortex</MonoLabel>
-          </div>
-        </div>
-        <button
-          onClick={onBack}
-          className="inline-flex items-center gap-1.5 text-[12px] text-slate hover:text-ink border border-rule rounded-lg px-3 py-1.5 cursor-pointer hover:bg-pale transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" /> Back to arbitr
-        </button>
+        <PageHeader icon={Bot} title="Agent Studio" subtitle="Governed AI agents · powered by your Cortex" onBack={onBack} backLabel="Back to arbitr" />
       </div>
 
       {/* Breadcrumb — only once you're deeper than the dashboard (a lone

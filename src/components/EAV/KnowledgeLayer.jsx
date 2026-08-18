@@ -11,6 +11,7 @@ import { useState } from 'react'
 import { Boxes, FileText, AlertTriangle, Database, Lock, Globe } from 'lucide-react'
 import { ENTITIES, CLAIMS, CONFLICTS, SOURCES } from '../../data/eav'
 import { SectionHeading, Card, MonoLabel } from './shared'
+import { Tabs } from '../ui'
 
 const TABS = [
   { id: 'entities', label: 'Entities', icon: Boxes },
@@ -35,17 +36,7 @@ export default function KnowledgeLayer() {
     <div className="space-y-5">
       <SectionHeading title="Knowledge Layer" subtitle="Trusted Enterprise Knowledge Layer — approved facts, evidence, and lineage." />
 
-      <div className="flex items-center gap-1 border-b border-rule">
-        {TABS.map(t => {
-          const Icon = t.icon
-          const active = tab === t.id
-          return (
-            <button key={t.id} onClick={() => setTab(t.id)} className={`inline-flex items-center gap-1.5 px-3 py-2 -mb-px border-b-2 text-[12.5px] cursor-pointer ${active ? 'border-ocean text-ocean font-semibold' : 'border-transparent text-slate hover:bg-pale/50'}`}>
-              <Icon className="w-3.5 h-3.5" /> {t.label}
-            </button>
-          )
-        })}
-      </div>
+      <Tabs ariaLabel="Knowledge layer sections" tabs={TABS} active={tab} onChange={setTab} />
 
       {tab === 'entities' && (
         <Card padding="p-0">

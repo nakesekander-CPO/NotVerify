@@ -19,6 +19,7 @@ import {
   Card, MonoLabel, PrimaryButton, SecondaryButton, EmptyState,
   AgentStatusBadge, ConfidenceBadge, CreditUsageBadge,
 } from './shared'
+import { SearchInput } from '../ui'
 
 const TEMPLATE_ICON = {
   'life-buoy': LifeBuoy, languages: Languages, scale: Scale,
@@ -66,13 +67,7 @@ export default function AgentStudioDashboard({ go }) {
         <>
           {/* Controls */}
           <div className="flex items-center gap-2 flex-wrap">
-            <div className="relative flex-1 min-w-[200px]">
-              <Search className="w-3.5 h-3.5 text-mist absolute left-2.5 top-1/2 -translate-y-1/2" />
-              <input
-                value={q} onChange={e => setQ(e.target.value)} placeholder="Search agents"
-                className="w-full text-[13px] border border-rule rounded-lg pl-8 pr-3 py-2 focus:outline-none focus:border-ocean/50"
-              />
-            </div>
+            <SearchInput className="flex-1 min-w-[200px]" value={q} onChange={setQ} placeholder="Search agents…" />
             <Select value={statusF} onChange={setStatusF} options={[['all', 'All statuses'], ['active', 'Active'], ['draft', 'Draft'], ['paused', 'Paused'], ['archived', 'Archived']]} />
             <Select value={typeF} onChange={setTypeF} options={[['all', 'All types'], ...TEMPLATES.map(t => [t.type, t.name])]} />
             <div className="inline-flex items-center rounded-lg border border-rule overflow-hidden">

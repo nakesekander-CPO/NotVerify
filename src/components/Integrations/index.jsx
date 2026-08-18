@@ -7,6 +7,8 @@ import {
 } from 'lucide-react'
 import { CONNECTORS, CATEGORIES, CONNECTOR_ACTIONS } from './data.js'
 import { useToast } from '../ToastProvider'
+import { Tabs, SearchInput } from '../ui'
+import { useOverlay } from '../ui/useOverlay'
 import WorkflowBuilder from './WorkflowBuilder.jsx'
 import SecurityPermissions from './SecurityPermissions.jsx'
 
@@ -35,6 +37,7 @@ export function ConnectorIcon({ connector, size = 'md' }) {
 function MergeLinkModal({ connector, onConnect, onClose }) {
   const [step, setStep] = useState(0) // 0=select, 1=authorise, 2=done
   const [email, setEmail] = useState('')
+  const { ref, overlayProps } = useOverlay(onClose, { label: `Connect ${connector.name}` })
 
   function handleAuthorise() {
     setStep(1)
@@ -51,6 +54,8 @@ function MergeLinkModal({ connector, onConnect, onClose }) {
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.96 }}
         transition={SPRING}
+        ref={ref}
+        {...overlayProps}
         className="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 overflow-hidden"
       >
         {/* Modal header — simulates Merge Link branding */}
@@ -143,6 +148,7 @@ function MergeLinkModal({ connector, onConnect, onClose }) {
 
 /* ── Manage permissions drawer ── */
 function ManageDrawer({ connector, onDisconnect, onClose }) {
+  const { ref, overlayProps } = useOverlay(onClose, { label: `Manage ${connector.name}` })
   const actions = CONNECTOR_ACTIONS[connector.id] || []
   const [allowed, setAllowed] = useState(() => {
     const s = {}
@@ -160,6 +166,8 @@ function ManageDrawer({ connector, onDisconnect, onClose }) {
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
         transition={SPRING}
+        ref={ref}
+        {...overlayProps}
         className="bg-white w-80 h-full shadow-2xl flex flex-col"
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-black/[0.08]">
@@ -320,26 +328,18 @@ export default function IntegrationsHub({ onBack, connectedIntegrations, onConne
       )}
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 border-b border-black/[0.06] mb-6">
-        {[
-          ['all', 'All Integrations'],
-          ['connected', `Connected${connectedIntegrations.length > 0 ? ` (${connectedIntegrations.length})` : ''}`],
-          ['workflows', 'Workflows'],
-          ['security', 'Security'],
-        ].map(([id, label]) => (
-          <button
-            key={id}
-            onClick={() => setActiveTab(id)}
-            className={`px-4 py-2.5 text-[13px] font-medium transition-colors cursor-pointer -mb-px border-b-2 ${
-              activeTab === id
-                ? 'border-[#3D16FA] text-[#3D16FA]'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        className="mb-6"
+        ariaLabel="Integration sections"
+        active={activeTab}
+        onChange={setActiveTab}
+        tabs={[
+          { id: 'all', label: 'All Integrations' },
+          { id: 'connected', label: 'Connected', badge: connectedIntegrations.length > 0 ? connectedIntegrations.length : null },
+          { id: 'workflows', label: 'Workflows' },
+          { id: 'security', label: 'Security' },
+        ]}
+      />
 
       {/* ALL tab */}
       {activeTab === 'all' && (

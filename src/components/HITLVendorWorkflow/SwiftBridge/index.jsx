@@ -22,6 +22,7 @@ import {
 import { appendAuditEvent } from '../../../services/hitl/auditLog'
 import { downloadText } from '../../../utils/demoFiles'
 import { SectionHeading, Card, MonoLabel, StatusBadge } from '../shared'
+import { Tabs } from '../../ui'
 import { NewProjectWizard, WorkflowTimeline } from './ProjectWorkflow'
 import { DubbingStudio, GlossaryPanel, QAPanel } from './Studio'
 
@@ -119,21 +120,7 @@ export default function SwiftBridge({ currentUserId, navigate, onBack }) {
       </div>
 
       {/* ── Tab bar ──────────────────────────────────────────── */}
-      <nav className="flex items-center gap-1 border-b border-rule overflow-x-auto">
-        {TABS.map(t => {
-          const Icon = t.icon
-          const active = tab === t.id
-          return (
-            <button key={t.id} onClick={() => setTab(t.id)}
-              className={`px-3 py-2 -mb-px border-b-2 cursor-pointer whitespace-nowrap text-left transition-colors ${active ? 'border-ocean' : 'border-transparent hover:bg-pale/50'}`}>
-              <span className={`flex items-center gap-1.5 text-[12.5px] ${active ? 'text-ocean font-semibold' : 'text-slate'}`}>
-                <Icon className="w-3.5 h-3.5" /> {t.label}
-              </span>
-              <span className="block text-[9.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{t.labelJa}</span>
-            </button>
-          )
-        })}
-      </nav>
+      <Tabs ariaLabel="SwiftBridge sections" tabs={TABS} active={tab} onChange={setTab} />
 
       {tab === 'dashboard' && (
         <Dashboard projects={projects}

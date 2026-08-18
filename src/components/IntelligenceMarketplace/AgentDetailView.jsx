@@ -12,6 +12,7 @@ import useFocusTrap from '../../hooks/useFocusTrap'
 import TrustScoreBadge from './TrustScoreBadge'
 import { TYPE_COLORS, ICON_COLOR_MAP } from './data/marketplaceCategories'
 import { MOCK_REVIEWS } from './data/marketplaceAgents'
+import { Tabs } from '../ui'
 
 const ICON_MAP = {
   Shield, Building2, Mic, Megaphone, Scale, Code, Heart, FileText,
@@ -511,20 +512,13 @@ export default function AgentDetailView({ agent, isOpen, onClose, onDeploy, redu
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-black/[0.06] px-6 shrink-0">
-              {TABS.map((tab, i) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(i)}
-                  className={`px-3 py-2.5 text-[12px] font-medium border-b-2 transition-colors cursor-pointer ${
-                    activeTab === i
-                      ? 'text-[#3D16FA] border-[#3D16FA]'
-                      : 'text-gray-500 border-transparent hover:text-gray-700'
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
+            <div className="px-6 shrink-0">
+              <Tabs
+                ariaLabel="Agent detail sections"
+                tabs={TABS.map((tab, i) => ({ id: i, label: tab }))}
+                active={activeTab}
+                onChange={setActiveTab}
+              />
             </div>
 
             {/* Content */}

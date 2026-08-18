@@ -9,7 +9,8 @@
  */
 
 import { useEffect, useRef, useState } from 'react'
-import { Brain, Search, ArrowLeft, Pen, ShieldCheck, TrendingUp } from 'lucide-react'
+import { Brain, Search, Pen, ShieldCheck, TrendingUp } from 'lucide-react'
+import { PageHeader } from '../ui'
 import { METRICS, WORKSPACE_LINE } from '../../data/cortex'
 import ConstellationView from './ConstellationView'
 import NodeInspector from './NodeInspector'
@@ -38,19 +39,12 @@ export default function Cortex({ onClose, onNavigateBack, onCreateContent }) {
     <div className="flex-1 min-w-0 flex flex-col">
       {/* ── Header ── */}
       <div className="px-6 pt-6 pb-4 border-b border-rule">
-        <div className="flex items-start justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-ocean/10 flex items-center justify-center">
-              <Brain className="w-5 h-5 text-ocean" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-ink">Cortex</h2>
-              <p className="text-[11px] text-mist mt-0.5 uppercase tracking-[0.14em]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-                {WORKSPACE_LINE}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
+        <PageHeader
+          icon={Brain}
+          title="Cortex"
+          subtitle={WORKSPACE_LINE}
+          onBack={onNavigateBack || onClose}
+          actions={
             <button
               onClick={() => onCreateContent?.()}
               aria-label="Create with Cortex"
@@ -58,15 +52,8 @@ export default function Cortex({ onClose, onNavigateBack, onCreateContent }) {
             >
               <Pen className="w-3.5 h-3.5" /> Create
             </button>
-            <button
-              onClick={onNavigateBack || onClose}
-              aria-label="Go back"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white hover:bg-pale border border-rule text-[13px] font-medium text-slate hover:text-ink transition-colors cursor-pointer"
-            >
-              <ArrowLeft className="w-4 h-4" /> Back
-            </button>
-          </div>
-        </div>
+          }
+        />
 
         {/* Sage Lens + trust chips */}
         <div className="flex items-center gap-3 mt-4 flex-wrap">

@@ -31,6 +31,7 @@ import {
 } from './BillingPanels'
 import { Card, StatusPill, fmtDate, fmtMoney } from './BillingShared'
 import { useToast } from '../ToastProvider'
+import { Tabs } from '../ui'
 
 const TIER_TO_ACCOUNT = { standard: 'standard-card', pro: 'proteam-card', enterprise: 'enterprise-invoice' }
 
@@ -192,18 +193,7 @@ export default function Billing({ tier = 'pro' }) {
       <AlertStack account={account} onOpenInvoices={() => { setInvoiceFilter('all'); setTab('invoices') }} onTopUp={() => setTab('topup')} onViewExpiring={goToExpiring}
         onPayPastDue={onPayPastDue} payingPastDue={payingPastDue} payError={payError} paySuccess={paySuccess} />
 
-      <nav className="flex items-center gap-1 border-b border-black/[0.08] overflow-x-auto">
-        {tabDefs.map(t => {
-          const Icon = t.icon
-          const active = activeTab === t.id
-          return (
-            <button key={t.id} onClick={() => setTab(t.id)}
-              className={`inline-flex items-center gap-1.5 px-3 py-2 -mb-px border-b-2 text-[12.5px] cursor-pointer whitespace-nowrap transition-colors ${active ? 'border-[#3D16FA] text-[#3D16FA] font-semibold' : 'border-transparent text-gray-500 hover:text-gray-800'}`}>
-              <Icon className="w-3.5 h-3.5" /> {t.label}
-            </button>
-          )
-        })}
-      </nav>
+      <Tabs ariaLabel="Billing sections" tabs={tabDefs} active={activeTab} onChange={setTab} />
 
       {activeTab === 'overview' && (
         <OverviewPanel account={account} onTopUp={() => setTab('topup')} onChangePlan={() => setTab('plans')}

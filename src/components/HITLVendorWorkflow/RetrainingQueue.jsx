@@ -9,24 +9,28 @@ import { SectionHeading, Card, MonoLabel, StatusBadge, PrimaryButton, SecondaryB
 
 export default function RetrainingQueue({ currentUserId }) {
   const [filter, setFilter] = useState('pending')
+  const [error, setError] = useState(null)
   const [, force] = useState(0)
-  const refresh = () => force(n => n + 1)
+  const refresh = () => { setError(null); force(n => n + 1) }
 
   const list = RETRAINING_CANDIDATES.filter(c => filter === 'all' || c.status === filter)
 
   const approve = (id, target) => {
     try { approveRetrainingCandidate({ candidateId: id, actorId: currentUserId, target }); refresh() }
-    catch (e) { window.alert(e.message) }
+    catch (e) { setError(e.message) }
   }
   const reject = (id) => {
     const reason = window.prompt('Reason for rejecting this candidate?')
     if (!reason) return
     try { rejectRetrainingCandidate({ candidateId: id, actorId: currentUserId, reason }); refresh() }
-    catch (e) { window.alert(e.message) }
+    catch (e) { setError(e.message) }
   }
 
   return (
     <div>
+      {error && (
+        <p role="alert" className="mb-3 text-[12px] text-error bg-error/10 border border-error/30 rounded-lg px-3 py-2">{error}</p>
+      )}
       <SectionHeading
         title="Reuse Queue · three governed pipelines"
         subtitle="Only signed-off rulings enter this queue. An authorised approver must approve each candidate before it flows into a pipeline: Translation Memory (TM), terminology dataset, or model improvement (RLHF). RLHF additionally requires a rationale tag. Rejected rulings never enter any pipeline."

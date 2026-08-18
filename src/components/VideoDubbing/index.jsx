@@ -10,7 +10,8 @@
  */
 
 import { useState } from 'react'
-import { Clapperboard, ShieldCheck, FileCheck2, ArrowLeft, ArrowRight, Bot, BadgeCheck, Clock, Plus } from 'lucide-react'
+import { Clapperboard, ShieldCheck, FileCheck2, ArrowRight, Bot, BadgeCheck, Clock, Plus } from 'lucide-react'
+import { PageHeader } from '../ui'
 import {
   DUB_STAGES, DUB_PROJECTS, dubbingSummary, consentFor,
 } from '../../data/videoDubbing'
@@ -53,34 +54,22 @@ export default function VideoDubbing({ onBack }) {
   return (
     <div className="space-y-5">
       {/* ── Header ── */}
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-ocean/10 flex items-center justify-center">
-            <Clapperboard className="w-5 h-5 text-ocean" />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold text-ink">Video Dubbing</h2>
-            <p className="text-[11px] text-mist mt-0.5 uppercase tracking-[0.14em]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-              Governed video localization · one source, every language
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <PrimaryButton onClick={() => setView('new')}><Plus className="w-4 h-4" /> New dubbing project</PrimaryButton>
-          <span className="text-[11.5px] px-3 py-1.5 rounded-full bg-white border border-rule text-slate">
-            <span className="font-bold text-ink" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{summary.projects}</span> projects ·{' '}
-            <span className="font-bold text-ink" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{summary.tracks}</span> language tracks ·{' '}
-            <span className="font-bold text-[#996800]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{summary.held}</span> held
-          </span>
-          <button
-            onClick={onBack}
-            aria-label="Go back"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white hover:bg-pale border border-rule text-[13px] font-medium text-slate hover:text-ink transition-colors cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4" /> Back
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        icon={Clapperboard}
+        title="Video Dubbing"
+        subtitle="Governed video localization · one source, every language"
+        onBack={onBack}
+        actions={
+          <>
+            <span className="text-[11.5px] px-3 py-1.5 rounded-full bg-white border border-rule text-slate">
+              <span className="font-bold text-ink" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{summary.projects}</span> projects ·{' '}
+              <span className="font-bold text-ink" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{summary.tracks}</span> language tracks ·{' '}
+              <span className="font-bold text-[#996800]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{summary.held}</span> held
+            </span>
+            <PrimaryButton onClick={() => setView('new')}><Plus className="w-4 h-4" /> New dubbing project</PrimaryButton>
+          </>
+        }
+      />
 
       {/* ── Governed pipeline ── */}
       <Card padding="p-0">

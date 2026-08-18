@@ -5,6 +5,7 @@ import {
   Clock, User, FileText, Globe, Search, Eye, Send, Brain, ChevronRight,
 } from 'lucide-react'
 import useReducedMotion from '../hooks/useReducedMotion'
+import { PageHeader, SearchInput } from './ui'
 
 /* ─── Mock Audit Data ────────────────────────────────────────── */
 
@@ -104,14 +105,8 @@ export default function GovernanceAudit({ onBack }) {
       className="w-full"
     >
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <button type="button" onClick={onBack} className="p-1.5 rounded-lg hover:bg-black/[0.06] transition-colors cursor-pointer">
-          <ArrowLeft className="w-4 h-4 text-gray-500" />
-        </button>
-        <div>
-          <h1 className="text-[20px] font-semibold text-gray-900">Governance</h1>
-          <p className="text-[12px] text-gray-500">Complete audit trail of every decision, escalation, and publish event</p>
-        </div>
+      <div className="mb-6">
+        <PageHeader icon={Scale} title="Governance" subtitle="Complete audit trail — every decision, escalation, and publish event" onBack={onBack} />
       </div>
 
       {/* Summary cards */}
@@ -146,12 +141,7 @@ export default function GovernanceAudit({ onBack }) {
             </button>
           ))}
         </div>
-        <div className="relative flex-1 max-w-xs ml-auto">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search documents, people, reasons..."
-            className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-black/[0.08] bg-gray-50 text-[12px] placeholder:text-gray-400 outline-none focus:border-[#3D16FA] transition" />
-        </div>
+        <SearchInput className="flex-1 max-w-xs ml-auto" value={search} onChange={setSearch} placeholder="Search documents, people, reasons…" />
       </div>
 
       {/* Audit trail */}

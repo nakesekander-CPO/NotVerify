@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { ArrowLeft, Puzzle, Building2, LayoutList, Shield, Users, ScrollText, Network, Receipt } from 'lucide-react'
+import { ArrowLeft, Puzzle, Building2, LayoutList, Shield, Users, ScrollText, Network, Receipt, Settings as SettingsIcon } from 'lucide-react'
 import Billing from './Billing'
 import BillingEntities from './BillingEntities'
 import BudgetsAndAllocations from './BudgetsAndAllocations'
 import OrgAccess from './OrgAccess'
+import { PageHeader } from '../ui'
 
 export default function SettingsPage({ onBack, onOpenIntegrations }) {
   const [activeSection, setActiveSection] = useState('billing-v2')
@@ -34,13 +35,9 @@ export default function SettingsPage({ onBack, onOpenIntegrations }) {
 
   return (
     <div className="w-full max-w-[960px] flex flex-col">
-      <button
-        onClick={onBack}
-        className="flex items-center gap-1.5 text-[13px] text-gray-500 hover:text-gray-900 transition-colors mb-6 self-start cursor-pointer"
-      >
-        <ArrowLeft className="w-3.5 h-3.5" />
-        Back
-      </button>
+      <div className="mb-6">
+        <PageHeader icon={SettingsIcon} title="Settings" subtitle="Billing · access · integrations" onBack={onBack} />
+      </div>
 
       <div className="flex gap-8 flex-1 min-h-0">
         {/* Sidebar */}

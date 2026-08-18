@@ -497,6 +497,7 @@ export default function QuickReviewWorkspace({
   cockpitMode, setCockpitMode,
   onExitReview, onGoToSignoff,
 }) {
+  const { addToast } = useToast()
   const activeSeg = segments[activeIdx]
   const recommended = useMemo(() => {
     if (!activeSeg?.agentCandidates?.length) return activeSeg?.target || ''
@@ -987,17 +988,17 @@ export default function QuickReviewWorkspace({
             <button
               onClick={() => setCockpitMode('quick')}
               title="Segment-by-segment editing"
-              className={`px-2.5 py-1 cursor-pointer ${cockpitMode === 'quick' ? 'bg-ocean text-white' : 'text-slate hover:bg-pale'}`}
+              className={`px-2.5 py-1 cursor-pointer ${cockpitMode === 'quick' ? 'bg-pale text-ink font-semibold' : 'text-slate hover:bg-pale'}`}
             >Quick</button>
             <button
               onClick={() => setCockpitMode('doc')}
               title="Target document — continuous reading"
-              className={`px-2.5 py-1 cursor-pointer ${cockpitMode === 'doc' ? 'bg-ocean text-white' : 'text-slate hover:bg-pale'}`}
+              className={`px-2.5 py-1 cursor-pointer ${cockpitMode === 'doc' ? 'bg-pale text-ink font-semibold' : 'text-slate hover:bg-pale'}`}
             >Doc</button>
             <button
               onClick={() => setCockpitMode('audit')}
               title="Full evidentiary cockpit"
-              className={`px-2.5 py-1 cursor-pointer ${cockpitMode === 'audit' ? 'bg-ocean text-white' : 'text-slate hover:bg-pale'}`}
+              className={`px-2.5 py-1 cursor-pointer ${cockpitMode === 'audit' ? 'bg-pale text-ink font-semibold' : 'text-slate hover:bg-pale'}`}
             >Audit</button>
           </div>
         )}

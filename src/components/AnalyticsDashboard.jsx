@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import useReducedMotion from '../hooks/useReducedMotion'
 import { LIVE_STATS } from '../data/governanceDashboard'
+import { PageHeader } from './ui'
 
 /* ─── Mock Data ──────────────────────────────────────────────── */
 
@@ -118,17 +119,14 @@ export default function AnalyticsDashboard({ onBack }) {
       className="w-full"
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <button type="button" onClick={onBack} className="p-1.5 rounded-lg hover:bg-black/[0.06] transition-colors cursor-pointer">
-            <ArrowLeft className="w-4 h-4 text-gray-500" />
-          </button>
-          <div>
-            <h1 className="text-[20px] font-semibold text-gray-900">Analytics</h1>
-            <p className="text-[12px] text-gray-500">Operational intelligence across all workflows</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+      <div className="mb-6">
+      <PageHeader
+        icon={BarChart3}
+        title="Analytics"
+        subtitle="Checks, flags, holds and publishes — across every workflow"
+        onBack={onBack}
+        actions={
+        <div className="flex items-center gap-1 bg-pale rounded-lg p-0.5">
           {['30d', '90d', '6m', '1y'].map(p => (
             <button key={p} type="button" onClick={() => setPeriod(p)}
               className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
@@ -138,6 +136,8 @@ export default function AnalyticsDashboard({ onBack }) {
             </button>
           ))}
         </div>
+        }
+      />
       </div>
 
       {/* KPI Cards — top row */}

@@ -23,7 +23,7 @@ export default function MarketplaceHero({ searchQuery, onSearchChange, agentCoun
       </div>
 
       {/* Tab toggle */}
-      <div className="flex gap-1 p-1 bg-gray-100 rounded-lg w-fit mb-5">
+      <div className="flex gap-1 p-1 bg-pale rounded-lg w-fit mb-5">
         <button
           onClick={() => onTabChange('agents')}
           className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-[12px] font-medium transition-all cursor-pointer ${
@@ -63,7 +63,7 @@ export default function MarketplaceHero({ searchQuery, onSearchChange, agentCoun
               value={searchQuery}
               onChange={e => onSearchChange(e.target.value)}
               placeholder="Search agents, models, capabilities..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-gray-100 border border-black/[0.12] text-[13px] text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#3D16FA] focus:ring-1 focus:ring-[#3D16FA]/20 transition-all"
+              className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-pale border border-black/[0.12] text-[13px] text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#3D16FA] focus:ring-1 focus:ring-[#3D16FA]/20 transition-all"
             />
           </div>
 

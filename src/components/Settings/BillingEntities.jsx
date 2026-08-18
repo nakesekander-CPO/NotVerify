@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useToast } from '../ToastProvider'
+import { useOverlay } from '../ui/useOverlay'
 import { Building2, CreditCard, Edit2, Plus, X, Check, Archive } from 'lucide-react'
 
 const MOCK_ENTITIES = [
@@ -181,13 +182,14 @@ function ReadonlyField({ label, value }) {
 }
 
 function AddEntityModal({ onClose, onAdd }) {
+  const { ref, overlayProps } = useOverlay(onClose, { label: 'Add billing entity' })
   const [form, setForm] = useState({ name: '', address: '', taxId: '', currency: 'USD', paymentMethod: '' })
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
   const valid = form.name.trim().length > 0
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+      <div ref={ref} {...overlayProps} className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-[14px] font-semibold text-gray-900">Add Billing Entity</h3>
           <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-black/[0.04] transition-colors cursor-pointer">

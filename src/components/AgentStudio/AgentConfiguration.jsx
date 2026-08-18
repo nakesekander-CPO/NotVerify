@@ -20,6 +20,7 @@ import {
   GuardrailBuilder, DeploymentSurfaceSelector, SystemPromptPreview,
 } from './parts'
 import AgentVersionHistory from './AgentVersionHistory'
+import { Tabs } from '../ui'
 
 const TABS = ['Basics', 'Instructions', 'Knowledge', 'Capabilities', 'Guardrails', 'Deployment', 'Versions']
 
@@ -64,14 +65,7 @@ export default function AgentConfiguration({ agentId, go }) {
       )}
 
       {/* Tab bar */}
-      <div className="flex items-center gap-1 border-b border-rule overflow-x-auto">
-        {TABS.map(t => (
-          <button key={t} onClick={() => setTab(t)}
-            className={`px-3 py-2 -mb-px border-b-2 whitespace-nowrap text-[12.5px] cursor-pointer transition-colors ${tab === t ? 'border-ocean text-ocean font-semibold' : 'border-transparent text-slate hover:bg-pale/50'}`}>
-            {t}
-          </button>
-        ))}
-      </div>
+      <Tabs ariaLabel="Configuration sections" tabs={TABS.map(t => ({ id: t, label: t }))} active={tab} onChange={setTab} />
 
       <div className="grid grid-cols-1 xl:grid-cols-[1.5fr_1fr] gap-5 items-start">
         <Card>

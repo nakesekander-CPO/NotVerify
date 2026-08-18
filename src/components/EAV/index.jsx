@@ -13,6 +13,7 @@ import {
   EAV_NAV, EAV_NAV_GROUPS, WORKSPACE, METHODOLOGY_VERSION, BENCHMARK_HASH,
 } from '../../data/eav'
 import { MonoLabel, Card, SectionHeading, ProvenanceBadge } from './shared'
+import { PageHeader } from '../ui'
 import Overview from './Overview'
 import VisibilityExplorer from './VisibilityExplorer'
 import Competitors from './Competitors'
@@ -55,20 +56,15 @@ export default function EnterpriseAIVisibility({ onBack }) {
   return (
     <div className="w-full max-w-[1280px] xl:max-w-[1440px] 2xl:max-w-[1600px] mx-auto px-6 lg:px-8 xl:px-12 2xl:px-16 py-6">
       {/* Header */}
-      <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-ocean/10 flex items-center justify-center"><Radar className="w-4.5 h-4.5 text-ocean" /></div>
-          <div>
-            <h1 className="text-[18px] font-bold text-ink leading-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Enterprise AI Visibility</h1>
-            <MonoLabel>{WORKSPACE.organisation} · {METHODOLOGY_VERSION} · {BENCHMARK_HASH}</MonoLabel>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <ProvenanceBadge provenance="fixture" />
-          <button onClick={onBack} className="inline-flex items-center gap-1.5 text-[12px] text-slate hover:text-ink border border-rule rounded-lg px-3 py-1.5 cursor-pointer hover:bg-pale transition-colors">
-            <ArrowLeft className="w-3.5 h-3.5" /> Back to arbitr
-          </button>
-        </div>
+      <div className="mb-3">
+        <PageHeader
+          icon={Radar}
+          title="Enterprise AI Visibility"
+          subtitle={`${WORKSPACE.organisation} · ${METHODOLOGY_VERSION} · ${BENCHMARK_HASH}`}
+          onBack={onBack}
+          backLabel="Back to arbitr"
+          actions={<ProvenanceBadge provenance="fixture" />}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[210px_1fr] gap-6 items-start">

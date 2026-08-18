@@ -14,6 +14,7 @@ import {
   Zap,
 } from 'lucide-react'
 import useReducedMotion from '../hooks/useReducedMotion'
+import { useOverlay } from './ui/useOverlay'
 
 /* ─── Icon map (agent.icon string → component) ─── */
 const ICON_MAP = {
@@ -162,6 +163,7 @@ function StatCard({ label, value, icon: Icon }) {
 
 /* ─── Main Component ─── */
 export default function AgentProfile({ isOpen, onClose, agent, onContinueTraining }) {
+  const { ref, overlayProps } = useOverlay(onClose, { label: 'Agent profile', active: isOpen })
   const prefersReducedMotion = useReducedMotion()
   const [knowledgeSearch, setKnowledgeSearch] = useState('')
 
@@ -203,6 +205,8 @@ export default function AgentProfile({ isOpen, onClose, agent, onContinueTrainin
           onClick={handleBackdropClick}
         >
           <motion.div
+            ref={ref}
+            {...overlayProps}
             className="relative flex flex-col w-[90vw] max-w-[900px] h-[90vh] rounded-lg overflow-hidden"
             style={{ backgroundColor: '#ffffff', fontFamily: "'IBM Plex Sans', sans-serif" }}
             initial={{ scale: 0.95, opacity: 0 }}
