@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   REVIEWERS, LIVE_STATS, DAY0_STATS, HELD_CHANGES, getDashboardState,
-  MINI_CLUSTERS, PRELOADED_ENTRIES,
+  MINI_CLUSTERS, PRELOADED_ENTRIES, applyDecision, isOpen,
 } from './governanceDashboard'
 
 describe('governance dashboard — stats reconcile', () => {
@@ -76,5 +76,68 @@ describe('copy discipline', () => {
     expect(all).not.toContain('notverify')
     expect(all).not.toContain('straker')
     expect(all).not.toContain('coins')
+  })
+})
+
+describe('reviewer decisions — the queue is a work surface', () => {
+  const live = () => getDashboardState(1)
+  const firstOpenId = () => HELD_CHANGES.find(isOpen).id
+
+  it('approving clears the hold and records who decided it', () => {
+    const next = applyDecision(live(), firstOpenId(), 'approved')
+    const row = next.heldChanges.find(c => c.id === firstOpenId())
+    expect(row.status).toBe('cleared')
+    expect(row.decision.type).toBe('approved')
+    expect(row.decision.by).toBe(row.reviewer.name)
+  })
+
+  it('rejecting sends the change back and keeps the stated reason', () => {
+    const next = applyDecision(live(), firstOpenId(), 'rejected', '  needs approved hedging  ')
+    const row = next.heldChanges.find(c => c.id === firstOpenId())
+    expect(row.status).toBe('rejected')
+    expect(row.decision.reason).toBe('needs approved hedging')
+  })
+
+  it('a decision moves one change from held to resolved', () => {
+    const before = live()
+    const after = applyDecision(before, firstOpenId(), 'approved')
+    expect(after.stats.heldForReview).toBe(before.stats.heldForReview - 1)
+    expect(after.stats.resolvedByReview).toBe(before.stats.resolvedByReview + 1)
+  })
+
+  it('never inflates "published safely" — that tile means never flagged', () => {
+    const before = live()
+    const after = applyDecision(before, firstOpenId(), 'approved')
+    expect(after.stats.publishedSafely).toBe(before.stats.publishedSafely)
+    expect(after.stats.flagsRaised).toBe(before.stats.flagsRaised)
+    expect(after.stats.checksThisWeek).toBe(before.stats.checksThisWeek)
+  })
+
+  it('the held tile always equals the number of open rows in the queue', () => {
+    let state = live()
+    expect(state.stats.heldForReview).toBe(state.heldChanges.filter(isOpen).length)
+    for (const id of HELD_CHANGES.filter(isOpen).map(c => c.id)) {
+      state = applyDecision(state, id, 'approved')
+      expect(state.stats.heldForReview).toBe(state.heldChanges.filter(isOpen).length)
+    }
+    expect(state.stats.heldForReview).toBe(0)
+  })
+
+  it('deciding twice on the same change is a no-op', () => {
+    const once = applyDecision(live(), firstOpenId(), 'approved')
+    const twice = applyDecision(once, firstOpenId(), 'rejected', 'changed my mind')
+    expect(twice).toBe(once)
+  })
+
+  it('unknown ids and unknown decisions leave the state untouched', () => {
+    const state = live()
+    expect(applyDecision(state, 'hold-does-not-exist', 'approved')).toBe(state)
+    expect(applyDecision(state, firstOpenId(), 'maybe')).toBe(state)
+  })
+
+  it('does not mutate the shared fixture', () => {
+    const snapshot = JSON.stringify(HELD_CHANGES)
+    applyDecision(live(), firstOpenId(), 'approved')
+    expect(JSON.stringify(HELD_CHANGES)).toBe(snapshot)
   })
 })

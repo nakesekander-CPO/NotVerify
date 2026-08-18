@@ -31,8 +31,9 @@ export const REVIEWERS = {
 export const LIVE_STATS = {
   checksThisWeek: 12847,
   flagsRaised: 214,
-  heldForReview: 6,
+  heldForReview: 10,
   publishedSafely: 12633,
+  resolvedByReview: 4,
 }
 
 export const DAY0_STATS = {
@@ -40,11 +41,12 @@ export const DAY0_STATS = {
   flagsRaised: 0,
   heldForReview: 0,
   publishedSafely: 0,
+  resolvedByReview: 0,
 }
 
 /* ── Held-changes queue ────────────────────────────────────────── */
 
-// status: 'critical-hold' | 'held' | 'cleared'
+// status: 'critical-hold' | 'held' | 'cleared' | 'rejected'
 export const HELD_CHANGES = [
   {
     id: 'hold-01',
@@ -130,6 +132,62 @@ export const HELD_CHANGES = [
     reviewer: REVIEWERS.sarah,
     heldFor: '4 h',
   },
+  {
+    id: 'hold-09',
+    ruleId: 'VID-SUB-044',
+    title: 'Product launch film · subtitles DE',
+    status: 'critical-hold',
+    reason: {
+      label: 'Unapproved claim in a burned-in subtitle',
+      before: '“the safest platform on the market”',
+      after: 'held for legal-approved phrasing',
+      source: 'Marketing Claims policy v2',
+    },
+    reviewer: REVIEWERS.marcus,
+    heldFor: '22 min',
+  },
+  {
+    id: 'hold-10',
+    ruleId: 'MKT-CLM-018',
+    title: 'Pricing page · EN',
+    status: 'held',
+    reason: {
+      label: 'Unsupported comparative claim',
+      before: '“3× faster than any competitor”',
+      after: '“faster in our published benchmark”',
+      source: 'Marketing Claims policy v2',
+    },
+    reviewer: REVIEWERS.emma,
+    heldFor: '5 h',
+  },
+  {
+    id: 'hold-11',
+    ruleId: 'FIN-RSK-022',
+    title: 'Risk factors · annual report DE',
+    status: 'held',
+    reason: {
+      label: 'Omitted mandatory risk sentence',
+      before: 'liquidity clause missing from the risk paragraph',
+      after: 'approved clause reinserted',
+      source: 'Disclosure Checklist v4',
+    },
+    reviewer: REVIEWERS.sarah,
+    heldFor: '6 h',
+  },
+  {
+    id: 'hold-12',
+    ruleId: 'LOC-TON-077',
+    title: 'Onboarding emails · JA',
+    status: 'held',
+    reason: {
+      label: 'Register too informal for the audience',
+      before: 'plain-form verbs in a customer-facing email',
+      after: 'polite form (です・ます)',
+      source: 'JA Style Guide v2',
+    },
+    reviewer: REVIEWERS.yuki,
+    heldFor: '7 h',
+  },
   // Cleared rows — the product working end-to-end; rendered dimmed.
   {
     id: 'hold-07',
@@ -159,7 +217,92 @@ export const HELD_CHANGES = [
     reviewer: REVIEWERS.emma,
     heldFor: 'auto-fixed',
   },
+  {
+    id: 'hold-13',
+    ruleId: 'SEC-KEY-013',
+    title: 'Developer docs · sample config',
+    status: 'cleared',
+    reason: {
+      label: 'Live-looking API key in a sample',
+      before: 'sk_live_… pasted into a code block',
+      after: 'sk_test_placeholder',
+      source: 'Data-Handling policy',
+    },
+    reviewer: REVIEWERS.marcus,
+    heldFor: 'auto-fixed',
+  },
+  {
+    id: 'hold-14',
+    ruleId: 'LOC-NUM-041',
+    title: 'Invoice template · DE',
+    status: 'cleared',
+    reason: {
+      label: 'Decimal separator',
+      before: '1,250.00 on a German invoice',
+      after: '1.250,00',
+      source: 'Numeric Format Rules v3',
+    },
+    reviewer: REVIEWERS.emma,
+    heldFor: 'auto-fixed',
+  },
 ]
+
+/* ── Reviewer decisions ─────────────────────────────────────────
+   A decision is what makes the queue a work surface rather than a
+   readout. Approving publishes the change and clears the hold;
+   rejecting sends it back to the author with a reason. Both are
+   resolutions, so both decrement "Held for review" and increment
+   "Resolved by review" — nothing leaks out of the accounting.
+
+   "Published safely" is deliberately NOT incremented on approve: that
+   tile means "flowed straight through, never flagged", and a change
+   that a human had to clear did not do that. */
+
+export const DECISIONS = {
+  approved: { status: 'cleared', label: 'Published after review' },
+  rejected: { status: 'rejected', label: 'Sent back to author' },
+}
+
+export const OPEN_STATUSES = ['critical-hold', 'held']
+
+export const isOpen = (change) => OPEN_STATUSES.includes(change.status)
+
+/**
+ * Pure reducer: apply a reviewer's decision to a dashboard state.
+ * Returns the same state object when the id is unknown or already
+ * resolved, so double-clicks and stale rows can never double-count.
+ */
+export function applyDecision(state, id, decision, reason = '') {
+  const spec = DECISIONS[decision]
+  const target = state.heldChanges.find(c => c.id === id)
+  if (!spec || !target || !isOpen(target)) return state
+
+  const heldChanges = state.heldChanges.map(c => (
+    c.id === id
+      ? {
+        ...c,
+        status: spec.status,
+        decision: {
+          type: decision,
+          label: spec.label,
+          by: c.reviewer.name,
+          reason: reason.trim() || null,
+          at: 'just now',
+        },
+      }
+      : c
+  ))
+
+  return {
+    ...state,
+    heldChanges,
+    stats: {
+      ...state.stats,
+      heldForReview: Math.max(0, state.stats.heldForReview - 1),
+      resolvedByReview: state.stats.resolvedByReview + 1,
+    },
+  }
+}
 
 /* ── State selector ────────────────────────────────────────────── */
 

@@ -9,17 +9,19 @@
  * Frontend-only simulation, DS v2 Split Frame tokens throughout.
  */
 
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import {
-  Upload, Bot, Radar, Pen, Layers, ChevronRight, Brain,
+  Upload, Bot, Radar, Pen, Layers, ChevronRight, Brain, RotateCcw,
 } from 'lucide-react'
-import { getDashboardState, PRELOADED_ENTRIES } from '../../data/governanceDashboard'
+import { applyDecision, getDashboardState, PRELOADED_ENTRIES } from '../../data/governanceDashboard'
 import { METRICS } from '../../data/cortex'
 import { Card, MonoLabel } from '../HITLVendorWorkflow/shared'
+import { useToast } from '../ToastProvider'
 import MechanicStrip from './MechanicStrip'
 import StatRow from './StatRow'
 import HeldQueue from './HeldQueue'
 import MiniConstellation from './MiniConstellation'
+import HoldDetailDrawer from './HoldDetailDrawer'
 import SwiftBridgeCard from './SwiftBridgeCard'
 import VideoDubbingCard from './VideoDubbingCard'
 
@@ -38,7 +40,53 @@ export default function GovernanceDashboard({
   onOpenSwiftBridge,
   onOpenVideoDubbing,
 }) {
-  const { mode, stats, heldChanges } = getDashboardState(projectsCompleted)
+  /* The dashboard seeds itself into the live state so the queue has
+     something to govern. App-level Day 0 (projectsCompleted) is left
+     untouched — the first-run time-jump keys off it — so the cold-start
+     story stays reachable through "Reset to Day 0" below. */
+  const { addToast } = useToast()
+  const [demoMode, setDemoMode] = useState('live') // 'live' | 'day0'
+  const [liveState, setLiveState] = useState(() => getDashboardState(1))
+  const [filter, setFilter] = useState(null)
+  const [detail, setDetail] = useState(null) // { id, reject }
+
+  const day0State = useMemo(() => getDashboardState(0), [])
+  const hasRealProjects = projectsCompleted > 0
+  const showLive = demoMode === 'live' || hasRealProjects
+  const { mode, stats, heldChanges } = showLive ? liveState : day0State
+
+  const openChange = detail ? heldChanges.find(c => c.id === detail.id) : null
+
+  /* Decisions are computed off the current state, never inside a state
+     updater — an updater can run twice, which would double-toast. */
+  const handleDecide = useCallback((id, decision, reason) => {
+    const change = liveState.heldChanges.find(c => c.id === id)
+    const next = applyDecision(liveState, id, decision, reason)
+    if (next !== liveState) {
+      setLiveState(next)
+      addToast(
+        decision === 'approved'
+          ? `Approved — ${change.title} published.`
+          : `Sent back — ${change.title} returned to the author.`,
+        decision === 'approved' ? 'success' : 'info',
+      )
+    }
+    setDetail(null)
+  }, [liveState, addToast])
+
+  const handleOpenDetail = useCallback((id, reject = false) => setDetail({ id, reject }), [])
+
+  const handleToggleDemo = useCallback(() => {
+    if (demoMode === 'live') {
+      setDemoMode('day0')
+    } else {
+      setLiveState(getDashboardState(1)) // fresh week, decisions rolled back
+      setDemoMode('live')
+    }
+    setFilter(null)
+    setDetail(null)
+  }, [demoMode])
+
   const fileInputRef = useRef(null)
   const dropRef = useRef(null)
   const [isDragOver, setIsDragOver] = useState(false)
@@ -85,18 +133,38 @@ export default function GovernanceDashboard({
             arbitr decides what's safe to publish — every change checked against {companyName}'s rules first.
           </p>
         </div>
-        <MonoLabel>Checks → Flags → Publishes</MonoLabel>
+        <div className="flex items-center gap-3">
+          <MonoLabel>Checks → Flags → Publishes</MonoLabel>
+          {!hasRealProjects && (
+          <button
+            type="button"
+            onClick={handleToggleDemo}
+            className="inline-flex items-center gap-1.5 text-[11px] font-medium text-mist hover:text-ocean transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ocean rounded"
+            title={showLive ? 'Show the cold-start dashboard' : 'Load the example week'}
+          >
+            <RotateCcw className="w-3 h-3" />
+            {showLive ? 'Reset to Day 0' : 'Load example data'}
+          </button>
+          )}
+        </div>
       </div>
 
       {/* ── Mechanic strip ── */}
       <MechanicStrip />
 
       {/* ── Stats ── */}
-      <StatRow stats={stats} mode={mode} />
+      <StatRow stats={stats} mode={mode} activeFilter={filter} onFilterChange={setFilter} />
 
       {/* ── Main zone: queue + action rail ── */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5 items-start">
-        <HeldQueue heldChanges={heldChanges} mode={mode} />
+        <HeldQueue
+          heldChanges={heldChanges}
+          mode={mode}
+          filter={filter}
+          onClearFilter={() => setFilter(null)}
+          onDecide={handleDecide}
+          onOpenDetail={handleOpenDetail}
+        />
 
         <aside className="space-y-4 lg:sticky lg:top-[120px]">
           {/* Check a document */}
@@ -145,6 +213,14 @@ export default function GovernanceDashboard({
           </Card>
         </aside>
       </div>
+
+      <HoldDetailDrawer
+        key={detail ? `${detail.id}-${detail.reject}` : 'closed'}
+        change={openChange}
+        initialReject={Boolean(detail?.reject)}
+        onClose={() => setDetail(null)}
+        onDecide={handleDecide}
+      />
 
       {/* ── Cortex ── */}
       <Card padding="p-0">
