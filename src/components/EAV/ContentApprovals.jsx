@@ -11,6 +11,7 @@ import { useState } from 'react'
 import { Check, ShieldCheck, FileDown, Eye, Send } from 'lucide-react'
 import { SAMPLE_DRAFT, CLAIMS, RECOMMENDATIONS } from '../../data/eav'
 import { SectionHeading, Card, MonoLabel, PrimaryButton, SecondaryButton } from './shared'
+import { downloadText } from '../../utils/demoFiles'
 
 const claim = (id) => CLAIMS.find(c => c.id === id)
 const FLOW = ['draft', 'in_review', 'approved', 'published']
@@ -93,9 +94,9 @@ export default function ContentApprovals({ ctx }) {
             <MonoLabel>Export</MonoLabel>
             <div className="mt-2 flex flex-wrap gap-2">
               {['Markdown', 'HTML', 'JSON'].map(f => (
-                <SecondaryButton key={f} onClick={() => {}}><FileDown className="w-3.5 h-3.5" /> {f}</SecondaryButton>
+                <SecondaryButton key={f} onClick={() => downloadText(`eav-content.${f.toLowerCase() === 'markdown' ? 'md' : f.toLowerCase()}`, `Approved content export (${f}) — demo artifact`)}><FileDown className="w-3.5 h-3.5" /> {f}</SecondaryButton>
               ))}
-              <SecondaryButton onClick={() => {}}><Eye className="w-3.5 h-3.5" /> Preview</SecondaryButton>
+              <SecondaryButton onClick={() => downloadText('eav-content-preview.txt', 'Content preview — demo artifact')}><Eye className="w-3.5 h-3.5" /> Preview</SecondaryButton>
             </div>
           </Card>
           <Card>

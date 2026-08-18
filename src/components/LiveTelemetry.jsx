@@ -72,6 +72,11 @@ function ProgressHeader({ fileName, progress, totalSegments, elapsed, duration }
 
   return (
     <div className="sticky top-0 z-20 rounded-lg border border-black/[0.12] bg-[#EDEFFB]/95 px-6 py-5">
+      {onCancel && (
+        <button onClick={onCancel} className="absolute top-4 right-6 z-10 text-[11.5px] text-gray-400 hover:text-gray-600 cursor-pointer">
+          Cancel run and return to dashboard
+        </button>
+      )}
       <div className="mb-2 flex items-center gap-2 font-mono text-xs tracking-widest text-gray-500 uppercase">
         <Radio className="h-3.5 w-3.5 animate-pulse text-[#3D16FA]" />
         <span>Processing: {fileName}</span>
@@ -100,7 +105,7 @@ function ProgressHeader({ fileName, progress, totalSegments, elapsed, duration }
       </div>
 
       {/* Stats */}
-      <div className="flex items-center justify-between font-['JetBrains_Mono'] text-xs text-gray-500">
+      <div className="flex items-center justify-between font-mono text-xs text-gray-500">
         <span>
           <span className="text-gray-900">{currentSegment}</span> of {totalSegments} segments
         </span>
@@ -143,7 +148,7 @@ function SecurityPanel({ phase, elapsed, duration }) {
             initial={{ opacity: 0, x: -10 }}
             animate={item.show ? { opacity: 1, x: 0 } : {}}
             transition={SPRING}
-            className="flex items-center gap-2 font-['JetBrains_Mono'] text-xs text-gray-700"
+            className="flex items-center gap-2 font-mono text-xs text-gray-700"
           >
             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
             {item.label} {item.ok ? 'OK' : ''}
@@ -155,7 +160,7 @@ function SecurityPanel({ phase, elapsed, duration }) {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="space-y-1 border-t border-black/[0.12] pt-3 font-['JetBrains_Mono'] text-[11px] text-gray-500"
+          className="space-y-1 border-t border-black/[0.12] pt-3 font-mono text-[11px] text-gray-500"
         >
           <div>
             Processing in: <span className="text-gray-800">ap-northeast-1</span>
@@ -171,11 +176,11 @@ function SecurityPanel({ phase, elapsed, duration }) {
           transition={{ delay: 0.3 }}
           className="space-y-1 border-t border-black/[0.12] pt-3"
         >
-          <div className="flex items-center gap-1.5 font-['JetBrains_Mono'] text-[11px]">
+          <div className="flex items-center gap-1.5 font-mono text-[11px]">
             <Lock className="h-3 w-3 text-emerald-600" />
             <span className="text-emerald-600">Zero-retention pipeline: ACTIVE</span>
           </div>
-          <div className="font-['JetBrains_Mono'] text-[11px] text-gray-400">
+          <div className="font-mono text-[11px] text-gray-400">
             Auto-delete in: <span className="tabular-nums text-gray-500">{deleteCountdown}</span>
           </div>
         </motion.div>
@@ -201,10 +206,10 @@ function LocaleRoutingCard({ locale, meta, status, reducedMotion }) {
     >
       <span className="text-lg">{meta.flag}</span>
       <div className="flex-1">
-        <div className="font-['JetBrains_Mono'] text-xs font-semibold tracking-wider text-gray-800 uppercase">
+        <div className="font-mono text-xs font-semibold tracking-wider text-gray-800 uppercase">
           {locale}
         </div>
-        <div className="font-['JetBrains_Mono'] text-[10px] text-gray-400">
+        <div className="font-mono text-[10px] text-gray-400">
           {meta.region} &middot; {meta.aws}
         </div>
       </div>
@@ -272,11 +277,11 @@ function AgentCard({ agent, segNum, agentProgress, flash, reducedMotion }) {
     >
       <div className="mb-1 flex items-center gap-2">
         <Bot className="h-3.5 w-3.5" style={{ color: agent.color }} />
-        <span className="font-['JetBrains_Mono'] text-xs font-semibold text-gray-800">
+        <span className="font-mono text-xs font-semibold text-gray-800">
           {agent.name}
         </span>
       </div>
-      <div className="mb-2 font-['JetBrains_Mono'] text-[11px] text-gray-400">
+      <div className="mb-2 font-mono text-[11px] text-gray-400">
         {isComplete ? 'Complete' : `Scanning seg ${segNum}`}
       </div>
       <div className="h-1.5 overflow-hidden rounded-full bg-black/[0.04]">
@@ -289,7 +294,7 @@ function AgentCard({ agent, segNum, agentProgress, flash, reducedMotion }) {
           transition={{ duration: 0.4, ease: 'easeOut' }}
         />
       </div>
-      <div className="mt-1 text-right font-['JetBrains_Mono'] text-[10px] text-gray-400">
+      <div className="mt-1 text-right font-mono text-[10px] text-gray-400">
         {pct}%
       </div>
     </motion.div>
@@ -343,7 +348,7 @@ function LogLine({ line, reducedMotion }) {
       initial={reducedMotion ? { opacity: 1 } : { opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
-      className={`flex items-start gap-2 font-['JetBrains_Mono'] text-[11px] leading-relaxed ${
+      className={`flex items-start gap-2 font-mono text-[11px] leading-relaxed ${
         line.type === 'conflict' ? 'rounded bg-amber-50 px-2 py-0.5' : ''
       }`}
     >
@@ -385,7 +390,7 @@ function ActivityLog({ logLines, reducedMotion }) {
 }
 
 // ── Main Component ─────────────────────────────────────────
-export default function LiveTelemetry({
+export default function LiveTelemetry({ onCancel,
   fileName = 'Q3_Earnings_Final.docx',
   totalSegments = 247,
   locales = ['ja', 'de', 'zh'],

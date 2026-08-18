@@ -17,12 +17,14 @@ import {
   DUBBING_STAGES, VOICE_OPTIONS, checkGlossaryCompliance, summarizeQa,
 } from '../../../services/swiftbridge/swiftbridgeModel'
 import { Card, MonoLabel } from '../shared'
+import { downloadText } from '../../../utils/demoFiles'
 
 /* ── AI Dubbing ──────────────────────────────────────────────── */
 
 export function DubbingStudio({ job }) {
   const startIdx = DUBBING_STAGES.findIndex(s => s.id === job.stage)
   const [stageIdx, setStageIdx] = useState(startIdx)
+  const [playing, setPlaying] = useState(false)
   const [transcript, setTranscript] = useState(job.transcript)
   const [voiceId, setVoiceId] = useState(job.voiceId)
   const stage = DUBBING_STAGES[stageIdx]
@@ -97,13 +99,13 @@ export function DubbingStudio({ job }) {
             <>
               <MonoLabel>Preview プレビュー</MonoLabel>
               <div className="rounded-lg border border-rule p-4 flex items-center gap-3">
-                <button className="w-10 h-10 rounded-full bg-ocean text-white flex items-center justify-center cursor-pointer hover:bg-ocean/90" aria-label="Play preview"><Play className="w-4 h-4 ml-0.5" /></button>
+                <button onClick={() => { setPlaying(v => !v) }} className="w-10 h-10 rounded-full bg-ocean text-white flex items-center justify-center cursor-pointer hover:bg-ocean/90" aria-label={playing ? 'Pause preview' : 'Play preview'}>{playing ? <span className="flex gap-[3px]" aria-hidden><span className="w-[3px] h-3.5 bg-white rounded-sm" /><span className="w-[3px] h-3.5 bg-white rounded-sm" /></span> : <Play className="w-4 h-4 ml-0.5" />}</button>
                 <div className="flex-1 flex items-end gap-[3px] h-10" aria-hidden>
                   {Array.from({ length: 48 }, (_, i) => (
                     <span key={i} className="flex-1 rounded-sm bg-ocean/40" style={{ height: `${20 + Math.abs(((i * 37) % 60) - 30)}%` }} />
                   ))}
                 </div>
-                <span className="text-[11px] text-mist tabular-nums" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>0:00 / 3:04</span>
+                <span className="text-[11px] text-mist tabular-nums" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{playing ? '0:07' : '0:00'} / 3:04 {playing && '· playing (demo)'}</span>
               </div>
               <p className="text-[11px] text-slate">Voice: {VOICE_OPTIONS.find(v => v.id === voiceId)?.name} · {VOICE_OPTIONS.find(v => v.id === voiceId)?.tone}. Preview is regenerated whenever the script or voice changes.</p>
               <button onClick={advance} className="px-4 py-2 rounded-lg bg-ocean text-white text-[12.5px] font-semibold hover:bg-ocean/90 cursor-pointer">Send for approval →</button>
@@ -164,7 +166,7 @@ export function GlossaryPanel({ glossary, customAgent }) {
             <p className="text-[13px] font-semibold text-ink">{glossary.name}</p>
             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-pale border border-rule text-slate" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{glossary.version} · client-specific</span>
           </div>
-          <button className="inline-flex items-center gap-1.5 text-[11px] text-slate border border-rule px-3 py-1.5 rounded-lg hover:bg-pale cursor-pointer"><Upload className="w-3 h-3" /> Import CSV</button>
+          <button onClick={() => downloadText('glossary-import-template.csv', 'ja,en,status,note\nのれん,Goodwill,approved,Never グッドウィル')} className="inline-flex items-center gap-1.5 text-[11px] text-slate border border-rule px-3 py-1.5 rounded-lg hover:bg-pale cursor-pointer"><Upload className="w-3 h-3" /> CSV template</button>
         </div>
         <table className="w-full text-[12px]">
           <thead>

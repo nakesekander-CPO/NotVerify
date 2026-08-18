@@ -276,7 +276,7 @@ function RadarChart({ scores, color = '#3D16FA', size = RADAR_SIZE }) {
             textAnchor="middle"
             dominantBaseline="central"
             className="fill-gray-400"
-            style={{ fontSize: '8px', fontFamily: 'Inter, sans-serif' }}
+            style={{ fontSize: '8px', fontFamily: "'IBM Plex Sans', sans-serif" }}
           >
             {AXIS_LABELS[axis]}
           </text>
@@ -724,7 +724,7 @@ export default function AgentMarketplace({
         >
           <motion.div
             className="relative flex flex-col w-[90vw] h-[90vh] rounded-lg overflow-hidden"
-            style={{ backgroundColor: '#ffffff', fontFamily: 'Inter, sans-serif' }}
+            style={{ backgroundColor: '#ffffff', fontFamily: "'IBM Plex Sans', sans-serif" }}
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
@@ -934,7 +934,7 @@ export default function AgentMarketplace({
                                   className="text-[10px] font-medium px-2 py-0.5 rounded-full text-gray-700"
                                   style={{
                                     backgroundColor: 'rgba(255,255,255,0.06)',
-                                    fontFamily: "'JetBrains Mono', monospace",
+                                    fontFamily: "'IBM Plex Mono', monospace",
                                   }}
                                 >
                                   {badge}

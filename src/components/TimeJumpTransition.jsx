@@ -45,7 +45,7 @@ function CountUpStat({ target, suffix = '', decimals = 0, duration = 1200, delay
     : Math.round(value).toLocaleString()
 
   return (
-    <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+    <span style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
       {display}{suffix}
     </span>
   )
@@ -128,7 +128,7 @@ export default function TimeJumpTransition({ onComplete }) {
                   animate={{ opacity: 1, y: 0 }}
                   transition={SPRING}
                   className="text-2xl md:text-3xl font-semibold text-gray-900 text-center tracking-tight"
-                  style={{ fontFamily: "'Inter', sans-serif" }}
+                  style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}
                 >
                   Fast forward 6 months
                   <motion.span

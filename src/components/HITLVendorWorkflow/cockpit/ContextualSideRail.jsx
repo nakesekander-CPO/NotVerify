@@ -15,6 +15,7 @@ import { HITL_SEGMENTS, ORG_BRAIN_UPDATES, getProjectById } from '../../../data/
 import { qaDiff, backTranslate, backTranslationDrift } from '../../../services/hitl/cockpit'
 import { isRole } from '../../../services/hitl/rbac'
 import { MonoLabel } from '../shared'
+import { downloadText } from '../../../utils/demoFiles'
 
 /**
  * Visibility tiers for side-rail content. The rail is the same in every
@@ -171,7 +172,7 @@ function SourceAnchor({ segment }) {
         </div>
       </div>
       <p className="text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>p.{page} · bbox [{bbox.join(', ')}]</p>
-      <button className="mt-1 text-[11px] text-ocean hover:text-ocean-deep cursor-pointer">Open full source ↗</button>
+      <button onClick={() => downloadText('source-excerpt.txt', `Source document excerpt (p.${page})\n\n${snippet}\n\n— arbitr evidence trail, demo artifact`)} className="mt-1 text-[11px] text-ocean hover:text-ocean-deep cursor-pointer">Open full source ↗</button>
     </div>
   )
 }

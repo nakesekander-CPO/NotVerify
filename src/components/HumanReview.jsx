@@ -1229,7 +1229,7 @@ function ReviewPhase({ reviewRequest, onSubmitReview, onBack, reduced, reviewerP
             {/* Paper card */}
             <div
               className="max-w-[680px] xl:max-w-[760px] 2xl:max-w-[840px] mx-auto bg-white rounded-xl border border-black/[0.07] px-16 xl:px-20 py-14 xl:py-16"
-              style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 12px 40px rgba(0,0,0,0.07)', fontFamily: "'Inter', system-ui, sans-serif" }}
+              style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 12px 40px rgba(0,0,0,0.07)', fontFamily: "'IBM Plex Sans', system-ui, sans-serif" }}
             >
               {(() => {
                 // Group segments into document blocks
@@ -1969,7 +1969,7 @@ export default function HumanReview({
   return (
     <div
       className="h-full flex flex-col"
-      style={{ background: '#ffffff', color: '#1A1640', fontFamily: 'Inter, system-ui, sans-serif' }}
+      style={{ background: '#ffffff', color: '#1A1640', fontFamily: "'IBM Plex Sans', system-ui, sans-serif" }}
     >
       <AnimatePresence mode="wait">
         {phase === 'assign' && (

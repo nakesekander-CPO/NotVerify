@@ -13,6 +13,7 @@ import {
 } from '../../data/eav'
 import { SectionHeading, Card, MonoLabel, EAVIScore, DimensionBar, SecondaryButton } from './shared'
 import { FileDown, Printer } from 'lucide-react'
+import { downloadHtml, downloadCsv } from '../../utils/demoFiles'
 
 export default function Reports() {
   const riskyClaims = CLAIMS.filter(c => ['disputed', 'expired'].includes(c.state))
@@ -25,9 +26,9 @@ export default function Reports() {
         subtitle={`Executive report · ${WORKSPACE.organisation} · ${BENCHMARK.observationPeriod}`}
         actions={
           <div className="flex items-center gap-2">
-            <SecondaryButton onClick={() => {}}><Printer className="w-3.5 h-3.5" /> Print</SecondaryButton>
-            <SecondaryButton onClick={() => {}}><FileDown className="w-3.5 h-3.5" /> PDF</SecondaryButton>
-            <SecondaryButton onClick={() => {}}><FileDown className="w-3.5 h-3.5" /> CSV</SecondaryButton>
+            <SecondaryButton onClick={() => window.print()}><Printer className="w-3.5 h-3.5" /> Print</SecondaryButton>
+            <SecondaryButton onClick={() => downloadHtml('eav-executive-report.html', `AI Visibility — Executive Report · ${WORKSPACE.organisation}`, '<p>EAVI score, competitor deltas, and recommendations snapshot (demo artifact — open and print to PDF).</p>')}><FileDown className="w-3.5 h-3.5" /> PDF</SecondaryButton>
+            <SecondaryButton onClick={() => downloadCsv('eav-report.csv', [{ metric: 'EAVI', value: 74 }, { metric: 'Observation period', value: BENCHMARK.observationPeriod }])}><FileDown className="w-3.5 h-3.5" /> CSV</SecondaryButton>
           </div>
         }
       />

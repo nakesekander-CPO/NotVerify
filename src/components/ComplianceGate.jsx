@@ -144,7 +144,7 @@ function ReviewerSegmentCard({ segment, resolution, onAccept, onEdit, prefersRed
           <span className="text-gray-400 uppercase text-xs font-semibold tracking-wider">
             AI Output
           </span>
-          <p className="text-gray-700 mt-1 font-[JetBrains_Mono] text-xs">
+          <p className="text-gray-700 mt-1 font-mono text-xs">
             {segment.translation}
           </p>
         </div>
@@ -152,7 +152,7 @@ function ReviewerSegmentCard({ segment, resolution, onAccept, onEdit, prefersRed
           <span className="text-gray-400 uppercase text-xs font-semibold tracking-wider">
             Suggested Fix
           </span>
-          <p className="text-[#3D16FA] mt-1 font-[JetBrains_Mono] text-xs">
+          <p className="text-[#3D16FA] mt-1 font-mono text-xs">
             {segment.suggestedFix}
           </p>
         </div>
@@ -181,7 +181,7 @@ function ReviewerSegmentCard({ segment, resolution, onAccept, onEdit, prefersRed
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
                   rows={3}
-                  className="w-full bg-[#ffffff] border border-black/[0.12] rounded-md p-3 text-sm text-gray-800 font-[JetBrains_Mono] focus:outline-none focus:ring-2 focus:ring-[#3D16FA] resize-none"
+                  className="w-full bg-[#ffffff] border border-black/[0.12] rounded-md p-3 text-sm text-gray-800 font-mono focus:outline-none focus:ring-2 focus:ring-[#3D16FA] resize-none"
                 />
                 <div className="flex gap-2 mt-2">
                   <button
@@ -264,7 +264,7 @@ function FlaggedSegmentCard({ segment, prefersReducedMotion }) {
           <span className="text-gray-400 uppercase text-xs font-semibold tracking-wider">
             AI Output
           </span>
-          <p className="text-gray-700 mt-1 font-[JetBrains_Mono] text-xs">
+          <p className="text-gray-700 mt-1 font-mono text-xs">
             {segment.translation}
           </p>
         </div>
@@ -282,7 +282,7 @@ function FlaggedSegmentCard({ segment, prefersReducedMotion }) {
               <ArrowRight className="w-3 h-3" />
               Suggested Fix
             </span>
-            <p className="text-gray-700 font-[JetBrains_Mono] text-xs">
+            <p className="text-gray-700 font-mono text-xs">
               {segment.suggestedFix}
             </p>
           </div>

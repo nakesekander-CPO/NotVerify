@@ -183,7 +183,7 @@ export default function GovernanceScorecard({
         }
 
   return (
-    <section className="w-full rounded-lg bg-[#ffffff] p-6 font-['Inter']">
+    <section className="w-full rounded-lg bg-[#ffffff] p-6 font-sans">
       {/* Section Header */}
       <motion.div
         className="mb-6 flex items-center gap-3"
@@ -221,7 +221,7 @@ export default function GovernanceScorecard({
               <span className="text-xs text-gray-400">
                 {agent.name}{' '}
                 <span
-                  className={`font-['JetBrains_Mono'] font-medium ${BAR_TEXT_COLORS[agent.id]}`}
+                  className={`font-mono font-medium ${BAR_TEXT_COLORS[agent.id]}`}
                 >
                   {agent.heavyLiftingPercent}%
                 </span>
@@ -256,13 +256,13 @@ export default function GovernanceScorecard({
                     <span className="font-semibold text-gray-900">
                       {agent.name}
                     </span>
-                    <span className="ml-2 font-['JetBrains_Mono'] text-xs text-gray-500">
+                    <span className="ml-2 font-mono text-xs text-gray-500">
                       {agent.version}
                     </span>
                   </div>
                 </div>
                 <span
-                  className={`rounded-full px-3 py-1 font-['JetBrains_Mono'] text-xs font-medium ${BAR_COLORS[agent.id]}/20 ${BAR_TEXT_COLORS[agent.id]}`}
+                  className={`rounded-full px-3 py-1 font-mono text-xs font-medium ${BAR_COLORS[agent.id]}/20 ${BAR_TEXT_COLORS[agent.id]}`}
                 >
                   {agent.heavyLiftingPercent}% Heavy Lifting
                 </span>
@@ -291,7 +291,7 @@ export default function GovernanceScorecard({
                     <span className="flex-1 text-sm text-gray-700">
                       {contribution.text}
                     </span>
-                    <span className="shrink-0 font-['JetBrains_Mono'] text-xs font-medium text-[#00B887]">
+                    <span className="shrink-0 font-mono text-xs font-medium text-[#00B887]">
                       {contribution.impact}
                     </span>
                   </div>
@@ -316,11 +316,11 @@ export default function GovernanceScorecard({
                           className="flex items-center justify-between gap-3 rounded-md bg-[#EDEFFB]/80 px-3 py-2"
                         >
                           <div className="flex items-center gap-2 text-sm">
-                            <span className="font-['JetBrains_Mono'] text-gray-400">
+                            <span className="font-mono text-gray-400">
                               {correction.source}
                             </span>
                             <ArrowRight className="h-3.5 w-3.5 text-gray-600" />
-                            <span className="font-['JetBrains_Mono'] font-medium text-gray-900">
+                            <span className="font-mono font-medium text-gray-900">
                               {correction.term}
                             </span>
                             <span className="text-xs text-gray-500">
@@ -358,7 +358,7 @@ export default function GovernanceScorecard({
         {...animateProps(0.6)}
       >
         <div className="mb-2 flex items-center gap-4">
-          <span className="font-['JetBrains_Mono'] text-lg font-bold text-[#00B887]">
+          <span className="font-mono text-lg font-bold text-[#00B887]">
             {totalErrors} errors caught
           </span>
           <span className="text-sm text-gray-400">
@@ -366,7 +366,7 @@ export default function GovernanceScorecard({
           </span>
         </div>
         <div className="mb-3 flex items-center gap-4">
-          <span className="font-['JetBrains_Mono'] text-lg font-bold text-[#00B887]">
+          <span className="font-mono text-lg font-bold text-[#00B887]">
             +{totalImpact} points
           </span>
           <span className="text-sm text-gray-400">

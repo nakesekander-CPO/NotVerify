@@ -51,7 +51,7 @@ function TypewriterText({ text, startDelay = 1200, charDelay = 40, reducedMotion
   return (
     <span
       className="font-mono text-xs tracking-[0.15em]"
-      style={{ color: '#5A39FB', fontFamily: 'JetBrains Mono, monospace' }}
+      style={{ color: '#5A39FB', fontFamily: "'IBM Plex Mono', monospace" }}
     >
       {displayed}
       {!reducedMotion && displayed.length < text.length && (
@@ -148,7 +148,7 @@ function CountdownTimer() {
     <span
       className="font-mono"
       style={{
-        fontFamily: 'JetBrains Mono, monospace',
+        fontFamily: "'IBM Plex Mono', monospace",
         color: seconds > 43200 ? '#FFBD59' : '#E53935',
       }}
     >
@@ -238,7 +238,7 @@ function LocaleBar({ code, progress, reducedMotion }) {
       <span
         className="text-xs font-semibold w-6 text-right"
         style={{
-          fontFamily: 'JetBrains Mono, monospace',
+          fontFamily: "'IBM Plex Mono', monospace",
           color: isComplete ? '#00B887' : '#322D5C',
         }}
       >
@@ -275,7 +275,7 @@ function LocaleBar({ code, progress, reducedMotion }) {
       <span
         className="text-xs w-8 text-right"
         style={{
-          fontFamily: 'JetBrains Mono, monospace',
+          fontFamily: "'IBM Plex Mono', monospace",
           color: isComplete ? '#00B887' : 'rgba(0,0,0,0.5)',
         }}
       >
@@ -803,7 +803,7 @@ export default function SecurityTheatre({ data, onComplete, structuredContext })
           <span
             className="text-lg font-semibold"
             style={{
-              fontFamily: 'JetBrains Mono, monospace',
+              fontFamily: "'IBM Plex Mono', monospace",
               color: masterProgress >= 100 ? '#00B887' : '#322D5C',
             }}
           >
@@ -812,7 +812,7 @@ export default function SecurityTheatre({ data, onComplete, structuredContext })
           <span
             className="text-sm"
             style={{
-              fontFamily: 'JetBrains Mono, monospace',
+              fontFamily: "'IBM Plex Mono', monospace",
               color: 'rgba(128,135,172,1)',
             }}
           >

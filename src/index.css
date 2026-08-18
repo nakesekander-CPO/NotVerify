@@ -4,7 +4,10 @@
   /* Canon I5–I7: display Plus Jakarta Sans · body/UI IBM Plex Sans · data IBM Plex Mono */
   --font-sans: 'IBM Plex Sans', 'Inter', system-ui, -apple-system, sans-serif;
   --font-display: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
-  --font-mono: '"IBM Plex Mono"', ui-monospace, monospace;
+  /* NOTE: was '"IBM Plex Mono"' (nested quotes) — that string literally
+     contains quote characters, matches no installed family, and silently
+     dropped every `font-mono` use to the system face. */
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 
   /* ══ arbitr Design System v2 · SPLIT FRAME ══════════════════════
      Midnight chrome (Header/GlobalNav) over a white work surface.

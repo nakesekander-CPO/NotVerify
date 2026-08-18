@@ -168,7 +168,7 @@ function StatCard({ icon: Icon, value, label, colorClass, index, reduced }) {
           <Icon className="h-5 w-5" />
         </div>
         <div>
-          <p className="font-[JetBrains_Mono] text-xl font-semibold text-gray-900">{value}</p>
+          <p className="font-mono text-xl font-semibold text-gray-900">{value}</p>
           <p className="text-xs text-gray-500">{label}</p>
         </div>
       </div>
@@ -211,11 +211,11 @@ function AuditTrailPanel({ item, audit }) {
               const barColor = vote >= 95 ? 'bg-emerald-400' : 'bg-amber-400';
               return (
                 <div key={agent} className="flex items-center gap-3">
-                  <span className="w-24 shrink-0 font-[JetBrains_Mono] text-[11px] text-gray-500">{agent}</span>
+                  <span className="w-24 shrink-0 font-mono text-[11px] text-gray-500">{agent}</span>
                   <div className="flex-1 h-2 rounded-full bg-black/[0.04] overflow-hidden">
                     <div className={`h-full rounded-full ${barColor}`} style={{ width: `${vote}%` }} />
                   </div>
-                  <span className="w-10 shrink-0 text-right font-[JetBrains_Mono] text-[11px] text-gray-700">{vote}%</span>
+                  <span className="w-10 shrink-0 text-right font-mono text-[11px] text-gray-700">{vote}%</span>
                 </div>
               );
             })}
@@ -228,14 +228,14 @@ function AuditTrailPanel({ item, audit }) {
           <div className="flex items-center gap-2 text-sm text-gray-700">
             <Database className="h-4 w-4 text-[#3D16FA] shrink-0" />
             <span>
-              Matched against <span className="font-[JetBrains_Mono] text-gray-900">{audit.kbMatches}</span> entries in <span className="text-[#3D16FA]">{audit.kbSource}</span>
+              Matched against <span className="font-mono text-gray-900">{audit.kbMatches}</span> entries in <span className="text-[#3D16FA]">{audit.kbSource}</span>
             </span>
           </div>
         </div>
 
         {/* Provenance */}
         <p className="text-xs text-gray-400">
-          First seen <span className="font-[JetBrains_Mono] text-gray-500">{audit.frequency}</span> times across <span className="font-[JetBrains_Mono] text-gray-500">{audit.agents.length}</span> projects. Last matched: <span className="font-[JetBrains_Mono] text-gray-500">{audit.lastSeen}</span>
+          First seen <span className="font-mono text-gray-500">{audit.frequency}</span> times across <span className="font-mono text-gray-500">{audit.agents.length}</span> projects. Last matched: <span className="font-mono text-gray-500">{audit.lastSeen}</span>
         </p>
       </div>
     </motion.div>
@@ -311,7 +311,7 @@ function TriageRow({ item, isApproved, isAutoCommitted, isDiscarded, onApprove, 
 
       {/* Agent badge */}
       <span
-        className={`hidden shrink-0 rounded bg-[#ffffff] px-1.5 py-0.5 font-[JetBrains_Mono] text-[10px] text-gray-500 md:inline ${
+        className={`hidden shrink-0 rounded bg-[#ffffff] px-1.5 py-0.5 font-mono text-[10px] text-gray-500 md:inline ${
           isApproved || isAutoCommitted ? 'opacity-50' : ''
         }`}
       >
@@ -320,7 +320,7 @@ function TriageRow({ item, isApproved, isAutoCommitted, isDiscarded, onApprove, 
 
       {/* Confidence */}
       <span
-        className={`shrink-0 font-[JetBrains_Mono] text-xs ${
+        className={`shrink-0 font-mono text-xs ${
           isApproved || isAutoCommitted ? 'text-gray-400' : 'text-gray-700'
         }`}
       >
@@ -610,7 +610,7 @@ export default function IntelligenceTriage({ onApprove }) {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className={`text-sm font-semibold ${colors.text}`}>{tier.label}</span>
-                      <span className="rounded bg-black/[0.04] px-1.5 py-0.5 font-[JetBrains_Mono] text-[10px] text-gray-500">
+                      <span className="rounded bg-black/[0.04] px-1.5 py-0.5 font-mono text-[10px] text-gray-500">
                         {tier.items.length}
                       </span>
                     </div>

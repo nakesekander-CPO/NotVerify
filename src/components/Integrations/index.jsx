@@ -6,6 +6,7 @@ import {
   Clock, Activity,
 } from 'lucide-react'
 import { CONNECTORS, CATEGORIES, CONNECTOR_ACTIONS } from './data.js'
+import { useToast } from '../ToastProvider'
 import WorkflowBuilder from './WorkflowBuilder.jsx'
 import SecurityPermissions from './SecurityPermissions.jsx'
 
@@ -259,6 +260,7 @@ function ConnectorCard({ connector, isConnected, onConnect, onManage }) {
 
 /* ── Main Integrations Hub ── */
 export default function IntegrationsHub({ onBack, connectedIntegrations, onConnectIntegration, onDisconnectIntegration, embedded = false }) {
+  const { addToast } = useToast()
   const [activeTab, setActiveTab] = useState('all')
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('All')
@@ -384,7 +386,7 @@ export default function IntegrationsHub({ onBack, connectedIntegrations, onConne
 
           <p className="text-[12px] text-center text-gray-400 mt-8">
             Don't see your tool?{' '}
-            <button className="text-[#3D16FA] hover:underline cursor-pointer">Request an integration</button>
+            <button onClick={() => addToast('Integration request logged — the connector team will follow up (demo)', 'success')} className="text-[#3D16FA] hover:underline cursor-pointer">Request an integration</button>
           </p>
         </div>
       )}

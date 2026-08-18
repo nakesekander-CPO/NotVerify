@@ -47,6 +47,7 @@ export default function AnomalyTrendChart({
 }) {
   const prefersReduced = useReducedMotion()
   const [activeAnomaly, setActiveAnomaly] = useState(null)
+  const [actionQueued, setActionQueued] = useState(false)
 
   const TREND_DATA = useMemo(
     () => [
@@ -151,7 +152,7 @@ export default function AnomalyTrendChart({
                 y={y + 3}
                 textAnchor="end"
                 className="fill-gray-400"
-                style={{ fontSize: 10, fontFamily: 'Inter, sans-serif' }}
+                style={{ fontSize: 10, fontFamily: "'IBM Plex Sans', sans-serif" }}
               >
                 {val}
               </text>
@@ -167,7 +168,7 @@ export default function AnomalyTrendChart({
             y={VIEW_H - 8}
             textAnchor="middle"
             className="fill-gray-400"
-            style={{ fontSize: 10, fontFamily: 'Inter, sans-serif' }}
+            style={{ fontSize: 10, fontFamily: "'IBM Plex Sans', sans-serif" }}
           >
             {p.month}
           </text>
@@ -188,7 +189,7 @@ export default function AnomalyTrendChart({
           x={VIEW_W - PAD.right + 2}
           y={benchmarkY - 5}
           className="fill-[#FFBD59]-500"
-          style={{ fontSize: 9, fontFamily: 'Inter, sans-serif' }}
+          style={{ fontSize: 9, fontFamily: "'IBM Plex Sans', sans-serif" }}
           textAnchor="end"
         >
           Avg {industryAvg}
@@ -316,7 +317,7 @@ export default function AnomalyTrendChart({
       {aboveAvg && (
         <p className="mt-3 text-[11px] text-gray-500 text-center">
           Your consistency is{' '}
-          <span className="text-emerald-600 font-semibold" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+          <span className="text-emerald-600 font-semibold" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
             {pctAbove}%
           </span>{' '}
           higher than the Financial Sector average
@@ -350,7 +351,7 @@ export default function AnomalyTrendChart({
               {/* Score delta */}
               <p
                 className="text-[13px] text-gray-700 mb-4"
-                style={{ fontFamily: 'JetBrains Mono, monospace' }}
+                style={{ fontFamily: "'IBM Plex Mono', monospace" }}
               >
                 Score: {meta.prevScore}{' '}
                 <span className="text-gray-400">&rarr;</span>{' '}
@@ -381,7 +382,7 @@ export default function AnomalyTrendChart({
                         <span className="text-gray-800">{item.label}:</span>{' '}
                         <span
                           className="text-red-600"
-                          style={{ fontFamily: 'JetBrains Mono, monospace' }}
+                          style={{ fontFamily: "'IBM Plex Mono', monospace" }}
                         >
                           {item.pts} pts
                         </span>{' '}
@@ -398,12 +399,14 @@ export default function AnomalyTrendChart({
                   Recommended Action
                 </p>
                 <button
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] font-medium text-white transition-colors"
-                  style={{ backgroundColor: '#3D16FA' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2B0FAF')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3D16FA')}
+                  onClick={() => setActionQueued(true)}
+                  disabled={actionQueued}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] font-medium text-white transition-colors disabled:opacity-60"
+                  style={{ backgroundColor: actionQueued ? '#00805A' : '#3D16FA' }}
+                  onMouseEnter={(e) => { if (!actionQueued) e.currentTarget.style.backgroundColor = '#2B0FAF' }}
+                  onMouseLeave={(e) => { if (!actionQueued) e.currentTarget.style.backgroundColor = '#3D16FA' }}
                 >
-                  {meta.action}
+                  {actionQueued ? 'Queued \u2713' : meta.action}
                   <ArrowRight className="w-3 h-3" />
                 </button>
               </div>

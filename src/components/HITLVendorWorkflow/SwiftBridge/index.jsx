@@ -20,6 +20,7 @@ import {
   getSwiftBridgeDemo, slaCountdown, slaWithPrep, buildWorkflow, buildTermEvidence,
 } from '../../../services/swiftbridge/swiftbridgeModel'
 import { appendAuditEvent } from '../../../services/hitl/auditLog'
+import { downloadText } from '../../../utils/demoFiles'
 import { SectionHeading, Card, MonoLabel, StatusBadge } from '../shared'
 import { NewProjectWizard, WorkflowTimeline } from './ProjectWorkflow'
 import { DubbingStudio, GlossaryPanel, QAPanel } from './Studio'
@@ -40,7 +41,7 @@ const MASCOTS = [
   { id: 'fukuro',    name: 'Fukurō',   nameJa: '梟',     icon: Eye,      tone: 'from-slate-600 to-slate-400', desc: 'The night owl — vigilant QA; nothing ships unseen.' },
 ]
 
-export default function SwiftBridge({ currentUserId, navigate }) {
+export default function SwiftBridge({ currentUserId, navigate, onBack }) {
   const demo = useMemo(() => getSwiftBridgeDemo(), [])
   const [projects, setProjects] = useState(demo.projects)
   const [tab, setTab] = useState('dashboard')
@@ -102,9 +103,17 @@ export default function SwiftBridge({ currentUserId, navigate }) {
               スイフトブリッジAI — faster, more reliable AI-powered IR localization &amp; disclosure workflows
             </p>
           </div>
-          <div className="text-right">
-            <p className="text-[10px] uppercase tracking-[0.2em] text-white/60">Powered by</p>
-            <p className="text-[13px] font-semibold">arbitr <span className="text-white/70">·</span> アビタAI</p>
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-white/60">Powered by</p>
+              <p className="text-[13px] font-semibold">arbitr <span className="text-white/70">·</span> アビタAI</p>
+            </div>
+            {onBack && (
+              <button onClick={onBack} aria-label="Go back"
+                className="px-3 py-2 rounded-lg border border-white/25 text-[12.5px] font-medium text-white/85 hover:bg-white/10 cursor-pointer">
+                ← Back
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -148,8 +157,8 @@ export default function SwiftBridge({ currentUserId, navigate }) {
       <footer className="pt-2 border-t border-rule flex items-center justify-between text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
         <span>© 2026 SwiftBridge K.K. · Operated on the arbitr platform（アビタAI）</span>
         <span className="flex gap-4">
-          <button className="hover:text-slate cursor-pointer underline underline-offset-2">利用規約 Terms</button>
-          <button className="hover:text-slate cursor-pointer underline underline-offset-2">プライバシーポリシー Privacy</button>
+          <button onClick={() => downloadText('swiftbridge-terms.txt', 'SwiftBridge 利用規約 / Terms of Service — placeholder legal copy (demo).')} className="hover:text-slate cursor-pointer underline underline-offset-2">利用規約 Terms</button>
+          <button onClick={() => downloadText('swiftbridge-privacy.txt', 'SwiftBridge プライバシーポリシー / Privacy Policy — placeholder legal copy (demo).')} className="hover:text-slate cursor-pointer underline underline-offset-2">プライバシーポリシー Privacy</button>
         </span>
       </footer>
     </div>
@@ -303,7 +312,7 @@ function DeliveryPanel({ projects, mascot }) {
                   {[`${p.name} (EN).pdf`, 'QA report.pdf', 'Glossary compliance memo.pdf'].map(f => (
                     <li key={f} className="flex items-center justify-between text-[12px] text-ink">
                       <span className="truncate">{f}</span>
-                      <button aria-label={`Download ${f}`} className="text-ocean hover:text-ocean/80 cursor-pointer inline-flex items-center gap-1 text-[11px] shrink-0 ml-3"><Download className="w-3 h-3" /> Download</button>
+                      <button onClick={() => downloadText(f.replace(/\.(pdf|docx)$/i, '.txt'), `${f}\nDelivered by arbitr · SwiftBridge — demo deliverable stub.\nProject: ${p.name} (${p.id})`)} aria-label={`Download ${f}`} className="text-ocean hover:text-ocean/80 cursor-pointer inline-flex items-center gap-1 text-[11px] shrink-0 ml-3"><Download className="w-3 h-3" /> Download</button>
                     </li>
                   ))}
                 </ul>

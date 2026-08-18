@@ -123,7 +123,7 @@ function AutoDetectionPhase({ fileName, reducedMotion, onComplete }) {
       </motion.div>
 
       {/* File name */}
-      <p className="mb-6 text-sm font-medium tracking-wide text-gray-400 uppercase" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+      <p className="mb-6 text-sm font-medium tracking-wide text-gray-400 uppercase" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
         {fileName}
       </p>
 
@@ -135,7 +135,7 @@ function AutoDetectionPhase({ fileName, reducedMotion, onComplete }) {
               key={msg}
               className="text-sm"
               style={{
-                fontFamily: 'JetBrains Mono, monospace',
+                fontFamily: "'IBM Plex Mono', monospace",
                 color: i === messageIndex ? '#3D16FA' : 'rgba(0,0,0,0.35)',
               }}
               initial={{ opacity: 0, y: 8 }}
@@ -344,15 +344,15 @@ function ActiveAgentCard({ agent, onRemove, reducedMotion }) {
               )}
             </div>
             <div className="flex items-center gap-2">
-              <p className="text-xs text-gray-400" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{agent.id} {agent.version}</p>
+              <p className="text-xs text-gray-400" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{agent.id} {agent.version}</p>
               {agent.relevance >= 70 && (
-                <span className="text-[10px] text-emerald-400" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{agent.relevance}% match</span>
+                <span className="text-[10px] text-emerald-400" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{agent.relevance}% match</span>
               )}
               {agent.relevance >= 40 && agent.relevance < 70 && (
-                <span className="text-[10px] text-gray-500" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{agent.relevance}% match</span>
+                <span className="text-[10px] text-gray-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{agent.relevance}% match</span>
               )}
               {agent.relevance < 40 && (
-                <span className="text-[10px] text-gray-400" style={{ fontFamily: 'JetBrains Mono, monospace' }}>Low relevance</span>
+                <span className="text-[10px] text-gray-400" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>Low relevance</span>
               )}
             </div>
           </div>
@@ -367,7 +367,7 @@ function ActiveAgentCard({ agent, onRemove, reducedMotion }) {
       </div>
 
       {/* Stats row */}
-      <div className="mt-3 flex items-center gap-4" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+      <div className="mt-3 flex items-center gap-4" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
         <span className="flex items-center gap-1 text-xs text-emerald-400">
           <BarChart3 size={12} /> +{agent.qualityLift} pts
         </span>
@@ -409,17 +409,17 @@ function AvailableAgentRow({ agent, onAdd, reducedMotion }) {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <p className="text-xs text-gray-400" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+            <p className="text-xs text-gray-400" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
               +{agent.qualityLift} pts &middot; {agent.timeMinutes}m &middot; {agent.costCredits}cr
             </p>
             {isHigh && (
-              <span className="text-[10px] text-emerald-400" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{agent.relevance}% match</span>
+              <span className="text-[10px] text-emerald-400" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{agent.relevance}% match</span>
             )}
             {!isHigh && !isLow && (
-              <span className="text-[10px] text-gray-500" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{agent.relevance}% match</span>
+              <span className="text-[10px] text-gray-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{agent.relevance}% match</span>
             )}
             {isLow && (
-              <span className="text-[10px] text-gray-400" style={{ fontFamily: 'JetBrains Mono, monospace' }}>Low relevance</span>
+              <span className="text-[10px] text-gray-400" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>Low relevance</span>
             )}
           </div>
         </div>
@@ -447,7 +447,7 @@ function MetricBar({ label, value, max, color, displayValue, icon: Icon, reduced
         <span className="flex items-center gap-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">
           <Icon size={13} className="text-gray-400" /> {label}
         </span>
-        <span className="text-sm font-bold" style={{ fontFamily: 'JetBrains Mono, monospace', color }}>
+        <span className="text-sm font-bold" style={{ fontFamily: "'IBM Plex Mono', monospace", color }}>
           {displayValue}
         </span>
       </div>
@@ -471,7 +471,7 @@ function QualityBreakdown({ activeAgents, totalScore, reducedMotion }) {
     <div className="mt-6 rounded-lg border p-4" style={{ backgroundColor: '#ffffff', borderColor: 'rgba(0,0,0,0.12)' }}>
       <p className="mb-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Quality Breakdown</p>
 
-      <div className="space-y-1.5" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+      <div className="space-y-1.5" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
         {/* Baseline */}
         <div className="flex items-center justify-between text-xs">
           <span className="text-gray-500">Baseline</span>
@@ -663,7 +663,7 @@ export default function PreFlightSimulator({
             <div className="flex items-center gap-6">
               <div>
                 <h1 className="text-xs font-bold tracking-widest text-gray-400 uppercase">Pre-Flight Simulator</h1>
-                <p className="mt-0.5 text-sm text-gray-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{fileName}</p>
+                <p className="mt-0.5 text-sm text-gray-600" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{fileName}</p>
               </div>
               <button
                 onClick={() => setMode('auto')}

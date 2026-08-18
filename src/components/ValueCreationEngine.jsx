@@ -110,7 +110,7 @@ function ScoreRing({ score, size = 80, strokeWidth = 6, color, prefersReducedMot
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
         <span
-          className="font-['JetBrains_Mono'] font-bold text-gray-900"
+          className="font-mono font-bold text-gray-900"
           style={{ fontSize: size > 60 ? '1.5rem' : '1rem' }}
         >
           {score}
@@ -183,7 +183,7 @@ export default function ValueCreationEngine({
           >
             <div className="flex items-center gap-2">
               <ArrowRight className="w-5 h-5 text-gray-400" />
-              <span className="font-['JetBrains_Mono'] text-sm font-bold text-emerald-600 bg-emerald-50 border border-emerald-500/20 rounded-full px-3 py-1">
+              <span className="font-mono text-sm font-bold text-emerald-600 bg-emerald-50 border border-emerald-500/20 rounded-full px-3 py-1">
                 +{totalLift} pts
               </span>
               <ArrowRight className="w-5 h-5 text-gray-400" />
@@ -250,7 +250,7 @@ export default function ValueCreationEngine({
                 }}
               >
                 {pct > 8 && (
-                  <span className="font-['JetBrains_Mono'] text-[10px] font-bold text-white/90 whitespace-nowrap px-1">
+                  <span className="font-mono text-[10px] font-bold text-white/90 whitespace-nowrap px-1">
                     {seg.isBase ? seg.value : `+${seg.value}`}
                   </span>
                 )}
@@ -264,7 +264,7 @@ export default function ValueCreationEngine({
             animate={{ opacity: 1 }}
             transition={{ delay: dur === 0 ? 0 : 2.0, duration: dur ?? 0.3 }}
           >
-            <span className="font-['JetBrains_Mono'] text-[10px] font-bold text-white bg-black/40 rounded px-1.5 py-0.5">
+            <span className="font-mono text-[10px] font-bold text-white bg-black/40 rounded px-1.5 py-0.5">
               = {finalScore}
             </span>
           </motion.div>
@@ -311,7 +311,7 @@ export default function ValueCreationEngine({
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-gray-900">{agent.name}</p>
-                    <p className="text-[10px] font-['JetBrains_Mono'] text-gray-400">{agent.id}</p>
+                    <p className="text-[10px] font-mono text-gray-400">{agent.id}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -319,7 +319,7 @@ export default function ValueCreationEngine({
                     {agent.errorsFound} errors caught
                   </span>
                   <span
-                    className="font-['JetBrains_Mono'] text-sm font-bold rounded-full px-2.5 py-0.5"
+                    className="font-mono text-sm font-bold rounded-full px-2.5 py-0.5"
                     style={{
                       color: agent.color,
                       backgroundColor: `${agent.color}15`,

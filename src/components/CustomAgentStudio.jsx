@@ -255,7 +255,7 @@ function ConfigureState({ config, onConfigChange, onNext }) {
           <Settings className="text-straker-600" size={24} />
           <h2
             className="text-2xl font-bold text-gray-900"
-            style={{ fontFamily: 'Inter, sans-serif' }}
+            style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}
           >
             Configure Your Agent
           </h2>
@@ -312,7 +312,7 @@ function ConfigureState({ config, onConfigChange, onNext }) {
           <label className="text-xs font-medium text-gray-500">Quality Target</label>
           <span
             className="text-sm font-semibold text-[#3D16FA]"
-            style={{ fontFamily: 'JetBrains Mono, monospace' }}
+            style={{ fontFamily: "'IBM Plex Mono', monospace" }}
           >
             {qualityTarget}%
           </span>
@@ -459,7 +459,7 @@ function UploadState({ files, onFilesChange, onBeginTraining, trainingRound, tra
           <Sparkles className="text-straker-600" size={24} />
           <h2
             className="text-2xl font-bold text-gray-900"
-            style={{ fontFamily: 'Inter, sans-serif' }}
+            style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}
           >
             {trainingRound > 1 ? `Training Round ${trainingRound}` : 'Train Your Own Agent'}
           </h2>
@@ -485,7 +485,7 @@ function UploadState({ files, onFilesChange, onBeginTraining, trainingRound, tra
             <p
               key={round.round}
               className="text-xs text-gray-500"
-              style={{ fontFamily: 'JetBrains Mono, monospace' }}
+              style={{ fontFamily: "'IBM Plex Mono', monospace" }}
             >
               Round {round.round}: {round.goldenRecords} golden records
               {round.scores.map((s) => (
@@ -556,7 +556,7 @@ function UploadState({ files, onFilesChange, onBeginTraining, trainingRound, tra
                     <p className="text-sm font-medium text-gray-900">{f.name}</p>
                     <p
                       className="text-[10px] text-gray-500"
-                      style={{ fontFamily: 'JetBrains Mono, monospace' }}
+                      style={{ fontFamily: "'IBM Plex Mono', monospace" }}
                     >
                       {formatFileSize(f.size)}
                     </p>
@@ -654,7 +654,7 @@ function TrainingState({ completedSteps, activeStep, logMessages }) {
       <div className="text-center">
         <h2
           className="text-2xl font-bold text-gray-900"
-          style={{ fontFamily: 'Inter, sans-serif' }}
+          style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}
         >
           Extracting Intelligence...
         </h2>
@@ -732,7 +732,7 @@ function TrainingState({ completedSteps, activeStep, logMessages }) {
                   {isComplete && (
                     <span
                       className="text-xs text-emerald-400"
-                      style={{ fontFamily: 'JetBrains Mono, monospace' }}
+                      style={{ fontFamily: "'IBM Plex Mono', monospace" }}
                     >
                       100%
                     </span>
@@ -770,7 +770,7 @@ function TrainingState({ completedSteps, activeStep, logMessages }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="text-xs text-gray-500"
-              style={{ fontFamily: 'JetBrains Mono, monospace' }}
+              style={{ fontFamily: "'IBM Plex Mono', monospace" }}
             >
               &gt; {msg}
             </motion.p>
@@ -800,7 +800,7 @@ function ValidateState({ onDeploy, onRefine, baselineScore, customScore }) {
           <BarChart3 className="text-straker-600" size={24} />
           <h2
             className="text-2xl font-bold text-gray-900"
-            style={{ fontFamily: 'Inter, sans-serif' }}
+            style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}
           >
             Validation Results
           </h2>
@@ -816,7 +816,7 @@ function ValidateState({ onDeploy, onRefine, baselineScore, customScore }) {
           Your custom agent improves quality by{' '}
           <span
             className="text-base"
-            style={{ fontFamily: 'JetBrains Mono, monospace' }}
+            style={{ fontFamily: "'IBM Plex Mono', monospace" }}
           >
             +{improvement}%
           </span>{' '}
@@ -828,7 +828,7 @@ function ValidateState({ onDeploy, onRefine, baselineScore, customScore }) {
               <span className="text-gray-500">Baseline</span>
               <span
                 className="text-gray-500"
-                style={{ fontFamily: 'JetBrains Mono, monospace' }}
+                style={{ fontFamily: "'IBM Plex Mono', monospace" }}
               >
                 {baselineScore}%
               </span>
@@ -848,7 +848,7 @@ function ValidateState({ onDeploy, onRefine, baselineScore, customScore }) {
               <span className="text-emerald-400">Custom Agent</span>
               <span
                 className="text-emerald-400"
-                style={{ fontFamily: 'JetBrains Mono, monospace' }}
+                style={{ fontFamily: "'IBM Plex Mono', monospace" }}
               >
                 {customScore}%
               </span>
@@ -966,7 +966,7 @@ function ScoreProgressionChart({ history }) {
               y={c.y - 8}
               textAnchor="middle"
               className="fill-gray-500"
-              style={{ fontSize: '8px', fontFamily: 'JetBrains Mono, monospace' }}
+              style={{ fontSize: '8px', fontFamily: "'IBM Plex Mono', monospace" }}
             >
               {c.avg.toFixed(0)}%
             </text>
@@ -975,7 +975,7 @@ function ScoreProgressionChart({ history }) {
               y={chartH - 1}
               textAnchor="middle"
               className="fill-gray-400"
-              style={{ fontSize: '7px', fontFamily: 'JetBrains Mono, monospace' }}
+              style={{ fontSize: '7px', fontFamily: "'IBM Plex Mono', monospace" }}
             >
               R{c.round}
             </text>
@@ -1020,13 +1020,13 @@ function CompleteState({ agentName, trainingRound, trainingHistory, previousScor
           <div className="text-center">
             <h3
               className="text-xl font-bold text-gray-900"
-              style={{ fontFamily: 'Inter, sans-serif' }}
+              style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}
             >
               {agentName}
             </h3>
             <span
               className="text-xs text-gray-500"
-              style={{ fontFamily: 'JetBrains Mono, monospace' }}
+              style={{ fontFamily: "'IBM Plex Mono', monospace" }}
             >
               {version}
             </span>
@@ -1037,7 +1037,7 @@ function CompleteState({ agentName, trainingRound, trainingHistory, previousScor
         <div className="mb-4 text-center">
           <p
             className="text-xs text-gray-500"
-            style={{ fontFamily: 'JetBrains Mono, monospace' }}
+            style={{ fontFamily: "'IBM Plex Mono', monospace" }}
           >
             Trained over {trainingRound} round{trainingRound !== 1 ? 's' : ''}
             {' · '}{totalRecords} golden records
@@ -1059,7 +1059,7 @@ function CompleteState({ agentName, trainingRound, trainingHistory, previousScor
               <span
                 key={badge}
                 className="rounded-full bg-gray-50 px-3 py-1 text-xs text-gray-700"
-                style={{ fontFamily: 'JetBrains Mono, monospace' }}
+                style={{ fontFamily: "'IBM Plex Mono', monospace" }}
               >
                 {badge}
               </span>
@@ -1079,14 +1079,14 @@ function CompleteState({ agentName, trainingRound, trainingHistory, previousScor
                   <span className="flex items-center gap-1">
                     <span
                       className="text-xs text-emerald-400"
-                      style={{ fontFamily: 'JetBrains Mono, monospace' }}
+                      style={{ fontFamily: "'IBM Plex Mono', monospace" }}
                     >
                       {cap.value}%
                     </span>
                     {delta > 0 && (
                       <span
                         className="text-[10px] text-emerald-400"
-                        style={{ fontFamily: 'JetBrains Mono, monospace' }}
+                        style={{ fontFamily: "'IBM Plex Mono', monospace" }}
                       >
                         (+{delta})
                       </span>
@@ -1340,7 +1340,7 @@ export default function CustomAgentStudio({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-          style={{ fontFamily: 'Inter, sans-serif' }}
+          style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}
         >
           {/* Backdrop click to close */}
           <div className="absolute inset-0" onClick={onClose} />

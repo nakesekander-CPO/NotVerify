@@ -14,6 +14,7 @@ import { Shield, Brain, Workflow, Hash, BadgeCheck, Mic } from 'lucide-react'
 import { MonoLabel, ScoreBar, Card } from './shared'
 import { documentPedigreeSeries } from '../../services/hitl/cockpit'
 import TrustSparkline from './cockpit/TrustSparkline'
+import { downloadJson } from '../../utils/demoFiles'
 
 const DEPTH_LABEL = {
   untouched: 'Untouched',
@@ -101,7 +102,7 @@ export function DocumentPedigreeCard({ pedigree }) {
           <Hash className="inline w-3 h-3 mr-1" />
           {pedigree.provenanceHash}
         </span>
-        <button className="text-ocean hover:text-ocean-deep cursor-pointer">Verify provenance ↗</button>
+        <button onClick={() => downloadJson('provenance-record.json', { hash: pedigree.provenanceHash, verified: true, verifiedAt: new Date().toISOString(), note: 'Demo provenance record' })} className="text-ocean hover:text-ocean-deep cursor-pointer">Verify provenance ↗</button>
       </div>
     </div>
   )

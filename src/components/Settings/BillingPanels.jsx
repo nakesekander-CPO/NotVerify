@@ -18,6 +18,8 @@ import {
   buildPurchaseRequest, normalizeRequest, purchaseRequestFulfillment,
 } from '../../services/billing/billingModel'
 import { Card, Toggle, Field, StatusPill, fmtDate, fmtMoney } from './BillingShared'
+import { useToast } from '../ToastProvider'
+import { downloadCsv, downloadHtml } from '../../utils/demoFiles'
 
 /* ── Plans / Contract ─────────────────────────────────────────── */
 
@@ -32,6 +34,7 @@ const PUBLIC_PLANS = {
  * state, exactly one primary (the recommended next step up), and
  * downgrades are always outline/neutral — never the loudest button. */
 export function PlansPanel({ account }) {
+  const { addToast } = useToast()
   if (account.tier === 'enterprise') return <ContractPanel account={account} />
   const ctas = planCtaModel(account.tier, { downgradePolicy: account.downgradePolicy })
   return (
@@ -65,11 +68,11 @@ export function PlansPanel({ account }) {
               {isCurrent ? (
                 <div aria-label={cta.ariaLabel} className="mt-auto px-4 py-2.5 rounded-lg text-center text-[13px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Current plan</div>
               ) : cta.emphasis === 'primary' ? (
-                <button aria-label={cta.ariaLabel} className="mt-auto w-full px-4 py-2.5 rounded-lg text-[13px] font-semibold bg-[#3D16FA] text-white hover:bg-[#2E10C4] cursor-pointer">
+                <button onClick={() => addToast(`${cta.label} — request sent to your account team (demo)`, 'success')} aria-label={cta.ariaLabel} className="mt-auto w-full px-4 py-2.5 rounded-lg text-[13px] font-semibold bg-[#3D16FA] text-white hover:bg-[#2E10C4] cursor-pointer">
                   {cta.label}
                 </button>
               ) : (
-                <button aria-label={cta.ariaLabel} className="mt-auto w-full px-4 py-2.5 rounded-lg text-[13px] font-medium border border-black/[0.15] text-gray-600 hover:bg-black/[0.04] cursor-pointer">
+                <button onClick={() => addToast(`${cta.label} — request sent to your account team (demo)`, 'success')} aria-label={cta.ariaLabel} className="mt-auto w-full px-4 py-2.5 rounded-lg text-[13px] font-medium border border-black/[0.15] text-gray-600 hover:bg-black/[0.04] cursor-pointer">
                   {cta.label}
                 </button>
               )}
@@ -83,6 +86,7 @@ export function PlansPanel({ account }) {
 
 /* Enterprise — contract view; never pushes downgrade CTAs. */
 function ContractPanel({ account }) {
+  const { addToast } = useToast()
   const w = account.creditWallet
   const isInvoice = account.paymentRail === 'invoice_or_po'
   const committed = w.plan.grantThisCycle * 12
@@ -102,13 +106,13 @@ function ContractPanel({ account }) {
           <Metric label="Available now" value={w.availableTotal.toLocaleString()} sub="all buckets" />
         </div>
         <div className="mt-4 pt-4 border-t border-black/[0.06] flex items-center gap-2 flex-wrap">
-          <button aria-label="Contact account team about Enterprise plan" className="px-4 py-2 rounded-lg bg-[#3D16FA] text-white text-[12.5px] font-semibold hover:bg-[#2E10C4] cursor-pointer inline-flex items-center gap-1.5">
+          <button onClick={() => addToast('Message sent — your account team will reach out within one business day (demo)', 'success')} aria-label="Contact account team about Enterprise plan" className="px-4 py-2 rounded-lg bg-[#3D16FA] text-white text-[12.5px] font-semibold hover:bg-[#2E10C4] cursor-pointer inline-flex items-center gap-1.5">
             <Phone className="w-3.5 h-3.5" /> Contact account team
           </button>
-          <button className="px-4 py-2 rounded-lg border border-black/[0.12] text-[12.5px] font-medium text-gray-700 hover:bg-black/[0.03] cursor-pointer">View contract</button>
-          <button className="px-4 py-2 rounded-lg border border-black/[0.12] text-[12.5px] font-medium text-gray-700 hover:bg-black/[0.03] cursor-pointer">Compare plans</button>
+          <button onClick={() => downloadHtml('arbitr-enterprise-contract.html', 'Enterprise Agreement — Meridian Capital', '<p>Master service agreement summary.</p><table><tr><th>Term</th><td>12 months, renews Jul 1</td></tr><tr><th>Billing</th><td>Invoice / PO, Net 30</td></tr><tr><th>Credits</th><td>Intelligence and Trust Credits per order form</td></tr></table>')} className="px-4 py-2 rounded-lg border border-black/[0.12] text-[12.5px] font-medium text-gray-700 hover:bg-black/[0.03] cursor-pointer">View contract</button>
+          <button onClick={() => addToast('Plan comparison is on the Plans tab (demo)', 'info')} className="px-4 py-2 rounded-lg border border-black/[0.12] text-[12.5px] font-medium text-gray-700 hover:bg-black/[0.03] cursor-pointer">Compare plans</button>
           {account.downgradePolicy === 'request_only' && (
-            <button aria-label="Request a plan change — reviewed by your account team" className="px-4 py-2 rounded-lg border border-black/[0.12] text-[12.5px] font-medium text-gray-600 hover:bg-black/[0.03] cursor-pointer">
+            <button onClick={() => addToast('Plan-change request sent for account-team review (demo)', 'success')} aria-label="Request a plan change — reviewed by your account team" className="px-4 py-2 rounded-lg border border-black/[0.12] text-[12.5px] font-medium text-gray-600 hover:bg-black/[0.03] cursor-pointer">
               Request plan change
             </button>
           )}
@@ -137,6 +141,7 @@ function Metric({ label, value, sub }) {
 /* ── Top up ───────────────────────────────────────────────────── */
 
 export function TopUpPanel({ account, appendLedger, appendTrustLedger, appendReceipt }) {
+  const { addToast } = useToast()
   const isCard = account.paymentRail === 'card_or_ach'
   const trustAvailable = account.trustCredits?.grantThisCycle > 0 || account.trustCredits?.available > 0
   /* Invoice/PO rail uses ONE combined order card (IC + Trust on a
@@ -442,9 +447,9 @@ function InvoiceTopUp({ account, appendLedger, appendTrustLedger }) {
               <p className="text-[10.5px] text-gray-400">One invoice · {account.netTerms}</p>
             </div>
             <div className="flex items-center gap-2">
-            <button className="px-3 py-2 rounded-lg border border-black/[0.12] text-[12px] font-medium text-gray-600 hover:bg-black/[0.03] cursor-pointer">Contact sales</button>
+            <button onClick={() => addToast('Message sent to sales (demo)', 'success')} className="px-3 py-2 rounded-lg border border-black/[0.12] text-[12px] font-medium text-gray-600 hover:bg-black/[0.03] cursor-pointer">Contact sales</button>
             {account.cardTopUpsEnabled && (
-              <button className="px-3 py-2 rounded-lg border border-black/[0.12] text-[12px] font-medium text-gray-600 hover:bg-black/[0.03] cursor-pointer">Pay by card for this one-time order</button>
+              <button onClick={() => addToast('One-time card order started — this stays a separate line item from your invoice rail (demo)', 'info')} className="px-3 py-2 rounded-lg border border-black/[0.12] text-[12px] font-medium text-gray-600 hover:bg-black/[0.03] cursor-pointer">Pay by card for this one-time order</button>
             )}
             <button onClick={submit} disabled={!validation.ok}
               title={validation.ok ? undefined : validation.errors.join(' ')}
@@ -635,6 +640,7 @@ function ReconRow({ label, value }) {
 /* ── Invoices (invoice/PO rail only) ─────────────────────────── */
 
 export function InvoicesPanel({ account, filter = 'all', setFilter, onPayAll, paying }) {
+  const exportInvoices = () => downloadCsv('arbitr-invoices.csv', account.invoices.map(i => ({ id: i.id, type: i.type, date: i.date, amount: i.amount, status: i.status, due: i.dueDate, po: i.po || '' })))
   const [payOpen, setPayOpen] = useState(null) // invoice id with the remittance panel open
   const pastDue = account.invoices.filter(i => i.status === 'past_due')
   const pastDueTotal = pastDue.reduce((s, i) => s + i.amount, 0)
@@ -658,7 +664,7 @@ export function InvoicesPanel({ account, filter = 'all', setFilter, onPayAll, pa
               {paying ? 'Processing…' : `Pay all past due (${fmtMoney(pastDueTotal)})`}
             </button>
           )}
-          <button className="inline-flex items-center gap-1.5 text-[11px] text-gray-600 hover:text-gray-900 border border-black/[0.12] px-3 py-1.5 rounded-lg cursor-pointer">
+          <button onClick={exportInvoices} className="inline-flex items-center gap-1.5 text-[11px] text-gray-600 hover:text-gray-900 border border-black/[0.12] px-3 py-1.5 rounded-lg cursor-pointer">
             <Download className="w-3 h-3" /> Export all
           </button>
         </div>
@@ -707,7 +713,7 @@ export function InvoicesPanel({ account, filter = 'all', setFilter, onPayAll, pa
                 <td className="px-4 py-2.5"><StatusPill status={inv.status} /></td>
                 <td className={`px-4 py-2.5 tabular-nums whitespace-nowrap hidden md:table-cell ${inv.status === 'past_due' ? 'text-red-600 font-medium' : 'text-gray-500'}`}>{fmtDate(inv.dueDate)}</td>
                 <td className="px-4 py-2.5 whitespace-nowrap text-right min-w-[132px] sticky right-0 bg-white shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.12)]">
-                  <button aria-label={`Download invoice ${inv.id}`} className="text-[11px] text-[#3D16FA] hover:text-[#2E10C4] cursor-pointer mr-3 px-1 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3D16FA]/40">Download</button>
+                  <button onClick={() => downloadHtml(`${inv.id}.html`, `Invoice ${inv.id}`, `<table><tr><th>Amount</th><td>${fmtMoney(inv.amount)}</td></tr><tr><th>Status</th><td>${inv.status}</td></tr><tr><th>Due</th><td>${fmtDate(inv.dueDate)}</td></tr><tr><th>PO</th><td>${inv.po || '—'}</td></tr></table>`)} aria-label={`Download invoice ${inv.id}`} className="text-[11px] text-[#3D16FA] hover:text-[#2E10C4] cursor-pointer mr-3 px-1 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3D16FA]/40">Download</button>
                   {inv.status !== 'paid' && <button onClick={() => setPayOpen(inv.id)} aria-label={`Pay invoice ${inv.id}`} className="text-[11px] text-[#3D16FA] hover:text-[#2E10C4] cursor-pointer px-1 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3D16FA]/40">Pay</button>}
                 </td>
               </tr>
@@ -722,11 +728,12 @@ export function InvoicesPanel({ account, filter = 'all', setFilter, onPayAll, pa
 /* ── Payments & receipts (card/ACH rail only) ────────────────── */
 
 export function PaymentsReceiptsPanel({ account }) {
+  const exportReceipts = () => downloadCsv('arbitr-receipts.csv', account.receipts.map(r => ({ id: r.id, type: r.type, date: r.date, method: r.method || '', amount: r.amount, status: r.status })))
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h4 className="text-[13px] font-semibold text-gray-900">Payments & receipts</h4>
-        <button className="inline-flex items-center gap-1.5 text-[11px] text-gray-600 hover:text-gray-900 border border-black/[0.12] px-3 py-1.5 rounded-lg cursor-pointer">
+        <button onClick={exportReceipts} className="inline-flex items-center gap-1.5 text-[11px] text-gray-600 hover:text-gray-900 border border-black/[0.12] px-3 py-1.5 rounded-lg cursor-pointer">
           <Download className="w-3 h-3" /> Export all
         </button>
       </div>
@@ -764,6 +771,7 @@ export function PaymentsReceiptsPanel({ account }) {
                 <td className="px-4 py-2.5"><StatusPill status={r.status} /></td>
                 <td className="px-4 py-2.5 text-right whitespace-nowrap min-w-[104px] sticky right-0 bg-white shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.12)]">
                   <button
+                    onClick={() => downloadHtml(`${r.id}.html`, `Receipt ${r.id}`, `<table><tr><th>Amount</th><td>${fmtMoney(r.amount)}</td></tr><tr><th>Method</th><td>${r.method || '—'}</td></tr><tr><th>Status</th><td>${r.status}</td></tr></table>`)}
                     aria-label={`Download receipt ${r.id}`}
                     className="text-[11px] text-[#3D16FA] hover:text-[#2E10C4] cursor-pointer px-1 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3D16FA]/40"
                   >

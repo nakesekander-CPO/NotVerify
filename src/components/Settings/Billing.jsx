@@ -30,6 +30,7 @@ import {
   AdminPanel, PlansPanel,
 } from './BillingPanels'
 import { Card, StatusPill, fmtDate, fmtMoney } from './BillingShared'
+import { useToast } from '../ToastProvider'
 
 const TIER_TO_ACCOUNT = { standard: 'standard-card', pro: 'proteam-card', enterprise: 'enterprise-invoice' }
 
@@ -421,6 +422,7 @@ const PLAN_LABEL = { standard: 'Standard', pro_team: 'Team', enterprise: 'Enterp
 const PLAN_PRICE = { standard: '$20/mo', pro_team: '$100/mo', enterprise: 'Annual contract' }
 
 function OverviewPanel({ account, onTopUp, onChangePlan, onViewLedger, onViewInvoices, onViewPayments }) {
+  const { addToast } = useToast()
   const isCard = account.paymentRail === 'card_or_ach'
   const w = account.creditWallet
   const meter = planMeterState(w.plan)
@@ -457,7 +459,7 @@ function OverviewPanel({ account, onTopUp, onChangePlan, onViewLedger, onViewInv
               {account.tier === 'enterprise' ? 'View contract' : 'Review plan options'}
             </button>
             {isCard
-              ? <button className="flex-1 px-3 py-2 rounded-lg border border-black/[0.12] text-[12px] font-medium text-gray-700 hover:bg-black/[0.03] cursor-pointer">Update payment method</button>
+              ? <button onClick={() => addToast('Secure payment-method update link sent to the billing contact (demo)', 'success')} className="flex-1 px-3 py-2 rounded-lg border border-black/[0.12] text-[12px] font-medium text-gray-700 hover:bg-black/[0.03] cursor-pointer">Update payment method</button>
               : <button onClick={onViewInvoices} className="flex-1 px-3 py-2 rounded-lg border border-black/[0.12] text-[12px] font-medium text-gray-700 hover:bg-black/[0.03] cursor-pointer">View invoices</button>}
           </div>
         </Card>

@@ -106,7 +106,7 @@ function AccuracyChart({ data }) {
               textAnchor="end"
               dominantBaseline="central"
               className="fill-gray-500"
-              style={{ fontSize: '9px', fontFamily: "'JetBrains Mono', monospace" }}
+              style={{ fontSize: '9px', fontFamily: "'IBM Plex Mono', monospace" }}
             >
               {v}%
             </text>
@@ -133,7 +133,7 @@ function AccuracyChart({ data }) {
           y={height - 4}
           textAnchor="middle"
           className="fill-gray-500"
-          style={{ fontSize: '8px', fontFamily: "'JetBrains Mono', monospace" }}
+          style={{ fontSize: '8px', fontFamily: "'IBM Plex Mono', monospace" }}
         >
           P{i + 1}
         </text>
@@ -152,7 +152,7 @@ function StatCard({ label, value, icon: Icon }) {
       </div>
       <span
         className="text-xl font-bold text-gray-900"
-        style={{ fontFamily: "'JetBrains Mono', monospace" }}
+        style={{ fontFamily: "'IBM Plex Mono', monospace" }}
       >
         {value}
       </span>
@@ -204,7 +204,7 @@ export default function AgentProfile({ isOpen, onClose, agent, onContinueTrainin
         >
           <motion.div
             className="relative flex flex-col w-[90vw] max-w-[900px] h-[90vh] rounded-lg overflow-hidden"
-            style={{ backgroundColor: '#ffffff', fontFamily: 'Inter, sans-serif' }}
+            style={{ backgroundColor: '#ffffff', fontFamily: "'IBM Plex Sans', sans-serif" }}
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
@@ -228,7 +228,7 @@ export default function AgentProfile({ isOpen, onClose, agent, onContinueTrainin
                       style={{
                         backgroundColor: 'rgba(61,22,250,0.15)',
                         color: '#3D16FA',
-                        fontFamily: "'JetBrains Mono', monospace",
+                        fontFamily: "'IBM Plex Mono', monospace",
                       }}
                     >
                       {agent.version || 'v1.0'}
@@ -345,7 +345,7 @@ export default function AgentProfile({ isOpen, onClose, agent, onContinueTrainin
                             </span>
                             <span
                               className="text-[10px] text-gray-500 hidden md:inline"
-                              style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                              style={{ fontFamily: "'IBM Plex Mono', monospace" }}
                             >
                               {entry.date}
                             </span>
@@ -401,7 +401,7 @@ export default function AgentProfile({ isOpen, onClose, agent, onContinueTrainin
                         <span className="text-xs text-gray-400">Formality level</span>
                         <span
                           className="text-xs text-gray-900 font-bold"
-                          style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                          style={{ fontFamily: "'IBM Plex Mono', monospace" }}
                         >
                           92/100
                         </span>
@@ -421,7 +421,7 @@ export default function AgentProfile({ isOpen, onClose, agent, onContinueTrainin
                             className="text-[11px] font-medium px-2.5 py-1 rounded-lg text-gray-800"
                             style={{
                               backgroundColor: 'rgba(0,0,0,0.06)',
-                              fontFamily: "'JetBrains Mono', monospace",
+                              fontFamily: "'IBM Plex Mono', monospace",
                             }}
                           >
                             {term}
@@ -472,13 +472,13 @@ export default function AgentProfile({ isOpen, onClose, agent, onContinueTrainin
                           <td className="px-4 py-3 text-xs text-gray-700 font-medium">{row.category}</td>
                           <td
                             className="px-4 py-3 text-xs text-gray-500"
-                            style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                            style={{ fontFamily: "'IBM Plex Mono', monospace" }}
                           >
                             {row.baseline}
                           </td>
                           <td
                             className="px-4 py-3 text-xs text-gray-900 font-medium"
-                            style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                            style={{ fontFamily: "'IBM Plex Mono', monospace" }}
                           >
                             {row.override}
                           </td>

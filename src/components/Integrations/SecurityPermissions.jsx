@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Shield, Lock, Check, X, Download, Edit2, ChevronDown } from 'lucide-react'
+import { downloadCsv } from '../../utils/demoFiles'
 
 const DEFAULT_AGENTS = [
   { id: 'JP-FIN-3', name: 'J-GAAP Specialist', version: 'v4.2' },
@@ -218,7 +219,7 @@ export default function SecurityPermissions({ connectedIntegrations }) {
             <Shield className="w-4 h-4 text-gray-400" />
             <h3 className="text-[13px] font-semibold text-gray-900">Audit Log</h3>
           </div>
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] text-gray-500 hover:bg-black/[0.04] border border-black/[0.06] cursor-pointer">
+          <button onClick={() => downloadCsv('arbitr-integration-audit.csv', MOCK_AUDIT_LOG)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] text-gray-500 hover:bg-black/[0.04] border border-black/[0.06] cursor-pointer">
             <Download className="w-3 h-3" />
             Export CSV
           </button>

@@ -142,7 +142,7 @@ function DimensionBar({ name, score, delay, reducedMotion }) {
 /* ══════════════════════════════════════════════════════
    MISSION CONTROL — Unified Launch Experience
    ══════════════════════════════════════════════════════ */
-export default function MissionControl({
+export default function MissionControl({ onCancel,
   triageData,
   discoveryFindings,
   structuredContext,
@@ -410,6 +410,11 @@ export default function MissionControl({
           >
             Advanced configuration <ChevronRight size={13} className="transition-transform" />
           </button>
+          {onCancel && (
+            <button onClick={onCancel} className="block mx-auto mt-3 text-[11.5px] text-gray-400 hover:text-gray-600 cursor-pointer">
+              Cancel and return to dashboard
+            </button>
+          )}
         </div>
       )}
 

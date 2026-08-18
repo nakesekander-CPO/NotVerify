@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { downloadCsv } from '../../utils/demoFiles'
 import { ScrollText, Filter, Download } from 'lucide-react'
 import { HITL_AUDIT_LOG, HITL_PROJECTS } from '../../data/hitlVendorWorkflow'
 import { SectionHeading, Card, MonoLabel, EmptyState, SecondaryButton } from './shared'
@@ -44,7 +45,7 @@ export default function AuditLogViewer({ activeProjectId }) {
       <SectionHeading
         title="Audit Log"
         subtitle="Every critical HITL action — vendor selection, assignment, override, segment decision, sign-off, retraining approval, RBAC change, restricted-action attempt — is appended here with before / after values and the policy that allowed or blocked it."
-        actions={<SecondaryButton><Download className="w-3.5 h-3.5" /> Export CSV</SecondaryButton>}
+        actions={<SecondaryButton onClick={() => downloadCsv('arbitr-hitl-audit-log.csv', list.map(e => ({ timestamp: e.timestamp, event: e.eventType, actor: e.actorId || '', role: e.actorRole || '', project: e.projectId || '', reason: e.reason || '' })))}><Download className="w-3.5 h-3.5" /> Export CSV</SecondaryButton>}
       />
 
       <Card padding="p-3" className="mb-4">

@@ -5,6 +5,7 @@ import {
   MessageCircle, Globe, Sparkles, FileText, X, Shield, Lock
 } from 'lucide-react'
 import useReducedMotion from '../hooks/useReducedMotion'
+import { useToast } from './ToastProvider'
 
 const ASSISTANT_NAME = 'Sage'
 
@@ -821,10 +822,7 @@ export default function OnboardingFlow({ onComplete }) {
                     <div className="mb-4">
                       <p className="text-[12px] uppercase tracking-wider text-gray-500 font-bold mb-2">Train Custom Agent</p>
                       <button
-                        onClick={() => {
-                          // Placeholder — will navigate to agent training flow later
-                          console.log('Navigate to Train Custom Agent flow')
-                        }}
+                        onClick={() => addToast('Agent Studio unlocks right after setup — you\'ll find it in the top navigation', 'info')}
                         className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-gray-50 border border-black/[0.12] hover:border-straker-500/30 hover:bg-straker-500/[0.04] transition-all cursor-pointer text-left group"
                       >
                         <div className="w-8 h-8 rounded-lg bg-straker-50 flex items-center justify-center flex-shrink-0 group-hover:bg-straker-500/20 transition-colors">

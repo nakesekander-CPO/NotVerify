@@ -54,7 +54,7 @@ function LogLine({ text, success, reducedMotion }) {
     return (
       <p
         className="font-mono text-xs leading-relaxed"
-        style={{ color: success ? '#00B887' : '#8087AC', fontFamily: "'JetBrains Mono', monospace" }}
+        style={{ color: success ? '#00B887' : '#8087AC', fontFamily: "'IBM Plex Mono', monospace" }}
       >
         {success ? '\u2713 ' : '> '}{text}
       </p>
@@ -67,7 +67,7 @@ function LogLine({ text, success, reducedMotion }) {
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3 }}
       className="font-mono text-xs leading-relaxed"
-      style={{ color: success ? '#00B887' : '#8087AC', fontFamily: "'JetBrains Mono', monospace" }}
+      style={{ color: success ? '#00B887' : '#8087AC', fontFamily: "'IBM Plex Mono', monospace" }}
     >
       {success ? '\u2713 ' : '> '}{text}
     </motion.p>
@@ -103,7 +103,7 @@ function AgentIcon({ agent, index, ensembleLocked, reducedMotion }) {
         </div>
         <span
           className="text-[10px] whitespace-nowrap"
-          style={{ color: '#8087AC', fontFamily: "'JetBrains Mono', monospace" }}
+          style={{ color: '#8087AC', fontFamily: "'IBM Plex Mono', monospace" }}
         >
           {agent.id}
         </span>
@@ -157,7 +157,7 @@ function AgentIcon({ agent, index, ensembleLocked, reducedMotion }) {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
         className="text-[10px] whitespace-nowrap"
-        style={{ color: '#8087AC', fontFamily: "'JetBrains Mono', monospace" }}
+        style={{ color: '#8087AC', fontFamily: "'IBM Plex Mono', monospace" }}
       >
         {agent.id}
       </motion.span>
@@ -258,7 +258,7 @@ export default function StreamingIntelligence({ fileName, onComplete, agents = [
   return (
     <motion.div
       className="fixed inset-0 z-50 flex flex-col items-center justify-center"
-      style={{ backgroundColor: '#ffffff', fontFamily: "'Inter', sans-serif" }}
+      style={{ backgroundColor: '#ffffff', fontFamily: "'IBM Plex Sans', sans-serif" }}
       variants={!reducedMotion ? wrapperVariants : undefined}
       initial={!reducedMotion ? 'visible' : undefined}
       animate={!reducedMotion ? (fadingOut ? 'hidden' : 'visible') : undefined}
@@ -333,7 +333,7 @@ export default function StreamingIntelligence({ fileName, onComplete, agents = [
       {/* ---- File name label ---- */}
       <p
         className="mt-2 text-sm"
-        style={{ color: '#322D5C', fontFamily: "'JetBrains Mono', monospace" }}
+        style={{ color: '#322D5C', fontFamily: "'IBM Plex Mono', monospace" }}
       >
         {fileName}
       </p>

@@ -93,7 +93,7 @@ export default function AgentAssemblyTransition({ agents: _agents, onComplete, o
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-white flex items-center justify-center font-['Inter',sans-serif]">
+    <div className="fixed inset-0 z-50 bg-white flex items-center justify-center font-sans">
       {/* Skip link */}
       <button
         onClick={onSkipToDashboard ?? onComplete}

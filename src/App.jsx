@@ -41,8 +41,10 @@ import useQualityCalculator from './hooks/useQualityCalculator'
 import { generateOrgIntelligence } from './data/orgIntelligence'
 import { generateDiscoveryStream } from './data/discoveryFindings'
 import { generateQualityNarrative } from './data/qualityNarrative'
+import { useToast } from './components/ToastProvider'
 
 export default function App() {
+  const { addToast } = useToast()
   const isMobile = useMediaQuery('(max-width: 767px), (max-width: 1024px) and (max-height: 500px)')
 
   // Organizational intelligence (simulated — loaded once)
@@ -82,6 +84,11 @@ export default function App() {
   const [humanReviewMode, setHumanReviewMode] = useState(null) // null | 'assign' | 'review'
   if (typeof window !== 'undefined') { window.__setHumanReviewMode = setHumanReviewMode }
   const [previousPhase, setPreviousPhase] = useState(null) // to return after review
+  // Single Back rule: a stale/self-referencing previousPhase always falls
+  // back to the dashboard — no more Settings↔Integrations Back loops.
+  const goBack = useCallback((fallback = 'dashboard') => {
+    setPhase(prev => (previousPhase && previousPhase !== prev ? previousPhase : fallback))
+  }, [previousPhase])
   const [campaignReviewJob, setCampaignReviewJob] = useState(null) // { docId, fileName, locale, score, detectedType }
   const [campaignReviewRequest, setCampaignReviewRequest] = useState(null) // memoized reviewRequest for HumanReview
   const [connectedIntegrations, setConnectedIntegrations] = useState([])
@@ -331,34 +338,34 @@ export default function App() {
 
   // Assignment complete → switch to reviewer view
   const handleReviewAssigned = useCallback((reviewerId, note) => {
-    console.log('Review assigned to:', reviewerId, 'Note:', note)
+    addToast(`Review assigned — the reviewer has been notified${note ? ' with your note' : ''}`, 'success')
     setHumanReviewMode('review')
   }, [])
 
   // Review submitted → return to previous phase with retraining data
   const handleReviewSubmitted = useCallback((results) => {
-    console.log('Review submitted. Retraining data:', results)
+    addToast('Review submitted — corrections queued for the Cortex retraining pass', 'success')
     setHumanReviewMode(null)
     setCampaignReviewJob(null)
     setCampaignReviewRequest(null)
-    setPhase(previousPhase || 'narrative')
+    setPhase(previousPhase && previousPhase !== 'human-review' ? previousPhase : 'narrative')
   }, [previousPhase])
 
   // Back from human review → return to previous phase
   const handleReviewBack = useCallback(() => {
     setHumanReviewMode(null)
-    setPhase(previousPhase || 'narrative')
+    setPhase(previousPhase && previousPhase !== 'human-review' ? previousPhase : 'narrative')
   }, [previousPhase])
 
   // Team directory delegation (legacy modal — still used for TeamDirectory component)
   const handleDelegationComplete = useCallback((member, note) => {
-    console.log('Delegated to:', member.name, 'Note:', note, 'Item:', teamDirectoryContext.itemId)
+    addToast(`Delegated to ${member.name}`, 'success')
     setShowTeamDirectory(false)
   }, [teamDirectoryContext])
 
   // Agent arbitration resolved
   const handleArbitrationResolved = useCallback((resolutions) => {
-    console.log('Arbitration resolved:', resolutions)
+    addToast('Arbitration resolved — decision written to the audit trail', 'success')
     setShowArbitration(false)
   }, [])
 
@@ -443,7 +450,7 @@ export default function App() {
         <AgentAssemblyTransition
           agents={defaultAgents}
           userName={onboardingConfig?.userName || 'Alex'}
-          onComplete={() => setPhase('first-campaign')}
+          onComplete={() => setPhase('dashboard')}
           onSkipToDashboard={() => setPhase('dashboard')}
         />
       </div>
@@ -456,7 +463,7 @@ export default function App() {
         Skip to main content
       </a>
       <Header companyName={onboardingConfig?.orgName || 'Meridian Capital'} onOpenSettings={() => { setPreviousPhase(phase); setPhase('settings') }} onOpenMarketplace={() => setShowMarketplace(true)} onOpenHitlWorkflow={() => setShowHitlWorkflow(true)} onNavigateHome={() => setPhase('dashboard')} />
-      {phase !== 'settings' && phase !== 'integrations' && phase !== 'onboarding' && phase !== 'agent-assembly' && (
+      {phase !== 'onboarding' && phase !== 'agent-assembly' && (
         <GlobalNav
           currentPhase={phase}
           onNavigate={(target) => { setPreviousPhase(phase); setPhase(target); }}
@@ -472,7 +479,7 @@ export default function App() {
           {/* Settings page */}
           {phase === 'settings' && (
             <Settings
-              onBack={() => setPhase(previousPhase || 'dashboard')}
+              onBack={() => goBack()}
               onOpenIntegrations={() => { setPreviousPhase('settings'); setPhase('integrations') }}
             />
           )}
@@ -480,7 +487,7 @@ export default function App() {
           {/* Integrations hub */}
           {phase === 'integrations' && (
             <IntegrationsHub
-              onBack={() => setPhase(previousPhase || 'dashboard')}
+              onBack={() => goBack()}
               connectedIntegrations={connectedIntegrations}
               onConnectIntegration={handleConnectIntegration}
               onDisconnectIntegration={handleDisconnectIntegration}
@@ -537,6 +544,7 @@ export default function App() {
           {/* Mission Control — Unified Analysis + Agent Configuration */}
           {phase === 'reading' && (
             <MissionControl
+              onCancel={() => { setTriageData(null); setPhase('dashboard') }}
               triageData={triageData}
               discoveryFindings={discoveryFindings}
               structuredContext={structuredContext}
@@ -567,8 +575,8 @@ export default function App() {
           {/* Cortex — top-level phase accessible from dashboard or narrative */}
           {phase === 'org-brain' && (
             <Cortex
-              onClose={() => setPhase(previousPhase || 'dashboard')}
-              onNavigateBack={() => setPhase(previousPhase || 'dashboard')}
+              onClose={() => goBack()}
+              onNavigateBack={() => goBack()}
               onCreateContent={handleCreateContent}
             />
           )}
@@ -576,14 +584,14 @@ export default function App() {
           {/* Create with Cortex */}
           {phase === 'create' && (
             <ContentCreator
-              onBack={() => setPhase(previousPhase || 'dashboard')}
+              onBack={() => goBack()}
             />
           )}
 
           {/* Agent Studio — governed custom agents, nav sibling of Cortex */}
           {phase === 'agent-studio' && (
             <AgentStudio
-              onBack={() => setPhase(previousPhase || 'dashboard')}
+              onBack={() => goBack()}
               currentUserId="alex"
             />
           )}
@@ -593,7 +601,7 @@ export default function App() {
           {/* Video Dubbing — governed video localization (lip-sync engine: LipDub) */}
           {phase === 'video-dubbing' && (
             <div className="w-full max-w-[1280px] xl:max-w-[1440px] 2xl:max-w-[1600px] mx-auto px-6 lg:px-8 xl:px-12 2xl:px-16 py-6">
-              <VideoDubbing onBack={() => setPhase(previousPhase || 'dashboard')} />
+              <VideoDubbing onBack={() => goBack()} />
             </div>
           )}
 
@@ -602,6 +610,7 @@ export default function App() {
               <SwiftBridge
                 currentUserId="alex"
                 navigate={() => setShowHitlWorkflow(true)}
+                onBack={() => goBack()}
               />
             </div>
           )}
@@ -609,21 +618,21 @@ export default function App() {
           {/* Enterprise AI Visibility — governed EAVI measurement module */}
           {phase === 'ai-visibility' && (
             <EnterpriseAIVisibility
-              onBack={() => setPhase(previousPhase || 'dashboard')}
+              onBack={() => goBack()}
             />
           )}
 
           {/* Analytics */}
           {phase === 'analytics' && (
             <AnalyticsDashboard
-              onBack={() => setPhase(previousPhase || 'dashboard')}
+              onBack={() => goBack()}
             />
           )}
 
           {/* Governance */}
           {phase === 'governance' && (
             <GovernanceAudit
-              onBack={() => setPhase(previousPhase || 'dashboard')}
+              onBack={() => goBack()}
             />
           )}
 
@@ -657,12 +666,14 @@ export default function App() {
                 {/* Screen 3: Processing — Control Room for campaigns, LiveTelemetry for single docs */}
                 {phase === 'processing' && activeCampaign && (
                   <OperationsControlRoom
+                    onCancel={() => { setActiveCampaign(null); setPhase('dashboard') }}
                     campaign={activeCampaign}
                     onComplete={handleProcessingComplete}
                   />
                 )}
                 {phase === 'processing' && !activeCampaign && (
                   <LiveTelemetry
+                    onCancel={() => { setTriageData(null); setPhase('dashboard') }}
                     fileName={triageData?.fileName || 'Document'}
                     totalSegments={247}
                     locales={structuredContext.targetLocales?.length > 0 ? structuredContext.targetLocales : ['ja', 'de', 'zh']}
@@ -806,7 +817,7 @@ export default function App() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <div className="w-full max-w-[900px] max-h-[85vh] overflow-y-auto rounded-lg bg-white border border-black/[0.12] p-1">
             <AgentArbitration
-              onResolve={(id, resolution) => console.log('Resolved:', id, resolution)}
+              onResolve={() => addToast('Disagreement resolved — decision written to the audit trail', 'success')}
               onResolveAll={handleArbitrationResolved}
             />
             <button
