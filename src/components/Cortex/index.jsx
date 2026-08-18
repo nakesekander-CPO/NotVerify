@@ -1,27 +1,20 @@
 /**
  * Cortex — page shell (full replacement of the old Org Brain page).
  *
- * The Living Knowledge Mesh command center: header + Sage Lens + trust chips,
- * then a two-view stage — Constellation (how much Cortex knows) as the hero,
- * Flow (how it gets smarter) as the second tab — sharing one Node Inspector
- * provenance drawer. Mounted as the `org-brain` phase (id kept for deep-link
- * stability; visible name is Cortex).
+ * The Living Knowledge Mesh command center: header + Sage Lens + trust chips
+ * over the Constellation (every light is a human-verified fact) with the
+ * Node Inspector provenance drawer. Mounted as the `org-brain` phase (id kept
+ * for deep-link stability; visible name is Cortex). The Flow learning-loop
+ * view was removed 2026-08-18 per Nake.
  */
 
 import { useEffect, useRef, useState } from 'react'
 import { Brain, Search, ArrowLeft, Pen, ShieldCheck, TrendingUp } from 'lucide-react'
 import { METRICS, WORKSPACE_LINE } from '../../data/cortex'
 import ConstellationView from './ConstellationView'
-import FlowView from './FlowView'
 import NodeInspector from './NodeInspector'
 
-const TABS = [
-  { id: 'constellation', label: 'Constellation', caption: 'How much Cortex knows — every light is a human-verified fact' },
-  { id: 'flow', label: 'Flow', caption: 'How Cortex gets smarter — the human-verified learning loop' },
-]
-
 export default function Cortex({ onClose, onNavigateBack, onCreateContent }) {
-  const [tab, setTab] = useState('constellation')
   const [lens, setLens] = useState('')
   const [fact, setFact] = useState(null)
   const onDrawerCloseRef = useRef(null)
@@ -34,15 +27,12 @@ export default function Cortex({ onClose, onNavigateBack, onCreateContent }) {
     setFact(null)
     if (onDrawerCloseRef.current) { onDrawerCloseRef.current(); onDrawerCloseRef.current = null }
   }
-  const switchTab = (id) => { closeInspector(); setTab(id) }
 
   useEffect(() => {
     const handler = (e) => { if (e.key === 'Escape') closeInspector() }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
   }, [])
-
-  const caption = TABS.find(t => t.id === tab)?.caption
 
   return (
     <div className="flex-1 min-w-0 flex flex-col">
@@ -107,30 +97,16 @@ export default function Cortex({ onClose, onNavigateBack, onCreateContent }) {
         </div>
       </div>
 
-      {/* ── View switcher ── */}
-      <div className="px-6 pt-4 flex items-center gap-3 flex-wrap">
-        <div className="inline-flex items-center rounded-lg border border-rule overflow-hidden bg-white">
-          {TABS.map(t => (
-            <button
-              key={t.id}
-              onClick={() => switchTab(t.id)}
-              aria-pressed={tab === t.id}
-              className={`px-4 py-2 text-[12.5px] font-medium cursor-pointer transition-colors ${tab === t.id ? 'bg-ocean text-white' : 'text-slate hover:bg-pale'}`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-        <p className="text-[12px] text-mist">{caption}</p>
+      {/* ── Caption ── */}
+      <div className="px-6 pt-4">
+        <p className="text-[12px] text-mist">How much Cortex knows — every light is a human-verified fact</p>
       </div>
 
       {/* ── Stage ── */}
       <div className="px-6 py-4 flex-1 min-h-0">
         <div className="relative h-[560px] rounded-xl border border-rule overflow-hidden">
           <div className={`absolute inset-0 transition-[filter,opacity] duration-300 ${fact ? 'blur-[2px] opacity-60' : ''}`}>
-            {tab === 'constellation'
-              ? <ConstellationView lens={lens} onInspect={openInspector} />
-              : <FlowView lens={lens} onInspect={openInspector} />}
+            <ConstellationView lens={lens} onInspect={openInspector} />
           </div>
           <NodeInspector fact={fact} onClose={closeInspector} />
         </div>
