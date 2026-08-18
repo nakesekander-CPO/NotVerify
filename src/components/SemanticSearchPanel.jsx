@@ -96,7 +96,7 @@ export default function SemanticSearchPanel({ rules, onNavigateToSegment }) {
   }, [])
 
   // Mock verified-by names
-  const verifiers = ['Kenji Tanaka', 'Sarah Chen', 'Alex Chen', 'Yuki Nakamura']
+  const verifiers = ['Kenji Tanaka', 'Sarah Jenkins', 'Alex Chen', 'Yuki Tanaka']
   function getVerifier(rule) {
     return rule.verifiedBy || verifiers[Math.abs(rule.id.charCodeAt(3) || 0) % verifiers.length]
   }

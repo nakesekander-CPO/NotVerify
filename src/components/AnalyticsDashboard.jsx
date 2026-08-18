@@ -5,6 +5,7 @@ import {
   Brain, Zap, Globe, AlertTriangle, CheckCircle2, Users, FileText,
 } from 'lucide-react'
 import useReducedMotion from '../hooks/useReducedMotion'
+import { LIVE_STATS } from '../data/governanceDashboard'
 
 /* ─── Mock Data ──────────────────────────────────────────────── */
 
@@ -107,12 +108,7 @@ export default function AnalyticsDashboard({ onBack }) {
   const prefersReduced = useReducedMotion()
   const [period, setPeriod] = useState('6m')
 
-  const totalJobs = MONTHLY_JOBS.reduce((s, m) => s + m.jobs, 0)
-  const avgQuality = Math.round(MONTHLY_JOBS.reduce((s, m) => s + m.quality, 0) / MONTHLY_JOBS.length)
-  const totalEscalations = MONTHLY_JOBS.reduce((s, m) => s + m.escalations, 0)
-  const escalationRate = Math.round((totalEscalations / totalJobs) * 100)
   const totalCredits = MONTHLY_JOBS.reduce((s, m) => s + m.credits, 0)
-  const avgTurnaround = 4.2 // minutes
 
   return (
     <motion.div
@@ -146,10 +142,10 @@ export default function AnalyticsDashboard({ onBack }) {
 
       {/* KPI Cards — top row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <MetricCard icon={FileText} label="Jobs processed" value={totalJobs} trend="+48% vs prior period" sparkData={MONTHLY_JOBS.map(m => m.jobs)} />
-        <MetricCard icon={Shield} label="Avg quality score" value={`${avgQuality}%`} trend="+6 pts" sparkData={MONTHLY_JOBS.map(m => m.quality)} sparkColor="#00B887" iconColor="text-emerald-600" iconBg="bg-emerald-50" />
-        <MetricCard icon={Users} label="Escalation rate" value={`${escalationRate}%`} sub={`${totalEscalations} of ${totalJobs} jobs`} trend="-12% vs prior" trendColor="text-emerald-600" iconColor="text-amber-600" iconBg="bg-amber-50" />
-        <MetricCard icon={Clock} label="Avg turnaround" value={`${avgTurnaround}m`} sub="Per document" trend="-1.3m vs prior" trendColor="text-emerald-600" iconColor="text-purple-600" iconBg="bg-purple-50" />
+        <MetricCard icon={FileText} label="Checks this week" value={LIVE_STATS.checksThisWeek.toLocaleString()} trend="+48% vs prior period" sparkData={MONTHLY_JOBS.map(m => m.jobs)} />
+        <MetricCard icon={Shield} label="Flags raised" value={LIVE_STATS.flagsRaised.toLocaleString()} sub={`${((LIVE_STATS.flagsRaised / LIVE_STATS.checksThisWeek) * 100).toFixed(1)}% of all changes`} trend="-12% vs prior" trendColor="text-emerald-600" iconColor="text-amber-600" iconBg="bg-amber-50" />
+        <MetricCard icon={Users} label="Held for review" value={LIVE_STATS.heldForReview} sub="each with a named reason & reviewer" trend="−2 vs prior" trendColor="text-emerald-600" iconColor="text-amber-600" iconBg="bg-amber-50" />
+        <MetricCard icon={Clock} label="Published safely" value={LIVE_STATS.publishedSafely.toLocaleString()} sub={`${((LIVE_STATS.publishedSafely / LIVE_STATS.checksThisWeek) * 100).toFixed(1)}% flowed straight through`} trend="+6 pts quality" sparkData={MONTHLY_JOBS.map(m => m.quality)} sparkColor="#00B887" iconColor="text-emerald-600" iconBg="bg-emerald-50" />
       </div>
 
       {/* Row 2: Quality by locale + Compliance flags */}

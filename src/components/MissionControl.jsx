@@ -33,15 +33,15 @@ const BASE_COST = 5
 const ICON_MAP = { Shield, Building2, Mic, Scale: Shield, Megaphone: Zap, Gavel: FileText, Heart: Bot }
 
 const DEFAULT_AGENTS = [
-  { id: 'JP-FIN-3', name: 'J-GAAP Specialist', version: 'v4.2', icon: 'Shield', confidence: 94, qualityLift: 5, timeMinutes: 4, costCredits: 12, rule: 'ASBJ Rule 29', active: true },
-  { id: 'MER-DT-1', name: 'Meridian Capital Digital Twin', version: 'v2.1', icon: 'Building2', confidence: 97, qualityLift: 3, timeMinutes: 2, costCredits: 8, glossaryMatch: 112, active: true },
-  { id: 'BV-SENT-1', name: 'Brand Voice Sentry', version: 'v1.8', icon: 'Mic', confidence: 91, qualityLift: 2, timeMinutes: 1, costCredits: 5, profile: 'Meridian Capital Corporate', active: true },
+  { id: 'JP-FIN-3', name: 'Meridian JA Reviewer', version: 'v4.2', icon: 'Shield', confidence: 94, qualityLift: 5, timeMinutes: 4, costCredits: 12, rule: 'ASBJ Rule 29', active: true },
+  { id: 'MER-DT-1', name: 'Disclosure Policy Assistant', version: 'v2.1', icon: 'Building2', confidence: 97, qualityLift: 3, timeMinutes: 2, costCredits: 8, glossaryMatch: 112, active: true },
+  { id: 'BV-SENT-1', name: 'Brand Voice', version: 'v1.8', icon: 'Mic', confidence: 91, qualityLift: 2, timeMinutes: 1, costCredits: 5, profile: 'Meridian Capital Corporate', active: true },
 ]
 
 const AVAILABLE_AGENTS = [
-  { id: 'EU-REG-5', name: 'EU Regulatory Agent', version: 'v3.1', icon: 'Scale', confidence: 88, qualityLift: 4, timeMinutes: 5, costCredits: 15, rule: 'IFRS Compliance', active: false },
+  { id: 'EU-REG-5', name: 'Brand QA', version: 'v3.1', icon: 'Scale', confidence: 88, qualityLift: 4, timeMinutes: 5, costCredits: 15, rule: 'IFRS Compliance', active: false },
   { id: 'MKT-1', name: 'Marketing Specialist', version: 'v2.0', icon: 'Megaphone', confidence: 82, qualityLift: 2, timeMinutes: 3, costCredits: 10, active: false },
-  { id: 'LEGAL-2', name: 'Legal & Compliance', version: 'v1.5', icon: 'Gavel', confidence: 90, qualityLift: 3, timeMinutes: 4, costCredits: 14, active: false },
+  { id: 'LEGAL-2', name: 'Intake Triage', version: 'v1.5', icon: 'Gavel', confidence: 90, qualityLift: 3, timeMinutes: 4, costCredits: 14, active: false },
   { id: 'MED-1', name: 'Medical & Pharma', version: 'v3.0', icon: 'Heart', confidence: 93, qualityLift: 5, timeMinutes: 6, costCredits: 18, active: false },
 ]
 
@@ -385,7 +385,7 @@ export default function MissionControl({ onCancel,
             {/* Governance context */}
             <div className="px-6 py-3 border-t border-black/[0.06] bg-gray-50/60">
               <div className="space-y-1 text-[11px] text-gray-500">
-                <p className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" /> Cortex: 1,247 entries loaded for domain memory</p>
+                <p className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" /> Cortex: 4,120 verified entries loaded for domain memory</p>
                 <p className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" /> {(plan.guardrails || []).length || 5} guardrails active: {(plan.guardrails || ['J-GAAP compliance', 'TSE terminology', 'Currency formatting']).slice(0, 3).join(', ')}</p>
                 <p className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" /> Escalation: segments below confidence threshold routed to human review</p>
               </div>
@@ -827,7 +827,7 @@ export default function MissionControl({ onCancel,
                     <span className="text-[10px] uppercase tracking-wider text-gray-400 block mb-1.5">Knowledge Base</span>
                     <div className="flex items-center gap-2">
                       <BookOpen className="w-3.5 h-3.5 text-emerald-500" />
-                      <span className="text-[12px] text-gray-700">J-GAAP · 1,247 entries loaded</span>
+                      <span className="text-[12px] text-gray-700">J-GAAP · 4,120 verified entries loaded</span>
                     </div>
                   </div>
 

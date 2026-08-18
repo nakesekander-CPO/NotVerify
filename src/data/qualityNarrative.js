@@ -37,7 +37,7 @@ export function generateQualityNarrative(triageData, enabledUpsells, orgIntellig
       { month: 'Mar', score: afterScore, projects: 24 },
     ],
     cumulativeIntelligence: {
-      glossaryTermsLearned: orgIntelligence?.orgPatterns?.glossaryTerms || 1247,
+      glossaryTermsLearned: orgIntelligence?.orgPatterns?.glossaryTerms || 4120,
       glossaryTermsThisProject: 23,
       patternsCaptured: 342,
       reusableSegments: 1893,

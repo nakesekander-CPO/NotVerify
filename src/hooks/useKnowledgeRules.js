@@ -19,7 +19,7 @@ const SEED_RULES = [
     contextNote: 'Revenue recognition standard mapping for Japanese market',
     createdFrom: 'seg-018',
     createdAt: '2025-12-03T14:11:00.000Z',
-    verifiedBy: 'Sarah Chen',
+    verifiedBy: 'Sarah Jenkins',
   },
   {
     id: 'kr-seed-003',
@@ -28,7 +28,7 @@ const SEED_RULES = [
     contextNote: 'Preferred J-GAAP terminology for financial disclosures',
     createdFrom: 'seg-042',
     createdAt: '2026-01-10T08:45:00.000Z',
-    verifiedBy: 'Yuki Nakamura',
+    verifiedBy: 'Yuki Tanaka',
   },
   {
     id: 'kr-seed-004',

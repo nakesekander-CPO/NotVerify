@@ -148,9 +148,9 @@ const DEFAULT_REVIEW_REQUEST = {
 
 const TEAM_MEMBERS = [
   { id: 'kenji', name: 'Kenji Tanaka', initials: 'KT', role: 'Regional Lead (APAC)', region: 'APAC', status: 'online', relevance: 'JA locale + financial domain', recommended: true },
-  { id: 'sarah', name: 'Sarah Chen', initials: 'SC', role: 'Senior Linguist (APAC)', region: 'APAC', status: 'online', relevance: 'JA quality specialist', recommended: true },
-  { id: 'yuki', name: 'Yuki Nakamura', initials: 'YN', role: 'Compliance Auditor (APAC)', region: 'APAC', status: 'away', relevance: 'TSE compliance expert', recommended: true },
-  { id: 'marcus', name: 'Marcus Weber', initials: 'MW', role: 'Regional Lead (EMEA)', region: 'EMEA', status: 'online' },
+  { id: 'sarah', name: 'Sarah Jenkins', initials: 'SJ', role: 'Compliance Reviewer (APAC)', region: 'APAC', status: 'online', relevance: 'JA quality specialist', recommended: true },
+  { id: 'yuki', name: 'Yuki Tanaka', initials: 'YT', role: 'Compliance Reviewer (APAC)', region: 'APAC', status: 'away', relevance: 'TSE compliance expert', recommended: true },
+  { id: 'marcus', name: 'Marcus Lee', initials: 'ML', role: 'Regional Lead (EMEA)', region: 'EMEA', status: 'online' },
   { id: 'priya', name: 'Priya Patel', initials: 'PP', role: 'Legal Auditor (Global)', region: 'Global', status: 'offline' },
   { id: 'thomas', name: 'Thomas Park', initials: 'TP', role: 'QA Lead (APAC)', region: 'APAC', status: 'online' },
 ]

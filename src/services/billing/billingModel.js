@@ -535,11 +535,11 @@ export function getDemoAccount(key) {
       { date: '2026-05-01', event: 'grant',  source: 'Monthly plan grant',        bucket: 'plan',   delta: +1000, ref: 'RCP-1038', actor: 'system' },
       { date: '2026-05-06', event: 'usage',  source: 'Q3 Earnings Report — JA',   bucket: 'plan',   delta: -612,  actor: 'Hana Ito' },
       { date: '2026-05-21', event: 'top_up', source: 'Top-up — card',             bucket: 'top_up', delta: +2500, ref: 'RCP-1042', actor: 'Alex Chen' },
-      { date: '2026-05-24', event: 'usage',  source: 'Product Launch DE',         bucket: 'plan',   delta: -388,  actor: 'Marcus Weber' },
+      { date: '2026-05-24', event: 'usage',  source: 'Product Launch DE',         bucket: 'plan',   delta: -388,  actor: 'Marcus Lee' },
       // Plan bucket exhausted at 1,000 — per consumption order, this
       // usage draws from the top-up bucket. Meter still reports total
       // cycle usage (2,104 of 1,000) so the overage is visible.
-      { date: '2026-05-28', event: 'usage',  source: 'Annual Report',             bucket: 'top_up', delta: -1104, actor: 'Sarah Chen', note: 'Plan exhausted — drawn from top-up balance' },
+      { date: '2026-05-28', event: 'usage',  source: 'Annual Report',             bucket: 'top_up', delta: -1104, actor: 'Sarah Jenkins', note: 'Plan exhausted — drawn from top-up balance' },
     ], 1000)
 
     /* Pro/Team · card/ACH · normal consumption, auto top-up on */
@@ -571,7 +571,7 @@ export function getDemoAccount(key) {
       { date: '2026-05-01', event: 'grant',  source: 'Monthly plan grant',      bucket: 'plan',   delta: +5000, ref: 'RCP-2008', actor: 'system' },
       { date: '2026-05-08', event: 'usage',  source: 'Q3 Earnings Report — JA', bucket: 'plan',   delta: -612,  actor: 'Hana Ito' },
       { date: '2026-05-18', event: 'top_up', source: 'Auto top-up — card',      bucket: 'top_up', delta: +1000, ref: 'RCP-2011', actor: 'system' },
-      { date: '2026-05-26', event: 'usage',  source: 'FY26 Annual Report',      bucket: 'plan',   delta: -1492, actor: 'Sarah Chen' },
+      { date: '2026-05-26', event: 'usage',  source: 'FY26 Annual Report',      bucket: 'plan',   delta: -1492, actor: 'Sarah Jenkins' },
     ], 5000)
 
     /* Enterprise · invoice/PO · Net 30, PO required, past-due invoice */

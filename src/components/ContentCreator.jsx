@@ -201,7 +201,7 @@ function PromptStudio({ onGenerate, prefersReduced }) {
       {/* Stat pills */}
       <div className="flex items-center justify-center gap-3 flex-wrap">
         {[
-          { value: '1,247', label: 'entries available' },
+          { value: '4,120', label: 'verified entries' },
           { value: '342', label: 'patterns' },
           { value: '6', label: 'domains' },
         ].map(s => (

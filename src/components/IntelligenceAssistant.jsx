@@ -48,7 +48,7 @@ const CANNED_RESPONSES = {
     "JP-FIN-3 is your highest-impact agent — it provides +5 quality lift for Japanese financial content. Your Digital Twin ensures output matches Meridian Capital's established patterns.",
   ],
   orgbrain: [
-    "Your Cortex has grown to **1,247 knowledge entries** across 6 domain models. In the last 30 days, you've added 47 new terms and 18 patterns.",
+    "Your Cortex has grown to **4,120 verified entries** across 6 domain models. In the last 30 days, you've added 47 new terms and 18 patterns.",
     "JP-FIN-3 (Japanese Financial) is your most active model with 412 entries and 96% accuracy. Your knowledge coverage is at 34% — strong for 6 months of operation.",
   ],
   compliance: [

@@ -946,7 +946,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
                   This project contributed <span className="font-semibold text-straker-600">{newTermsCount}</span> new entries to your Cortex
                 </p>
                 <p className="text-[12px] text-gray-500 mb-3">
-                  Cortex: {(cumulative.glossaryTermsLearned || 1247).toLocaleString()} entries
+                  Cortex: {(cumulative.glossaryTermsLearned || 4120).toLocaleString()} entries
                 </p>
                 <div>
                   <div className="flex items-center justify-between mb-1">

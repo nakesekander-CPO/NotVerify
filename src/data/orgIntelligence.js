@@ -20,7 +20,7 @@ export function generateOrgIntelligence() {
       avgQualityTrend: [82, 84, 86, 87, 89, 91],
       totalProjectsCompleted: 156,
       totalWordsProcessed: '2.4M',
-      glossaryTerms: 1247, // internal key — UI displays as "knowledge entries"
+      glossaryTerms: 4120, // internal key — UI displays as "knowledge entries"
     },
     smartDefaults: {
       suggestedLocales: ['ja', 'de', 'zh'],
@@ -39,7 +39,7 @@ export function generateOrgIntelligence() {
         glossary: 'J-GAAP Financial Knowledge Base v3.2',
         modelPack: 'Financial Regulatory Model Pack',
       },
-      prompt: "Based on Meridian Capital's 90-day cadence, your Q3 Earnings Report is due for processing. I've pre-loaded your J-GAAP knowledge base (1,247 entries) and set your usual JA · DE · ZH targets.",
+      prompt: "Based on Meridian Capital's 90-day cadence, your Q3 Earnings Report is due for processing. I've pre-loaded your J-GAAP knowledge base (4,120 verified entries) and set your usual JA · DE · ZH targets.",
     },
   }
 }

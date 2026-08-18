@@ -3,9 +3,9 @@ import { Shield, Lock, Check, X, Download, Edit2, ChevronDown } from 'lucide-rea
 import { downloadCsv } from '../../utils/demoFiles'
 
 const DEFAULT_AGENTS = [
-  { id: 'JP-FIN-3', name: 'J-GAAP Specialist', version: 'v4.2' },
+  { id: 'JP-FIN-3', name: 'Meridian JA Reviewer', version: 'v4.2' },
   { id: 'MER-DT-1', name: "Meridian Capital Digital Twin", version: 'v2.1' },
-  { id: 'BV-SENT-1', name: 'Brand Voice Sentry', version: 'v1.8' },
+  { id: 'BV-SENT-1', name: 'Brand Voice', version: 'v1.8' },
   { id: 'COMP-MON', name: 'Compliance Monitor', version: 'v3.0' },
 ]
 

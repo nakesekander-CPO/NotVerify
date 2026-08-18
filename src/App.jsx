@@ -103,7 +103,7 @@ export default function App() {
   // Default agents for the ensemble (activated during "reading" phase)
   const defaultAgents = useMemo(() => [
     {
-      id: 'JP-FIN-3', name: 'J-GAAP Specialist', version: 'v4.2', icon: 'Shield',
+      id: 'JP-FIN-3', name: 'Meridian JA Reviewer', version: 'v4.2', icon: 'Shield',
       confidence: 94, status: 'active', ruleBadge: 'ASBJ Rule 29 Detected',
       segmentsProcessed: 47, errorsFound: 14,
       reasoningLog: [
@@ -113,8 +113,8 @@ export default function App() {
       ]
     },
     {
-      id: 'MER-DT-1', name: "Meridian Capital 'Digital Twin'", version: 'v2.1', icon: 'Building2',
-      confidence: 97, status: 'active', glossaryMatch: 112, glossaryTotal: 1247,
+      id: 'MER-DT-1', name: 'Disclosure Policy Assistant', version: 'v2.1', icon: 'Building2',
+      confidence: 97, status: 'active', glossaryMatch: 112, glossaryTotal: 4120,
       segmentsProcessed: 47, errorsFound: 3,
       reasoningLog: [
         { segment: 12, text: "Applied Meridian Capital preferred term 'revenue recognition' → '収益認識' (not '売上認識').", severity: 'medium' },
@@ -122,7 +122,7 @@ export default function App() {
       ]
     },
     {
-      id: 'BV-SENT-1', name: 'Brand Voice Sentry', version: 'v1.8', icon: 'Mic',
+      id: 'BV-SENT-1', name: 'Brand Voice', version: 'v1.8', icon: 'Mic',
       confidence: 91, status: 'active', profile: 'Meridian Capital Corporate', toneScore: 96,
       segmentsProcessed: 47, errorsFound: 2,
       reasoningLog: [
@@ -288,7 +288,7 @@ export default function App() {
       { id: `${job.docId}-seg-3`, segmentNumber: 3, flagged: true, severity: 'major', source: `Key ${docType.toLowerCase()} terminology requiring domain expertise for accurate localization.`, translation: `[${locale}] ドメイン専門用語の翻訳が不正確です。`, issue: `${docType} terminology mismatch — domain-specific terms require specialist review`, suggestedFix: `[${locale}] 正確なドメイン用語を使用した修正版`, flaggedBy: 'Quality Agent', agentId: 'QA-1', diffOriginal: 'terminology requiring', diffReplacement: '正確なドメイン用語' },
       { id: `${job.docId}-seg-4`, segmentNumber: 4, flagged: true, severity: 'critical', source: `Compliance-sensitive content that must meet regional regulatory standards for ${locale} market.`, translation: `[${locale}] 規制基準を満たしていないコンテンツ。`, issue: `Regional compliance standard not met for ${locale} market`, suggestedFix: `[${locale}] 地域の規制基準に準拠した翻訳`, flaggedBy: 'Compliance Monitor', agentId: 'COMP-1', diffOriginal: 'regulatory standards', diffReplacement: '規制基準に準拠' },
       { id: `${job.docId}-seg-5`, segmentNumber: 5, flagged: false, source: `Standard paragraph content from ${fileName}.`, translation: `[${locale}] 標準的な段落コンテンツ。` },
-      { id: `${job.docId}-seg-6`, segmentNumber: 6, flagged: true, severity: 'minor', source: `Brand voice and cultural adaptation should reflect local conventions.`, translation: `[${locale}] ブランドボイスの文化的適応が不十分です。`, issue: 'Cultural adaptation below threshold — tone adjustment recommended', suggestedFix: `[${locale}] 現地の慣習を反映したブランドボイス`, flaggedBy: 'Brand Voice Sentry', agentId: 'BVS-1' },
+      { id: `${job.docId}-seg-6`, segmentNumber: 6, flagged: true, severity: 'minor', source: `Brand voice and cultural adaptation should reflect local conventions.`, translation: `[${locale}] ブランドボイスの文化的適応が不十分です。`, issue: 'Cultural adaptation below threshold — tone adjustment recommended', suggestedFix: `[${locale}] 現地の慣習を反映したブランドボイス`, flaggedBy: 'Brand Voice', agentId: 'BVS-1' },
       { id: `${job.docId}-seg-7`, segmentNumber: 7, flagged: false, source: `Closing content of ${fileName}.`, translation: `[${locale}] 文書の締めくくり。` },
     ];
     setCampaignReviewJob(job)
