@@ -424,6 +424,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
   // orgBrainOpen state removed — now uses onOpenOrgBrain prop for App-level navigation
   const [tsePopoverOpen, setTsePopoverOpen] = useState(false)
   const [publishPopoverOpen, setPublishPopoverOpen] = useState(false)
+  const [exportOpen, setExportOpen] = useState(true)
   const prefersReducedMotion = useReducedMotion()
   const { addToast } = useToast()
 
@@ -512,8 +513,9 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
     }
   }
 
-  // Check if compliance flags exist (for badge count on Compliance tab)
-  const hasComplianceFlags = !!onComplianceRequired
+  // Compliance panel is gated on the actual score vs the auto-publish
+  // threshold (the demo fixture sits at 88 < 92), not on prop presence.
+  const hasComplianceFlags = !!onComplianceRequired && (computedQuality ?? 88) < 92
 
   return (
     <motion.div
@@ -818,7 +820,9 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
 
               <div className="space-y-3">
                 {activeCampaign ? (
-                  <CampaignExportWizard campaign={activeCampaign} onClose={onReset} />
+                  exportOpen ? <CampaignExportWizard campaign={activeCampaign} onClose={() => setExportOpen(false)} /> : (
+                    <button onClick={() => setExportOpen(true)} className="text-[12px] font-semibold text-ocean hover:text-ocean-deep cursor-pointer">Reopen export options</button>
+                  )
                 ) : (
                   <button
                     onClick={() => downloadText('arbitr-deliverables.txt', 'arbitr deliverable bundle — demo artifact.\nIncludes: checked document, decision report, evidence trail.')}

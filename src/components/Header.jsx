@@ -84,7 +84,7 @@ export default function Header({ companyName, onOpenSettings, onOpenMarketplace,
                 </div>
                 <DropdownItem icon={Settings} label="Settings" onClick={() => { setAccountOpen(false); onOpenSettings?.() }} />
                 <DropdownItem icon={Workflow} label="HITL Vendor Workflow" onClick={() => { setAccountOpen(false); onOpenHitlWorkflow?.() }} />
-                <DropdownItem icon={Store} label="Agent Marketplace" onClick={() => { setAccountOpen(false); onOpenMarketplace?.() }} />
+                <DropdownItem icon={Store} label="Intelligence Marketplace" onClick={() => { setAccountOpen(false); onOpenMarketplace?.() }} />
                 <DropdownItem icon={Headphones} label="Contact Support" onClick={() => { setAccountOpen(false); window.location.href = 'mailto:support@arbitr.com' }} />
                 <div className="border-t border-black/[0.12] my-1.5" />
                 <DropdownItem icon={LogOut} label="Sign Out" onClick={() => { setAccountOpen(false); window.location.reload() }} />

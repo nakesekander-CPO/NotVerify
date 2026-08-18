@@ -2,17 +2,13 @@ import { useState, useCallback, useMemo, useEffect } from 'react'
 import Header from './components/Header'
 import OnboardingFlow from './components/OnboardingFlow'
 import GovernanceDashboard from './components/GovernanceDashboard'
-import CommandUpload from './components/CommandUpload'
 import MissionControl from './components/MissionControl'
 import AgentWarRoom from './components/AgentWarRoom'
-import AgentMarketplace from './components/AgentMarketplace'
 import IntelligenceMarketplace from './components/IntelligenceMarketplace'
 import Settings from './components/Settings'
-import CustomAgentStudio from './components/CustomAgentStudio'
 import LiveTelemetry from './components/LiveTelemetry'
 import QualityNarrative from './components/QualityNarrative'
 import AgentArbitration from './components/AgentArbitration'
-import TeamDirectory from './components/TeamDirectory'
 import HITLVendorWorkflow from './components/HITLVendorWorkflow'
 import HumanReview from './components/HumanReview'
 import Cortex from './components/Cortex'
@@ -25,7 +21,6 @@ import MobileBlocker from './components/MobileBlocker'
 import GlobalNav from './components/GlobalNav'
 import ProjectProgress from './components/ProjectProgress'
 import Footer from './components/Footer'
-import ParametersDrawer from './components/ParametersDrawer'
 import CampaignHub from './components/CampaignHub'
 import OperationsControlRoom from './components/OperationsControlRoom'
 import CampaignResultsView from './components/CampaignResultsView'
@@ -65,22 +60,17 @@ export default function App() {
   const [triageData, setTriageData] = useState(null)
   const [enabledUpsells, setEnabledUpsells] = useState(new Set())
   const [discoveryFindings, setDiscoveryFindings] = useState([])
-  const [showParametersDrawer, setShowParametersDrawer] = useState(false)
   const [preloadedConfig, setPreloadedConfig] = useState(null)
   const [showMarketplace, setShowMarketplace] = useState(false)
   if (typeof window !== 'undefined') { window.__setShowMarketplace = setShowMarketplace }
-  const [showAgentStudio, setShowAgentStudio] = useState(false)
   const [showArbitration, setShowArbitration] = useState(false)
   const [showAgentProfile, setShowAgentProfile] = useState(false)
   const [selectedAgent, setSelectedAgent] = useState(null)
-  const [showTeamDirectory, setShowTeamDirectory] = useState(false)
   const [showHitlWorkflow, setShowHitlWorkflow] = useState(false)
-  const [teamDirectoryContext] = useState({ itemId: null, itemTitle: '' })
   const [activeAgents, setActiveAgents] = useState([])
   const [hiredMarketplaceAgents, setHiredMarketplaceAgents] = useState([])
   const [projectsCompleted, setProjectsCompleted] = useState(0) // tracks if Day 0
   const [activeCampaign, setActiveCampaign] = useState(null) // Campaign object or null
-  const [qualityThreshold, setQualityThreshold] = useState(85) // org-level default
   const [humanReviewMode, setHumanReviewMode] = useState(null) // null | 'assign' | 'review'
   if (typeof window !== 'undefined') { window.__setHumanReviewMode = setHumanReviewMode }
   const [previousPhase, setPreviousPhase] = useState(null) // to return after review
@@ -238,21 +228,6 @@ export default function App() {
     setShowMarketplace(false)
   }, [])
 
-  // Custom agent created
-  const handleAgentCreated = useCallback((agent) => {
-    setActiveAgents(prev => [...prev, {
-      id: 'CUSTOM-1', name: agent.name || 'Meridian Capital Custom Agent', version: 'v1.0', icon: 'Building2',
-      confidence: 95, status: 'active', segmentsProcessed: 0, errorsFound: 0,
-      reasoningLog: [{ segment: 0, text: 'Custom agent trained on your golden records and deployed.', severity: 'low' }]
-    }])
-    setShowAgentStudio(false)
-  }, [])
-
-  // Screen 2 → Screen 3: Deploy
-  const handleLaunch = useCallback(() => {
-    setPhase('processing')
-  }, [])
-
   // Screen 3 → Screen 4: Processing complete
   // completedJobs: array of { docId, locale, qualityScore, status } from OperationsControlRoom
   const handleProcessingComplete = useCallback((completedJobs) => {
@@ -343,7 +318,7 @@ export default function App() {
   }, [])
 
   // Review submitted → return to previous phase with retraining data
-  const handleReviewSubmitted = useCallback((results) => {
+  const handleReviewSubmitted = useCallback(() => {
     addToast('Review submitted — corrections queued for the Cortex retraining pass', 'success')
     setHumanReviewMode(null)
     setCampaignReviewJob(null)
@@ -357,14 +332,8 @@ export default function App() {
     setPhase(previousPhase && previousPhase !== 'human-review' ? previousPhase : 'narrative')
   }, [previousPhase])
 
-  // Team directory delegation (legacy modal — still used for TeamDirectory component)
-  const handleDelegationComplete = useCallback((member, note) => {
-    addToast(`Delegated to ${member.name}`, 'success')
-    setShowTeamDirectory(false)
-  }, [teamDirectoryContext])
-
   // Agent arbitration resolved
-  const handleArbitrationResolved = useCallback((resolutions) => {
+  const handleArbitrationResolved = useCallback(() => {
     addToast('Arbitration resolved — decision written to the audit trail', 'success')
     setShowArbitration(false)
   }, [])
@@ -520,7 +489,6 @@ export default function App() {
               companyName={onboardingConfig?.orgName || 'Meridian Capital'}
               projectsCompleted={projectsCompleted}
               onFileAccepted={handleFileAccepted}
-              onStartSample={() => setPhase('time-jump')}
               onStartCampaign={() => setPhase('campaign-hub')}
               onCreateContent={handleCreateContent}
               onOpenCortex={() => { setPreviousPhase('dashboard'); setPhase('org-brain') }}
@@ -651,18 +619,6 @@ export default function App() {
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
               {/* Main content */}
               <div className="min-w-0">
-                {/* Screen 2: Smart Upload Zone + War Room */}
-                {phase === 'upload' && (
-                  <CommandUpload
-                    onFileAccepted={handleFileAccepted}
-                    onLaunch={handleLaunch}
-                    triageData={triageData}
-                    discoveryFindings={discoveryFindings}
-                    structuredContext={structuredContext}
-                    preloaded={preloadedConfig}
-                  />
-                )}
-
                 {/* Screen 3: Processing — Control Room for campaigns, LiveTelemetry for single docs */}
                 {phase === 'processing' && activeCampaign && (
                   <OperationsControlRoom
@@ -722,7 +678,7 @@ export default function App() {
                   <AgentWarRoom
                     agents={activeAgents}
                     onHireAgent={handleOpenMarketplace}
-                    onTrainAgent={() => setShowAgentStudio(true)}
+                    onTrainAgent={() => { setPreviousPhase(phase); setPhase('agent-studio') }}
                     onResolveConflicts={() => setShowArbitration(true)}
                     onViewAgentProfile={handleOpenAgentProfile}
                     isProcessing={phase === 'processing'}
@@ -766,42 +722,11 @@ export default function App() {
         onDisconnectIntegration={handleDisconnectIntegration}
       />
 
-      <CustomAgentStudio
-        isOpen={showAgentStudio}
-        onClose={() => setShowAgentStudio(false)}
-        onAgentCreated={handleAgentCreated}
-        orgName={onboardingConfig?.orgName || 'Meridian Capital'}
-      />
-
       <AgentProfile
         isOpen={showAgentProfile}
         onClose={() => { setShowAgentProfile(false); setSelectedAgent(null) }}
         agent={selectedAgent}
-        onContinueTraining={() => { setShowAgentProfile(false); setShowAgentStudio(true) }}
-      />
-
-      <ParametersDrawer
-        isOpen={showParametersDrawer}
-        onClose={() => setShowParametersDrawer(false)}
-        qualityThreshold={activeCampaign?.config?.qualityThreshold ?? qualityThreshold}
-        onThresholdChange={(val) => {
-          setQualityThreshold(val)
-          // Also update the active campaign if one is running
-          if (activeCampaign) {
-            setActiveCampaign(prev => ({
-              ...prev,
-              config: { ...prev.config, qualityThreshold: val },
-            }))
-          }
-        }}
-      />
-
-      {/* Team Directory Modal — Enterprise Delegation */}
-      <TeamDirectory
-        isOpen={showTeamDirectory}
-        onClose={() => setShowTeamDirectory(false)}
-        onDelegate={handleDelegationComplete}
-        itemTitle={teamDirectoryContext.itemTitle}
+        onContinueTraining={() => { setShowAgentProfile(false); setPreviousPhase(phase); setPhase('agent-studio') }}
       />
 
       {/* HITL Vendor Workflow — governed human-in-the-loop module */}

@@ -5,10 +5,10 @@ import useReducedMotion from '../hooks/useReducedMotion'
 const SPRING = { type: 'spring', stiffness: 300, damping: 20 }
 
 const STATS = [
-  { label: 'projects completed', target: 156 },
-  { label: 'words processed', target: 2.4, suffix: 'M', decimals: 1 },
-  { label: 'custom agents trained', target: 34 },
-  { label: 'average quality score', target: 91, suffix: '%' },
+  { label: 'checks run', target: 12847 },
+  { label: 'flags raised', target: 214 },
+  { label: 'held for review', target: 6 },
+  { label: 'published safely', target: 12633 },
 ]
 
 const MONTHS = ['Month 1', 'Month 2', 'Month 3', 'Month 4', 'Month 5', 'Month 6']

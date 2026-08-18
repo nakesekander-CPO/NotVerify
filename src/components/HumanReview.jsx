@@ -611,7 +611,7 @@ function AssignPhase({ reviewRequest, teamMembers, onAssign, onBack, reduced }) 
         {/* arbitr professional service — demoted to quiet secondary option */}
         <div className="shrink-0 pt-3 mt-3 border-t border-black/[0.06]">
           <button
-            onClick={() => onAssign('straker', 'Sent to arbitr for professional verification')}
+            onClick={() => onAssign('arbitr-review', 'Sent to arbitr for professional verification')}
             className="flex items-center gap-2 text-[12px] text-gray-400 hover:text-gray-600 cursor-pointer transition-colors"
           >
             <Globe className="w-3.5 h-3.5" />
@@ -1962,8 +1962,10 @@ export default function HumanReview({
   }
 
   function handleComplete() {
+    // Submit navigates via the App-level handler; falling back to onBack only
+    // when there is nothing to submit avoids a double phase transition.
     if (reviewResults) onSubmitReview(reviewResults)
-    onBack()
+    else onBack()
   }
 
   return (

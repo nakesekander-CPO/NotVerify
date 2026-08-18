@@ -153,7 +153,7 @@ function buildBatchIssues(docSummaries) {
 
 const DESTINATION_TYPES = [
   { id: 'reviewer', label: 'Invite reviewer', icon: UserCheck, description: 'They review directly in the platform', primary: true },
-  { id: 'straker', label: 'Send to arbitr', icon: Building2, description: 'Professional post-editing service', primary: true, upsell: true },
+  { id: 'arbitr-review', label: 'Send to arbitr', icon: Building2, description: 'Professional post-editing service', primary: true, upsell: true },
   { id: 's3', label: 'AWS S3', icon: Database, description: 'Push to an S3 bucket' },
   { id: 'sftp', label: 'SFTP', icon: Globe, description: 'Upload via secure FTP' },
   { id: 'webhook', label: 'Webhook', icon: Webhook, description: 'POST to an API endpoint' },
@@ -195,7 +195,7 @@ export default function CampaignResultsView({ campaign, threshold = 85, onReset,
 
   /* ── Delivery state ── */
   const addDestination = (typeId) => {
-    if (destinations.some(d => d.type === typeId && (typeId === 'straker' || typeId === 'reviewer'))) return;
+    if (destinations.some(d => d.type === typeId && (typeId === 'arbitr-review' || typeId === 'reviewer'))) return;
     setDestinations(prev => [...prev, { id: `dest-${Date.now()}`, type: typeId, status: 'pending' }]);
     setShowAddDest(false);
   };
@@ -567,7 +567,7 @@ export default function CampaignResultsView({ campaign, threshold = 85, onReset,
 function DeliverView({ campaign, destinations, addDestination, updateDestination, removeDestination, sendToDestination, reviewDocCount, totalDocs, readyCount, flaggedJobs, threshold }) {
   const [showExport, setShowExport] = useState(false);
   const hasReviewer = destinations.some(d => d.type === 'reviewer');
-  const hasStraker = destinations.some(d => d.type === 'straker');
+  const hasStraker = destinations.some(d => d.type === 'arbitr-review');
 
   // Build smart context for reviewer note
   const reviewSummary = useMemo(() => {
@@ -627,7 +627,7 @@ function DeliverView({ campaign, destinations, addDestination, updateDestination
 
       {/* arbitr professional service — demoted to text link */}
       {!hasStraker ? (
-        <button type="button" onClick={() => addDestination('straker')}
+        <button type="button" onClick={() => addDestination('arbitr-review')}
           className="flex items-center gap-1.5 text-[12px] text-gray-400 hover:text-gray-600 cursor-pointer transition-colors">
           <Building2 size={13} />
           <span>Or send to a professional post-editing service</span>
@@ -635,7 +635,7 @@ function DeliverView({ campaign, destinations, addDestination, updateDestination
         </button>
       ) : (
         <DeliveryDestinationForm
-          dest={destinations.find(d => d.type === 'straker')}
+          dest={destinations.find(d => d.type === 'arbitr-review')}
           onChange={updateDestination}
           onRemove={removeDestination}
           onSend={sendToDestination}
@@ -761,7 +761,7 @@ function DeliveryDestinationForm({ dest, onChange, onRemove, onSend }) {
         <button type="button" onClick={() => onRemove(dest.id)} className="p-1 text-gray-300 hover:text-gray-500 transition-colors cursor-pointer"><Trash2 size={13} /></button>
       </div>
       <div className="px-4 py-3 space-y-2.5">
-        {dest.type === 'straker' && (<><FormField label="Project name" placeholder="e.g. Q3 Earnings" value={dest.projectName ?? ''} onChange={v => onChange(dest.id, { projectName: v })} /><FormField label="Instructions" placeholder="Focus on terminology..." value={dest.notes ?? ''} onChange={v => onChange(dest.id, { notes: v })} multiline /></>)}
+        {dest.type === 'arbitr-review' && (<><FormField label="Project name" placeholder="e.g. Q3 Earnings" value={dest.projectName ?? ''} onChange={v => onChange(dest.id, { projectName: v })} /><FormField label="Instructions" placeholder="Focus on terminology..." value={dest.notes ?? ''} onChange={v => onChange(dest.id, { notes: v })} multiline /></>)}
         {dest.type === 'reviewer' && (<><FormField label="Reviewer email(s)" placeholder="reviewer@company.com" value={dest.emails ?? ''} onChange={v => onChange(dest.id, { emails: v })} /><FormField label="Message" placeholder="Please review..." value={dest.message ?? ''} onChange={v => onChange(dest.id, { message: v })} multiline /></>)}
         {dest.type === 's3' && (<><FormField label="Bucket" placeholder="my-bucket" value={dest.bucket ?? ''} onChange={v => onChange(dest.id, { bucket: v })} /><FormField label="Prefix" placeholder="exports/" value={dest.prefix ?? ''} onChange={v => onChange(dest.id, { prefix: v })} /></>)}
         {dest.type === 'sftp' && (<><FormField label="Host" placeholder="sftp.example.com" value={dest.host ?? ''} onChange={v => onChange(dest.id, { host: v })} /><FormField label="Path" placeholder="/exports/" value={dest.path ?? ''} onChange={v => onChange(dest.id, { path: v })} /></>)}
@@ -769,8 +769,8 @@ function DeliveryDestinationForm({ dest, onChange, onRemove, onSend }) {
       </div>
       <div className="px-4 pb-3">
         <button type="button" onClick={() => onSend(dest.id)} disabled={dest.status === 'sending' || dest.status === 'sent'}
-          className={`flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 ${dest.type === 'straker' ? 'bg-[#3D16FA] hover:bg-[#2E10C4] text-white' : 'bg-gray-900 hover:bg-gray-800 text-white'}`}>
-          {dest.status === 'sending' ? <><Loader2 size={11} className="animate-spin" /> Sending...</> : dest.status === 'sent' ? <><CheckCheck size={11} /> Sent</> : <><Send size={11} /> {dest.type === 'straker' ? 'Submit to arbitr' : 'Deliver'}</>}
+          className={`flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 ${dest.type === 'arbitr-review' ? 'bg-[#3D16FA] hover:bg-[#2E10C4] text-white' : 'bg-gray-900 hover:bg-gray-800 text-white'}`}>
+          {dest.status === 'sending' ? <><Loader2 size={11} className="animate-spin" /> Sending...</> : dest.status === 'sent' ? <><CheckCheck size={11} /> Sent</> : <><Send size={11} /> {dest.type === 'arbitr-review' ? 'Submit to arbitr' : 'Deliver'}</>}
         </button>
       </div>
     </div>

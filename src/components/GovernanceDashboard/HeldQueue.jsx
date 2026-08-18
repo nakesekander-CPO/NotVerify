@@ -9,7 +9,7 @@
  */
 
 import { ShieldCheck } from 'lucide-react'
-import { Card, MonoLabel, SectionHeading, StatusBadge, PrimaryButton, EmptyState } from '../HITLVendorWorkflow/shared'
+import { Card, MonoLabel, SectionHeading, StatusBadge, EmptyState } from '../HITLVendorWorkflow/shared'
 
 const STATUS_RENDER = {
   'critical-hold': { badge: 'needs-rework', label: 'Critical hold' },
@@ -55,7 +55,7 @@ function HeldRow({ change }) {
   )
 }
 
-export default function HeldQueue({ heldChanges, mode, onStartSample }) {
+export default function HeldQueue({ heldChanges, mode }) {
   const open = heldChanges.filter(c => c.status !== 'cleared')
   const cleared = heldChanges.filter(c => c.status === 'cleared')
 
@@ -70,11 +70,8 @@ export default function HeldQueue({ heldChanges, mode, onStartSample }) {
           <EmptyState
             icon={ShieldCheck}
             title="Nothing held yet"
-            description="When a check catches something — a forbidden term, an unhedged claim, a policy conflict — the change is held here with a named reason and a named reviewer, before it can publish."
+            description="When a check catches something — a forbidden term, an unhedged claim, a policy conflict — the change is held here with a named reason and a named reviewer, before it can publish. Drop a document in “Check a document” to run your first check."
           />
-          <div className="flex justify-center mt-4">
-            <PrimaryButton onClick={onStartSample}>Watch arbitr check a sample release</PrimaryButton>
-          </div>
         </Card>
       ) : (
         <div className="space-y-2.5">

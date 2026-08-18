@@ -11,7 +11,7 @@
 
 import { useCallback, useRef, useState } from 'react'
 import {
-  Upload, Sparkles, Bot, Radar, Pen, Layers, ChevronRight, Brain,
+  Upload, Bot, Radar, Pen, Layers, ChevronRight, Brain,
 } from 'lucide-react'
 import { getDashboardState, PRELOADED_ENTRIES } from '../../data/governanceDashboard'
 import { METRICS } from '../../data/cortex'
@@ -30,7 +30,6 @@ export default function GovernanceDashboard({
   companyName = 'Meridian Capital',
   projectsCompleted = 0,
   onFileAccepted,
-  onStartSample,
   onStartCampaign,
   onCreateContent,
   onOpenCortex,
@@ -97,7 +96,7 @@ export default function GovernanceDashboard({
 
       {/* ── Main zone: queue + action rail ── */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5 items-start">
-        <HeldQueue heldChanges={heldChanges} mode={mode} onStartSample={onStartSample} />
+        <HeldQueue heldChanges={heldChanges} mode={mode} />
 
         <aside className="space-y-4 lg:sticky lg:top-[120px]">
           {/* Check a document */}
@@ -114,27 +113,6 @@ export default function GovernanceDashboard({
             <p className="text-[13px] font-semibold text-ink">Check a document</p>
             <p className="text-[11px] text-mist mt-0.5">Drop a file to run it through your rules · {ACCEPTED_EXTENSIONS}</p>
           </div>
-
-          {/* Sample run (Sage) */}
-          <Card padding="p-4" className="border-ocean/25 bg-ocean/[0.03]">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-ocean flex items-center justify-center shrink-0">
-                <Sparkles className="w-4 h-4 text-white" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[12.5px] font-semibold text-ink">Watch arbitr check a sample release</p>
-                <p className="text-[11px] text-slate mt-0.5 leading-snug">
-                  Sage has a sample Q3 earnings release loaded — see checks, flags, and holds happen. No upload required.
-                </p>
-                <button
-                  onClick={onStartSample}
-                  className="mt-2 inline-flex items-center gap-1 text-[12px] font-semibold text-ocean hover:text-ocean-deep cursor-pointer"
-                >
-                  Start the sample <ChevronRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          </Card>
 
           {/* Specific workflows, surfaced where actions start */}
           <SwiftBridgeCard onOpenSwiftBridge={onOpenSwiftBridge} />

@@ -68,8 +68,8 @@ src/
 │   ├── MobileBlocker.jsx             # Blocks sub-1024px viewports
 │   ├── WorkflowStepper.jsx           # Phase progress indicator
 │   ├── OnboardingFlow.jsx            # Multi-step onboarding wizard
-│   ├── ColdStartDashboard.jsx        # First-time user / predictive co-pilot dashboard
-│   ├── CommandSurface.jsx            # Main dashboard + mission control surface
+│   ├── GovernanceDashboard.jsx        # First-time user / predictive co-pilot dashboard
+│   ├── GovernanceDashboard.jsx            # Main dashboard + mission control surface
 │   ├── CommandUpload.jsx             # Document upload + drag-and-drop
 │   ├── Dropzone.jsx                  # Reusable file drop target
 │   ├── ParametersDrawer.jsx          # Locale/context parameter configuration drawer
@@ -91,7 +91,7 @@ src/
 │   ├── AgentMarketplace.jsx          # Legacy agent marketplace view
 │   ├── AgentProfile.jsx              # Individual agent detail card/overlay
 │   ├── AgentArbitration.jsx          # Agent conflict arbitration overlay
-│   ├── OrgBrain.jsx                  # Org knowledge base (glossaries, TM, patterns)
+│   ├── Cortex.jsx                  # Org knowledge base (glossaries, TM, patterns)
 │   ├── TeamDirectory.jsx             # Team members + permissions directory
 │   ├── OperationsControlRoom.jsx     # Campaign batch operations overview
 │   ├── CampaignResultsView.jsx       # Campaign post-run results summary
@@ -175,7 +175,7 @@ narrative  (QualityNarrative)
 time-jump
     │  Cinematic time-skip to a "mature" account state (156 projects)
     ▼
-dashboard  (CommandSurface)
+dashboard  (GovernanceDashboard)
     │  Full dashboard with org intelligence and history
 ```
 
@@ -282,9 +282,9 @@ Ranked by file size (lines of code):
 | `HumanReview.jsx` | 2,027 | Full in-the-loop review interface — segment list, translation editor, QA flags, approval workflow |
 | `CustomAgentStudio.jsx` | 1,417 | Multi-step wizard for building custom AI agents — capability selection, tuning, deployment |
 | `QualityNarrative.jsx` | 1,356 | Post-processing quality report — locale breakdowns, score visualisations, actionable diagnostics |
-| `CommandSurface.jsx` | 1,137 | Main dashboard — org intelligence panel, recent projects, co-pilot recommendations, quick actions |
+| `GovernanceDashboard.jsx` | 1,137 | Main dashboard — org intelligence panel, recent projects, co-pilot recommendations, quick actions |
 | `Settings/CreditsAndBilling.jsx` | 1,062 | Credits balance, billing history, plan management, invoice download |
-| `OrgBrain.jsx` | 1,038 | Org knowledge base — glossary management, translation memory, pattern library |
+| `Cortex.jsx` | 1,038 | Org knowledge base — glossary management, translation memory, pattern library |
 | `App.jsx` | 1,032 | Central state machine — all `useState`, phase routing, inline data generators, prop dispatch |
 | `AgentMarketplace.jsx` | 1,013 | Agent discovery — browse by category, agent cards, hire/deploy flow |
 | `OnboardingFlow.jsx` | 893 | Multi-stage onboarding wizard — org name, vertical, locale selection, tone, agent assembly |

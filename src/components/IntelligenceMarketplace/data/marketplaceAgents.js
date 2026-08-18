@@ -1094,7 +1094,7 @@ const MARKETPLACE_AGENTS = [
     integration: {
       deploymentOptions: ['on-demand'],
       apiEndpoint: '/api/v2/agents/RPT-COMPOSER-1/process',
-      configExample: { agent_id: 'RPT-COMPOSER-1', mode: 'compose', source: 'org-brain', doc_type: 'earnings' },
+      configExample: { agent_id: 'RPT-COMPOSER-1', mode: 'compose', source: 'cortex', doc_type: 'earnings' },
     },
     roi: { avgQualityLift: 22, avgTimeSaved: '6.5 hours/report', tier: 'Premium' },
     testDrive: {
@@ -1472,7 +1472,7 @@ const MARKETPLACE_AGENTS = [
     integration: {
       deploymentOptions: ['on-demand'],
       apiEndpoint: '/api/v2/agents/PROPOSAL-RFP-1/process',
-      configExample: { agent_id: 'PROPOSAL-RFP-1', mode: 'rfp', source: 'org-brain' },
+      configExample: { agent_id: 'PROPOSAL-RFP-1', mode: 'rfp', source: 'cortex' },
     },
     roi: { avgQualityLift: 20, avgTimeSaved: '9.0 hours/RFP', tier: 'Premium' },
     testDrive: {
