@@ -20,6 +20,7 @@ import MechanicStrip from './MechanicStrip'
 import StatRow from './StatRow'
 import HeldQueue from './HeldQueue'
 import MiniConstellation from './MiniConstellation'
+import SwiftBridgeCard from './SwiftBridgeCard'
 
 const ACCEPTED_EXTENSIONS = '.docx, .pdf, .pptx, .xlsx, .mp4'
 
@@ -34,6 +35,7 @@ export default function GovernanceDashboard({
   onOpenCortex,
   onOpenAgentStudio,
   onOpenAIVisibility,
+  onOpenSwiftBridge,
 }) {
   const { mode, stats, heldChanges } = getDashboardState(projectsCompleted)
   const fileInputRef = useRef(null)
@@ -131,6 +133,9 @@ export default function GovernanceDashboard({
               </div>
             </div>
           </Card>
+
+          {/* SwiftBridge — a specific workflow, surfaced where actions start */}
+          <SwiftBridgeCard onOpenSwiftBridge={onOpenSwiftBridge} />
 
           {/* Module shortcuts */}
           <Card padding="p-0">

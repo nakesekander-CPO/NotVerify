@@ -34,6 +34,7 @@ import AnalyticsDashboard from './components/AnalyticsDashboard'
 import AgentStudio from './components/AgentStudio'
 import EnterpriseAIVisibility from './components/EAV'
 import GovernanceAudit from './components/GovernanceAudit'
+import SwiftBridge from './components/HITLVendorWorkflow/SwiftBridge'
 import useMediaQuery from './hooks/useMediaQuery'
 import useQualityCalculator from './hooks/useQualityCalculator'
 import { generateOrgIntelligence } from './data/orgIntelligence'
@@ -517,6 +518,7 @@ export default function App() {
               onOpenCortex={() => { setPreviousPhase('dashboard'); setPhase('org-brain') }}
               onOpenAgentStudio={() => { setPreviousPhase('dashboard'); setPhase('agent-studio') }}
               onOpenAIVisibility={() => { setPreviousPhase('dashboard'); setPhase('ai-visibility') }}
+              onOpenSwiftBridge={() => { setPreviousPhase('dashboard'); setPhase('swiftbridge') }}
             />
           )}
 
@@ -582,6 +584,17 @@ export default function App() {
               onBack={() => setPhase(previousPhase || 'dashboard')}
               currentUserId="alex"
             />
+          )}
+
+          {/* SwiftBridge — first-class page (moved out of the HITL overlay);
+              its review deep-link opens the HITL Review Workspace overlay */}
+          {phase === 'swiftbridge' && (
+            <div className="w-full max-w-[1280px] xl:max-w-[1440px] 2xl:max-w-[1600px] mx-auto px-6 lg:px-8 xl:px-12 2xl:px-16 py-6">
+              <SwiftBridge
+                currentUserId="alex"
+                navigate={() => setShowHitlWorkflow(true)}
+              />
+            </div>
           )}
 
           {/* Enterprise AI Visibility — governed EAVI measurement module */}
