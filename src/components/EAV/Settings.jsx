@@ -57,7 +57,7 @@ export default function Settings() {
           <Card>
             <MonoLabel>Competitors</MonoLabel>
             <div className="flex flex-wrap gap-1.5 mt-2">
-              {WORKSPACE.competitors.map(c => <span key={c.id} className="text-[11.5px] px-2 py-0.5 rounded-full bg-amber/10 text-amber-deep border border-amber/30">{c.name}</span>)}
+              {WORKSPACE.competitors.map(c => <span key={c.id} className="text-[11.5px] px-2 py-0.5 rounded-full bg-[#FFF7E6] text-[#996800] border border-[#FFB000]/40">{c.name}</span>)}
             </div>
           </Card>
         </div>

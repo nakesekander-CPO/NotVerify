@@ -29,7 +29,7 @@ export default function StatusPill() {
   return (
     <div ref={ref} className="relative">
       <button
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-emerald-600/20 bg-emerald-500/[0.06] text-[11px] font-semibold text-emerald-700 hover:bg-emerald-500/10 transition-all cursor-pointer"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-emerald-400/30 bg-emerald-400/10 text-[11px] font-semibold text-emerald-300 hover:bg-emerald-400/15 transition-all cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         aria-haspopup="dialog"

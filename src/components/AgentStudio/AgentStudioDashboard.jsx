@@ -16,7 +16,7 @@ import {
   useAgentStore, TEMPLATES, activeVersion, ACTIVE_CUSTOMER,
 } from '../../data/agentStudio'
 import {
-  SectionHeading, Card, MonoLabel, PrimaryButton, SecondaryButton, EmptyState,
+  Card, MonoLabel, PrimaryButton, SecondaryButton, EmptyState,
   AgentStatusBadge, ConfidenceBadge, CreditUsageBadge,
 } from './shared'
 
@@ -50,16 +50,15 @@ export default function AgentStudioDashboard({ go }) {
 
   return (
     <div className="space-y-5">
-      <SectionHeading
-        title="Agent Studio"
-        subtitle="Create governed AI agents that use your Cortex and work inside arbitr."
-        actions={
-          <div className="flex items-center gap-2">
-            <SecondaryButton onClick={() => go('new')}>Browse Templates</SecondaryButton>
-            <PrimaryButton onClick={() => go('new')}><Plus className="w-4 h-4" /> Create Agent</PrimaryButton>
-          </div>
-        }
-      />
+      {/* No page title here — the module header above already names Agent
+          Studio; this row carries only the description + primary actions. */}
+      <div className="flex items-center justify-between gap-3 flex-wrap mb-5 border-b border-rule pb-4">
+        <p className="text-[13px] text-slate max-w-2xl leading-relaxed">Create governed AI agents that use your Cortex and work inside arbitr.</p>
+        <div className="flex items-center gap-2">
+          <SecondaryButton onClick={() => go('new')}>Browse Templates</SecondaryButton>
+          <PrimaryButton onClick={() => go('new')}><Plus className="w-4 h-4" /> Create Agent</PrimaryButton>
+        </div>
+      </div>
 
       {!hasAgents ? (
         <EmptyDashboard go={go} />
@@ -135,7 +134,7 @@ export function AgentCard({ agent, onOpen }) {
             {agent.qualityScore != null
               ? <span className="text-[11px] text-teal font-medium" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>Quality {agent.qualityScore}</span>
               : <span className="text-[11px] text-mist">Not yet tested</span>}
-            {agent.openIssues > 0 && <span className="text-[10.5px] text-amber-deep bg-amber/15 px-1.5 py-0.5 rounded-full">{agent.openIssues} open</span>}
+            {agent.openIssues > 0 && <span className="text-[10.5px] text-[#996800] bg-[#FFF7E6] px-1.5 py-0.5 rounded-full">{agent.openIssues} open</span>}
           </div>
           <span className="text-[10.5px] text-mist">Last run {relTime(agent.lastRunAt)}</span>
         </div>
@@ -167,7 +166,7 @@ export function AgentTable({ agents, onOpen }) {
                   <td className="px-4 py-2.5 text-slate">{v?.knowledgeScope?.length || 0}</td>
                   <td className="px-4 py-2.5 text-slate">{(a._deployedSurfaces || []).length}</td>
                   <td className="px-4 py-2.5">{a.qualityScore != null ? <span className="text-teal">{a.qualityScore}</span> : <span className="text-mist">—</span>}</td>
-                  <td className="px-4 py-2.5">{a.openIssues > 0 ? <span className="text-amber-deep">{a.openIssues}</span> : <span className="text-mist">0</span>}</td>
+                  <td className="px-4 py-2.5">{a.openIssues > 0 ? <span className="text-[#996800]">{a.openIssues}</span> : <span className="text-mist">0</span>}</td>
                   <td className="px-4 py-2.5 text-slate" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{(a.creditsUsed || 0).toLocaleString()}</td>
                   <td className="px-4 py-2.5 text-slate whitespace-nowrap">{a.owner}</td>
                   <td className="px-4 py-2.5 text-mist whitespace-nowrap">{relTime(a.lastRunAt)}</td>

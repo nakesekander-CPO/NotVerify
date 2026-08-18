@@ -21,7 +21,7 @@ import { ENSEMBLE_TEMPLATES } from '../data/campaignModel';
 
 const STATUS_CONFIG = {
   queued:     { label: 'Queued',     icon: Clock,        color: 'text-gray-400',   bg: 'bg-gray-50',    border: 'border-gray-200/60'  },
-  processing: { label: 'Processing', icon: Loader2,      color: 'text-[#009eda]',  bg: 'bg-[#009eda]/[0.06]', border: 'border-[#009eda]/20' },
+  processing: { label: 'Processing', icon: Loader2,      color: 'text-[#3D16FA]',  bg: 'bg-[#3D16FA]/[0.06]', border: 'border-[#3D16FA]/20' },
   complete:   { label: 'Complete',   icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200/60' },
   failed:     { label: 'Failed',     icon: AlertCircle,  color: 'text-red-500',    bg: 'bg-red-50',     border: 'border-red-200/60'   },
   review:     { label: 'In Review',  icon: Activity,     color: 'text-amber-600',  bg: 'bg-amber-50',   border: 'border-amber-200/60' },
@@ -101,7 +101,7 @@ function MiniProgress({ value }) {
   return (
     <div className="h-1.5 w-20 rounded-full bg-gray-100 overflow-hidden">
       <motion.div
-        className="h-full rounded-full bg-[#009eda]"
+        className="h-full rounded-full bg-[#3D16FA]"
         initial={{ width: 0 }}
         animate={{ width: `${value}%` }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
@@ -158,7 +158,7 @@ function JobDetailPanel({ job, onClose }) {
           </div>
           <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
             <motion.div
-              className="h-full rounded-full bg-[#009eda]"
+              className="h-full rounded-full bg-[#3D16FA]"
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.4 }}
             />
@@ -199,7 +199,7 @@ function JobDetailPanel({ job, onClose }) {
                     </div>
                     <div className="h-1 rounded-full bg-gray-100 overflow-hidden">
                       <motion.div
-                        className="h-full rounded-full bg-[#009eda]/60"
+                        className="h-full rounded-full bg-[#3D16FA]/60"
                         animate={{ width: `${Math.max(0, agentProgress)}%` }}
                         transition={{ duration: 0.5 }}
                       />
@@ -339,7 +339,7 @@ export default function OperationsControlRoom({ campaign, onComplete }) {
                 <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeWidth="3" className="text-gray-100" />
                 <motion.circle
                   cx="18" cy="18" r="14" fill="none"
-                  stroke="#009eda" strokeWidth="3"
+                  stroke="#3D16FA" strokeWidth="3"
                   strokeLinecap="round"
                   strokeDasharray={`${overallPct * 0.88} 88`}
                   initial={{ strokeDasharray: '0 88' }}
@@ -361,7 +361,7 @@ export default function OperationsControlRoom({ campaign, onComplete }) {
         className="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-6"
       >
         <MetricCard label="Total Jobs"  value={total}      icon={BarChart2}    color="bg-gray-100 text-gray-600"      />
-        <MetricCard label="In Progress" value={inProgress} icon={Loader2}      color="bg-[#009eda]/10 text-[#009eda]" subtext={queued > 0 ? `${queued} queued` : undefined} />
+        <MetricCard label="In Progress" value={inProgress} icon={Loader2}      color="bg-[#3D16FA]/10 text-[#3D16FA]" subtext={queued > 0 ? `${queued} queued` : undefined} />
         <MetricCard label="Complete"    value={complete}   icon={CheckCircle2} color="bg-emerald-50 text-emerald-600" />
         <MetricCard label="Needs Review" value={blocked}   icon={AlertCircle}  color="bg-amber-50 text-amber-600"     />
       </motion.div>
@@ -376,9 +376,9 @@ export default function OperationsControlRoom({ campaign, onComplete }) {
         <button
           type="button"
           onClick={() => setShowFilters(v => !v)}
-          className={`flex items-center gap-1.5 text-[12px] px-3 py-1.5 rounded-lg border transition-colors cursor-pointer ${showFilters ? 'border-[#009eda]/40 bg-[#009eda]/[0.04] text-[#009eda]' : 'border-black/[0.10] bg-white text-gray-500 hover:text-gray-800'}`}
+          className={`flex items-center gap-1.5 text-[12px] px-3 py-1.5 rounded-lg border transition-colors cursor-pointer ${showFilters ? 'border-[#3D16FA]/40 bg-[#3D16FA]/[0.04] text-[#3D16FA]' : 'border-black/[0.10] bg-white text-gray-500 hover:text-gray-800'}`}
         >
-          <Filter size={12} /> Filters {(filterLocale !== 'all' || filterType !== 'all' || filterStatus !== 'all') && <span className="ml-0.5 text-[#009eda] font-bold">·</span>}
+          <Filter size={12} /> Filters {(filterLocale !== 'all' || filterType !== 'all' || filterStatus !== 'all') && <span className="ml-0.5 text-[#3D16FA] font-bold">·</span>}
         </button>
 
         <AnimatePresence>
@@ -445,7 +445,7 @@ export default function OperationsControlRoom({ campaign, onComplete }) {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   onClick={() => setSelectedJob(selectedJob?.id === job.id ? null : job)}
-                  className={`border-b border-black/[0.05] last:border-0 cursor-pointer transition-colors ${selectedJob?.id === job.id ? 'bg-[#009eda]/[0.04]' : 'hover:bg-black/[0.015]'}`}
+                  className={`border-b border-black/[0.05] last:border-0 cursor-pointer transition-colors ${selectedJob?.id === job.id ? 'bg-[#3D16FA]/[0.04]' : 'hover:bg-black/[0.015]'}`}
                 >
                   {/* File */}
                   <td className="px-4 py-3">
@@ -532,7 +532,7 @@ function FilterPill({ label, value, onChange, options }) {
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
-        className={`flex items-center gap-1 text-[12px] px-3 py-1.5 rounded-lg border transition-colors cursor-pointer ${isActive ? 'border-[#009eda]/40 bg-[#009eda]/[0.04] text-[#009eda]' : 'border-black/[0.10] bg-white text-gray-600 hover:text-gray-800'}`}
+        className={`flex items-center gap-1 text-[12px] px-3 py-1.5 rounded-lg border transition-colors cursor-pointer ${isActive ? 'border-[#3D16FA]/40 bg-[#3D16FA]/[0.04] text-[#3D16FA]' : 'border-black/[0.10] bg-white text-gray-600 hover:text-gray-800'}`}
       >
         {current}
         <ChevronDown size={11} className="text-gray-400" />
@@ -544,7 +544,7 @@ function FilterPill({ label, value, onChange, options }) {
               key={opt.value}
               type="button"
               onClick={() => { onChange(opt.value); setOpen(false); }}
-              className={`w-full text-left px-3 py-2 text-[12px] transition-colors cursor-pointer ${value === opt.value ? 'bg-[#009eda]/[0.06] text-[#009eda] font-medium' : 'text-gray-700 hover:bg-black/[0.03]'}`}
+              className={`w-full text-left px-3 py-2 text-[12px] transition-colors cursor-pointer ${value === opt.value ? 'bg-[#3D16FA]/[0.06] text-[#3D16FA] font-medium' : 'text-gray-700 hover:bg-black/[0.03]'}`}
             >
               {opt.label}
             </button>

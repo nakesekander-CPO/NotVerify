@@ -210,7 +210,7 @@ function Row({ k, v, accent }) {
 
 const KIND_META = {
   agent:           { label: 'AI agent', labelJa: 'AIエージェント', icon: Bot,       tone: 'bg-ocean/10 text-ocean border-ocean/25' },
-  human_review:    { label: 'Human review', labelJa: '人によるレビュー', icon: UserCheck, tone: 'bg-amber/15 text-amber-deep border-amber/30' },
+  human_review:    { label: 'Human review', labelJa: '人によるレビュー', icon: UserCheck, tone: 'bg-[#FFF7E6] text-[#996800] border-[#FFB000]/40' },
   customer_action: { label: 'Customer action', labelJa: 'お客様の操作', icon: Hand,      tone: 'bg-violet-50 text-violet-700 border-violet-200' },
 }
 
@@ -219,7 +219,7 @@ const STATUS_META = {
   in_progress:  { label: 'In progress',  tone: 'bg-ocean/10 text-ocean border-ocean/25' },
   completed:    { label: 'Completed',    tone: 'bg-teal/10 text-teal border-teal/30' },
   blocked:      { label: 'Blocked',      tone: 'bg-error/10 text-error border-error/30' },
-  needs_review: { label: 'Needs review', tone: 'bg-amber/15 text-amber-deep border-amber/30' },
+  needs_review: { label: 'Needs review', tone: 'bg-[#FFF7E6] text-[#996800] border-[#FFB000]/40' },
 }
 
 export function WorkflowTimeline({ projects, project, onSelect, onUpdateSteps, onOpenReview }) {
@@ -285,9 +285,9 @@ export function WorkflowTimeline({ projects, project, onSelect, onUpdateSteps, o
                         ? <>Powered by <span className="font-medium text-ocean">{s.agentId}</span> · {s.agentName} <span className="text-mist">(arbitr · アビタAI)</span></>
                         : <>Owner: {s.owner}</>}
                       {s.completedAt && <span className="text-mist"> · done {new Date(s.completedAt).toLocaleTimeString()}</span>}
-                      {s.retryCount > 0 && <span className="text-amber-deep"> · {s.retryCount} retr{s.retryCount === 1 ? 'y' : 'ies'}</span>}
+                      {s.retryCount > 0 && <span className="text-[#996800]"> · {s.retryCount} retr{s.retryCount === 1 ? 'y' : 'ies'}</span>}
                     </p>
-                    {s.notes && <p className="text-[11px] text-amber-deep mt-1 inline-flex items-center gap-1"><AlertTriangle className="w-3 h-3 shrink-0" /> {s.notes}</p>}
+                    {s.notes && <p className="text-[11px] text-[#996800] mt-1 inline-flex items-center gap-1"><AlertTriangle className="w-3 h-3 shrink-0" /> {s.notes}</p>}
 
                     {/* Actions */}
                     <div className="flex items-center gap-2 mt-1.5">
@@ -302,7 +302,7 @@ export function WorkflowTimeline({ projects, project, onSelect, onUpdateSteps, o
                         </>
                       )}
                       {s.kind === 'human_review' && s.status !== 'completed' && (
-                        <button onClick={onOpenReview} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-amber/40 bg-amber/10 text-amber-deep text-[11px] font-semibold hover:bg-amber/20 cursor-pointer">
+                        <button onClick={onOpenReview} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-[#FFB000]/40 bg-[#FFF7E6] text-[#996800] text-[11px] font-semibold hover:bg-[#FFEFD1] cursor-pointer">
                           Open in Review Workspace <ChevronRight className="w-3 h-3" />
                         </button>
                       )}

@@ -16,7 +16,7 @@ export {
 
 const TONE_CLS = {
   teal: 'bg-teal/10 text-teal border-teal/30',
-  amber: 'bg-amber/15 text-amber-deep border-amber/30',
+  amber: 'bg-[#FFF7E6] text-[#996800] border-[#FFB000]/40',
   ocean: 'bg-ocean/10 text-ocean border-ocean/25',
   error: 'bg-error/10 text-error border-error/30',
   mist: 'bg-rule/50 text-mist border-rule-strong',

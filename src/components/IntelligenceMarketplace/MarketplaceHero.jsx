@@ -5,8 +5,8 @@ export default function MarketplaceHero({ searchQuery, onSearchChange, agentCoun
     <div className="pt-8 pb-4">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-[#009eda]/10 flex items-center justify-center">
-            <Store className="w-5 h-5 text-[#009eda]" />
+          <div className="w-10 h-10 rounded-lg bg-[#3D16FA]/10 flex items-center justify-center">
+            <Store className="w-5 h-5 text-[#3D16FA]" />
           </div>
           <div>
             <h1 className="text-[24px] font-bold text-gray-900 tracking-tight">Intelligence Marketplace</h1>
@@ -46,7 +46,7 @@ export default function MarketplaceHero({ searchQuery, onSearchChange, agentCoun
           <Puzzle className="w-3.5 h-3.5" />
           Integrations
           {connectedCount > 0 && (
-            <span className="ml-1 px-1.5 py-0.5 rounded-full bg-[#009eda]/10 text-[#009eda] text-[10px] font-semibold">
+            <span className="ml-1 px-1.5 py-0.5 rounded-full bg-[#3D16FA]/10 text-[#3D16FA] text-[10px] font-semibold">
               {connectedCount}
             </span>
           )}
@@ -63,7 +63,7 @@ export default function MarketplaceHero({ searchQuery, onSearchChange, agentCoun
               value={searchQuery}
               onChange={e => onSearchChange(e.target.value)}
               placeholder="Search agents, models, capabilities..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-gray-100 border border-black/[0.12] text-[13px] text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#009eda] focus:ring-1 focus:ring-[#009eda]/20 transition-all"
+              className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-gray-100 border border-black/[0.12] text-[13px] text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#3D16FA] focus:ring-1 focus:ring-[#3D16FA]/20 transition-all"
             />
           </div>
 

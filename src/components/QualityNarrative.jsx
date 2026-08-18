@@ -36,12 +36,12 @@ function CampaignExportWizard({ campaign, onClose }) {
   }
 
   return (
-    <div className="rounded-xl border-2 border-[#009eda]/20 bg-[#009eda]/[0.02] p-5 space-y-4">
+    <div className="rounded-xl border-2 border-[#3D16FA]/20 bg-[#3D16FA]/[0.02] p-5 space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-[12px] font-semibold uppercase tracking-widest text-gray-500">Export Campaign</p>
         <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
           {['Format', 'Structure', 'Confirm'].map((label, i) => (
-            <span key={label} className={`flex items-center gap-1 ${step === i + 1 ? 'text-[#009eda] font-semibold' : step > i + 1 ? 'text-emerald-600' : ''}`}>
+            <span key={label} className={`flex items-center gap-1 ${step === i + 1 ? 'text-[#3D16FA] font-semibold' : step > i + 1 ? 'text-emerald-600' : ''}`}>
               {i > 0 && <span className="text-gray-200 mx-0.5">/</span>}
               {step > i + 1 ? '✓' : label}
             </span>
@@ -57,14 +57,14 @@ function CampaignExportWizard({ campaign, onClose }) {
               key={f.id}
               type="button"
               onClick={() => setFormatId(f.id)}
-              className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left cursor-pointer transition-all ${formatId === f.id ? 'border-[#009eda] bg-[#009eda]/[0.04]' : 'border-black/[0.08] bg-white hover:border-[#009eda]/30'}`}
+              className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left cursor-pointer transition-all ${formatId === f.id ? 'border-[#3D16FA] bg-[#3D16FA]/[0.04]' : 'border-black/[0.08] bg-white hover:border-[#3D16FA]/30'}`}
             >
-              <FileText size={14} className={formatId === f.id ? 'text-[#009eda]' : 'text-gray-400'} />
+              <FileText size={14} className={formatId === f.id ? 'text-[#3D16FA]' : 'text-gray-400'} />
               <div className="flex-1">
                 <p className="text-[13px] font-medium text-gray-800">{f.label}</p>
                 <p className="text-[11px] text-gray-400">{f.description}</p>
               </div>
-              {formatId === f.id && <CheckCircle2 size={14} className="text-[#009eda] shrink-0" />}
+              {formatId === f.id && <CheckCircle2 size={14} className="text-[#3D16FA] shrink-0" />}
             </button>
           ))}
           <button onClick={() => setStep(2)} className="mt-2 w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-gray-900 text-white text-[13px] font-semibold cursor-pointer hover:bg-gray-800 transition-colors">
@@ -81,14 +81,14 @@ function CampaignExportWizard({ campaign, onClose }) {
               key={s.id}
               type="button"
               onClick={() => setStructureId(s.id)}
-              className={`w-full flex items-start gap-3 p-3 rounded-lg border text-left cursor-pointer transition-all ${structureId === s.id ? 'border-[#009eda] bg-[#009eda]/[0.04]' : 'border-black/[0.08] bg-white hover:border-[#009eda]/30'}`}
+              className={`w-full flex items-start gap-3 p-3 rounded-lg border text-left cursor-pointer transition-all ${structureId === s.id ? 'border-[#3D16FA] bg-[#3D16FA]/[0.04]' : 'border-black/[0.08] bg-white hover:border-[#3D16FA]/30'}`}
             >
-              <FolderOpen size={14} className={`mt-0.5 ${structureId === s.id ? 'text-[#009eda]' : 'text-gray-400'}`} />
+              <FolderOpen size={14} className={`mt-0.5 ${structureId === s.id ? 'text-[#3D16FA]' : 'text-gray-400'}`} />
               <div className="flex-1">
                 <p className="text-[13px] font-medium text-gray-800">{s.label}</p>
                 <p className="text-[11px] font-mono text-gray-400">{s.example}</p>
               </div>
-              {structureId === s.id && <CheckCircle2 size={14} className="text-[#009eda] shrink-0 mt-0.5" />}
+              {structureId === s.id && <CheckCircle2 size={14} className="text-[#3D16FA] shrink-0 mt-0.5" />}
             </button>
           ))}
           <div className="flex gap-2 mt-2">
@@ -117,7 +117,7 @@ function CampaignExportWizard({ campaign, onClose }) {
             <button
               onClick={handleDownload}
               disabled={downloading}
-              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-[#009eda] text-white text-[13px] font-semibold cursor-pointer hover:bg-[#007bb5] transition-colors disabled:opacity-60"
+              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-[#3D16FA] text-white text-[13px] font-semibold cursor-pointer hover:bg-[#007bb5] transition-colors disabled:opacity-60"
             >
               {downloading ? <><Loader2 size={13} className="animate-spin" /> Generating…</> : <><Download size={13} /> Download .zip</>}
             </button>
@@ -617,7 +617,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
                         <p className="text-[10px] text-gray-500 leading-relaxed mb-2">These flags do not block publication but require acknowledgment for audit trail.</p>
                         <button
                           onClick={() => setActiveTab('compliance')}
-                          className="text-[10px] font-medium text-[#1B5E8F] hover:text-[#4F94C4] transition-colors cursor-pointer"
+                          className="text-[10px] font-medium text-[#3D16FA] hover:text-[#4F94C4] transition-colors cursor-pointer"
                         >
                           View in Review tab →
                         </button>
@@ -658,7 +658,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
                         <p className="text-[10px] text-gray-500 leading-relaxed">Resolve blockers or assign to human review to proceed.</p>
                         <button
                           onClick={() => setActiveTab('compliance')}
-                          className="mt-2 text-[10px] font-medium text-[#1B5E8F] hover:text-[#4F94C4] transition-colors cursor-pointer"
+                          className="mt-2 text-[10px] font-medium text-[#3D16FA] hover:text-[#4F94C4] transition-colors cursor-pointer"
                         >
                           Resolve on Review tab →
                         </button>
@@ -1235,7 +1235,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
                                 glossaryAdded
                                   ? 'bg-emerald-50 text-emerald-400'
                                   : glossaryLoading
-                                    ? 'bg-amber/50 text-white/70'
+                                    ? 'bg-[#FFB000]/50 text-white/70'
                                     : 'bg-amber hover:bg-amber-deep text-white'
                               }`}
                             >

@@ -481,7 +481,7 @@ export default function CommandUpload({
             className={`w-full flex items-center justify-center gap-2 px-6 py-4 rounded-lg text-[16px] font-semibold transition-all cursor-pointer ${
               launchEnabled
                 ? 'bg-amber hover:bg-amber-deep text-white shadow-sm shadow-amber/20'
-                : 'bg-amber/40 text-gray-400 cursor-not-allowed'
+                : 'bg-[#FFB000]/40 text-gray-400 cursor-not-allowed'
             }`}
             animate={launchEnabled && !prefersReducedMotion ? { scale: [1, 1.02, 1] } : {}}
             transition={{ duration: 0.3 }}

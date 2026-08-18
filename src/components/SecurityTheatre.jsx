@@ -82,7 +82,7 @@ function OrbitingRing({ radius, duration, direction, icons, IconComponent, iconS
           cy={radius + 15}
           r={radius}
           fill="none"
-          stroke="rgba(27,94,143,0.2)"
+          stroke="rgba(61,22,250,0.2)"
           strokeWidth="1"
           strokeDasharray={dashArray}
         />
@@ -171,7 +171,7 @@ function PhaseCard({ title, badge, status, children, reducedMotion }) {
       style={{
         backgroundColor: '#f5f5f5',
         borderColor: isActive
-          ? 'rgba(27,94,143,0.3)'
+          ? 'rgba(61,22,250,0.3)'
           : 'rgba(255,255,255,0.06)',
       }}
     >
@@ -184,7 +184,7 @@ function PhaseCard({ title, badge, status, children, reducedMotion }) {
           <Loader2
             size={16}
             className="animate-spin"
-            style={{ color: '#1B5E8F', flexShrink: 0 }}
+            style={{ color: '#3D16FA', flexShrink: 0 }}
           />
         )}
         {isPending && (
@@ -200,7 +200,7 @@ function PhaseCard({ title, badge, status, children, reducedMotion }) {
           style={{
             backgroundColor: isComplete
               ? 'rgba(52,211,153,0.15)'
-              : 'rgba(27,94,143,0.15)',
+              : 'rgba(61,22,250,0.15)',
             color: isComplete ? '#34d399' : '#4F94C4',
           }}
         >
@@ -246,14 +246,14 @@ function LocaleBar({ code, progress, reducedMotion }) {
       </span>
       <div
         className="flex-1 h-2 rounded-full overflow-hidden"
-        style={{ backgroundColor: 'rgba(27,94,143,0.1)' }}
+        style={{ backgroundColor: 'rgba(61,22,250,0.1)' }}
       >
         <motion.div
           className="h-full rounded-full relative"
           style={{
             background: isComplete
               ? '#34d399'
-              : 'linear-gradient(90deg, #1B5E8F, #34d399)',
+              : 'linear-gradient(90deg, #3D16FA, #34d399)',
             width: `${progress}%`,
           }}
           initial={reducedMotion ? false : { width: 0 }}
@@ -565,7 +565,7 @@ export default function SecurityTheatre({ data, onComplete, structuredContext })
             transition={{ type: 'spring', ...spring }}
           >
             <div className="relative">
-              <FileText size={48} style={{ color: '#1B5E8F' }} />
+              <FileText size={48} style={{ color: '#3D16FA' }} />
               <motion.div
                 className="absolute inset-0 flex items-center justify-center"
                 initial={reducedMotion ? false : { opacity: 0 }}
@@ -574,7 +574,7 @@ export default function SecurityTheatre({ data, onComplete, structuredContext })
               >
                 <Shield
                   size={48}
-                  style={{ color: 'rgba(27,94,143,0.3)' }}
+                  style={{ color: 'rgba(61,22,250,0.3)' }}
                 />
               </motion.div>
 
@@ -822,7 +822,7 @@ export default function SecurityTheatre({ data, onComplete, structuredContext })
 
         <div
           className="w-full rounded-full overflow-hidden"
-          style={{ height: 6, backgroundColor: 'rgba(27,94,143,0.1)' }}
+          style={{ height: 6, backgroundColor: 'rgba(61,22,250,0.1)' }}
         >
           <motion.div
             className="h-full rounded-full"
@@ -830,7 +830,7 @@ export default function SecurityTheatre({ data, onComplete, structuredContext })
               background:
                 masterProgress >= 100
                   ? '#34d399'
-                  : 'linear-gradient(90deg, #1B5E8F, #4F94C4, #34d399)',
+                  : 'linear-gradient(90deg, #3D16FA, #4F94C4, #34d399)',
               boxShadow:
                 masterProgress >= 100
                   ? '0 0 8px rgba(52,211,153,0.5)'

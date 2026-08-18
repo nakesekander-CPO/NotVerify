@@ -30,7 +30,7 @@ function NodeTypeBadge({ type }) {
 function RoleBadge({ role, scopeNode, compact }) {
   const isInt = role?.internal
   return (
-    <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium border ${isInt ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-[#009eda]/10 text-[#009eda] border-[#009eda]/20'}`}>
+    <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium border ${isInt ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-[#3D16FA]/10 text-[#3D16FA] border-[#3D16FA]/20'}`}>
       {isInt && <AlertCircle className="w-2.5 h-2.5" />}
       {role?.name}{!compact && scopeNode ? ` @ ${scopeNode.name}` : ''}
     </span>
@@ -110,7 +110,7 @@ function TreeNode({ nodeId, depth, expanded, onToggle, selected, onSelect, assig
   return (
     <>
       <button type="button" onClick={() => onSelect(nodeId)}
-        className={`w-full flex items-center gap-2 py-2 pr-3 text-left transition-colors cursor-pointer rounded-md ${isSel ? 'bg-[#009eda]/[0.08] border-l-2 border-[#009eda] pl-[calc(var(--indent)-2px)]' : 'hover:bg-black/[0.03] pl-[var(--indent)]'}`}
+        className={`w-full flex items-center gap-2 py-2 pr-3 text-left transition-colors cursor-pointer rounded-md ${isSel ? 'bg-[#3D16FA]/[0.08] border-l-2 border-[#3D16FA] pl-[calc(var(--indent)-2px)]' : 'hover:bg-black/[0.03] pl-[var(--indent)]'}`}
         style={{ '--indent': `${depth * 24 + 8}px` }}>
         {hasChildren ? (
           <span onClick={e => { e.stopPropagation(); onToggle(nodeId) }} className="p-0.5 rounded hover:bg-black/[0.06] transition-colors">
@@ -207,24 +207,24 @@ function InviteModal({ tenantId, onInvite, onClose }) {
           <div>
             <label className="block text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1">Full name</label>
             <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Jane Doe"
-              className="w-full rounded-lg border border-black/[0.08] bg-gray-50 px-3 py-2 text-[13px] placeholder:text-gray-400 outline-none focus:border-[#009eda] transition" />
+              className="w-full rounded-lg border border-black/[0.08] bg-gray-50 px-3 py-2 text-[13px] placeholder:text-gray-400 outline-none focus:border-[#3D16FA] transition" />
           </div>
           <div>
             <label className="block text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1">Email</label>
             <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="jane.doe@ibm.com"
-              className="w-full rounded-lg border border-black/[0.08] bg-gray-50 px-3 py-2 text-[13px] placeholder:text-gray-400 outline-none focus:border-[#009eda] transition" />
+              className="w-full rounded-lg border border-black/[0.08] bg-gray-50 px-3 py-2 text-[13px] placeholder:text-gray-400 outline-none focus:border-[#3D16FA] transition" />
           </div>
           <div>
             <label className="block text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1">Role</label>
             <select value={roleId} onChange={e => setRoleId(e.target.value)}
-              className="w-full rounded-lg border border-black/[0.08] bg-gray-50 px-3 py-2 text-[13px] outline-none focus:border-[#009eda] transition">
+              className="w-full rounded-lg border border-black/[0.08] bg-gray-50 px-3 py-2 text-[13px] outline-none focus:border-[#3D16FA] transition">
               {customerRoles.map(r => <option key={r.id} value={r.id}>{r.name} — {r.description.slice(0, 60)}</option>)}
             </select>
           </div>
           <div>
             <label className="block text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1">Scope</label>
             <select value={scopeId} onChange={e => setScopeId(e.target.value)}
-              className="w-full rounded-lg border border-black/[0.08] bg-gray-50 px-3 py-2 text-[13px] outline-none focus:border-[#009eda] transition">
+              className="w-full rounded-lg border border-black/[0.08] bg-gray-50 px-3 py-2 text-[13px] outline-none focus:border-[#3D16FA] transition">
               <option value="">Select scope...</option>
               {tenantNodes.map(n => {
                 const depth = getNodePath(n.id).length - 1
@@ -236,7 +236,7 @@ function InviteModal({ tenantId, onInvite, onClose }) {
         <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-black/[0.06] bg-gray-50">
           <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg border border-black/[0.10] text-gray-600 text-[13px] font-medium hover:bg-white cursor-pointer transition-colors">Cancel</button>
           <button type="button" onClick={() => { if (canSubmit) onInvite({ name: name.trim(), email: email.trim(), roleId, scopeId }) }} disabled={!canSubmit}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#009eda] text-white text-[13px] font-semibold hover:bg-[#007bb5] cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#3D16FA] text-white text-[13px] font-semibold hover:bg-[#007bb5] cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             <UserPlus className="w-3.5 h-3.5" /> Invite
           </button>
         </div>
@@ -256,14 +256,14 @@ function AddRoleForm({ tenantId, onAdd, onCancel }) {
   const customerRoles = ROLES.filter(r => !r.internal)
 
   return (
-    <div className="rounded-lg border border-[#009eda]/30 bg-[#009eda]/[0.04] p-3 space-y-2">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#009eda]">Add role assignment</p>
+    <div className="rounded-lg border border-[#3D16FA]/30 bg-[#3D16FA]/[0.04] p-3 space-y-2">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#3D16FA]">Add role assignment</p>
       <select value={roleId} onChange={e => setRoleId(e.target.value)}
-        className="w-full rounded-lg border border-black/[0.08] bg-white px-2.5 py-1.5 text-[12px] outline-none focus:border-[#009eda] transition">
+        className="w-full rounded-lg border border-black/[0.08] bg-white px-2.5 py-1.5 text-[12px] outline-none focus:border-[#3D16FA] transition">
         {customerRoles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
       </select>
       <select value={scopeId} onChange={e => setScopeId(e.target.value)}
-        className="w-full rounded-lg border border-black/[0.08] bg-white px-2.5 py-1.5 text-[12px] outline-none focus:border-[#009eda] transition">
+        className="w-full rounded-lg border border-black/[0.08] bg-white px-2.5 py-1.5 text-[12px] outline-none focus:border-[#3D16FA] transition">
         <option value="">Select scope...</option>
         {tenantNodes.map(n => {
           const depth = getNodePath(n.id).length - 1
@@ -272,7 +272,7 @@ function AddRoleForm({ tenantId, onAdd, onCancel }) {
       </select>
       <div className="flex items-center gap-2">
         <button type="button" onClick={() => { if (scopeId) onAdd({ roleId, scopeId }) }}
-          disabled={!scopeId} className="px-3 py-1.5 rounded-lg bg-[#009eda] text-white text-[11px] font-semibold cursor-pointer hover:bg-[#007bb5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          disabled={!scopeId} className="px-3 py-1.5 rounded-lg bg-[#3D16FA] text-white text-[11px] font-semibold cursor-pointer hover:bg-[#007bb5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
           Assign
         </button>
         <button type="button" onClick={onCancel} className="px-3 py-1.5 rounded-lg border border-black/[0.08] text-gray-500 text-[11px] font-medium cursor-pointer hover:bg-gray-50 transition-colors">Cancel</button>
@@ -309,10 +309,10 @@ function MembersTab({ tenantId, users, assignments, onInvite, onAddRole, onRemov
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
               <input type="text" placeholder="Search members..." value={search} onChange={e => setSearch(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 rounded-lg border border-black/[0.08] bg-gray-50 text-[12px] placeholder:text-gray-400 outline-none focus:border-[#009eda] transition" />
+                className="w-full pl-9 pr-3 py-2 rounded-lg border border-black/[0.08] bg-gray-50 text-[12px] placeholder:text-gray-400 outline-none focus:border-[#3D16FA] transition" />
             </div>
             <button type="button" onClick={() => setShowInvite(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#009eda] text-white text-[12px] font-semibold hover:bg-[#007bb5] cursor-pointer transition-colors shrink-0">
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#3D16FA] text-white text-[12px] font-semibold hover:bg-[#007bb5] cursor-pointer transition-colors shrink-0">
               <UserPlus className="w-3.5 h-3.5" /> Invite member
             </button>
           </div>
@@ -332,7 +332,7 @@ function MembersTab({ tenantId, users, assignments, onInvite, onAddRole, onRemov
                 const roles = getEffectiveRoles(user.id, tenantId, assignments)
                 return (
                   <tr key={user.id} onClick={() => { setSel(user.id); setShowAddRole(false) }}
-                    className={`border-b border-black/[0.04] cursor-pointer transition-colors ${sel === user.id ? 'bg-[#009eda]/[0.06]' : 'hover:bg-gray-50'}`}>
+                    className={`border-b border-black/[0.04] cursor-pointer transition-colors ${sel === user.id ? 'bg-[#3D16FA]/[0.06]' : 'hover:bg-gray-50'}`}>
                     <td className="py-2.5 pr-3">
                       <div className="flex items-center gap-2.5">
                         <Avatar initials={user.initials} internal={user.internal} />
@@ -371,7 +371,7 @@ function MembersTab({ tenantId, users, assignments, onInvite, onAddRole, onRemov
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Role Assignments ({selRoles.length})</p>
                   {!showAddRole && (
-                    <button type="button" onClick={() => setShowAddRole(true)} className="flex items-center gap-1 text-[11px] text-[#009eda] hover:text-[#007bb5] font-medium cursor-pointer transition-colors">
+                    <button type="button" onClick={() => setShowAddRole(true)} className="flex items-center gap-1 text-[11px] text-[#3D16FA] hover:text-[#007bb5] font-medium cursor-pointer transition-colors">
                       <Plus className="w-3 h-3" /> Add role
                     </button>
                   )}
@@ -391,7 +391,7 @@ function MembersTab({ tenantId, users, assignments, onInvite, onAddRole, onRemov
                     <div key={a.id} className={`rounded-lg border p-3 group ${a.internal ? 'border-purple-200 bg-purple-50/30 border-l-4 border-l-purple-400' : 'border-black/[0.08]'}`}>
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-2">
-                          <Shield className={`w-3.5 h-3.5 ${a.internal ? 'text-purple-600' : 'text-[#009eda]'}`} />
+                          <Shield className={`w-3.5 h-3.5 ${a.internal ? 'text-purple-600' : 'text-[#3D16FA]'}`} />
                           <span className="text-[13px] font-semibold text-gray-900">{a.role?.name}</span>
                         </div>
                         {!a.internal && (
@@ -444,8 +444,8 @@ function RolesTab({ assignments }) {
         <div key={role.id} className={`rounded-xl border p-4 ${role.internal ? 'border-purple-200 bg-purple-50/20' : 'border-black/[0.08] bg-white'}`}>
           <div className="flex items-start justify-between gap-3 mb-2">
             <div className="flex items-center gap-2.5">
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${role.internal ? 'bg-purple-100' : 'bg-[#009eda]/10'}`}>
-                <Shield className={`w-4 h-4 ${role.internal ? 'text-purple-600' : 'text-[#009eda]'}`} />
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${role.internal ? 'bg-purple-100' : 'bg-[#3D16FA]/10'}`}>
+                <Shield className={`w-4 h-4 ${role.internal ? 'text-purple-600' : 'text-[#3D16FA]'}`} />
               </div>
               <div>
                 <div className="flex items-center gap-2">
@@ -572,7 +572,7 @@ export default function OrgAccess({ activeTab, tier }) {
         <div className="flex items-center gap-1">
           {TENANTS.map(t => (
             <button key={t.id} type="button" onClick={() => setActiveTenant(t.id)}
-              className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors cursor-pointer ${activeTenant === t.id ? 'bg-[#009eda] text-white' : 'text-gray-500 hover:bg-black/[0.05]'}`}>{t.name}</button>
+              className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors cursor-pointer ${activeTenant === t.id ? 'bg-[#3D16FA] text-white' : 'text-gray-500 hover:bg-black/[0.05]'}`}>{t.name}</button>
           ))}
         </div>
       </div>

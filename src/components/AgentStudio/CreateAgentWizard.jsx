@@ -252,7 +252,7 @@ function TestCreateStep({ draft, version }) {
             </ul>
           )}
           {draft.knowledgeScope.length === 0 && (
-            <p className="text-[11.5px] text-amber-deep mt-2 inline-flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> No knowledge sources granted — answers will be marked Need Review.</p>
+            <p className="text-[11.5px] text-[#996800] mt-2 inline-flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> No knowledge sources granted — answers will be marked Need Review.</p>
           )}
         </Card>
       )}

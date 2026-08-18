@@ -36,7 +36,7 @@ export default function GlobalAdminSettings() {
 
         <Card>
           <div className="flex items-center gap-2">
-            <Lock className="w-4 h-4 text-amber" />
+            <Lock className="w-4 h-4 text-[#FFBD59]" />
             <p className="text-[14px] font-semibold text-ink">Retraining governance</p>
           </div>
           <p className="text-[12.5px] text-slate mt-2">Retraining and Cortex updates require approval by a final-validator or arbitr global admin. Unapproved corrections are never used.</p>

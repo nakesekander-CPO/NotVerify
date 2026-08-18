@@ -23,7 +23,7 @@ import { Card, MonoLabel } from '../shared'
 
 const SEVERITY_TONE = {
   critical: 'bg-error/10 text-error border-error/30',
-  major: 'bg-amber/15 text-amber-deep border-amber/30',
+  major: 'bg-[#FFF7E6] text-[#996800] border-[#FFB000]/40',
   minor: 'bg-pale text-slate border-rule',
 }
 
@@ -73,7 +73,7 @@ export function MarshallScan({ scan, onContinue }) {
             const scanned = n <= slideDone
             const flagged = scanned && issueSlides.has(n)
             return (
-              <div key={n} className={`aspect-[4/3] rounded-lg border flex flex-col items-center justify-center transition-colors duration-300 ${!scanned ? 'border-rule bg-pale/40 text-mist' : flagged ? 'border-amber/50 bg-amber/10 text-amber-deep' : 'border-teal/40 bg-teal/5 text-teal'}`}>
+              <div key={n} className={`aspect-[4/3] rounded-lg border flex flex-col items-center justify-center transition-colors duration-300 ${!scanned ? 'border-rule bg-pale/40 text-mist' : flagged ? 'border-[#FFB000]/50 bg-[#FFF7E6] text-[#996800]' : 'border-teal/40 bg-teal/5 text-teal'}`}>
                 <span className="text-[13px] font-bold" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{n}</span>
                 {scanned && (flagged
                   ? <AlertTriangle className="w-3 h-3 mt-0.5" />
@@ -236,7 +236,7 @@ function ChoiceCard({ active, onClick, icon: Icon, title, titleJa, sla, points, 
 /* ── Terminology evidence panel ──────────────────────────────── */
 
 const ACTION_TONE = {
-  applied: { label: 'Applied', tone: 'bg-amber/15 text-amber-deep border-amber/30' },
+  applied: { label: 'Applied', tone: 'bg-[#FFF7E6] text-[#996800] border-[#FFB000]/40' },
   pass: { label: 'Pass', tone: 'bg-teal/10 text-teal border-teal/30' },
   held: { label: 'Held', tone: 'bg-violet-50 text-violet-700 border-violet-200' },
 }
@@ -249,7 +249,7 @@ export function TermEvidencePanel({ evidence }) {
           <BookOpen className="w-3.5 h-3.5 text-ocean" /> Terminology evidence · {evidence.glossaryName}
         </p>
         <p className="text-[10.5px] text-slate" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-          {evidence.checked} terms checked · <span className="text-amber-deep font-semibold">{evidence.applied} corrections applied</span> · {evidence.held} held for client · {evidence.violationsRemaining} violations remaining
+          {evidence.checked} terms checked · <span className="text-[#996800] font-semibold">{evidence.applied} corrections applied</span> · {evidence.held} held for client · {evidence.violationsRemaining} violations remaining
         </p>
       </div>
       <ul className="divide-y divide-rule/60">

@@ -250,7 +250,7 @@ export default function MissionControl({
   const potentialScore = qualityScore?.potential || 0
   const dimensions = qualityScore?.dimensions || []
   const ringOffset = ringCircumference - (overallScore / 100) * ringCircumference
-  const ringStroke = overallScore >= 85 ? '#34d399' : overallScore >= 65 ? '#009eda' : '#f87171'
+  const ringStroke = overallScore >= 85 ? '#34d399' : overallScore >= 65 ? '#3D16FA' : '#f87171'
 
   /* ── Choreographed analysis sequence ── */
   useEffect(() => {
@@ -362,8 +362,8 @@ export default function MissionControl({
               <div className="space-y-2">
                 {activeAgents.map(agent => (
                   <div key={agent.id} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50 border border-black/[0.06]">
-                    <div className="w-7 h-7 rounded-md bg-[#009eda]/10 flex items-center justify-center shrink-0">
-                      <Shield className="w-3.5 h-3.5 text-[#009eda]" />
+                    <div className="w-7 h-7 rounded-md bg-[#3D16FA]/10 flex items-center justify-center shrink-0">
+                      <Shield className="w-3.5 h-3.5 text-[#3D16FA]" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[12px] font-medium text-gray-800">{agent.name}</p>
@@ -395,7 +395,7 @@ export default function MissionControl({
           {/* Primary CTA */}
           <motion.button
             onClick={handleDeploy}
-            className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-[#009eda] hover:bg-[#0089c4] text-white text-[15px] font-semibold shadow-sm shadow-[#009eda]/20 cursor-pointer transition-all"
+            className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-[#3D16FA] hover:bg-[#0089c4] text-white text-[15px] font-semibold shadow-sm shadow-[#3D16FA]/20 cursor-pointer transition-all"
             animate={!prefersReducedMotion ? { scale: [1, 1.015, 1] } : {}}
             transition={{ duration: 0.3 }}
           >
@@ -417,7 +417,7 @@ export default function MissionControl({
       {(triageData || preloaded) && !showAdvanced && !isReady && (
         <div className="max-w-lg mx-auto">
           <div className="bg-gray-50 border border-black/[0.12] rounded-xl p-8 flex flex-col items-center gap-4">
-            <Loader2 className="w-8 h-8 text-[#009eda] animate-spin" />
+            <Loader2 className="w-8 h-8 text-[#3D16FA] animate-spin" />
             <div className="text-center">
               <p className="text-[15px] font-medium text-gray-900 mb-1">Analyzing document</p>
               <p className="text-[13px] text-gray-500">{fileName}</p>
@@ -438,12 +438,12 @@ export default function MissionControl({
               <div className="flex items-center gap-4 mb-4">
                 <motion.div
                   className={`w-14 h-14 rounded-lg flex items-center justify-center border ${
-                    isReady ? 'bg-emerald-50 border-emerald-200' : 'bg-[#009eda]/5 border-[#009eda]/20'
+                    isReady ? 'bg-emerald-50 border-emerald-200' : 'bg-[#3D16FA]/5 border-[#3D16FA]/20'
                   }`}
                   animate={!isReady && !prefersReducedMotion ? { scale: [1, 1.04, 1] } : {}}
                   transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
                 >
-                  <FileText className={`w-6 h-6 ${isReady ? 'text-emerald-500' : 'text-[#009eda]'}`} />
+                  <FileText className={`w-6 h-6 ${isReady ? 'text-emerald-500' : 'text-[#3D16FA]'}`} />
                 </motion.div>
                 <div className="space-y-1">
                   {[STEPS.UPLOADED, STEPS.PARSED, STEPS.ANALYZING, STEPS.COMPLETE].includes(step) && (
@@ -494,7 +494,7 @@ export default function MissionControl({
                 >
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <Bot className="w-4 h-4 text-[#009eda]" />
+                      <Bot className="w-4 h-4 text-[#3D16FA]" />
                       <h2 className="text-[13px] font-semibold text-gray-900">Recommended Agent Ensemble</h2>
                     </div>
                     <button
@@ -520,8 +520,8 @@ export default function MissionControl({
                           className="flex items-center justify-between p-3 rounded-lg border border-black/[0.08] bg-gray-50/50"
                         >
                           <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-lg bg-[#009eda]/10 flex items-center justify-center">
-                              <AgentIcon iconName={agent.icon} size={16} className="text-[#009eda]" />
+                            <div className="w-8 h-8 rounded-lg bg-[#3D16FA]/10 flex items-center justify-center">
+                              <AgentIcon iconName={agent.icon} size={16} className="text-[#3D16FA]" />
                             </div>
                             <div>
                               <div className="flex items-center gap-2">
@@ -586,7 +586,7 @@ export default function MissionControl({
                                   </div>
                                   <button
                                     onClick={() => addAgent(agent.id)}
-                                    className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium bg-[#009eda]/10 text-[#009eda] hover:bg-[#009eda]/20 transition-colors cursor-pointer"
+                                    className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium bg-[#3D16FA]/10 text-[#3D16FA] hover:bg-[#3D16FA]/20 transition-colors cursor-pointer"
                                   >
                                     <Plus size={12} /> Add
                                   </button>
@@ -678,7 +678,7 @@ export default function MissionControl({
                       </p>
                       <p className="text-[11px] text-gray-500">Based on 42 prior JA financial projects</p>
                       {potentialScore > overallScore && (
-                        <p className="flex items-center gap-1 text-[11px] text-[#009eda] mt-1.5">
+                        <p className="flex items-center gap-1 text-[11px] text-[#3D16FA] mt-1.5">
                           <Zap className="w-3 h-3" />
                           +{potentialScore - overallScore}% with Premium Knowledge Enhancement
                         </p>
@@ -734,11 +734,11 @@ export default function MissionControl({
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500"><Clock size={13} className="text-gray-400" /> Time</span>
-                      <span className="text-[13px] font-bold font-mono text-[#009eda]">{estimatedTime}m</span>
+                      <span className="text-[13px] font-bold font-mono text-[#3D16FA]">{estimatedTime}m</span>
                     </div>
                     <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
                       <motion.div
-                        className="h-full rounded-full bg-[#009eda]"
+                        className="h-full rounded-full bg-[#3D16FA]"
                         animate={{ width: `${Math.min((estimatedTime / 20) * 100, 100)}%` }}
                         transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 200, damping: 25 }}
                       />
@@ -776,7 +776,7 @@ export default function MissionControl({
                             className="flex justify-between"
                           >
                             <span className="flex items-center gap-1.5 text-gray-500">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[#009eda]" />{a.id}
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#3D16FA]" />{a.id}
                             </span>
                             <span className="text-emerald-500">+{a.qualityLift}</span>
                           </motion.div>
@@ -854,7 +854,7 @@ export default function MissionControl({
               disabled={!isReady}
               className={`w-full flex items-center justify-center gap-2 px-6 py-4 rounded-lg text-[15px] font-semibold transition-all cursor-pointer ${
                 isReady
-                  ? 'bg-[#009eda] hover:bg-[#0089c4] text-white shadow-sm shadow-[#009eda]/20'
+                  ? 'bg-[#3D16FA] hover:bg-[#0089c4] text-white shadow-sm shadow-[#3D16FA]/20'
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               }`}
               animate={isReady && !prefersReducedMotion ? { scale: [1, 1.015, 1] } : {}}

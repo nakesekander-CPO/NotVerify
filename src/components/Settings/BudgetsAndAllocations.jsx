@@ -47,7 +47,7 @@ export default function BudgetsAndAllocations() {
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-[#009eda] text-white hover:bg-[#0089bf] transition-colors cursor-pointer shrink-0"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-[#3D16FA] text-white hover:bg-[#0089bf] transition-colors cursor-pointer shrink-0"
         >
           <Plus className="w-3.5 h-3.5" />
           Create budget
@@ -121,15 +121,15 @@ function BudgetCard({ budget, onUpdate }) {
     <div className={`border rounded-xl bg-white transition-colors ${atRisk && !editing ? 'border-amber-200' : 'border-black/[0.08]'}`}>
       {/* Header row */}
       <div className="flex items-center gap-3 p-4">
-        <div className="w-8 h-8 rounded-lg bg-[#009eda]/10 flex items-center justify-center shrink-0">
-          <LayoutList className="w-4 h-4 text-[#009eda]" />
+        <div className="w-8 h-8 rounded-lg bg-[#3D16FA]/10 flex items-center justify-center shrink-0">
+          <LayoutList className="w-4 h-4 text-[#3D16FA]" />
         </div>
         <div className="flex-1 min-w-0">
           {editing ? (
             <input
               value={draft.name}
               onChange={e => setDraft({ ...draft, name: e.target.value })}
-              className="text-[13px] font-semibold text-gray-900 w-full border border-black/[0.12] rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#009eda]/40 mb-0.5"
+              className="text-[13px] font-semibold text-gray-900 w-full border border-black/[0.12] rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#3D16FA]/40 mb-0.5"
             />
           ) : (
             <div className="flex items-center gap-2">
@@ -149,7 +149,7 @@ function BudgetCard({ budget, onUpdate }) {
               <button onClick={() => { setEditing(false); setDraft(null) }} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-black/[0.04] transition-colors cursor-pointer">
                 <X className="w-3.5 h-3.5" />
               </button>
-              <button onClick={save} className="p-1.5 rounded-lg text-[#009eda] hover:bg-[#009eda]/10 transition-colors cursor-pointer">
+              <button onClick={save} className="p-1.5 rounded-lg text-[#3D16FA] hover:bg-[#3D16FA]/10 transition-colors cursor-pointer">
                 <Check className="w-3.5 h-3.5" />
               </button>
             </>
@@ -203,7 +203,7 @@ function BudgetCard({ budget, onUpdate }) {
             <select
               value={draft.alertThreshold}
               onChange={e => setDraft({ ...draft, alertThreshold: Number(e.target.value) })}
-              className="text-[12px] text-gray-700 border border-black/[0.12] rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#009eda]/40 bg-white"
+              className="text-[12px] text-gray-700 border border-black/[0.12] rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#3D16FA]/40 bg-white"
             >
               {[50, 60, 70, 75, 80, 85, 90, 95].map(v => <option key={v} value={v}>{v}%</option>)}
             </select>
@@ -244,7 +244,7 @@ function ProgressRow({ icon: Icon, label, used, allocated, unit, pct, threshold,
               <input
                 value={editValue}
                 onChange={e => onEditChange(e.target.value)}
-                className="w-14 text-[11px] text-gray-700 border border-black/[0.12] rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-[#009eda]/40 inline-block"
+                className="w-14 text-[11px] text-gray-700 border border-black/[0.12] rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-[#3D16FA]/40 inline-block"
               />
             ) : (
               unit === 'IC' ? allocated.toLocaleString() : allocated.toFixed(1)
@@ -294,7 +294,7 @@ function CreateBudgetModal({ onClose, onCreate }) {
               value={form.name}
               onChange={e => set('name', e.target.value)}
               placeholder="e.g. M&A Team — Q3"
-              className="w-full text-[12px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#009eda]/40 placeholder:text-gray-300"
+              className="w-full text-[12px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#3D16FA]/40 placeholder:text-gray-300"
             />
           </div>
           <div>
@@ -302,7 +302,7 @@ function CreateBudgetModal({ onClose, onCreate }) {
             <select
               value={form.entity}
               onChange={e => set('entity', e.target.value)}
-              className="w-full text-[12px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#009eda]/40 bg-white"
+              className="w-full text-[12px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#3D16FA]/40 bg-white"
             >
               <option>Meridian Capital Ltd.</option>
               <option>Meridian Asia Holdings Pte. Ltd.</option>
@@ -315,7 +315,7 @@ function CreateBudgetModal({ onClose, onCreate }) {
                 type="number"
                 value={form.icAllocation}
                 onChange={e => set('icAllocation', Number(e.target.value))}
-                className="w-full text-[12px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#009eda]/40"
+                className="w-full text-[12px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#3D16FA]/40"
               />
             </div>
             <div>
@@ -325,7 +325,7 @@ function CreateBudgetModal({ onClose, onCreate }) {
                 step="0.1"
                 value={form.tcAllocation}
                 onChange={e => set('tcAllocation', Number(e.target.value))}
-                className="w-full text-[12px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#009eda]/40"
+                className="w-full text-[12px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#3D16FA]/40"
               />
             </div>
           </div>
@@ -334,7 +334,7 @@ function CreateBudgetModal({ onClose, onCreate }) {
             <select
               value={form.alertThreshold}
               onChange={e => set('alertThreshold', Number(e.target.value))}
-              className="w-full text-[12px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#009eda]/40 bg-white"
+              className="w-full text-[12px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#3D16FA]/40 bg-white"
             >
               {[50, 60, 70, 75, 80, 85, 90, 95].map(v => <option key={v} value={v}>{v}% consumed</option>)}
             </select>
@@ -346,7 +346,7 @@ function CreateBudgetModal({ onClose, onCreate }) {
           <button
             onClick={() => valid && onCreate(form)}
             disabled={!valid}
-            className={`px-4 py-1.5 rounded-lg text-[12px] font-medium transition-colors ${valid ? 'bg-[#009eda] text-white hover:bg-[#0089bf] cursor-pointer' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
+            className={`px-4 py-1.5 rounded-lg text-[12px] font-medium transition-colors ${valid ? 'bg-[#3D16FA] text-white hover:bg-[#0089bf] cursor-pointer' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
           >
             Create budget
           </button>

@@ -35,7 +35,7 @@ const TABS = [
 ]
 
 const MASCOTS = [
-  { id: 'kakehashi', name: 'Kakehashi', nameJa: '架け橋', icon: Landmark, tone: 'from-[#1B5E8F] to-[#009eda]', desc: 'The bridge keeper — calm, dependable, guides customers across the workflow.' },
+  { id: 'kakehashi', name: 'Kakehashi', nameJa: '架け橋', icon: Landmark, tone: 'from-[#2B0FAF] to-[#3D16FA]', desc: 'The bridge keeper — calm, dependable, guides customers across the workflow.' },
   { id: 'tsuru',     name: 'Tsuru',     nameJa: '鶴',     icon: Bird,     tone: 'from-teal-600 to-emerald-400', desc: 'The origami crane — precision and craft; folds complexity into clean delivery.' },
   { id: 'fukuro',    name: 'Fukurō',   nameJa: '梟',     icon: Eye,      tone: 'from-slate-600 to-slate-400', desc: 'The night owl — vigilant QA; nothing ships unseen.' },
 ]
@@ -90,7 +90,7 @@ export default function SwiftBridge({ currentUserId, navigate }) {
   return (
     <div className="space-y-5">
       {/* ── Brand header ─────────────────────────────────────── */}
-      <div className="rounded-xl overflow-hidden border border-rule bg-gradient-to-r from-[#0F1419] via-[#1B5E8F] to-[#009eda] text-white px-6 py-5">
+      <div className="rounded-xl overflow-hidden border border-rule bg-gradient-to-r from-[#0D092A] via-[#1A1640] to-[#3D16FA] text-white px-6 py-5">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
             <div className="flex items-center gap-2.5">
@@ -258,7 +258,7 @@ function Dashboard({ projects, mascot, setMascot, onOpen, onNew }) {
 }
 
 function Stat({ label, labelJa, value, sub, tone }) {
-  const tones = { ok: 'text-teal', amber: 'text-amber-deep', info: 'text-ocean' }
+  const tones = { ok: 'text-teal', amber: 'text-[#996800]', info: 'text-ocean' }
   return (
     <Card padding="p-4">
       <p className="text-[10.5px] uppercase tracking-wider text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{label} · {labelJa}</p>
@@ -279,7 +279,7 @@ export function SlaChip({ project, countdown }) {
     return <span className="inline-flex items-center gap-1 text-[10.5px] px-2 py-0.5 rounded-full bg-error/10 text-error border border-error/30 whitespace-nowrap" style={{ fontFamily: "'IBM Plex Mono', monospace" }}><AlertTriangle className="w-3 h-3" /> SLA breached</span>
   }
   const low = c.remainingHours <= 6
-  return <span className={`inline-flex items-center gap-1 text-[10.5px] px-2 py-0.5 rounded-full border whitespace-nowrap ${low ? 'bg-amber/15 text-amber-deep border-amber/30' : 'bg-pale text-slate border-rule'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+  return <span className={`inline-flex items-center gap-1 text-[10.5px] px-2 py-0.5 rounded-full border whitespace-nowrap ${low ? 'bg-[#FFF7E6] text-[#996800] border-[#FFB000]/40' : 'bg-pale text-slate border-rule'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
     <Clock className="w-3 h-3" /> {c.remainingHours}h left
   </span>
 }
@@ -345,7 +345,7 @@ function DeliveryPanel({ projects, mascot }) {
                 <div className="flex items-center gap-1 mt-2">
                   {[1, 2, 3, 4, 5].map(n => (
                     <button key={n} onClick={() => setStars(n)} aria-label={`${n} stars`} className="cursor-pointer">
-                      <Star className={`w-5 h-5 ${n <= stars ? 'text-amber fill-amber' : 'text-rule'}`} />
+                      <Star className={`w-5 h-5 ${n <= stars ? 'text-[#FFBD59] fill-[#FFBD59]' : 'text-rule'}`} />
                     </button>
                   ))}
                 </div>

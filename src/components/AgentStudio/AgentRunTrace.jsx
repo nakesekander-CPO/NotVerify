@@ -32,7 +32,7 @@ export default function AgentRunTrace({ runId, go }) {
       <div className="flex items-center gap-3 flex-wrap">
         <OutputStatusBadge status={d.outputStatus} />
         <ConfidenceBadge value={d.confidence} />
-        <span className="text-[11px] text-slate inline-flex items-center gap-1"><Coins className="w-3 h-3 text-amber-deep" /> {d.creditsUsed ?? d.creditEstimate} credits</span>
+        <span className="text-[11px] text-slate inline-flex items-center gap-1"><Coins className="w-3 h-3 text-[#996800]" /> {d.creditsUsed ?? d.creditEstimate} credits</span>
         <span className="text-[11px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>v{d.version?.versionNumber} · {d.userId} · {new Date(d.createdAt || Date.now()).toLocaleString()}</span>
         {d.feedbackRating && <span className="text-[11px]">{d.feedbackRating === 'up' ? '👍 helpful' : '👎 flagged'}</span>}
       </div>
@@ -87,7 +87,7 @@ export default function AgentRunTrace({ runId, go }) {
             <div className="flex items-center gap-1.5 mb-2"><Wrench className="w-3.5 h-3.5 text-ocean" /><MonoLabel>Tool calls ({d.toolCalls.length})</MonoLabel></div>
             {d.toolCalls.length === 0 ? <p className="text-[12px] text-mist">None</p> : (
               <ul className="space-y-1 text-[12px]">{d.toolCalls.map((t, i) => (
-                <li key={i} className="flex items-center gap-1.5 text-slate">{t.requiresApproval ? <Lock className="w-3 h-3 text-amber-deep" /> : <Check className="w-3 h-3 text-teal" />} {t.label}</li>
+                <li key={i} className="flex items-center gap-1.5 text-slate">{t.requiresApproval ? <Lock className="w-3 h-3 text-[#996800]" /> : <Check className="w-3 h-3 text-teal" />} {t.label}</li>
               ))}</ul>
             )}
           </Card>
@@ -99,8 +99,8 @@ export default function AgentRunTrace({ runId, go }) {
           </Card>
           {d.qaIssues.length > 0 && (
             <Card>
-              <div className="flex items-center gap-1.5 mb-2"><AlertTriangle className="w-3.5 h-3.5 text-amber-deep" /><MonoLabel>QA issues</MonoLabel></div>
-              <ul className="space-y-1 text-[12px] text-amber-deep">{d.qaIssues.map((q, i) => <li key={i}>{q.text}</li>)}</ul>
+              <div className="flex items-center gap-1.5 mb-2"><AlertTriangle className="w-3.5 h-3.5 text-[#996800]" /><MonoLabel>QA issues</MonoLabel></div>
+              <ul className="space-y-1 text-[12px] text-[#996800]">{d.qaIssues.map((q, i) => <li key={i}>{q.text}</li>)}</ul>
             </Card>
           )}
           <Card>

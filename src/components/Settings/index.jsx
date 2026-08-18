@@ -83,7 +83,7 @@ export default function SettingsPage({ onBack, onOpenIntegrations }) {
                   onClick={() => handleTierChange(value)}
                   className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors cursor-pointer ${
                     tier === value
-                      ? 'bg-[#009eda] text-white'
+                      ? 'bg-[#3D16FA] text-white'
                       : 'text-gray-500 hover:bg-black/[0.05] hover:text-gray-700'
                   }`}
                 >
@@ -112,7 +112,7 @@ function NavItem({ item, isActive, onClick }) {
         indent ? 'pl-7 pr-3' : 'px-3'
       } ${
         isActive
-          ? 'bg-[#009eda]/10 text-[#009eda] font-medium'
+          ? 'bg-[#3D16FA]/10 text-[#3D16FA] font-medium'
           : 'text-gray-600 hover:bg-black/[0.04] hover:text-gray-900'
       }`}
     >

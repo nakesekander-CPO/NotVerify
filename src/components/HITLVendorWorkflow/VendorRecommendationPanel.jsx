@@ -41,14 +41,14 @@ export default function VendorRecommendationPanel({ activeProjectId, currentUser
             <div className="flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-amber" />
+                  <Sparkles className="w-4 h-4 text-[#FFBD59]" />
                   <MonoLabel className="!text-ocean">Recommended vendor</MonoLabel>
                 </div>
                 <p className="mt-1.5 text-[20px] font-semibold text-ink">{rec.recommended.name}</p>
                 <p className="text-[12.5px] text-slate mt-1">{rec.recommended.explanation}</p>
               </div>
               <div className="text-right">
-                <p className="text-[32px] font-semibold text-amber leading-none" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{(rec.recommended.score * 100).toFixed(0)}%</p>
+                <p className="text-[32px] font-semibold text-[#FFBD59] leading-none" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{(rec.recommended.score * 100).toFixed(0)}%</p>
                 <p className="text-[10.5px] text-mist mt-1">match confidence</p>
               </div>
             </div>
@@ -137,7 +137,7 @@ export default function VendorRecommendationPanel({ activeProjectId, currentUser
 
       <Card className="mt-8">
         <div className="flex items-center gap-2">
-          <Replace className="w-4 h-4 text-amber" />
+          <Replace className="w-4 h-4 text-[#FFBD59]" />
           <p className="text-[14px] font-semibold text-ink">Manual override</p>
         </div>
         <p className="text-[12.5px] text-slate mt-1">Choosing a different vendor requires a written reason. The original recommendation, your override, and the reason are written to the audit log.</p>

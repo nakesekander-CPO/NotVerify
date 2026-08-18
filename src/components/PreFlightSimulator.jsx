@@ -136,7 +136,7 @@ function AutoDetectionPhase({ fileName, reducedMotion, onComplete }) {
               className="text-sm"
               style={{
                 fontFamily: 'JetBrains Mono, monospace',
-                color: i === messageIndex ? '#1B5E8F' : 'rgba(0,0,0,0.35)',
+                color: i === messageIndex ? '#3D16FA' : 'rgba(0,0,0,0.35)',
               }}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -152,7 +152,7 @@ function AutoDetectionPhase({ fileName, reducedMotion, onComplete }) {
       {!reducedMotion && (
         <motion.div
           className="absolute rounded-full border"
-          style={{ borderColor: 'rgba(27,94,143,0.15)', width: 200, height: 200 }}
+          style={{ borderColor: 'rgba(61,22,250,0.15)', width: 200, height: 200 }}
           animate={{ scale: [1, 2.5], opacity: [0.6, 0] }}
           transition={{ repeat: Infinity, duration: 2, ease: 'easeOut' }}
         />
@@ -331,8 +331,8 @@ function ActiveAgentCard({ agent, onRemove, reducedMotion }) {
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ backgroundColor: 'rgba(27,94,143,0.12)' }}>
-            <AgentIcon iconName={agent.icon} size={18} className="text-[#1B5E8F]" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ backgroundColor: 'rgba(61,22,250,0.12)' }}>
+            <AgentIcon iconName={agent.icon} size={18} className="text-[#3D16FA]" />
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -427,7 +427,7 @@ function AvailableAgentRow({ agent, onAdd, reducedMotion }) {
       <button
         onClick={() => onAdd(agent.id)}
         className="flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
-        style={{ backgroundColor: 'rgba(27,94,143,0.12)', color: '#1B5E8F' }}
+        style={{ backgroundColor: 'rgba(61,22,250,0.12)', color: '#3D16FA' }}
         aria-label={`Add ${agent.name}`}
       >
         <Plus size={12} /> Add
@@ -497,7 +497,7 @@ function QualityBreakdown({ activeAgents, totalScore, reducedMotion }) {
               className="flex items-center justify-between text-xs"
             >
               <span className="flex items-center gap-1.5 text-gray-500">
-                <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: '#1B5E8F' }} />
+                <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: '#3D16FA' }} />
                 {a.id}
               </span>
               <span className="text-emerald-400">+{a.qualityLift}</span>
@@ -781,7 +781,7 @@ export default function PreFlightSimulator({
                 label="Estimated Time"
                 value={estimatedTime}
                 max={MAX_TIME}
-                color="#1B5E8F"
+                color="#3D16FA"
                 displayValue={`${estimatedTime}m`}
                 icon={Clock}
                 reducedMotion={reducedMotion}

@@ -15,7 +15,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { CLUSTERS, generateStars, TOTAL_FACTS, METRICS } from '../../data/cortex'
 import useReducedMotion from '../../hooks/useReducedMotion'
 
-const KIND_COLOR = { gold: '#D4860A', blue: '#1B5E8F' }
+const KIND_COLOR = { gold: '#FFBD59', blue: '#3D16FA' }
 
 function hexA(hex, a) {
   const n = parseInt(hex.slice(1), 16)
@@ -149,7 +149,7 @@ export default function ConstellationView({ lens, onInspect }) {
   return (
     <div
       ref={elRef}
-      className="relative w-full h-full bg-[radial-gradient(ellipse_at_50%_40%,#FFFDF8_0%,#FAF7EF_60%,#F4EFE3_100%)]"
+      className="relative w-full h-full bg-[radial-gradient(ellipse_at_50%_40%,#FFFFFF_0%,#F4F5FF_60%,#E9EBFA_100%)]"
       onMouseMove={handleMove}
       onMouseLeave={() => { state.current.hoverCl = null; elRef.current?.dispatchEvent(new Event('cortex-repaint')) }}
       onClick={handleClick}
@@ -174,7 +174,7 @@ export default function ConstellationView({ lens, onInspect }) {
       {/* Legend / note chip */}
       <div className="absolute left-4 bottom-4 flex items-center gap-2 pointer-events-none">
         <span className="text-[11px] text-slate bg-white/85 border border-rule rounded-full px-3 py-1.5 backdrop-blur-sm">
-          <span className="text-amber-deep font-semibold">{TOTAL_FACTS.toLocaleString()} shown</span> of {METRICS.verifiedEntries.toLocaleString()} verified facts · +{METRICS.compoundingPct}% this quarter · brighter points = recent
+          <span className="text-[#B3843E] font-semibold">{TOTAL_FACTS.toLocaleString()} shown</span> of {METRICS.verifiedEntries.toLocaleString()} verified facts · +{METRICS.compoundingPct}% this quarter · brighter points = recent
         </span>
       </div>
       <div className="absolute right-4 bottom-4 pointer-events-none">

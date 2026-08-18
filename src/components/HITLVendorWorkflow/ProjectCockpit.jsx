@@ -56,7 +56,7 @@ export default function ProjectCockpit({ activeProjectId, setActiveProjectId, na
         <Card>
           <MonoLabel>Agent pre-assessment</MonoLabel>
           <div className="flex items-center gap-2 mt-2">
-            <Brain className="w-4 h-4 text-amber" />
+            <Brain className="w-4 h-4 text-[#FFBD59]" />
             <span className="text-[13px] font-semibold text-ink">{project.riskAssessment.generatedBy}</span>
           </div>
           <div className="mt-3">
@@ -90,7 +90,7 @@ export default function ProjectCockpit({ activeProjectId, setActiveProjectId, na
                     </div>
                     <StatusBadge status={a.status} />
                   </div>
-                  {a.overrideReason && <p className="mt-1 text-[11px] text-amber-deep italic">Override: {a.overrideReason}</p>}
+                  {a.overrideReason && <p className="mt-1 text-[11px] text-[#996800] italic">Override: {a.overrideReason}</p>}
                 </li>
               )
             })}
@@ -272,7 +272,7 @@ function TaskBreakdown({ projectId, navigate }) {
           <span><strong className="text-ink">{progress.assigned}</strong>/{progress.tasks} assigned</span>
           <span><strong className="text-ink">{progress.complete}</strong> complete</span>
           <span><strong className="text-ink">{progress.avgProgress}%</strong> avg progress</span>
-          {progress.unassigned > 0 && <span className="text-amber-deep font-semibold">{progress.unassigned} unassigned</span>}
+          {progress.unassigned > 0 && <span className="text-[#996800] font-semibold">{progress.unassigned} unassigned</span>}
         </div>
       </div>
       <ul className="px-5 py-2">
@@ -300,7 +300,7 @@ function TaskBreakdown({ projectId, navigate }) {
                     ))}
                   </>
                 ) : (
-                  <span className="text-[11.5px] text-amber-deep italic">Unassigned</span>
+                  <span className="text-[11.5px] text-[#996800] italic">Unassigned</span>
                 )}
               </div>
               <div>

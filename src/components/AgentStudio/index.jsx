@@ -84,7 +84,9 @@ export default function AgentStudio({ onBack, currentUserId = 'You' }) {
         </button>
       </div>
 
-      {/* Breadcrumb */}
+      {/* Breadcrumb — only once you're deeper than the dashboard (a lone
+          "Agent Studio" crumb just repeats the module header) */}
+      {crumbs.length > 1 && (
       <nav className="flex items-center gap-1.5 text-[12px] mb-5" aria-label="Breadcrumb">
         {crumbs.map((c, i) => (
           <span key={i} className="inline-flex items-center gap-1.5">
@@ -97,6 +99,7 @@ export default function AgentStudio({ onBack, currentUserId = 'You' }) {
           </span>
         ))}
       </nav>
+      )}
 
       {screen}
     </div>

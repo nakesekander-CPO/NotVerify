@@ -67,7 +67,7 @@ export default function ContentApprovals({ ctx }) {
             {draft.policyWarnings.length === 0 ? (
               <p className="text-[12px] text-teal mt-1.5 inline-flex items-center gap-1"><Check className="w-3.5 h-3.5" /> All sentences cite approved claims · no unsupported claims · no policy violations.</p>
             ) : (
-              <ul className="mt-1.5 text-[12px] text-amber-deep list-disc pl-4">{draft.policyWarnings.map((w, i) => <li key={i}>{w}</li>)}</ul>
+              <ul className="mt-1.5 text-[12px] text-[#996800] list-disc pl-4">{draft.policyWarnings.map((w, i) => <li key={i}>{w}</li>)}</ul>
             )}
           </div>
         </Card>

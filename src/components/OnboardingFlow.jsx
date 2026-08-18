@@ -86,9 +86,9 @@ function BotAvatar() {
       className="w-8 h-8 rounded-full bg-straker-50 flex items-center justify-center shrink-0"
       animate={{
         boxShadow: [
-          '0 0 8px rgba(27,94,143,0.1)',
-          '0 0 8px rgba(27,94,143,0.3)',
-          '0 0 8px rgba(27,94,143,0.1)',
+          '0 0 8px rgba(61,22,250,0.1)',
+          '0 0 8px rgba(61,22,250,0.3)',
+          '0 0 8px rgba(61,22,250,0.1)',
         ],
       }}
       transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}

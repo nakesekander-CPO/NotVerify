@@ -21,7 +21,7 @@ const STATES = {
   'in-progress': { bg: 'bg-pale',       border: 'border-ocean/30',    text: 'text-ocean',      icon: Clock, copy: 'In progress' },
   passed:        { bg: 'bg-teal/10',    border: 'border-teal/30',     text: 'text-teal',       icon: Check, copy: 'Passed' },
   failed:        { bg: 'bg-error/10',   border: 'border-error/30',    text: 'text-error',      icon: X,     copy: 'Failed' },
-  blocked:       { bg: 'bg-amber/15',   border: 'border-amber/30',    text: 'text-amber-deep', icon: Pause, copy: 'Blocked' },
+  blocked:       { bg: 'bg-[#FFF7E6]',   border: 'border-[#FFB000]/40',    text: 'text-[#996800]', icon: Pause, copy: 'Blocked' },
   'n/a':         { bg: 'bg-rule/50',    border: 'border-rule',        text: 'text-mist',       icon: Slash, copy: 'Not applicable' },
 }
 

@@ -445,7 +445,7 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
             <span className={`text-[10px] uppercase tracking-wider mr-2 px-1.5 py-0.5 rounded-full ${
               p.requirements.reviewMode === 'external-vendor' ? 'bg-ocean/10 text-ocean'
               : p.requirements.reviewMode === 'internal-single' ? 'bg-teal/10 text-teal'
-              : 'bg-amber/15 text-amber-deep'
+              : 'bg-[#FFF7E6] text-[#996800]'
             }`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{shortMode(p.requirements.reviewMode)}</span>
             {p.name}
           </button>
@@ -568,13 +568,13 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
                         )}
                       </>
                     ) : (
-                      <span className="text-amber-deep">Unassigned — assign a reviewer in Task Assignment</span>
+                      <span className="text-[#996800]">Unassigned — assign a reviewer in Task Assignment</span>
                     )}
                   </div>
                   <div className="flex items-center gap-2 text-[11px]">
                     <span className="text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{activeTask.assignmentMode?.toUpperCase() || 'SINGLE'}</span>
                     {!isMine && primaryReviewer && (
-                      <span className="px-2 py-0.5 rounded-full bg-amber/10 text-amber-deep border border-amber/30">Viewing as observer</span>
+                      <span className="px-2 py-0.5 rounded-full bg-[#FFF7E6] text-[#996800] border border-[#FFB000]/40">Viewing as observer</span>
                     )}
                   </div>
                 </div>
@@ -585,7 +585,7 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
                   <div className="flex items-center gap-3 min-w-0">
                     <MonoLabel>Segment {activeIdx + 1} of {segments.length}</MonoLabel>
                     {activeSeg.riskFlags.length > 0 && (
-                      <span className="inline-flex items-center gap-1 text-[11px] text-amber-deep"><AlertTriangle className="w-3 h-3" /> low confidence</span>
+                      <span className="inline-flex items-center gap-1 text-[11px] text-[#996800]"><AlertTriangle className="w-3 h-3" /> low confidence</span>
                     )}
                     {activeSeg.errorCategory && <span className="text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{activeSeg.errorCategory}</span>}
                   </div>
@@ -641,7 +641,7 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
                           key={c.id}
                           onMouseEnter={() => onCandidateEnter(c)}
                           onMouseLeave={() => onCandidateLeave(c)}
-                          className={`rounded-md border p-3 transition-colors ${isChosen ? 'border-amber bg-amber/5' : 'border-rule bg-white hover:border-ocean/30'}`}
+                          className={`rounded-md border p-3 transition-colors ${isChosen ? 'border-amber bg-[#FFFBF2]' : 'border-rule bg-white hover:border-ocean/30'}`}
                         >
                           <div className="flex items-center justify-between mb-1.5 gap-3">
                             <div className="flex items-center gap-2 min-w-0">
@@ -663,7 +663,7 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
                               <span
                                 key={k}
                                 className={s.kind === 'diff'
-                                  ? 'bg-amber/20 text-ink rounded px-0.5'
+                                  ? 'bg-[#FFEFD1] text-ink rounded px-0.5'
                                   : 'text-ink'}
                               >{s.text}</span>
                             ))}
@@ -682,9 +682,9 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
                               <button
                                 onClick={() => pickRefine(c)}
                                 disabled={activeSeg.locked}
-                                className="text-[11.5px] font-semibold text-amber-deep hover:text-amber cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="text-[11.5px] font-semibold text-[#996800] hover:text-[#FFBD59] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                               >Refine →</button>
-                              {isChosen && <span className="text-[11px] text-amber-deep font-semibold flex items-center gap-1"><Sparkles className="w-3 h-3" /> CHOSEN</span>}
+                              {isChosen && <span className="text-[11px] text-[#996800] font-semibold flex items-center gap-1"><Sparkles className="w-3 h-3" /> CHOSEN</span>}
                             </div>
                           </div>
                         </div>
@@ -742,7 +742,7 @@ export default function SecureVendorWorkspace({ activeProjectId, setActiveProjec
                               isOn
                                 ? 'bg-ocean text-white border-ocean'
                                 : isSuggested
-                                  ? 'bg-amber/10 text-amber-deep border-amber/40 hover:bg-amber/20'
+                                  ? 'bg-[#FFF7E6] text-[#996800] border-[#FFB000]/40 hover:bg-[#FFEFD1]'
                                   : 'bg-white text-slate border-rule hover:border-ocean/30'
                             }`}
                           >
@@ -914,7 +914,7 @@ function AdjudicationHeader({ segment, currentUserId, segments, dwellStart }) {
   const elapsed = now - (dwellStart?.current || now)
   const ratio = elapsed / baselineMs
   const difficulty = ratio > 3 ? 'hard' : ratio > 1.5 ? 'medium' : 'normal'
-  const diffTone = difficulty === 'hard' ? 'text-error' : difficulty === 'medium' ? 'text-amber-deep' : 'text-teal'
+  const diffTone = difficulty === 'hard' ? 'text-error' : difficulty === 'medium' ? 'text-[#996800]' : 'text-teal'
 
   return (
     <div className="rounded-md border border-rule bg-cream/40 px-3 py-2 flex items-center justify-between gap-3">
@@ -944,7 +944,7 @@ function DivergenceLegend() {
   return (
     <div className="flex items-center gap-2 text-[10px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
       <span className="inline-flex items-center gap-1">
-        <span className="w-2.5 h-2.5 rounded-sm bg-amber/20 inline-block" /> DIFF
+        <span className="w-2.5 h-2.5 rounded-sm bg-[#FFEFD1] inline-block" /> DIFF
       </span>
       <span className="inline-flex items-center gap-1">
         <span className="w-2.5 h-2.5 rounded-sm bg-rule inline-block" /> SHARED
@@ -997,7 +997,7 @@ function ValidatorsRulingPanel({
           <div className="mt-3 flex items-center justify-center gap-2 text-[11px]">
             <span className="px-2 py-0.5 rounded-full bg-teal/10 text-teal border border-teal/30">Confirm as-is</span>
             <span className="text-mist">·</span>
-            <span className="px-2 py-0.5 rounded-full bg-amber/10 text-amber-deep border border-amber/30">Edit</span>
+            <span className="px-2 py-0.5 rounded-full bg-[#FFF7E6] text-[#996800] border border-[#FFB000]/40">Edit</span>
           </div>
         </div>
       )}
@@ -1039,7 +1039,7 @@ function ValidatorsRulingPanel({
       {posture === 'refine' && (
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <p className="text-[11px] uppercase tracking-wider text-amber-deep" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>Refining {chosen?.agentName}</p>
+            <p className="text-[11px] uppercase tracking-wider text-[#996800]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>Refining {chosen?.agentName}</p>
             <button onClick={resetPosture} className="text-[10.5px] text-mist hover:text-slate cursor-pointer">Change posture</button>
           </div>
           <textarea

@@ -27,7 +27,7 @@ const DEPARTMENTS = [
   },
   {
     label: 'Regional Leads',
-    color: '#1B5E8F', // straker-500
+    color: '#3D16FA', // straker-500
     members: [
       {
         id: 'kenji',
@@ -444,8 +444,8 @@ export default function TeamDirectory({ isOpen, onClose, onDelegate, itemTitle }
                     <div
                       className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-semibold"
                       style={{
-                        backgroundColor: (selectedMember.deptColor || '#1B5E8F') + '33',
-                        color: selectedMember.deptColor || '#1B5E8F',
+                        backgroundColor: (selectedMember.deptColor || '#3D16FA') + '33',
+                        color: selectedMember.deptColor || '#3D16FA',
                       }}
                     >
                       {selectedMember.initials}

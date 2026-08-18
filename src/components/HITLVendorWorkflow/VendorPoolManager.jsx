@@ -124,7 +124,7 @@ export default function VendorPoolManager({ currentUserId = 'demo-user' }) {
                 >
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-[13px] font-semibold text-ink truncate">{p.name}</p>
-                    {p.approvalRequired ? <Lock className="w-3.5 h-3.5 text-amber shrink-0" /> : <Globe className="w-3.5 h-3.5 text-ocean shrink-0" />}
+                    {p.approvalRequired ? <Lock className="w-3.5 h-3.5 text-[#FFBD59] shrink-0" /> : <Globe className="w-3.5 h-3.5 text-ocean shrink-0" />}
                   </div>
                   <p className="text-[11px] text-mist mt-0.5">{p.scope} · {a?.members.length || 0} member{(a?.members.length || 0) === 1 ? '' : 's'}</p>
                   <div className="flex items-center gap-1.5 mt-2 flex-wrap">
@@ -137,7 +137,7 @@ export default function VendorPoolManager({ currentUserId = 'demo-user' }) {
                       </span>
                     )}
                     {a?.summary.atRisk === 0 && a?.summary.watch > 0 && (
-                      <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full bg-amber/15 text-amber-deep" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                      <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full bg-[#FFF7E6] text-[#996800]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
                         {a.summary.watch} watch
                       </span>
                     )}
@@ -170,7 +170,7 @@ export default function VendorPoolManager({ currentUserId = 'demo-user' }) {
                         <Sparkles className="w-3 h-3" /> Pool Curation Agent
                       </span>
                       <span className="text-mist">confidence {assessment.summary.autonomyConfidence}%</span>
-                      <span className={assessment.summary.pendingActions > 0 ? 'text-amber-deep' : 'text-teal'}>
+                      <span className={assessment.summary.pendingActions > 0 ? 'text-[#996800]' : 'text-teal'}>
                         {assessment.summary.pendingActions} pending action{assessment.summary.pendingActions === 1 ? '' : 's'}
                       </span>
                     </div>
@@ -198,7 +198,7 @@ export default function VendorPoolManager({ currentUserId = 'demo-user' }) {
 
                 {/* Mode-specific banner */}
                 <div className={`mt-3 rounded-md px-3 py-2 text-[12px] flex items-center justify-between gap-3 ${
-                  isPaused ? 'bg-amber/10 text-amber-deep' : isAutonomous ? 'bg-ocean/5 text-ocean' : 'bg-pale text-slate'
+                  isPaused ? 'bg-[#FFF7E6] text-[#996800]' : isAutonomous ? 'bg-ocean/5 text-ocean' : 'bg-pale text-slate'
                 }`}>
                   <span className="inline-flex items-center gap-2">
                     {isPaused ? <Pause className="w-3.5 h-3.5" /> : isAutonomous ? <Bot className="w-3.5 h-3.5" /> : <UserCog className="w-3.5 h-3.5" />}
@@ -210,7 +210,7 @@ export default function VendorPoolManager({ currentUserId = 'demo-user' }) {
                     </button>
                   )}
                   {isPaused && (
-                    <button onClick={() => setMode('supervised')} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-amber/40 text-amber-deep text-[11.5px] cursor-pointer hover:bg-amber/10">
+                    <button onClick={() => setMode('supervised')} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-[#FFB000]/40 text-[#996800] text-[11.5px] cursor-pointer hover:bg-[#FFF7E6]">
                       <Play className="w-3 h-3" /> Resume agent
                     </button>
                   )}
@@ -288,7 +288,7 @@ export default function VendorPoolManager({ currentUserId = 'demo-user' }) {
                   const v = m.vendor
                   const baseline = (pool.includedVendorIds || []).includes(v.id)
                   const verdictTone = m.verdict === 'remove' ? 'border-error/40 bg-error/5'
-                    : m.verdict === 'watch' ? 'border-amber/40 bg-amber/5' : 'border-rule'
+                    : m.verdict === 'watch' ? 'border-[#FFB000]/40 bg-[#FFFBF2]' : 'border-rule'
                   return (
                     <li key={v.id} className={`p-2.5 rounded-md border ${verdictTone}`}>
                       <div className="flex items-start justify-between gap-2">
@@ -303,7 +303,7 @@ export default function VendorPoolManager({ currentUserId = 'demo-user' }) {
                       </div>
                       <div className="flex items-center justify-between mt-2">
                         <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full ${
-                          m.verdict === 'remove' ? 'bg-error/10 text-error' : m.verdict === 'watch' ? 'bg-amber/15 text-amber-deep' : 'bg-teal/10 text-teal'
+                          m.verdict === 'remove' ? 'bg-error/10 text-error' : m.verdict === 'watch' ? 'bg-[#FFF7E6] text-[#996800]' : 'bg-teal/10 text-teal'
                         }`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
                           {m.verdict}
                         </span>
@@ -342,7 +342,7 @@ export default function VendorPoolManager({ currentUserId = 'demo-user' }) {
                     const v = e.vendor ? VENDORS.find(x => x.id === e.vendor) : null
                     return (
                       <li key={i} className="py-2 border-b border-rule last:border-b-0 flex items-start gap-2 text-[12px]">
-                        <span className={`mt-0.5 inline-flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-semibold shrink-0 ${e.who === 'agent' ? 'bg-ocean/15 text-ocean' : 'bg-amber/15 text-amber-deep'}`} title={e.who}>
+                        <span className={`mt-0.5 inline-flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-semibold shrink-0 ${e.who === 'agent' ? 'bg-ocean/15 text-ocean' : 'bg-[#FFF7E6] text-[#996800]'}`} title={e.who}>
                           {e.who === 'agent' ? <Bot className="w-3 h-3" /> : 'H'}
                         </span>
                         <div className="min-w-0">
@@ -389,7 +389,7 @@ function RecRow({ kind, assessment, paused, pinned, onApprove, onOverride, onPin
           <ul className="mt-1.5 space-y-0.5">
             {assessment.reasons.map((r, i) => (
               <li key={i} className={`text-[11.5px] flex items-start gap-1.5 ${
-                r.kind === 'block' ? 'text-error' : r.kind === 'warn' ? 'text-amber-deep' : 'text-slate'
+                r.kind === 'block' ? 'text-error' : r.kind === 'warn' ? 'text-[#996800]' : 'text-slate'
               }`}>
                 <span className="mt-[3px] w-1 h-1 rounded-full bg-current shrink-0" />
                 {r.text}

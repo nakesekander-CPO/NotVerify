@@ -124,7 +124,7 @@ function LaunchBriefing({ file, defaultLocales, onConfirm, onCancel, prefersRedu
           <div>
             <label className="block text-[11px] text-gray-500 mb-1">Document type</label>
             <select value={docTypeLabel} onChange={e => setDocTypeLabel(e.target.value)}
-              className="w-full rounded-lg border border-black/[0.08] bg-white px-3 py-2 text-[12px] text-gray-800 outline-none focus:border-[#009eda] transition cursor-pointer">
+              className="w-full rounded-lg border border-black/[0.08] bg-white px-3 py-2 text-[12px] text-gray-800 outline-none focus:border-[#3D16FA] transition cursor-pointer">
               {DOCUMENT_TYPES.map(dt => <option key={dt} value={dt}>{dt}</option>)}
             </select>
             <p className="text-[10px] text-emerald-600 mt-0.5 flex items-center gap-1"><CheckCircle2 className="w-2.5 h-2.5" /> Auto-detected from filename</p>
@@ -132,7 +132,7 @@ function LaunchBriefing({ file, defaultLocales, onConfirm, onCancel, prefersRedu
           <div>
             <label className="block text-[11px] text-gray-500 mb-1">Industry</label>
             <select value={industry} onChange={e => setIndustry(e.target.value)}
-              className="w-full rounded-lg border border-black/[0.08] bg-white px-3 py-2 text-[12px] text-gray-800 outline-none focus:border-[#009eda] transition cursor-pointer">
+              className="w-full rounded-lg border border-black/[0.08] bg-white px-3 py-2 text-[12px] text-gray-800 outline-none focus:border-[#3D16FA] transition cursor-pointer">
               {INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
             </select>
           </div>
@@ -151,7 +151,7 @@ function LaunchBriefing({ file, defaultLocales, onConfirm, onCancel, prefersRedu
             {suggestedRegs.filter(r => !regulations.includes(r)).length > 0 && (
               <span className="text-[10px] text-gray-400">
                 + {suggestedRegs.filter(r => !regulations.includes(r)).map(r => (
-                  <button key={r} type="button" onClick={() => setRegulations(prev => [...prev, r])} className="text-[#009eda] hover:underline cursor-pointer mx-0.5">{r}</button>
+                  <button key={r} type="button" onClick={() => setRegulations(prev => [...prev, r])} className="text-[#3D16FA] hover:underline cursor-pointer mx-0.5">{r}</button>
                 ))}
               </span>
             )}
@@ -201,7 +201,7 @@ function LaunchBriefing({ file, defaultLocales, onConfirm, onCancel, prefersRedu
               {TRUST_POLICIES.map(tp => (
                 <button key={tp.id} type="button" onClick={() => setTrustPolicy(tp.id)}
                   className={`w-full text-left px-3 py-1.5 rounded-lg text-[11px] transition-all cursor-pointer ${
-                    trustPolicy === tp.id ? 'bg-[#009eda]/10 border border-[#009eda]/30 text-[#009eda] font-medium' : 'border border-black/[0.06] text-gray-600 hover:bg-gray-50'
+                    trustPolicy === tp.id ? 'bg-[#3D16FA]/10 border border-[#3D16FA]/30 text-[#3D16FA] font-medium' : 'border border-black/[0.06] text-gray-600 hover:bg-gray-50'
                   }`}>
                   {tp.label}
                 </button>
@@ -214,7 +214,7 @@ function LaunchBriefing({ file, defaultLocales, onConfirm, onCancel, prefersRedu
               {SENSITIVITY_LEVELS.map(sl => (
                 <button key={sl.id} type="button" onClick={() => setSensitivity(sl.id)}
                   className={`w-full text-left px-3 py-1.5 rounded-lg text-[11px] transition-all cursor-pointer ${
-                    sensitivity === sl.id ? 'bg-[#009eda]/10 border border-[#009eda]/30 text-[#009eda] font-medium' : 'border border-black/[0.06] text-gray-600 hover:bg-gray-50'
+                    sensitivity === sl.id ? 'bg-[#3D16FA]/10 border border-[#3D16FA]/30 text-[#3D16FA] font-medium' : 'border border-black/[0.06] text-gray-600 hover:bg-gray-50'
                   }`}>
                   {sl.label}
                 </button>
@@ -236,7 +236,7 @@ function LaunchBriefing({ file, defaultLocales, onConfirm, onCancel, prefersRedu
               value={guidance}
               onChange={e => setGuidance(e.target.value)}
               placeholder="Reference internal style guides, deal-specific context, known terminology preferences..."
-              className="mt-2 w-full rounded-lg border border-black/[0.08] bg-gray-50 px-3 py-2 text-[12px] text-gray-800 placeholder:text-gray-400 outline-none focus:border-[#009eda] focus:ring-1 focus:ring-[#009eda]/20 transition resize-none"
+              className="mt-2 w-full rounded-lg border border-black/[0.08] bg-gray-50 px-3 py-2 text-[12px] text-gray-800 placeholder:text-gray-400 outline-none focus:border-[#3D16FA] focus:ring-1 focus:ring-[#3D16FA]/20 transition resize-none"
             />
           )}
         </div>
@@ -249,7 +249,7 @@ function LaunchBriefing({ file, defaultLocales, onConfirm, onCancel, prefersRedu
           <p className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" /> Detected: {docTypeLabel} ({industry})</p>
           <p className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" /> Applicable intelligence: {regulations.join(', ') || 'General'}{industry === 'Financial Services' ? ', Meridian Capital voice policy' : ''}</p>
           <p className="flex items-center gap-1.5"><Shield className="w-3 h-3 text-amber-500 shrink-0" /> High-risk areas: {docType === 'Financial' ? 'financial terminology, legal disclaimers, investor messaging' : docType === 'Legal' ? 'contractual terms, regulatory references, jurisdiction language' : 'domain terminology, brand voice, cultural adaptation'}</p>
-          <p className="flex items-center gap-1.5"><Bot className="w-3 h-3 text-[#009eda] shrink-0" /> {ensemble?.name || 'General Purpose'} ensemble &middot; {TRUST_POLICIES.find(t => t.id === trustPolicy)?.label.toLowerCase()} trust &middot; Cortex memory reuse</p>
+          <p className="flex items-center gap-1.5"><Bot className="w-3 h-3 text-[#3D16FA] shrink-0" /> {ensemble?.name || 'General Purpose'} ensemble &middot; {TRUST_POLICIES.find(t => t.id === trustPolicy)?.label.toLowerCase()} trust &middot; Cortex memory reuse</p>
         </div>
       </div>
 
@@ -940,11 +940,11 @@ export default function CommandSurface({ onFileAccepted, onFileWithLocales, orgI
         <button
           type="button"
           onClick={() => onStartCampaign?.()}
-          className="w-full max-w-lg flex items-center justify-between gap-3 px-5 py-3.5 rounded-lg border border-black/[0.08] bg-white hover:border-[#009eda]/30 hover:bg-[#009eda]/[0.02] group cursor-pointer transition-all"
+          className="w-full max-w-lg flex items-center justify-between gap-3 px-5 py-3.5 rounded-lg border border-black/[0.08] bg-white hover:border-[#3D16FA]/30 hover:bg-[#3D16FA]/[0.02] group cursor-pointer transition-all"
         >
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-black/[0.03] flex items-center justify-center shrink-0 group-hover:bg-[#009eda]/[0.08] transition-colors">
-              <Layers className="w-4 h-4 text-gray-400 group-hover:text-[#009eda] transition-colors" />
+            <div className="w-9 h-9 rounded-lg bg-black/[0.03] flex items-center justify-center shrink-0 group-hover:bg-[#3D16FA]/[0.08] transition-colors">
+              <Layers className="w-4 h-4 text-gray-400 group-hover:text-[#3D16FA] transition-colors" />
             </div>
             <div className="text-left min-w-0">
               <p className="text-[13px] font-medium text-gray-700 group-hover:text-gray-900 transition-colors">
@@ -955,18 +955,18 @@ export default function CommandSurface({ onFileAccepted, onFileWithLocales, orgI
               </p>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#009eda] shrink-0 transition-colors" />
+          <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#3D16FA] shrink-0 transition-colors" />
         </button>
 
         {/* Create with Cortex CTA */}
         <button
           type="button"
           onClick={() => onCreateContent?.()}
-          className="w-full max-w-lg flex items-center justify-between gap-3 px-5 py-3.5 rounded-lg border border-black/[0.08] bg-white hover:border-[#009eda]/30 hover:bg-[#009eda]/[0.02] group cursor-pointer transition-all"
+          className="w-full max-w-lg flex items-center justify-between gap-3 px-5 py-3.5 rounded-lg border border-black/[0.08] bg-white hover:border-[#3D16FA]/30 hover:bg-[#3D16FA]/[0.02] group cursor-pointer transition-all"
         >
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-black/[0.03] flex items-center justify-center shrink-0 group-hover:bg-[#009eda]/[0.08] transition-colors">
-              <Brain className="w-4 h-4 text-gray-400 group-hover:text-[#009eda] transition-colors" />
+            <div className="w-9 h-9 rounded-lg bg-black/[0.03] flex items-center justify-center shrink-0 group-hover:bg-[#3D16FA]/[0.08] transition-colors">
+              <Brain className="w-4 h-4 text-gray-400 group-hover:text-[#3D16FA] transition-colors" />
             </div>
             <div className="text-left min-w-0">
               <p className="text-[13px] font-medium text-gray-700 group-hover:text-gray-900 transition-colors">
@@ -977,7 +977,7 @@ export default function CommandSurface({ onFileAccepted, onFileWithLocales, orgI
               </p>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#009eda] shrink-0 transition-colors" />
+          <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#3D16FA] shrink-0 transition-colors" />
         </button>
       </motion.div>
 
@@ -1219,7 +1219,7 @@ export default function CommandSurface({ onFileAccepted, onFileWithLocales, orgI
                   <p className="text-[12px] text-gray-400 text-center">Connect your team's tools to unlock automated workflows</p>
                   <button
                     onClick={onOpenIntegrations}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-[#009eda] text-white hover:bg-[#0089bf] cursor-pointer transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-[#3D16FA] text-white hover:bg-[#0089bf] cursor-pointer transition-colors"
                   >
                     <Plus size={13} />
                     Get Started
@@ -1248,7 +1248,7 @@ export default function CommandSurface({ onFileAccepted, onFileWithLocales, orgI
                     </span>
                     <button
                       onClick={onOpenIntegrations}
-                      className="flex items-center gap-1 text-[12px] text-[#009eda] hover:underline cursor-pointer"
+                      className="flex items-center gap-1 text-[12px] text-[#3D16FA] hover:underline cursor-pointer"
                     >
                       <Plus size={12} />
                       Connect

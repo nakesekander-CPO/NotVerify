@@ -264,7 +264,7 @@ function PromptStudio({ onGenerate, prefersReduced }) {
             {CONTENT_TYPES.map(ct => (
               <button key={ct.id} type="button" onClick={() => setSelectedType(ct.id)}
                 className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
-                  selectedType === ct.id ? 'bg-[#009eda]/10 border border-[#009eda]/30 text-[#009eda]' : 'border border-black/[0.06] text-gray-500 hover:bg-gray-50'
+                  selectedType === ct.id ? 'bg-[#3D16FA]/10 border border-[#3D16FA]/30 text-[#3D16FA]' : 'border border-black/[0.06] text-gray-500 hover:bg-gray-50'
                 }`}>
                 {ct.label}
               </button>
@@ -294,7 +294,7 @@ function PromptStudio({ onGenerate, prefersReduced }) {
           type="button"
           onClick={() => onGenerate({ promptText, activeNodes: [...activeNodes], selectedType, locales })}
           disabled={promptText.length < 10}
-          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#009eda] hover:bg-[#0089c4] text-white text-[14px] font-semibold shadow-sm shadow-[#009eda]/20 cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#3D16FA] hover:bg-[#0089c4] text-white text-[14px] font-semibold shadow-sm shadow-[#3D16FA]/20 cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Sparkles className="w-4 h-4" /> Generate
         </button>
@@ -386,8 +386,8 @@ function GenerationProgress({ config, onComplete, prefersReduced }) {
   return (
     <div className="max-w-xl mx-auto">
       <div className="bg-white border border-black/[0.12] rounded-xl p-8 flex flex-col items-center gap-5">
-        <div className="w-14 h-14 rounded-xl bg-[#009eda]/10 flex items-center justify-center">
-          <Pen className="w-6 h-6 text-[#009eda]" />
+        <div className="w-14 h-14 rounded-xl bg-[#3D16FA]/10 flex items-center justify-center">
+          <Pen className="w-6 h-6 text-[#3D16FA]" />
         </div>
         <div className="text-center">
           <p className="text-[16px] font-semibold text-gray-900 mb-1">Generating content</p>
@@ -395,7 +395,7 @@ function GenerationProgress({ config, onComplete, prefersReduced }) {
         </div>
         <div className="w-full max-w-sm">
           <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-            <motion.div className="h-full bg-gradient-to-r from-[#009eda] to-[#34d399] rounded-full"
+            <motion.div className="h-full bg-gradient-to-r from-[#3D16FA] to-[#34d399] rounded-full"
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.1 }}
             />
@@ -502,7 +502,7 @@ function ReviewRefine({ config, onAccept, onBack, prefersReduced }) {
                 <button key={loc} type="button" onClick={() => setContentLocale(loc)}
                   className={`px-3 pb-2.5 text-[12px] font-medium border-b-2 transition-colors cursor-pointer -mb-px ${
                     contentLocale === loc
-                      ? 'border-[#009eda] text-[#009eda]'
+                      ? 'border-[#3D16FA] text-[#3D16FA]'
                       : 'border-transparent text-gray-400 hover:text-gray-700'
                   }`}>
                   {loc === 'en' ? 'EN (Source)' : `${loc.toUpperCase()} \u00b7 ${LOCALE_LABELS[loc] || loc}`}
@@ -638,7 +638,7 @@ function ReviewRefine({ config, onAccept, onBack, prefersReduced }) {
 
         <div className="flex-1" />
         <button type="button" onClick={() => onAccept(feedback, refinementCount)}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#009eda] hover:bg-[#0089c4] text-white text-[13px] font-semibold cursor-pointer transition-colors">
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#3D16FA] hover:bg-[#0089c4] text-white text-[13px] font-semibold cursor-pointer transition-colors">
           <CheckCircle2 className="w-4 h-4" /> Accept &amp; Save
         </button>
       </div>
@@ -650,7 +650,7 @@ function ReviewRefine({ config, onAccept, onBack, prefersReduced }) {
             <div className="flex gap-2">
               <input type="text" value={refineText} onChange={e => setRefineText(e.target.value)}
                 placeholder="e.g. Make the tone less formal, add more detail about regulatory changes..."
-                className="flex-1 rounded-lg border border-black/[0.08] bg-white px-3 py-2.5 text-[13px] text-gray-800 placeholder:text-gray-400 outline-none focus:border-[#009eda] transition" />
+                className="flex-1 rounded-lg border border-black/[0.08] bg-white px-3 py-2.5 text-[13px] text-gray-800 placeholder:text-gray-400 outline-none focus:border-[#3D16FA] transition" />
               <button type="button" onClick={() => { setRefinementCount(c => c + 1); setShowRefine(false); setRefineText('') }}
                 className="px-4 py-2.5 rounded-lg bg-gray-900 hover:bg-gray-800 text-white text-[12px] font-semibold cursor-pointer transition-colors">
                 <Send className="w-3.5 h-3.5" />
@@ -751,13 +751,13 @@ export default function ContentCreator({ onBack }) {
           <ArrowLeft className="w-4 h-4 text-gray-500" />
         </button>
         <div className="flex items-center gap-2">
-          <Brain className="w-5 h-5 text-[#009eda]" />
+          <Brain className="w-5 h-5 text-[#3D16FA]" />
           <h1 className="text-[20px] font-semibold text-gray-900">Create with Cortex</h1>
         </div>
         {step !== 'prompt' && (
           <div className="ml-auto flex items-center gap-1.5 text-[11px] text-gray-400">
             {['assembly', 'generation', 'review'].map((s, i) => (
-              <span key={s} className={`flex items-center gap-1 ${step === s ? 'text-[#009eda] font-semibold' : ['assembly', 'generation', 'review'].indexOf(step) > i ? 'text-emerald-600' : ''}`}>
+              <span key={s} className={`flex items-center gap-1 ${step === s ? 'text-[#3D16FA] font-semibold' : ['assembly', 'generation', 'review'].indexOf(step) > i ? 'text-emerald-600' : ''}`}>
                 {i > 0 && <span className="text-gray-200 mx-0.5">/</span>}
                 {['assembly', 'generation', 'review'].indexOf(step) > i ? '\u2713' : ['Assembly', 'Generation', 'Review'][i]}
               </span>

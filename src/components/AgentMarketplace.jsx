@@ -224,7 +224,7 @@ function fullPolygonPoints(maxRadius) {
   }).join(' ')
 }
 
-function RadarChart({ scores, color = '#1B5E8F', size = RADAR_SIZE }) {
+function RadarChart({ scores, color = '#3D16FA', size = RADAR_SIZE }) {
   const scale = size / RADAR_SIZE
   const concentricLevels = [0.25, 0.5, 0.75, 1]
 
@@ -310,7 +310,7 @@ function TestDrivePanel({ agent, onHire, spring, prefersReducedMotion }) {
     >
       <div className="p-6">
         <h3 className="text-gray-900 font-semibold text-sm mb-4 flex items-center gap-2">
-          <Zap size={16} className="text-[#1B5E8F]" />
+          <Zap size={16} className="text-[#3D16FA]" />
           Test Drive: {agent.name}
         </h3>
 
@@ -318,7 +318,7 @@ function TestDrivePanel({ agent, onHire, spring, prefersReducedMotion }) {
           <div className="flex flex-col items-center justify-center py-10 gap-3">
             <motion.div
               className="w-8 h-8 rounded-full border-2 border-t-transparent"
-              style={{ borderColor: '#1B5E8F', borderTopColor: 'transparent' }}
+              style={{ borderColor: '#3D16FA', borderTopColor: 'transparent' }}
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
             />
@@ -421,7 +421,7 @@ function ComparisonPanel({ agents, onHire, spring }) {
     >
       <div className="p-6">
         <h3 className="text-gray-900 font-semibold text-sm mb-5 flex items-center gap-2">
-          <BarChart3 size={16} className="text-[#1B5E8F]" />
+          <BarChart3 size={16} className="text-[#3D16FA]" />
           Agent Comparison
         </h3>
 
@@ -429,7 +429,7 @@ function ComparisonPanel({ agents, onHire, spring }) {
           {/* Agent A radar */}
           <div className="text-center">
             <p className="text-gray-900 font-semibold text-sm mb-2">{a.name}</p>
-            <RadarChart scores={a.scores} color="#1B5E8F" />
+            <RadarChart scores={a.scores} color="#3D16FA" />
           </div>
           {/* Agent B radar */}
           <div className="text-center">
@@ -512,9 +512,9 @@ function MyAgentsTab({ hiredAgents, onRemoveAgent, spring, prefersReducedMotion 
       <div className="flex flex-col items-center justify-center py-20 gap-4">
         <div
           className="w-16 h-16 rounded-full flex items-center justify-center"
-          style={{ backgroundColor: 'rgba(27,94,143,0.1)' }}
+          style={{ backgroundColor: 'rgba(61,22,250,0.1)' }}
         >
-          <Users size={28} style={{ color: '#1B5E8F' }} />
+          <Users size={28} style={{ color: '#3D16FA' }} />
         </div>
         <p className="text-gray-400 text-sm text-center max-w-xs">
           Visit the marketplace to hire your first agent
@@ -537,7 +537,7 @@ function MyAgentsTab({ hiredAgents, onRemoveAgent, spring, prefersReducedMotion 
           Shield: '#a855f7',
           Activity: '#ec4899',
         }
-        const iconBg = iconColorMap[agent.icon] || '#1B5E8F'
+        const iconBg = iconColorMap[agent.icon] || '#3D16FA'
         // Simulated performance data
         const projectsUsed = 12 + Math.floor(agent.id.charCodeAt(0) * 1.7) % 40
         const avgQualityLift = 8 + Math.floor(agent.id.charCodeAt(1) * 0.3) % 15
@@ -765,9 +765,9 @@ export default function AgentMarketplace({
                   className="w-full pl-9 pr-4 py-2.5 rounded-lg text-sm text-gray-900 placeholder-gray-400 outline-none focus:ring-2 transition-shadow"
                   style={{
                     backgroundColor: '#f5f5f5',
-                    focusRingColor: '#1B5E8F',
+                    focusRingColor: '#3D16FA',
                   }}
-                  onFocus={(e) => (e.target.style.boxShadow = '0 0 0 2px #1B5E8F')}
+                  onFocus={(e) => (e.target.style.boxShadow = '0 0 0 2px #3D16FA')}
                   onBlur={(e) => (e.target.style.boxShadow = 'none')}
                 />
               </div>
@@ -784,7 +784,7 @@ export default function AgentMarketplace({
                     className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                     style={{
                       backgroundColor:
-                        activeTab === tab.key ? '#1B5E8F' : 'transparent',
+                        activeTab === tab.key ? '#3D16FA' : 'transparent',
                       color: activeTab === tab.key ? '#fff' : '#94a3b8',
                     }}
                   >
@@ -804,12 +804,12 @@ export default function AgentMarketplace({
                       style={{
                         backgroundColor:
                           activeCategory === cat
-                            ? 'rgba(27,94,143,0.2)'
+                            ? 'rgba(61,22,250,0.2)'
                             : 'rgba(255,255,255,0.06)',
-                        color: activeCategory === cat ? '#1B5E8F' : '#94a3b8',
+                        color: activeCategory === cat ? '#3D16FA' : '#94a3b8',
                         border:
                           activeCategory === cat
-                            ? '1px solid rgba(27,94,143,0.3)'
+                            ? '1px solid rgba(61,22,250,0.3)'
                             : '1px solid transparent',
                       }}
                     >
@@ -834,7 +834,7 @@ export default function AgentMarketplace({
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5 mt-2">
                       {filteredAgents.map((agent, idx) => {
                         const AgentIcon = IconForAgent(agent.icon)
-                        const iconBg = iconColorMap[agent.icon] || '#1B5E8F'
+                        const iconBg = iconColorMap[agent.icon] || '#3D16FA'
                         const isComparing = compareSet.has(agent.id)
                         const compareDisabled = !isComparing && compareSet.size >= 2
 
@@ -845,7 +845,7 @@ export default function AgentMarketplace({
                             style={{
                               backgroundColor: '#f5f5f5',
                               border: isComparing
-                                ? '1px solid rgba(27,94,143,0.4)'
+                                ? '1px solid rgba(61,22,250,0.4)'
                                 : '1px solid transparent',
                             }}
                             initial={{ opacity: 0, y: 20 }}
@@ -866,7 +866,7 @@ export default function AgentMarketplace({
                                   checked={isComparing}
                                   onChange={() => handleCompareToggle(agent.id)}
                                   disabled={compareDisabled}
-                                  className="w-3.5 h-3.5 rounded accent-[#1B5E8F]"
+                                  className="w-3.5 h-3.5 rounded accent-[#3D16FA]"
                                 />
                                 <span className="text-[10px] text-gray-500 font-medium">
                                   Compare
@@ -899,8 +899,8 @@ export default function AgentMarketplace({
                                 <span
                                   className="text-[11px] font-medium px-2 py-0.5 rounded-full inline-block mt-0.5"
                                   style={{
-                                    backgroundColor: 'rgba(27,94,143,0.15)',
-                                    color: '#1B5E8F',
+                                    backgroundColor: 'rgba(61,22,250,0.15)',
+                                    color: '#3D16FA',
                                   }}
                                 >
                                   {agent.specialty}
@@ -951,7 +951,7 @@ export default function AgentMarketplace({
                                   backgroundColor:
                                     testDriveAgent?.id === agent.id
                                       ? '#164D75'
-                                      : '#1B5E8F',
+                                      : '#3D16FA',
                                 }}
                               >
                                 <Zap size={14} />

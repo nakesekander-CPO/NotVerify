@@ -10,7 +10,7 @@ import { ArrowLeftRight, ArrowUpRight, Code2, FileLock2, Calendar } from 'lucide
 function Glyph({ icon: Icon, label, value, tone = 'slate' }) {
   const [open, setOpen] = useState(false)
   const toneClass =
-    tone === 'amber' ? 'text-amber-deep border-amber/40 bg-amber/10' :
+    tone === 'amber' ? 'text-[#996800] border-[#FFB000]/40 bg-[#FFF7E6]' :
     tone === 'ocean' ? 'text-ocean border-ocean/30 bg-pale' :
     'text-slate border-rule bg-white'
   return (

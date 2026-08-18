@@ -21,7 +21,7 @@ export {
 const AGENT_TONE = {
   active: { bg: 'bg-teal/10', text: 'text-teal', border: 'border-teal/30', icon: Check, label: 'Active' },
   draft: { bg: 'bg-rule/50', text: 'text-slate', border: 'border-rule-strong', icon: Clock, label: 'Draft' },
-  paused: { bg: 'bg-amber/15', text: 'text-amber-deep', border: 'border-amber/30', icon: Clock, label: 'Paused' },
+  paused: { bg: 'bg-[#FFF7E6]', text: 'text-[#996800]', border: 'border-[#FFB000]/40', icon: Clock, label: 'Paused' },
   archived: { bg: 'bg-rule', text: 'text-mist', border: 'border-rule-strong', icon: Lock, label: 'Archived' },
 }
 
@@ -39,10 +39,10 @@ export function AgentStatusBadge({ status }) {
 
 const OUTPUT_TONE = {
   verified: { bg: 'bg-teal/10', text: 'text-teal', border: 'border-teal/30', icon: Check },
-  need_review: { bg: 'bg-amber/15', text: 'text-amber-deep', border: 'border-amber/30', icon: AlertTriangle },
+  need_review: { bg: 'bg-[#FFF7E6]', text: 'text-[#996800]', border: 'border-[#FFB000]/40', icon: AlertTriangle },
   not_verified: { bg: 'bg-error/10', text: 'text-error', border: 'border-error/30', icon: XCircle },
   blocked: { bg: 'bg-error/10', text: 'text-error', border: 'border-error/40', icon: ShieldAlert },
-  requires_approval: { bg: 'bg-amber/15', text: 'text-amber-deep', border: 'border-amber/40', icon: Lock },
+  requires_approval: { bg: 'bg-[#FFF7E6]', text: 'text-[#996800]', border: 'border-[#FFB000]/40', icon: Lock },
   draft: { bg: 'bg-rule/50', text: 'text-slate', border: 'border-rule-strong', icon: Clock },
 }
 
@@ -60,7 +60,7 @@ export function OutputStatusBadge({ status }) {
 
 export function ConfidenceBadge({ value, size = 'sm' }) {
   if (value == null) return <span className="text-[11px] text-mist">—</span>
-  const tone = value >= 85 ? 'text-teal' : value >= 70 ? 'text-amber-deep' : 'text-error'
+  const tone = value >= 85 ? 'text-teal' : value >= 70 ? 'text-[#996800]' : 'text-error'
   const dot = value >= 85 ? 'bg-teal' : value >= 70 ? 'bg-amber' : 'bg-error'
   const pad = size === 'lg' ? 'text-[13px] px-2.5 py-1' : 'text-[11px] px-2 py-0.5'
   return (
@@ -76,7 +76,7 @@ export function ConfidenceBadge({ value, size = 'sm' }) {
 export function CreditUsageBadge({ value, kind = 'Intelligence' }) {
   return (
     <span className="inline-flex items-center gap-1 text-[11px] text-slate" title={`${kind} Credits`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-      <Coins className="w-3 h-3 text-amber-deep" />
+      <Coins className="w-3 h-3 text-[#996800]" />
       {(value ?? 0).toLocaleString()}
     </span>
   )

@@ -197,7 +197,7 @@ export default function Billing({ tier = 'pro' }) {
           const active = activeTab === t.id
           return (
             <button key={t.id} onClick={() => setTab(t.id)}
-              className={`inline-flex items-center gap-1.5 px-3 py-2 -mb-px border-b-2 text-[12.5px] cursor-pointer whitespace-nowrap transition-colors ${active ? 'border-[#009eda] text-[#009eda] font-semibold' : 'border-transparent text-gray-500 hover:text-gray-800'}`}>
+              className={`inline-flex items-center gap-1.5 px-3 py-2 -mb-px border-b-2 text-[12.5px] cursor-pointer whitespace-nowrap transition-colors ${active ? 'border-[#3D16FA] text-[#3D16FA] font-semibold' : 'border-transparent text-gray-500 hover:text-gray-800'}`}>
               <Icon className="w-3.5 h-3.5" /> {t.label}
             </button>
           )
@@ -254,7 +254,7 @@ function RailControl({ account, entRail, setEntRail }) {
       <div className="flex items-center gap-2">
         <span className="text-[12px] font-semibold text-gray-900">{RAIL_LABEL[account.paymentRail]}</span>
         {perms.canRequestPaymentRailChange && !request && (
-          <button onClick={() => setOpen(o => !o)} className="text-[11px] text-[#009eda] hover:text-[#0089c4] cursor-pointer">
+          <button onClick={() => setOpen(o => !o)} className="text-[11px] text-[#3D16FA] hover:text-[#0089c4] cursor-pointer">
             Request change
           </button>
         )}
@@ -294,7 +294,7 @@ function RailControl({ account, entRail, setEntRail }) {
           <div className="flex gap-1">
             {[['invoice_or_po', 'Invoice / PO'], ['card_or_ach', 'Card / ACH']].map(([v, l]) => (
               <button key={v} onClick={() => setEntRail(v)}
-                className={`px-2 py-0.5 rounded text-[10.5px] font-medium cursor-pointer ${entRail === v ? 'bg-[#009eda] text-white' : 'text-gray-500 hover:bg-black/[0.05]'}`}>
+                className={`px-2 py-0.5 rounded text-[10.5px] font-medium cursor-pointer ${entRail === v ? 'bg-[#3D16FA] text-white' : 'text-gray-500 hover:bg-black/[0.05]'}`}>
                 {l}
               </button>
             ))}
@@ -364,7 +364,7 @@ function AlertStack({ account, onOpenInvoices, onTopUp, onViewExpiring, onPayPas
   const tones = {
     red:     'bg-red-50 border-red-200 text-red-800',
     amber:   'bg-amber-50 border-amber-200 text-amber-800',
-    info:    'bg-[#009eda]/8 border-[#009eda]/20 text-[#0089c4]',
+    info:    'bg-[#3D16FA]/8 border-[#3D16FA]/20 text-[#0089c4]',
     neutral: 'bg-gray-50 border-black/[0.08] text-gray-700',
     success: 'bg-emerald-50 border-emerald-200 text-emerald-800',
   }
@@ -373,7 +373,7 @@ function AlertStack({ account, onOpenInvoices, onTopUp, onViewExpiring, onPayPas
   const primaryTones = {
     red:     'bg-red-600 hover:bg-red-700 text-white',
     amber:   'bg-amber-500 hover:bg-amber-600 text-white',
-    info:    'bg-[#009eda] hover:bg-[#0089c4] text-white',
+    info:    'bg-[#3D16FA] hover:bg-[#0089c4] text-white',
     neutral: 'bg-gray-900 hover:bg-black text-white',
     success: 'bg-emerald-600 hover:bg-emerald-700 text-white',
   }
@@ -440,7 +440,7 @@ function OverviewPanel({ account, onTopUp, onChangePlan, onViewLedger, onViewInv
       <div className="grid grid-cols-2 gap-4">
         <Card>
           <div className="flex items-center gap-2 mb-1">
-            <span className="w-2 h-2 rounded-full bg-[#009eda]" />
+            <span className="w-2 h-2 rounded-full bg-[#3D16FA]" />
             <h4 className="text-[13px] font-semibold text-gray-900">{PLAN_LABEL[account.tier]} Plan</h4>
             <span className="ml-auto text-[10.5px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Active</span>
           </div>
@@ -464,9 +464,9 @@ function OverviewPanel({ account, onTopUp, onChangePlan, onViewLedger, onViewInv
 
         <Card>
           <div className="flex items-center gap-2 mb-1">
-            <Wallet className="w-4 h-4 text-[#009eda]" />
+            <Wallet className="w-4 h-4 text-[#3D16FA]" />
             <h4 className="text-[13px] font-semibold text-gray-900">Credit wallet</h4>
-            <button onClick={onTopUp} className="ml-auto inline-flex items-center gap-1 text-[11px] text-[#009eda] hover:text-[#0089c4] cursor-pointer">
+            <button onClick={onTopUp} className="ml-auto inline-flex items-center gap-1 text-[11px] text-[#3D16FA] hover:text-[#0089c4] cursor-pointer">
               <Plus className="w-3 h-3" /> {isCard ? 'Buy credits' : 'Request top-up'}
             </button>
           </div>
@@ -484,7 +484,7 @@ function OverviewPanel({ account, onTopUp, onChangePlan, onViewLedger, onViewInv
               </span>
             </div>
             <div className="h-1.5 rounded-full bg-black/[0.06] overflow-hidden">
-              <div className={`h-full ${meter === 'overage' ? 'bg-amber-500' : meter === 'exhausted' ? 'bg-gray-400' : 'bg-[#009eda]'}`} style={{ width: `${pct}%` }} />
+              <div className={`h-full ${meter === 'overage' ? 'bg-amber-500' : meter === 'exhausted' ? 'bg-gray-400' : 'bg-[#3D16FA]'}`} style={{ width: `${pct}%` }} />
             </div>
             {meter === 'normal' && (
               <p className="text-[11px] text-gray-500 mt-1">{(w.plan.grantThisCycle - w.plan.usedThisCycle).toLocaleString()} plan credits remaining</p>
@@ -515,7 +515,7 @@ function OverviewPanel({ account, onTopUp, onChangePlan, onViewLedger, onViewInv
           {(account.trustCredits?.grantThisCycle > 0 || account.trustCredits?.available > 0) && (
             <div className="mt-3 pt-3 border-t border-black/[0.06] flex items-center justify-between text-[11.5px]">
               <span className="text-gray-500 inline-flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#009eda]" /> Trust Credits
+                <ShieldCheck className="w-3.5 h-3.5 text-[#3D16FA]" /> Trust Credits
               </span>
               <span className="text-gray-900 font-medium tabular-nums">
                 {account.trustCredits.used} of {account.trustCredits.grantThisCycle} used · {account.trustCredits.available} available
@@ -545,7 +545,7 @@ function OverviewPanel({ account, onTopUp, onChangePlan, onViewLedger, onViewInv
         <Card>
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-[13px] font-semibold text-gray-900">Recent activity</h4>
-            <button onClick={onViewLedger} className="text-[11px] text-[#009eda] hover:text-[#0089c4] cursor-pointer">View ledger →</button>
+            <button onClick={onViewLedger} className="text-[11px] text-[#3D16FA] hover:text-[#0089c4] cursor-pointer">View ledger →</button>
           </div>
           <ul className="divide-y divide-black/[0.06]">
             {account.ledger.slice(-5).reverse().map((e, i) => (
@@ -564,7 +564,7 @@ function OverviewPanel({ account, onTopUp, onChangePlan, onViewLedger, onViewInv
         <Card>
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-[13px] font-semibold text-gray-900">{isCard ? 'Payments & receipts' : 'Recent invoices'}</h4>
-            <button onClick={isCard ? onViewPayments : onViewInvoices} className="text-[11px] text-[#009eda] hover:text-[#0089c4] cursor-pointer">View all →</button>
+            <button onClick={isCard ? onViewPayments : onViewInvoices} className="text-[11px] text-[#3D16FA] hover:text-[#0089c4] cursor-pointer">View all →</button>
           </div>
           <ul className="divide-y divide-black/[0.06]">
             {(isCard ? account.receipts : account.invoices).slice(0, 4).map(r => (

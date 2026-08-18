@@ -153,8 +153,8 @@ export default function TaskAssignment({ activeProjectId, setActiveProjectId, cu
           )}
 
           {unassigned.length > 0 && (
-            <div className="mt-5 bg-amber/10 border border-amber/30 rounded-md p-3">
-              <p className="text-[12.5px] font-semibold text-amber-deep">{unassigned.length} unassigned task{unassigned.length === 1 ? '' : 's'}</p>
+            <div className="mt-5 bg-[#FFF7E6] border border-[#FFB000]/40 rounded-md p-3">
+              <p className="text-[12.5px] font-semibold text-[#996800]">{unassigned.length} unassigned task{unassigned.length === 1 ? '' : 's'}</p>
               <ul className="mt-2 space-y-1 text-[11.5px] text-slate">
                 {unassigned.map(t => (
                   <li key={t.id} className="flex items-center justify-between">
@@ -178,7 +178,7 @@ function labelForMode(mode) {
 }
 
 function ProgressStat({ label, value, accent }) {
-  const palette = { teal: 'text-teal', amber: 'text-amber-deep' }
+  const palette = { teal: 'text-teal', amber: 'text-[#996800]' }
   return (
     <div>
       <p className="text-[10.5px] uppercase tracking-wider text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{label}</p>
@@ -235,7 +235,7 @@ function TaskRow({ task, reviewers, onAssign, onAddCollab, onRemoveCollab, onRea
             ) : (
               <button
                 onClick={() => setShowPicker(p => !p)}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber/10 border border-amber/40 text-[11.5px] text-amber-deep cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FFF7E6] border border-[#FFB000]/40 text-[11.5px] text-[#996800] cursor-pointer"
               >
                 <UserPlus className="w-3 h-3" /> Assign
               </button>

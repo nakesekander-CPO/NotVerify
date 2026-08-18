@@ -197,7 +197,7 @@ function Avatar({ initials, size = 36, className = '' }) {
       className={`shrink-0 rounded-full flex items-center justify-center font-semibold text-xs ${className}`}
       style={{
         width: size, height: size,
-        background: 'linear-gradient(135deg, #2E78AC 0%, #1B5E8F 100%)',
+        background: 'linear-gradient(135deg, #2E78AC 0%, #3D16FA 100%)',
         color: '#fff',
       }}
     >
@@ -252,7 +252,7 @@ function ProgressRing({ reviewed, total, size = 80 }) {
           fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="4"
         />
         <motion.circle cx={center} cy={center} r={radius}
-          fill="none" stroke="#1B5E8F" strokeWidth="4" strokeLinecap="round"
+          fill="none" stroke="#3D16FA" strokeWidth="4" strokeLinecap="round"
           strokeDasharray={circumference}
           animate={{ strokeDashoffset: dashOffset }}
           transition={springTransition}
@@ -278,7 +278,7 @@ function SeverityBadge({ severity }) {
 
 function LocaleBadge({ locale, localeCode }) {
   return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#1B5E8F]/15 text-[#1B5E8F] text-xs font-semibold">
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#3D16FA]/15 text-[#3D16FA] text-xs font-semibold">
       <Globe className="w-3 h-3" />
       {localeCode || locale}
     </span>
@@ -452,7 +452,7 @@ function AssignPhase({ reviewRequest, teamMembers, onAssign, onBack, reduced }) 
             <div className="flex items-start justify-between">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-[#1B5E8F]" />
+                  <FileText className="w-4 h-4 text-[#3D16FA]" />
                   <span className="text-sm font-semibold text-gray-900">{reviewRequest.projectName}</span>
                 </div>
                 <p className="text-xs text-gray-900/50">{reviewRequest.fileName}</p>
@@ -510,7 +510,7 @@ function AssignPhase({ reviewRequest, teamMembers, onAssign, onBack, reduced }) 
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search team..."
-                className="w-full pl-8 pr-3 py-2 rounded-lg bg-black/[0.03] border border-black/[0.12] text-sm text-gray-900 placeholder:text-gray-900/30 outline-none focus:border-[#1B5E8F]/50 transition-colors"
+                className="w-full pl-8 pr-3 py-2 rounded-lg bg-black/[0.03] border border-black/[0.12] text-sm text-gray-900 placeholder:text-gray-900/30 outline-none focus:border-[#3D16FA]/50 transition-colors"
               />
             </div>
           </div>
@@ -526,7 +526,7 @@ function AssignPhase({ reviewRequest, teamMembers, onAssign, onBack, reduced }) 
             {/* Recommended */}
             {!searchQuery && recommended.length > 0 && (
               <div className="space-y-2">
-                <p className="text-[10px] font-semibold text-[#1B5E8F] uppercase tracking-wider flex items-center gap-1.5">
+                <p className="text-[10px] font-semibold text-[#3D16FA] uppercase tracking-wider flex items-center gap-1.5">
                   <Sparkles className="w-3 h-3" /> Recommended based on locale &amp; domain
                 </p>
                 {recommended.map(member => (
@@ -577,13 +577,13 @@ function AssignPhase({ reviewRequest, teamMembers, onAssign, onBack, reduced }) 
                       onChange={e => setNote(e.target.value)}
                       placeholder="What should the reviewer focus on?"
                       rows={2}
-                      className="w-full px-3 py-2 rounded-lg bg-black/[0.03] border border-black/[0.12] text-sm text-gray-900 placeholder:text-gray-900/30 outline-none focus:border-[#1B5E8F]/50 resize-none transition-colors"
+                      className="w-full px-3 py-2 rounded-lg bg-black/[0.03] border border-black/[0.12] text-sm text-gray-900 placeholder:text-gray-900/30 outline-none focus:border-[#3D16FA]/50 resize-none transition-colors"
                     />
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setPriority('normal')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${priority === 'normal' ? 'bg-[#1B5E8F] text-white' : 'bg-black/[0.03] text-gray-900/50 border border-black/[0.12]'}`}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${priority === 'normal' ? 'bg-[#3D16FA] text-white' : 'bg-black/[0.03] text-gray-900/50 border border-black/[0.12]'}`}
                     >Normal</button>
                     <button
                       onClick={() => setPriority('urgent')}
@@ -628,7 +628,7 @@ function MemberRow({ member, selected, onSelect, showRelevance }) {
   return (
     <button
       onClick={onSelect}
-      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${selected ? 'bg-[#1B5E8F]/15 border border-[#1B5E8F]/30' : 'hover:bg-black/[0.04] border border-transparent'}`}
+      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${selected ? 'bg-[#3D16FA]/15 border border-[#3D16FA]/30' : 'hover:bg-black/[0.04] border border-transparent'}`}
     >
       <div className="relative">
         <Avatar initials={member.initials} size={32} />
@@ -638,10 +638,10 @@ function MemberRow({ member, selected, onSelect, showRelevance }) {
         <p className="text-sm font-medium text-gray-900 truncate">{member.name}</p>
         <p className="text-[11px] text-gray-900/40 truncate">{member.role}</p>
         {showRelevance && member.relevance && (
-          <p className="text-[10px] text-[#1B5E8F]/80 mt-0.5">{member.relevance}</p>
+          <p className="text-[10px] text-[#3D16FA]/80 mt-0.5">{member.relevance}</p>
         )}
       </div>
-      {selected && <CheckCircle2 className="w-4 h-4 text-[#1B5E8F] shrink-0" />}
+      {selected && <CheckCircle2 className="w-4 h-4 text-[#3D16FA] shrink-0" />}
     </button>
   )
 }
@@ -1046,7 +1046,7 @@ function ReviewPhase({ reviewRequest, onSubmitReview, onBack, reduced, reviewerP
                   onClick={() => scrollToSegment(seg.id)}
                   className={`text-[12px] leading-relaxed py-1 px-2 rounded-md cursor-pointer transition-all duration-200 ${
                     isFocused
-                      ? 'bg-[#009eda]/10 text-gray-900'
+                      ? 'bg-[#3D16FA]/10 text-gray-900'
                       : isFlagged
                         ? 'text-gray-700 hover:bg-black/[0.03]'
                         : 'text-gray-500 hover:bg-black/[0.03]'
@@ -1066,11 +1066,11 @@ function ReviewPhase({ reviewRequest, onSubmitReview, onBack, reduced, reviewerP
 
         {/* ─── Left resize handle ─── */}
         <div
-          className="w-[5px] shrink-0 cursor-col-resize group relative flex items-center justify-center border-x border-black/[0.12] hover:border-[#009eda]/40 transition-colors"
+          className="w-[5px] shrink-0 cursor-col-resize group relative flex items-center justify-center border-x border-black/[0.12] hover:border-[#3D16FA]/40 transition-colors"
           style={{ background: '#f0f0f0' }}
           onMouseDown={(e) => startPanelDrag('left', e)}
         >
-          <div className="w-px h-8 rounded-full bg-black/[0.15] group-hover:bg-[#009eda]/50 transition-colors" />
+          <div className="w-px h-8 rounded-full bg-black/[0.15] group-hover:bg-[#3D16FA]/50 transition-colors" />
         </div>
 
         {/* ─── Continuous Narrative Canvas (center) ─── */}
@@ -1093,7 +1093,7 @@ function ReviewPhase({ reviewRequest, onSubmitReview, onBack, reduced, reviewerP
         >
           {/* Reviewer profile scoping banner */}
           {reviewerProfile && (reviewerProfile.locales?.length > 0 || reviewerProfile.domains?.length > 0) && (
-            <div className="flex items-center gap-2 px-6 py-2 bg-[#009eda]/[0.04] border-b border-[#009eda]/20 text-[11px] text-[#009eda]">
+            <div className="flex items-center gap-2 px-6 py-2 bg-[#3D16FA]/[0.04] border-b border-[#3D16FA]/20 text-[11px] text-[#3D16FA]">
               <span className="font-semibold">Scoped view:</span>
               {reviewerProfile.locales?.length > 0 && (
                 <span className="flex items-center gap-1">
@@ -1105,7 +1105,7 @@ function ReviewPhase({ reviewRequest, onSubmitReview, onBack, reduced, reviewerP
                   · Domains: {reviewerProfile.domains.join(', ')}
                 </span>
               )}
-              <span className="ml-auto text-[#009eda]/60">
+              <span className="ml-auto text-[#3D16FA]/60">
                 {displaySegments.length} of {allSegments.length} segments in your queue
               </span>
             </div>
@@ -1185,7 +1185,7 @@ function ReviewPhase({ reviewRequest, onSubmitReview, onBack, reduced, reviewerP
                     onMouseEnter={() => setFocusedSegId(seg.id)}
                     onClick={() => isFlagged && toggleSegment(seg.id)}
                     className={`grid grid-cols-2 gap-0 rounded-lg border overflow-hidden text-[13px] leading-relaxed transition-all cursor-default ${
-                      isFocused ? 'border-[#009eda]/30 shadow-sm' : 'border-black/[0.08]'
+                      isFocused ? 'border-[#3D16FA]/30 shadow-sm' : 'border-black/[0.08]'
                     } ${isFlagged && !decision ? (
                       flaggedData?.severity === 'critical' ? 'border-l-4 border-l-red-400 cursor-pointer' :
                       flaggedData?.severity === 'major' ? 'border-l-4 border-l-amber-400 cursor-pointer' :
@@ -1193,7 +1193,7 @@ function ReviewPhase({ reviewRequest, onSubmitReview, onBack, reduced, reviewerP
                     ) : decision ? 'border-l-4 border-l-emerald-400' : ''}`}
                   >
                     {/* Source */}
-                    <div className={`px-4 py-3 text-gray-500 border-r border-black/[0.06] ${isFocused ? 'bg-[#009eda]/[0.03]' : 'bg-gray-50/60'}`}>
+                    <div className={`px-4 py-3 text-gray-500 border-r border-black/[0.06] ${isFocused ? 'bg-[#3D16FA]/[0.03]' : 'bg-gray-50/60'}`}>
                       <span className="font-mono text-[9px] text-gray-300 block mb-1">
                         SEG-{String(seg.segmentNumber).padStart(3, '0')} · EN
                       </span>
@@ -1284,7 +1284,7 @@ function ReviewPhase({ reviewRequest, onSubmitReview, onBack, reduced, reviewerP
                                     <div className="flex items-center gap-2 mt-1">
                                       <SeverityBadge severity={flaggedData.severity} />
                                       <span className="font-mono text-[10px] text-gray-500">SEG-{String(seg.segmentNumber).padStart(3, '0')}</span>
-                                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#1B5E8F]/10 text-[9px] font-mono font-semibold text-[#1B5E8F]"><Bot className="w-2.5 h-2.5" />{flaggedData.agentId}</span>
+                                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#3D16FA]/10 text-[9px] font-mono font-semibold text-[#3D16FA]"><Bot className="w-2.5 h-2.5" />{flaggedData.agentId}</span>
                                     </div>
                                   </div>
                                 </div>
@@ -1364,11 +1364,11 @@ function ReviewPhase({ reviewRequest, onSubmitReview, onBack, reduced, reviewerP
 
         {/* ─── Right resize handle ─── */}
         <div
-          className="w-[5px] shrink-0 cursor-col-resize group relative flex items-center justify-center border-x border-black/[0.12] hover:border-[#009eda]/40 transition-colors"
+          className="w-[5px] shrink-0 cursor-col-resize group relative flex items-center justify-center border-x border-black/[0.12] hover:border-[#3D16FA]/40 transition-colors"
           style={{ background: '#f0f0f0' }}
           onMouseDown={(e) => startPanelDrag('right', e)}
         >
-          <div className="w-px h-8 rounded-full bg-black/[0.15] group-hover:bg-[#009eda]/50 transition-colors" />
+          <div className="w-px h-8 rounded-full bg-black/[0.15] group-hover:bg-[#3D16FA]/50 transition-colors" />
         </div>
 
         {/* ─── Intelligence + Navigation Sidebar (right) ─── */}
@@ -1416,7 +1416,7 @@ function ReviewPhase({ reviewRequest, onSubmitReview, onBack, reduced, reviewerP
                       active
                         ? 'bg-white border border-black/[0.08] shadow-sm'
                         : focusedSegId === fs.id
-                          ? 'bg-[#009eda]/[0.06] ring-1 ring-[#009eda]/20'
+                          ? 'bg-[#3D16FA]/[0.06] ring-1 ring-[#3D16FA]/20'
                           : 'hover:bg-black/[0.04]'
                     }`}
                   >
@@ -1447,7 +1447,7 @@ function ReviewPhase({ reviewRequest, onSubmitReview, onBack, reduced, reviewerP
             <div className="rounded-lg p-3 space-y-1.5 bg-black/[0.02]">
               <p className="text-[10px] font-semibold text-gray-900/40 uppercase tracking-wider">Model Feedback</p>
               <p className="text-[11px] text-gray-900/40 leading-relaxed">
-                Your decisions improve: <span className="text-[#1B5E8F]">J-GAAP Specialist</span>, <span className="text-[#1B5E8F]">Brand Voice</span>
+                Your decisions improve: <span className="text-[#3D16FA]">J-GAAP Specialist</span>, <span className="text-[#3D16FA]">Brand Voice</span>
               </p>
             </div>
           </div>
@@ -1603,7 +1603,7 @@ function SegmentActionBar({ segment, expandedAction, onExpandAction, onDecide, r
         </button>
         <button
           onClick={() => onExpandAction(expandedAction === 'edit' ? null : 'edit')}
-          className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 ${expandedAction === 'edit' ? 'bg-[#1B5E8F]/20 text-[#1B5E8F] border border-[#1B5E8F]/40' : 'bg-black/[0.03] text-gray-900/60 border border-black/[0.12] hover:bg-black/[0.06]'}`}
+          className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 ${expandedAction === 'edit' ? 'bg-[#3D16FA]/20 text-[#3D16FA] border border-[#3D16FA]/40' : 'bg-black/[0.03] text-gray-900/60 border border-black/[0.12] hover:bg-black/[0.06]'}`}
         >
           <Edit3 className="w-3.5 h-3.5" /> Edit
         </button>
@@ -1661,7 +1661,7 @@ function SegmentActionBar({ segment, expandedAction, onExpandAction, onDecide, r
                 value={editText}
                 onChange={e => setEditText(e.target.value)}
                 rows={2}
-                className="w-full px-3 py-2 rounded-lg bg-black/[0.03] border border-[#1B5E8F]/30 font-mono text-sm text-gray-900 placeholder:text-gray-900/30 outline-none focus:border-[#1B5E8F]/50 resize-none transition-colors"
+                className="w-full px-3 py-2 rounded-lg bg-black/[0.03] border border-[#3D16FA]/30 font-mono text-sm text-gray-900 placeholder:text-gray-900/30 outline-none focus:border-[#3D16FA]/50 resize-none transition-colors"
               />
               <p className="text-[11px] text-gray-900/50">Why did you change this? <span className="text-red-600">*</span></p>
               <textarea
@@ -1669,7 +1669,7 @@ function SegmentActionBar({ segment, expandedAction, onExpandAction, onDecide, r
                 onChange={e => setEditReason(e.target.value)}
                 placeholder="This is a retraining signal..."
                 rows={2}
-                className="w-full px-3 py-2 rounded-lg bg-black/[0.03] border border-black/[0.12] text-sm text-gray-900 placeholder:text-gray-900/30 outline-none focus:border-[#1B5E8F]/50 resize-none transition-colors"
+                className="w-full px-3 py-2 rounded-lg bg-black/[0.03] border border-black/[0.12] text-sm text-gray-900 placeholder:text-gray-900/30 outline-none focus:border-[#3D16FA]/50 resize-none transition-colors"
               />
               <button
                 disabled={editReason.length < 2}
@@ -1678,7 +1678,7 @@ function SegmentActionBar({ segment, expandedAction, onExpandAction, onDecide, r
                   reason: editReason,
                   translation: editText,
                 })}
-                className="w-full py-2 rounded-lg bg-[#1B5E8F]/80 hover:bg-[#1B5E8F] disabled:bg-black/[0.03] disabled:text-gray-900/20 text-white text-xs font-semibold transition-colors disabled:cursor-not-allowed"
+                className="w-full py-2 rounded-lg bg-[#3D16FA]/80 hover:bg-[#3D16FA] disabled:bg-black/[0.03] disabled:text-gray-900/20 text-white text-xs font-semibold transition-colors disabled:cursor-not-allowed"
               >
                 Confirm Edit
               </button>
@@ -1776,7 +1776,7 @@ function ActionBar({ connectedIntegrations, onOpenIntegrations }) {
                           <p className="text-[12px] text-gray-400">{cat.placeholder}</p>
                           <button
                             onClick={() => { setOpenDropdown(null); onOpenIntegrations?.() }}
-                            className="text-[12px] text-[#009eda] hover:underline cursor-pointer mt-1"
+                            className="text-[12px] text-[#3D16FA] hover:underline cursor-pointer mt-1"
                           >
                             Connect {cat.label.toLowerCase()} tools →
                           </button>
@@ -1883,7 +1883,7 @@ function CompletePhase({ reviewRequest, results, onBack, reduced, connectedInteg
           style={{ background: '#f5f5f5' }}
         >
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#1B5E8F]" />
+            <Sparkles className="w-4 h-4 text-[#3D16FA]" />
             <p className="text-sm font-semibold text-gray-900">Model Learning</p>
           </div>
           <p className="text-xs text-gray-900/50">Your edits are training these models:</p>
@@ -1895,7 +1895,7 @@ function CompletePhase({ reviewRequest, results, onBack, reduced, connectedInteg
                   <motion.span
                     animate={reduced ? {} : { opacity: [0.4, 1, 0.4] }}
                     transition={{ duration: 2, repeat: Infinity }}
-                    className="w-2 h-2 rounded-full bg-[#1B5E8F]"
+                    className="w-2 h-2 rounded-full bg-[#3D16FA]"
                   />
                   <span className="text-sm font-medium text-gray-900">{agentName}</span>
                   <span className="text-[10px] text-gray-900/30 font-mono">{info.agentId}</span>
@@ -1911,7 +1911,7 @@ function CompletePhase({ reviewRequest, results, onBack, reduced, connectedInteg
             )}
           </div>
 
-          <p className="text-xs text-[#1B5E8F]/70">
+          <p className="text-xs text-[#3D16FA]/70">
             Expected improvement: +3 pts on domain precision for next run
           </p>
         </motion.div>

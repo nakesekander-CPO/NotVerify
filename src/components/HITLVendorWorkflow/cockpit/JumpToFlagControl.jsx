@@ -26,7 +26,7 @@ export default function JumpToFlagControl({ segments, activeIdx, onJump }) {
       >
         <ChevronLeft className="w-3.5 h-3.5 text-slate" />
       </button>
-      <span className="inline-flex items-center gap-1 px-1.5 text-[10.5px] text-amber-deep" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+      <span className="inline-flex items-center gap-1 px-1.5 text-[10.5px] text-[#996800]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
         <AlertTriangle className="w-3 h-3" />
         {cur === -1 ? totalFlagged : `${cur + 1}/${totalFlagged}`}
       </span>

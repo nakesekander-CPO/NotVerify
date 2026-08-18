@@ -13,7 +13,7 @@ export default function RecommendedSection({ agents, documentProfile, reducedMot
   return (
     <div className="py-4 border-b border-black/[0.06]">
       <div className="flex items-center gap-2 mb-1">
-        <Sparkles className="w-3.5 h-3.5 text-[#009eda]" />
+        <Sparkles className="w-3.5 h-3.5 text-[#3D16FA]" />
         <h3 className="text-[13px] font-semibold text-gray-800">Recommended for your workflow</h3>
       </div>
       <p className="text-[11px] text-gray-400 mb-3">

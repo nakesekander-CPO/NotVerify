@@ -21,7 +21,7 @@ const TABS = [
 
 const CLAIM_STATE_TONE = {
   approved: 'text-teal bg-teal/10 border-teal/30',
-  needs_review: 'text-amber-deep bg-amber/15 border-amber/30',
+  needs_review: 'text-[#996800] bg-[#FFF7E6] border-[#FFB000]/40',
   disputed: 'text-error bg-error/10 border-error/30',
   expired: 'text-mist bg-rule/60 border-rule-strong',
   rejected: 'text-error bg-error/10 border-error/30',
@@ -91,9 +91,9 @@ export default function KnowledgeLayer() {
           {CONFLICTS.map(cf => (
             <Card key={cf.id}>
               <div className="flex items-center gap-2 mb-1">
-                <AlertTriangle className="w-3.5 h-3.5 text-amber-deep" />
+                <AlertTriangle className="w-3.5 h-3.5 text-[#996800]" />
                 <p className="text-[13px] font-semibold text-ink">{cf.claim}</p>
-                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber/15 text-amber-deep border border-amber/30">{cf.severity}</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#FFF7E6] text-[#996800] border border-[#FFB000]/40">{cf.severity}</span>
               </div>
               <p className="text-[12.5px] text-slate">{cf.detail}</p>
               <p className="text-[10.5px] text-mist mt-1.5" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>Sources: {cf.sources.join(' · ')} · status: {cf.status}</p>
@@ -110,7 +110,7 @@ export default function KnowledgeLayer() {
             <tbody>
               {SOURCES.map(s => (
                 <tr key={s.id} className="border-b border-rule/60 last:border-b-0">
-                  <td className="px-4 py-2.5 text-ink">{s.name}{s.ocrWarning && <span className="ml-1.5 text-[10px] text-amber-deep">OCR review</span>}{s.neverPublic && <span className="ml-1.5 text-[10px] text-error">never public</span>}</td>
+                  <td className="px-4 py-2.5 text-ink">{s.name}{s.ocrWarning && <span className="ml-1.5 text-[10px] text-[#996800]">OCR review</span>}{s.neverPublic && <span className="ml-1.5 text-[10px] text-error">never public</span>}</td>
                   <td className="px-4 py-2.5 text-slate">{s.kind}</td>
                   <td className="px-4 py-2.5">{s.classification === 'private' ? <span className="text-error inline-flex items-center gap-1"><Lock className="w-3 h-3" /> private</span> : <span className="text-slate">public</span>}</td>
                   <td className="px-4 py-2.5 text-slate">{s.status.replace('_', ' ')}</td>

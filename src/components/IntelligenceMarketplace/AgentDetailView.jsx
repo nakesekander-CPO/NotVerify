@@ -61,10 +61,10 @@ function RadarChart({ scores, size = 140 }) {
         return <line key={i} x1={center} y1={center} x2={p.x} y2={p.y} stroke="rgba(0,0,0,0.06)" strokeWidth="1" />
       })}
       {/* Data polygon */}
-      <polygon points={poly} fill="rgba(0,158,218,0.15)" stroke="#009eda" strokeWidth="2" />
+      <polygon points={poly} fill="rgba(61,22,250,0.15)" stroke="#3D16FA" strokeWidth="2" />
       {/* Dots */}
       {points.map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r="3" fill="#009eda" />
+        <circle key={i} cx={p.x} cy={p.y} r="3" fill="#3D16FA" />
       ))}
       {/* Labels */}
       {axes.map((_, i) => {
@@ -164,7 +164,7 @@ function CapabilitiesTab({ agent }) {
               <span className="text-[11px] text-gray-500 w-20 capitalize">{key}</span>
               <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-[#009eda] transition-all"
+                  className="h-full rounded-full bg-[#3D16FA] transition-all"
                   style={{ width: `${val}%` }}
                 />
               </div>
@@ -179,7 +179,7 @@ function CapabilitiesTab({ agent }) {
         <div>
           <button
             onClick={() => setShowTestDrive(v => !v)}
-            className="flex items-center gap-1.5 text-[12px] font-medium text-[#009eda] hover:text-[#0089c4] transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 text-[12px] font-medium text-[#3D16FA] hover:text-[#0089c4] transition-colors cursor-pointer"
           >
             <Eye className="w-3.5 h-3.5" />
             {showTestDrive ? 'Hide Test Drive' : 'Show Test Drive'}
@@ -342,7 +342,7 @@ function IntegrationTab({ agent }) {
             {t.versionHistory.map((v, i) => (
               <div key={v.version} className="flex items-start gap-3">
                 <div className="flex flex-col items-center">
-                  <div className={`w-2 h-2 rounded-full mt-1 ${i === 0 ? 'bg-[#009eda]' : 'bg-gray-300'}`} />
+                  <div className={`w-2 h-2 rounded-full mt-1 ${i === 0 ? 'bg-[#3D16FA]' : 'bg-gray-300'}`} />
                   {i < t.versionHistory.length - 1 && <div className="w-px h-6 bg-gray-200" />}
                 </div>
                 <div>
@@ -376,7 +376,7 @@ function ReviewsTab({ agent }) {
           <p className="text-[32px] font-bold font-mono text-gray-900">{agent.rating}</p>
           <div className="flex items-center gap-0.5 justify-center">
             {[1, 2, 3, 4, 5].map(i => (
-              <Star key={i} className={`w-3 h-3 ${i <= Math.round(agent.rating) ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`} />
+              <Star key={i} className={`w-3 h-3 ${i <= Math.round(agent.rating) ? 'fill-[#FFBD59]-400 text-amber-400' : 'text-gray-300'}`} />
             ))}
           </div>
           <p className="text-[10px] text-gray-400 mt-1">{agent.reviewCount} reviews</p>
@@ -410,7 +410,7 @@ function ReviewsTab({ agent }) {
               </div>
               <div className="flex items-center gap-1">
                 {[1, 2, 3, 4, 5].map(i => (
-                  <Star key={i} className={`w-2.5 h-2.5 ${i <= r.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`} />
+                  <Star key={i} className={`w-2.5 h-2.5 ${i <= r.rating ? 'fill-[#FFBD59]-400 text-amber-400' : 'text-gray-300'}`} />
                 ))}
               </div>
             </div>
@@ -445,7 +445,7 @@ export default function AgentDetailView({ agent, isOpen, onClose, onDeploy, redu
   if (!agent) return null
 
   const IconComp = ICON_MAP[agent.icon] || Shield
-  const iconColor = ICON_COLOR_MAP[agent.icon] || '#009eda'
+  const iconColor = ICON_COLOR_MAP[agent.icon] || '#3D16FA'
   const typeColor = TYPE_COLORS[agent.type] || TYPE_COLORS['Agent']
 
   const tabContent = [
@@ -496,7 +496,7 @@ export default function AgentDetailView({ agent, isOpen, onClose, onDeploy, redu
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={() => onDeploy(agent)}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#009eda] text-[13px] font-medium text-white hover:bg-[#0089c4] transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#3D16FA] text-[13px] font-medium text-white hover:bg-[#0089c4] transition-colors cursor-pointer"
                 >
                   Deploy <ArrowRight className="w-3.5 h-3.5" />
                 </button>
@@ -518,7 +518,7 @@ export default function AgentDetailView({ agent, isOpen, onClose, onDeploy, redu
                   onClick={() => setActiveTab(i)}
                   className={`px-3 py-2.5 text-[12px] font-medium border-b-2 transition-colors cursor-pointer ${
                     activeTab === i
-                      ? 'text-[#009eda] border-[#009eda]'
+                      ? 'text-[#3D16FA] border-[#3D16FA]'
                       : 'text-gray-500 border-transparent hover:text-gray-700'
                   }`}
                 >

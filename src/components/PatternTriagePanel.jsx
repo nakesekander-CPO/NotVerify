@@ -297,7 +297,7 @@ export default function PatternTriagePanel({ campaign, onAllResolved }) {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-[15px] font-semibold text-gray-900 mb-0.5 flex items-center gap-2">
-            <Layers size={16} className="text-[#009eda]" />
+            <Layers size={16} className="text-[#3D16FA]" />
             Pattern-Based Triage
           </h2>
           <p className="text-[12px] text-gray-500">
@@ -323,9 +323,9 @@ export default function PatternTriagePanel({ campaign, onAllResolved }) {
       </div>
 
       {/* Info callout */}
-      <div className="flex items-start gap-2 rounded-lg bg-[#009eda]/[0.04] border border-[#009eda]/20 px-3 py-2.5">
-        <Info size={13} className="text-[#009eda] shrink-0 mt-0.5" />
-        <p className="text-[11px] text-[#009eda]/80 leading-snug">
+      <div className="flex items-start gap-2 rounded-lg bg-[#3D16FA]/[0.04] border border-[#3D16FA]/20 px-3 py-2.5">
+        <Info size={13} className="text-[#3D16FA] shrink-0 mt-0.5" />
+        <p className="text-[11px] text-[#3D16FA]/80 leading-snug">
           Accepting a fix cascades it across <strong>all matching instances</strong> in every document and locale. You can expand each pattern to review affected files before accepting.
         </p>
       </div>
@@ -378,7 +378,7 @@ export default function PatternTriagePanel({ campaign, onAllResolved }) {
             }}
             className="flex items-center gap-2 px-4 py-2 rounded-lg border border-black/[0.10] text-[12px] font-medium text-gray-600 hover:bg-gray-50 cursor-pointer transition-colors"
           >
-            <Zap size={12} className="text-[#009eda]" />
+            <Zap size={12} className="text-[#3D16FA]" />
             Accept all remaining patterns
           </button>
         </motion.div>

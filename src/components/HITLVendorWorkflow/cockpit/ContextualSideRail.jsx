@@ -269,7 +269,7 @@ function BackTranslation({ segment }) {
       <p className="text-[12px] text-ink leading-relaxed">{bt.text}</p>
       <p className="text-[10.5px] text-mist mt-1" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{bt.provider} · not a verification</p>
       {warn && (
-        <p className="mt-2 text-[11px] text-amber-deep bg-amber/10 border border-amber/30 rounded p-2">
+        <p className="mt-2 text-[11px] text-[#996800] bg-[#FFF7E6] border border-[#FFB000]/40 rounded p-2">
           ⚠ Back-translation drift {driftPct}% — {driftPct}% of source tokens unaccounted for. Read carefully before committing.
         </p>
       )}

@@ -92,7 +92,7 @@ export default function FindReplaceDrawer({ isOpen, onClose, segments, lockedSeg
               value={source}
               onChange={e => setSource(e.target.value)}
               placeholder="Source text to find..."
-              className="w-full px-3 py-2 rounded-lg bg-black/[0.03] border border-black/[0.12] text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#1B5E8F]/50 transition-colors font-mono"
+              className="w-full px-3 py-2 rounded-lg bg-black/[0.03] border border-black/[0.12] text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#3D16FA]/50 transition-colors font-mono"
               autoFocus
             />
           </div>
@@ -105,7 +105,7 @@ export default function FindReplaceDrawer({ isOpen, onClose, segments, lockedSeg
               value={target}
               onChange={e => setTarget(e.target.value)}
               placeholder="Target replacement text..."
-              className="w-full px-3 py-2 rounded-lg bg-black/[0.03] border border-black/[0.12] text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#1B5E8F]/50 transition-colors font-mono"
+              className="w-full px-3 py-2 rounded-lg bg-black/[0.03] border border-black/[0.12] text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#3D16FA]/50 transition-colors font-mono"
             />
           </div>
         </div>
@@ -113,11 +113,11 @@ export default function FindReplaceDrawer({ isOpen, onClose, segments, lockedSeg
         {/* Options */}
         <div className="space-y-2.5">
           <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={caseSensitive} onChange={e => setCaseSensitive(e.target.checked)} className="w-3.5 h-3.5 accent-[#1B5E8F] cursor-pointer" />
+            <input type="checkbox" checked={caseSensitive} onChange={e => setCaseSensitive(e.target.checked)} className="w-3.5 h-3.5 accent-[#3D16FA] cursor-pointer" />
             <span className="text-xs text-gray-700">Case Sensitive</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={wholeWord} onChange={e => setWholeWord(e.target.checked)} className="w-3.5 h-3.5 accent-[#1B5E8F] cursor-pointer" />
+            <input type="checkbox" checked={wholeWord} onChange={e => setWholeWord(e.target.checked)} className="w-3.5 h-3.5 accent-[#3D16FA] cursor-pointer" />
             <span className="text-xs text-gray-700">Whole Word Only</span>
           </label>
         </div>
@@ -127,11 +127,11 @@ export default function FindReplaceDrawer({ isOpen, onClose, segments, lockedSeg
           <p className="text-[11px] font-semibold text-gray-900/50 uppercase tracking-wider">Scope</p>
           <div className="flex items-center gap-3">
             <label className="flex items-center gap-1.5 cursor-pointer">
-              <input type="radio" name="scope" value="document" checked={scope === 'document'} onChange={() => setScope('document')} className="accent-[#1B5E8F] cursor-pointer" />
+              <input type="radio" name="scope" value="document" checked={scope === 'document'} onChange={() => setScope('document')} className="accent-[#3D16FA] cursor-pointer" />
               <span className="text-xs text-gray-700">This Document</span>
             </label>
             <label className="flex items-center gap-1.5 cursor-pointer">
-              <input type="radio" name="scope" value="corpus" checked={scope === 'corpus'} onChange={() => setScope('corpus')} className="accent-[#1B5E8F] cursor-pointer" />
+              <input type="radio" name="scope" value="corpus" checked={scope === 'corpus'} onChange={() => setScope('corpus')} className="accent-[#3D16FA] cursor-pointer" />
               <span className="text-xs text-gray-700">Entire Corpus</span>
             </label>
           </div>

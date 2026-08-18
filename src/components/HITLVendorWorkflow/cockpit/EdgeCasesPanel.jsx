@@ -48,7 +48,7 @@ export default function EdgeCasesPanel({ segment, open, onClose }) {
       <div className="w-full max-w-[560px] bg-white rounded-lg border border-rule overflow-hidden m-4" onClick={e => e.stopPropagation()}>
         <header className="px-5 py-3 border-b border-rule bg-cream/60 flex items-center justify-between">
           <div className="inline-flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 text-amber-deep" />
+            <ShieldAlert className="w-4 h-4 text-[#996800]" />
             <p className="text-[10.5px] uppercase tracking-[0.18em] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>Localisation edge cases</p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-md hover:bg-pale cursor-pointer">
@@ -72,7 +72,7 @@ export default function EdgeCasesPanel({ segment, open, onClose }) {
                     <div className="inline-flex items-center gap-2">
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] ${
                         c.severity === 'high'   ? 'bg-error/10 text-error border border-error/30' :
-                        c.severity === 'medium' ? 'bg-amber/10 text-amber-deep border border-amber/30' :
+                        c.severity === 'medium' ? 'bg-[#FFF7E6] text-[#996800] border border-[#FFB000]/40' :
                                                    'bg-ocean/10 text-ocean border border-ocean/30'
                       }`}>
                         <AlertTriangle className="w-3 h-3" />

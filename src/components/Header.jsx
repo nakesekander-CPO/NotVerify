@@ -28,19 +28,21 @@ export default function Header({ companyName, onOpenSettings, onOpenMarketplace,
   }, [accountOpen])
 
   return (
-    <header className="bg-white border-b border-black/[0.12] sticky top-0 z-50" role="banner">
+    // Split Frame: the chrome is Midnight — arbitr as the dark trust layer
+    // above the white work surface it governs (DS v2).
+    <header className="bg-midnight border-b border-inkslate sticky top-0 z-50" role="banner">
       <div className="max-w-[1280px] xl:max-w-[1440px] 2xl:max-w-[1600px] mx-auto w-full px-6 lg:px-8 xl:px-12 2xl:px-16 h-16 flex items-center justify-between gap-4">
-        {/* Logo */}
+        {/* Logo — rendered white on the dark chrome */}
         <button
           onClick={() => onNavigateHome?.()}
           className="flex items-center gap-3 shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
           aria-label="Go to dashboard"
         >
-          <img src="/logo.svg" alt="arbitr" className="h-6 w-auto text-ink" style={{ color: 'var(--color-ink)' }} />
+          <img src="/logo.svg" alt="arbitr" className="h-6 w-auto brightness-0 invert" />
           {companyName && (
             <>
-              <div className="h-4 w-px bg-black/[0.08]" />
-              <span className="text-[12px] text-gray-500 font-medium tracking-tight">{companyName}</span>
+              <div className="h-4 w-px bg-white/15" />
+              <span className="text-[12px] text-white/60 font-medium tracking-tight">{companyName}</span>
             </>
           )}
         </button>
@@ -51,21 +53,21 @@ export default function Header({ companyName, onOpenSettings, onOpenMarketplace,
             <StatusPill />
           </div>
 
-          <div className="h-5 w-px bg-black/[0.04] hidden md:block" />
+          <div className="h-5 w-px bg-white/15 hidden md:block" />
 
           {/* Account dropdown */}
           <div ref={accountRef} className="relative">
             <button
-              className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-black/[0.04] transition-colors cursor-pointer"
+              className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
               onClick={() => setAccountOpen(!accountOpen)}
               aria-expanded={accountOpen}
               aria-haspopup="true"
               aria-label="Account menu"
             >
-              <div className="w-7 h-7 rounded-full bg-straker-600/30 border border-straker-500/30 flex items-center justify-center">
-                <User className="w-3.5 h-3.5 text-straker-400" />
+              <div className="w-7 h-7 rounded-full bg-lens/15 border border-lens/40 flex items-center justify-center">
+                <User className="w-3.5 h-3.5 text-lens" />
               </div>
-              <ChevronDown className={`w-3.5 h-3.5 text-gray-500 transition-transform ${accountOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-3.5 h-3.5 text-white/50 transition-transform ${accountOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {accountOpen && (

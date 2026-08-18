@@ -34,7 +34,7 @@ export default function TrainerProfile({ currentUserId }) {
   // Coarse certification bands.
   const band = (() => {
     const score = impact.adjudicated + impact.authored * 2 + impact.memoryEntries * 3
-    if (score >= 20) return { label: 'Lead Trainer', tone: 'text-amber-deep', desc: 'Sustained measurable impact across model versions.' }
+    if (score >= 20) return { label: 'Lead Trainer', tone: 'text-[#996800]', desc: 'Sustained measurable impact across model versions.' }
     if (score >= 8)  return { label: 'Practitioner', tone: 'text-ocean',      desc: 'Established contributor across multiple domains.' }
     return { label: 'Apprentice', tone: 'text-mist', desc: 'Building footprint. First memory promotion ahead.' }
   })()
@@ -91,7 +91,7 @@ export default function TrainerProfile({ currentUserId }) {
         <div className="space-y-5">
           <Card padding="p-0">
             <div className="px-5 py-3 border-b border-rule flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber" />
+              <Sparkles className="w-4 h-4 text-[#FFBD59]" />
               <p className="text-[13px] font-semibold text-ink">Rationale signature</p>
             </div>
             <div className="px-5 py-3">

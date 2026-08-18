@@ -12,7 +12,7 @@ import { SectionHeading, Card, MonoLabel } from './shared'
 import { Check, X } from 'lucide-react'
 
 const SUPPORT_LABEL = { mention: 'Org mention', claim: 'A claim', competitor: 'A competitor' }
-const RELIABILITY_TONE = { high: 'text-teal', medium: 'text-amber-deep', low: 'text-error' }
+const RELIABILITY_TONE = { high: 'text-teal', medium: 'text-[#996800]', low: 'text-error' }
 
 export default function Citations() {
   return (

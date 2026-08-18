@@ -58,7 +58,7 @@ function Avatar({ name, size = 28 }) {
   const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
   const isSystem = name === 'System'
   return (
-    <div className={`shrink-0 rounded-full flex items-center justify-center font-semibold text-[10px] ${isSystem ? 'bg-[#009eda]/10 text-[#009eda]' : 'bg-gray-200 text-gray-600'}`}
+    <div className={`shrink-0 rounded-full flex items-center justify-center font-semibold text-[10px] ${isSystem ? 'bg-[#3D16FA]/10 text-[#3D16FA]' : 'bg-gray-200 text-gray-600'}`}
       style={{ width: size, height: size }}>
       {isSystem ? <Shield className="w-3 h-3" /> : initials}
     </div>
@@ -150,7 +150,7 @@ export default function GovernanceAudit({ onBack }) {
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
           <input type="text" value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Search documents, people, reasons..."
-            className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-black/[0.08] bg-gray-50 text-[12px] placeholder:text-gray-400 outline-none focus:border-[#009eda] transition" />
+            className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-black/[0.08] bg-gray-50 text-[12px] placeholder:text-gray-400 outline-none focus:border-[#3D16FA] transition" />
         </div>
       </div>
 

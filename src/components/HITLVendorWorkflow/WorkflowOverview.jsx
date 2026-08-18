@@ -62,13 +62,13 @@ export default function WorkflowOverview({ navigate }) {
               <MonoLabel>Notifications & escalations</MonoLabel>
               <p className="text-[15px] font-semibold text-ink mt-1">Sage is watching {stats.activeProjects} projects</p>
             </div>
-            <Bell className="w-4 h-4 text-amber" />
+            <Bell className="w-4 h-4 text-[#FFBD59]" />
           </div>
           <ul className="px-5 py-3">
             {unreadNotifications.length === 0 && <li className="text-[12px] text-mist">No unread notifications.</li>}
             {unreadNotifications.map(n => (
               <li key={n.id} className="py-2 border-b border-rule last:border-b-0 flex items-start gap-3">
-                <AlertTriangle className="w-4 h-4 text-amber mt-0.5 shrink-0" />
+                <AlertTriangle className="w-4 h-4 text-[#FFBD59] mt-0.5 shrink-0" />
                 <div className="min-w-0">
                   <p className="text-[12.5px] text-ink leading-snug">{n.text}</p>
                   <p className="text-[10.5px] text-mist mt-0.5" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{n.type} · {new Date(n.timestamp).toLocaleString()}</p>

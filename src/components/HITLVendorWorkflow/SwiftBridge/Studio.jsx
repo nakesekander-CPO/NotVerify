@@ -58,7 +58,7 @@ export function DubbingStudio({ job }) {
         <div className="p-5 space-y-4">
           {stage.id === 'script_review' && (
             <>
-              <p className="text-[12px] text-amber-deep inline-flex items-center gap-1.5"><UserCheck className="w-3.5 h-3.5" /> Human review gate — a SwiftBridge linguist verifies the EN script before voicing. Edit any line below.</p>
+              <p className="text-[12px] text-[#996800] inline-flex items-center gap-1.5"><UserCheck className="w-3.5 h-3.5" /> Human review gate — a SwiftBridge linguist verifies the EN script before voicing. Edit any line below.</p>
               <div className="rounded-lg border border-rule overflow-hidden">
                 {transcript.map((row, i) => (
                   <div key={row.t} className="grid grid-cols-[56px_1fr_1fr] gap-3 px-4 py-3 border-b border-rule/60 last:border-b-0">
@@ -112,7 +112,7 @@ export function DubbingStudio({ job }) {
 
           {stage.id === 'approval' && (
             <>
-              <p className="text-[12px] text-amber-deep inline-flex items-center gap-1.5"><UserCheck className="w-3.5 h-3.5" /> Final human gate — reviewer signs off on the dubbed output before export.</p>
+              <p className="text-[12px] text-[#996800] inline-flex items-center gap-1.5"><UserCheck className="w-3.5 h-3.5" /> Final human gate — reviewer signs off on the dubbed output before export.</p>
               <button onClick={advance} className="px-4 py-2 rounded-lg bg-teal text-white text-[12.5px] font-semibold hover:bg-teal/90 cursor-pointer inline-flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4" /> Approve & export</button>
             </>
           )}
@@ -134,7 +134,7 @@ export function DubbingStudio({ job }) {
 
 const STATUS_TONE = {
   approved: 'bg-teal/10 text-teal border-teal/30',
-  pending: 'bg-amber/15 text-amber-deep border-amber/30',
+  pending: 'bg-[#FFF7E6] text-[#996800] border-[#FFB000]/40',
   forbidden: 'bg-error/10 text-error border-error/30',
 }
 
@@ -235,9 +235,9 @@ export function GlossaryPanel({ glossary, customAgent }) {
                     ? <CheckCircle2 className="w-3.5 h-3.5 text-teal shrink-0" />
                     : verdict === 'violation'
                       ? <X className="w-3.5 h-3.5 text-error shrink-0" />
-                      : <AlertTriangle className="w-3.5 h-3.5 text-amber-deep shrink-0" />}
+                      : <AlertTriangle className="w-3.5 h-3.5 text-[#996800] shrink-0" />}
                   <span className="text-ink">{term.ja} → {term.en}</span>
-                  <span className={`ml-auto text-[10px] uppercase tracking-wider ${verdict === 'pass' ? 'text-teal' : verdict === 'violation' ? 'text-error' : 'text-amber-deep'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                  <span className={`ml-auto text-[10px] uppercase tracking-wider ${verdict === 'pass' ? 'text-teal' : verdict === 'violation' ? 'text-error' : 'text-[#996800]'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
                     {verdict === 'missing' ? 'approved term missing' : verdict}
                   </span>
                 </li>
@@ -255,7 +255,7 @@ export function GlossaryPanel({ glossary, customAgent }) {
 
 const SEV_TONE = {
   critical: 'bg-error/10 text-error border-error/30',
-  major: 'bg-amber/15 text-amber-deep border-amber/30',
+  major: 'bg-[#FFF7E6] text-[#996800] border-[#FFB000]/40',
   minor: 'bg-pale text-slate border-rule',
 }
 

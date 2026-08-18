@@ -1,58 +1,71 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  /* Canon I5–I7: display Plus Jakarta Sans · body/UI IBM Plex Sans · data IBM Plex Mono */
+  --font-sans: 'IBM Plex Sans', 'Inter', system-ui, -apple-system, sans-serif;
   --font-display: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
   --font-mono: '"IBM Plex Mono"', ui-monospace, monospace;
 
-  /* arbitr brand palette — Ocean scale (primary) */
-  --color-straker-50:  #E8F2F9;
-  --color-straker-100: #D0E5F2;
-  --color-straker-200: #B0D2E8;
-  --color-straker-300: #7FB3D9;
-  --color-straker-400: #4F94C4;
-  --color-straker-500: #2E78AC;
-  --color-straker-600: #1B5E8F;
-  --color-straker-700: #164D75;
-  --color-straker-800: #103D5C;
-  --color-straker-900: #0B2D44;
-  --color-straker-950: #061E2E;
+  /* ══ arbitr Design System v2 · SPLIT FRAME ══════════════════════
+     Midnight chrome (Header/GlobalNav) over a white work surface.
+     Indigo carries action on light grounds; cyan carries active
+     states in the dark chrome (spec Finding 3). Ice canvas replaced
+     per ruling 2026-08-18 — Ice was Provisional in the Canon. */
+  --color-straker-50:  #F4F5FF;  /* ice — quiet panels only, not the canvas */
+  --color-straker-100: #EDEFFB;  /* whisper */
+  --color-straker-200: #D8DCF5;  /* slate divider */
+  --color-straker-300: #C3C7EA;  /* pale slate */
+  --color-straker-400: #9E8BFD;  /* indigo tint-50 */
+  --color-straker-500: #5A39FB;  /* indigo tint-15 */
+  --color-straker-600: #3D16FA;  /* indigo — DECIDED */
+  --color-straker-700: #2E10C4;  /* action hover */
+  --color-straker-800: #2B0FAF;  /* indigo shade-30 */
+  --color-straker-900: #1A1640;  /* charcoal */
+  --color-straker-950: #0D092A;  /* midnight */
 
-  /* arbitr named brand tokens */
-  --color-ocean:       #1B5E8F;
-  --color-ocean-deep:  #164D75;
-  --color-ink:         #0F1419;
-  --color-cream:       #FAF8F3;
-  --color-sky:         #7FB3D9;
-  --color-slate:       #2A3F52;
-  --color-pale:        #E8F2F9;
-  --color-amber:       #D4860A;
-  --color-amber-deep:  #B5720A;
-  --color-sage:        #2F7A5C;
-  --color-mist:        #94A3B8;
-  --color-rule:        #E5E2DA;
-  --color-rule-strong: #D7D2C5;
-  --color-teal:        #1A7A5E;
-  --color-steel:       #8E9AAA;
+  /* named brand tokens (v2 mapping) */
+  --color-ocean:       #3D16FA;  /* indigo — links, CTAs, active on light */
+  --color-ocean-deep:  #2E10C4;  /* action hover */
+  --color-ink:         #0D092A;  /* midnight — primary text */
+  --color-cream:       #FFFFFF;  /* work surface is white (Split Frame) */
+  --color-sky:         #A38DFF;  /* soft violet — fills only */
+  --color-slate:       #5E6582;  /* muted slate — secondary text */
+  --color-pale:        #EDEFFB;  /* whisper — hover / row stripe / panels */
+  --color-amber:       #3D16FA;  /* primary action fills → indigo */
+  --color-amber-deep:  #2E10C4;
+  --color-sage:        #00805A;
+  --color-mist:        #8087AC;  /* cool grey — placeholder / metadata */
+  --color-rule:        #D8DCF5;  /* slate divider */
+  --color-rule-strong: #C3C7EA;  /* pale slate */
+  --color-teal:        #00805A;  /* ok-text (corrected, AA on tint) */
+  --color-steel:       #8087AC;
 
-  --color-navy-900: #FAF8F3;
-  --color-navy-800: #FAF8F3;
-  --color-navy-700: #F2EFE7;
-  --color-navy-600: #E8E5DC;
+  /* dark-chrome helpers (Header / GlobalNav / SwiftBridge band) */
+  --color-midnight:    #0D092A;
+  --color-charcoal:    #1A1640;
+  --color-inkslate:    #322D5C;
+  --color-lens:        #00F0FF;  /* cyan — active states on dark only */
+  --color-gold:        #FFBD59;  /* fill/badge only, never its own text */
+  --color-gold-text:   #B3843E;  /* gold shade-30 — text-safe on light */
 
-  --color-success: #1A7A5E;
-  --color-warning: #D4860A;
-  --color-error: #B00020;
-  --color-info: #1B5E8F;
-  --color-surface: #FAF8F3;
-  --color-surface-dark: #F2EFE7;
+  --color-navy-900: #FFFFFF;
+  --color-navy-800: #FFFFFF;
+  --color-navy-700: #EDEFFB;
+  --color-navy-600: #D8DCF5;
 
-  --color-border: #E5E2DA;
-  --color-border-strong: #D7D2C5;
-  --color-text-primary: #0F1419;
-  --color-text-secondary: #2A3F52;
-  --color-text-disabled: #8E9AAA;
-  --color-hover: rgba(15,20,25,0.04);
+  --color-success: #00805A;
+  --color-warning: #996800;
+  --color-error: #C62828;
+  --color-info: #0066CC;
+  --color-surface: #FFFFFF;
+  --color-surface-dark: #EDEFFB;
+
+  --color-border: #D8DCF5;
+  --color-border-strong: #C3C7EA;
+  --color-text-primary: #0D092A;
+  --color-text-secondary: #5E6582;
+  --color-text-disabled: #8087AC;
+  --color-hover: rgba(13,9,42,0.04);
 }
 
 @layer base {
@@ -108,12 +121,12 @@
     padding: 0 1px;
     transition: background-color 120ms ease;
     /* default = preferred, ocean palette */
-    background-color: rgba(27, 94, 143, 0.10);
-    border-bottom: 1px solid rgba(27, 94, 143, 0.55);
+    background-color: rgba(61,22,250, 0.10);
+    border-bottom: 1px solid rgba(61,22,250, 0.55);
   }
   .gloss-mark.gloss-preferred {
-    background-color: rgba(27, 94, 143, 0.10);
-    border-bottom: 1px solid rgba(27, 94, 143, 0.55);
+    background-color: rgba(61,22,250, 0.10);
+    border-bottom: 1px solid rgba(61,22,250, 0.55);
   }
   .gloss-mark.gloss-required {
     background-color: rgba(212, 134, 10, 0.14);
@@ -136,7 +149,7 @@
     filter: brightness(0.92) saturate(1.2);
   }
   .gloss-mark.gloss-preferred:hover,
-  .gloss-mark.gloss-preferred.gloss-active { background-color: rgba(27, 94, 143, 0.22); }
+  .gloss-mark.gloss-preferred.gloss-active { background-color: rgba(61,22,250, 0.22); }
   .gloss-mark.gloss-required:hover,
   .gloss-mark.gloss-required.gloss-active  { background-color: rgba(212, 134, 10, 0.30); }
   .gloss-mark.gloss-forbidden:hover,

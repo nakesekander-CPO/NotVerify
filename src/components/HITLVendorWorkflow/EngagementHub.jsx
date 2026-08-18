@@ -16,7 +16,7 @@ const BADGE_ICON = {
 const TIER_TONE = {
   ocean: 'bg-ocean/10 text-ocean border-ocean/30',
   teal:  'bg-teal/10 text-teal border-teal/30',
-  amber: 'bg-amber/15 text-amber-deep border-amber/30',
+  amber: 'bg-[#FFF7E6] text-[#996800] border-[#FFB000]/40',
   slate: 'bg-pale text-slate border-rule',
   mist:  'bg-rule/40 text-mist border-rule',
 }
@@ -67,7 +67,7 @@ export default function EngagementHub() {
       {/* ── Leaderboard ───────────────────────────────────────── */}
       <Card padding="p-0" className="mb-6">
         <div className="px-5 py-3 border-b border-rule flex items-center gap-2">
-          <Trophy className="w-4 h-4 text-amber" />
+          <Trophy className="w-4 h-4 text-[#FFBD59]" />
           <p className="text-[13px] font-semibold text-ink">Network leaderboard</p>
           <span className="ml-auto text-[11px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>arbitr Score · live ranking</span>
         </div>
@@ -76,16 +76,16 @@ export default function EngagementHub() {
         <div className="grid grid-cols-3 gap-4 px-5 py-5 bg-cream/40">
           {podium.map((p, i) => {
             const PodIcon = i === 0 ? Crown : Medal
-            const accent = i === 0 ? 'text-amber' : i === 1 ? 'text-slate' : 'text-amber-deep'
+            const accent = i === 0 ? 'text-[#FFBD59]' : i === 1 ? 'text-slate' : 'text-[#996800]'
             return (
-              <div key={p.vendorId} className={`rounded-lg border bg-white p-4 text-center ${i === 0 ? 'border-amber/40 shadow-sm -translate-y-1' : 'border-rule'}`}>
+              <div key={p.vendorId} className={`rounded-lg border bg-white p-4 text-center ${i === 0 ? 'border-[#FFB000]/40 shadow-sm -translate-y-1' : 'border-rule'}`}>
                 <PodIcon className={`w-6 h-6 mx-auto ${accent}`} />
                 <p className="text-[10px] uppercase tracking-wider text-mist mt-1" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>#{p.rank}</p>
                 <p className="text-[14px] font-semibold text-ink mt-1 truncate">{p.name}</p>
                 <p className="text-[22px] font-bold text-ink mt-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{p.score}</p>
                 <span className={`inline-block mt-1 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border ${TIER_TONE[p.tier.color]}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{p.tier.label}</span>
                 <div className="flex items-center justify-center gap-3 mt-2 text-[11px] text-mist">
-                  <span className="inline-flex items-center gap-1"><Flame className="w-3 h-3 text-amber-deep" />{p.streak}</span>
+                  <span className="inline-flex items-center gap-1"><Flame className="w-3 h-3 text-[#996800]" />{p.streak}</span>
                   <span>Lv {p.level}</span>
                   <DeltaPill delta={p.delta} />
                 </div>
@@ -104,7 +104,7 @@ export default function EngagementHub() {
                 <p className="text-[10.5px] text-mist">{p.region} · {p.type} · {p.taskCount} task{p.taskCount === 1 ? '' : 's'}</p>
               </div>
               <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border ${TIER_TONE[p.tier.color]}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{p.tier.label}</span>
-              <span className="inline-flex items-center gap-1 text-amber-deep"><Flame className="w-3.5 h-3.5" />{p.streak}</span>
+              <span className="inline-flex items-center gap-1 text-[#996800]"><Flame className="w-3.5 h-3.5" />{p.streak}</span>
               <DeltaPill delta={p.delta} />
               <span className="font-bold text-ink tabular-nums" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{p.score}</span>
             </li>
@@ -116,7 +116,7 @@ export default function EngagementHub() {
         {/* ── Tier ladder ─────────────────────────────────────── */}
         <Card padding="p-0">
           <div className="px-5 py-3 border-b border-rule flex items-center gap-2">
-            <Star className="w-4 h-4 text-amber" />
+            <Star className="w-4 h-4 text-[#FFBD59]" />
             <p className="text-[13px] font-semibold text-ink">Tier ladder</p>
           </div>
           <ul className="px-5 py-4 space-y-2.5">
@@ -140,7 +140,7 @@ export default function EngagementHub() {
           <ul className="px-5 py-3">
             {teams.map((t, i) => (
               <li key={t.region} className="py-3 border-b border-rule last:border-b-0 flex items-center gap-3">
-                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold ${i === 0 ? 'bg-amber/20 text-amber-deep' : 'bg-pale text-slate'}`} style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{i + 1}</span>
+                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold ${i === 0 ? 'bg-[#FFEFD1] text-[#996800]' : 'bg-pale text-slate'}`} style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{i + 1}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-semibold text-ink">{t.region}</p>
                   <p className="text-[10.5px] text-mist">{t.members} member{t.members === 1 ? '' : 's'} · top: {t.topPlayer}</p>
@@ -155,7 +155,7 @@ export default function EngagementHub() {
       {/* ── Badge gallery ─────────────────────────────────────── */}
       <Card padding="p-0" className="mb-6">
         <div className="px-5 py-3 border-b border-rule flex items-center gap-2">
-          <Award className="w-4 h-4 text-amber" />
+          <Award className="w-4 h-4 text-[#FFBD59]" />
           <p className="text-[13px] font-semibold text-ink">Achievement badges</p>
           <span className="ml-auto text-[11px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>earned across the network</span>
         </div>
@@ -164,9 +164,9 @@ export default function EngagementHub() {
             const Icon = BADGE_ICON[b.icon] || Award
             const earned = b.earnedCount > 0
             return (
-              <div key={b.id} className={`rounded-lg border p-3 ${earned ? 'border-amber/30 bg-amber/5' : 'border-rule bg-pale/40 opacity-70'}`}>
+              <div key={b.id} className={`rounded-lg border p-3 ${earned ? 'border-[#FFB000]/40 bg-[#FFFBF2]' : 'border-rule bg-pale/40 opacity-70'}`}>
                 <div className="flex items-center justify-between">
-                  <Icon className={`w-5 h-5 ${earned ? 'text-amber-deep' : 'text-mist'}`} />
+                  <Icon className={`w-5 h-5 ${earned ? 'text-[#996800]' : 'text-mist'}`} />
                   <span className="text-[11px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{b.earnedCount}</span>
                 </div>
                 <p className="text-[12.5px] font-semibold text-ink mt-2">{b.name}</p>
@@ -191,7 +191,7 @@ export default function EngagementHub() {
                   <p className="text-[13px] font-semibold text-ink">{c.name}</p>
                   <p className="text-[11.5px] text-slate mt-0.5">{c.desc}</p>
                 </div>
-                <span className="inline-flex items-center gap-1 text-[11px] text-amber-deep shrink-0" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                <span className="inline-flex items-center gap-1 text-[11px] text-[#996800] shrink-0" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
                   <Gift className="w-3.5 h-3.5" />{c.reward}
                 </span>
               </div>
@@ -216,8 +216,8 @@ export default function EngagementHub() {
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {custValue?.map(m => (
-              <div key={m.id} className={`rounded-lg border p-4 ${m.tone === 'teal' ? 'border-teal/30 bg-teal/5' : m.tone === 'ocean' ? 'border-ocean/30 bg-ocean/5' : 'border-amber/30 bg-amber/5'}`}>
-                <p className={`text-[24px] font-bold ${m.tone === 'teal' ? 'text-teal' : m.tone === 'ocean' ? 'text-ocean' : 'text-amber-deep'}`} style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{m.value}</p>
+              <div key={m.id} className={`rounded-lg border p-4 ${m.tone === 'teal' ? 'border-teal/30 bg-teal/5' : m.tone === 'ocean' ? 'border-ocean/30 bg-ocean/5' : 'border-[#FFB000]/40 bg-[#FFFBF2]'}`}>
+                <p className={`text-[24px] font-bold ${m.tone === 'teal' ? 'text-teal' : m.tone === 'ocean' ? 'text-ocean' : 'text-[#996800]'}`} style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{m.value}</p>
                 <p className="text-[12px] font-semibold text-ink mt-1">{m.label}</p>
                 <p className="text-[10.5px] text-mist mt-0.5 leading-snug">{m.sub}</p>
               </div>

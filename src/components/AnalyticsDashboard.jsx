@@ -48,7 +48,7 @@ const CREDIT_BY_WORKFLOW = [
 
 /* ─── Sparkline ──────────────────────────────────────────────── */
 
-function Sparkline({ data, color = '#009eda', height = 32, width = 100 }) {
+function Sparkline({ data, color = '#3D16FA', height = 32, width = 100 }) {
   const max = Math.max(...data)
   const min = Math.min(...data)
   const range = max - min || 1
@@ -62,7 +62,7 @@ function Sparkline({ data, color = '#009eda', height = 32, width = 100 }) {
 
 /* ─── Bar Chart ──────────────────────────────────────────────── */
 
-function HorizontalBar({ label, value, maxValue, color = 'bg-[#009eda]', suffix = '' }) {
+function HorizontalBar({ label, value, maxValue, color = 'bg-[#3D16FA]', suffix = '' }) {
   const pct = Math.round((value / maxValue) * 100)
   return (
     <div className="flex items-center gap-3">
@@ -77,7 +77,7 @@ function HorizontalBar({ label, value, maxValue, color = 'bg-[#009eda]', suffix 
 
 /* ─── Metric Card ────────────────────────────────────────────── */
 
-function MetricCard({ icon: Icon, label, value, sub, trend, trendColor, sparkData, sparkColor, iconColor = 'text-[#009eda]', iconBg = 'bg-[#009eda]/10' }) {
+function MetricCard({ icon: Icon, label, value, sub, trend, trendColor, sparkData, sparkColor, iconColor = 'text-[#3D16FA]', iconBg = 'bg-[#3D16FA]/10' }) {
   return (
     <div className="rounded-xl border border-black/[0.08] bg-white p-4 flex items-start gap-3">
       <div className={`w-9 h-9 rounded-lg ${iconBg} flex items-center justify-center shrink-0`}>
@@ -94,7 +94,7 @@ function MetricCard({ icon: Icon, label, value, sub, trend, trendColor, sparkDat
           </p>
         )}
       </div>
-      {sparkData && <Sparkline data={sparkData} color={sparkColor || '#009eda'} />}
+      {sparkData && <Sparkline data={sparkData} color={sparkColor || '#3D16FA'} />}
     </div>
   )
 }
@@ -195,7 +195,7 @@ export default function AnalyticsDashboard({ onBack }) {
         {/* Cortex reuse */}
         <div className="rounded-xl border border-black/[0.08] bg-white p-5">
           <div className="flex items-center gap-2 mb-4">
-            <Brain className="w-4 h-4 text-[#009eda]" />
+            <Brain className="w-4 h-4 text-[#3D16FA]" />
             <h3 className="text-[12px] font-semibold uppercase tracking-widest text-gray-400">Cortex reuse</h3>
           </div>
           <div className="space-y-3">
@@ -206,14 +206,14 @@ export default function AnalyticsDashboard({ onBack }) {
                   <span className="text-[11px] font-medium text-gray-500">{domain.reused} / {domain.entries} entries &middot; {domain.rate}%</span>
                 </div>
                 <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full bg-[#009eda]" style={{ width: `${domain.rate}%` }} />
+                  <div className="h-full rounded-full bg-[#3D16FA]" style={{ width: `${domain.rate}%` }} />
                 </div>
               </div>
             ))}
           </div>
           <div className="mt-4 pt-3 border-t border-black/[0.06] flex items-center justify-between">
             <span className="text-[11px] text-gray-500">Overall reuse rate</span>
-            <span className="text-[14px] font-bold text-[#009eda]">67%</span>
+            <span className="text-[14px] font-bold text-[#3D16FA]">67%</span>
           </div>
         </div>
 
@@ -225,7 +225,7 @@ export default function AnalyticsDashboard({ onBack }) {
           </div>
           <div className="space-y-3">
             {CREDIT_BY_WORKFLOW.map(wf => (
-              <HorizontalBar key={wf.workflow} label={wf.workflow} value={wf.credits} maxValue={2000} suffix=" cr" color={wf.workflow.includes('Human') ? 'bg-amber-400' : wf.workflow.includes('Content') ? 'bg-emerald-400' : 'bg-[#009eda]'} />
+              <HorizontalBar key={wf.workflow} label={wf.workflow} value={wf.credits} maxValue={2000} suffix=" cr" color={wf.workflow.includes('Human') ? 'bg-amber-400' : wf.workflow.includes('Content') ? 'bg-emerald-400' : 'bg-[#3D16FA]'} />
             ))}
           </div>
           <div className="mt-4 pt-3 border-t border-black/[0.06] flex items-center justify-between">

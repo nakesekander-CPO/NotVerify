@@ -84,7 +84,7 @@ export default function AgentAnalytics({ agentId, go }) {
           <Card>
             <div className="flex items-center justify-between">
               <MonoLabel>Credit consumption</MonoLabel>
-              <span className="text-[13px] text-ink font-semibold inline-flex items-center gap-1" style={{ fontFamily: "'IBM Plex Mono', monospace" }}><Coins className="w-3.5 h-3.5 text-amber-deep" /> {m.credits.toLocaleString()}</span>
+              <span className="text-[13px] text-ink font-semibold inline-flex items-center gap-1" style={{ fontFamily: "'IBM Plex Mono', monospace" }}><Coins className="w-3.5 h-3.5 text-[#996800]" /> {m.credits.toLocaleString()}</span>
             </div>
             <p className="text-[11px] text-mist mt-1">Intelligence Credits across {m.total} runs</p>
           </Card>
@@ -100,7 +100,7 @@ export default function AgentAnalytics({ agentId, go }) {
             <MonoLabel>Top failure reasons</MonoLabel>
             {failureReasons.length === 0 ? <p className="text-[12px] text-teal mt-2">No failures in this window.</p> : (
               <ul className="mt-2 space-y-1.5">{failureReasons.map((f, i) => (
-                <li key={i} className="text-[12px] text-slate flex items-center justify-between"><span className="inline-flex items-center gap-1.5"><ShieldAlert className="w-3 h-3 text-amber-deep" /> {f.label}</span><span className="text-mist">{f.n}</span></li>
+                <li key={i} className="text-[12px] text-slate flex items-center justify-between"><span className="inline-flex items-center gap-1.5"><ShieldAlert className="w-3 h-3 text-[#996800]" /> {f.label}</span><span className="text-mist">{f.n}</span></li>
               ))}</ul>
             )}
           </Card>
@@ -156,7 +156,7 @@ export default function AgentAnalytics({ agentId, go }) {
 }
 
 function Kpi({ icon: Icon, label, value, tone }) {
-  const t = tone === 'teal' ? 'text-teal' : tone === 'amber' ? 'text-amber-deep' : 'text-ink'
+  const t = tone === 'teal' ? 'text-teal' : tone === 'amber' ? 'text-[#996800]' : 'text-ink'
   return (
     <Card padding="p-4">
       <div className="flex items-center gap-1.5 text-mist"><Icon className="w-3.5 h-3.5" /><MonoLabel>{label}</MonoLabel></div>

@@ -52,7 +52,7 @@ function EnsembleDropdown({ value, onChange, docType }) {
               key={t.id}
               type="button"
               onClick={() => { onChange(t.id); setOpen(false); }}
-              className={`w-full text-left flex items-center gap-2 px-3 py-2 text-[12px] transition-colors cursor-pointer ${value === t.id ? 'bg-[#009eda]/[0.06] text-[#009eda] font-medium' : 'text-gray-700 hover:bg-black/[0.03]'}`}
+              className={`w-full text-left flex items-center gap-2 px-3 py-2 text-[12px] transition-colors cursor-pointer ${value === t.id ? 'bg-[#3D16FA]/[0.06] text-[#3D16FA] font-medium' : 'text-gray-700 hover:bg-black/[0.03]'}`}
             >
               {t.name}
               {checkEnsembleMismatch(t.id, docType) && (
@@ -89,7 +89,7 @@ export default function PreflightTable({
                 checked={allSelected}
                 ref={el => { if (el) el.indeterminate = someSelected; }}
                 onChange={onToggleSelectAll}
-                className="cursor-pointer accent-[#009eda]"
+                className="cursor-pointer accent-[#3D16FA]"
               />
             </th>
             <th className="px-3 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-gray-500 w-8">#</th>
@@ -109,7 +109,7 @@ export default function PreflightTable({
             return (
               <tr
                 key={doc.id}
-                className={`border-b border-black/[0.05] last:border-0 transition-colors ${isSelected ? 'bg-[#009eda]/[0.03]' : 'hover:bg-black/[0.015]'}`}
+                className={`border-b border-black/[0.05] last:border-0 transition-colors ${isSelected ? 'bg-[#3D16FA]/[0.03]' : 'hover:bg-black/[0.015]'}`}
               >
                 {/* Checkbox */}
                 <td className="px-3 py-3">
@@ -117,7 +117,7 @@ export default function PreflightTable({
                     type="checkbox"
                     checked={isSelected}
                     onChange={() => onToggleSelect(doc.id)}
-                    className="cursor-pointer accent-[#009eda]"
+                    className="cursor-pointer accent-[#3D16FA]"
                   />
                 </td>
 

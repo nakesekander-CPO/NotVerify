@@ -34,8 +34,8 @@ export default function Outcomes() {
         ))}
       </div>
 
-      <div className="rounded-lg border border-amber/30 bg-amber/10 px-3.5 py-2">
-        <p className="text-[11.5px] text-amber-deep">Levels A–D are reported separately. arbitr does not aggregate them into a single causal “AI revenue” total.</p>
+      <div className="rounded-lg border border-[#FFB000]/40 bg-[#FFF7E6] px-3.5 py-2">
+        <p className="text-[11.5px] text-[#996800]">Levels A–D are reported separately. arbitr does not aggregate them into a single causal “AI revenue” total.</p>
       </div>
 
       <Card padding="p-0">

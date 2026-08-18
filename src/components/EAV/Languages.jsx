@@ -38,7 +38,7 @@ export default function Languages() {
                     <td className="px-4 py-3 w-[220px]"><Bar v={l.prominence} /></td>
                     <td className="px-4 py-3 w-[220px]"><Bar v={l.accuracy} /></td>
                     <td className="px-4 py-3">
-                      <span className={`text-[12px] font-medium ${p >= 70 ? 'text-teal' : p >= 40 ? 'text-amber-deep' : 'text-error'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{p}%</span>
+                      <span className={`text-[12px] font-medium ${p >= 70 ? 'text-teal' : p >= 40 ? 'text-[#996800]' : 'text-error'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{p}%</span>
                     </td>
                   </tr>
                 )

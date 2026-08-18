@@ -31,7 +31,7 @@ export default function EdgeCasesPill({ segment, onOpen }) {
   const highest = blocking.length ? 'high' : (cases.some(c => c.severity === 'medium') ? 'medium' : 'low')
   const tone =
     highest === 'high'   ? 'bg-error/10  text-error      border-error/40'   :
-    highest === 'medium' ? 'bg-amber/10  text-amber-deep border-amber/40'   :
+    highest === 'medium' ? 'bg-[#FFF7E6]  text-[#996800] border-[#FFB000]/40'   :
                            'bg-ocean/10  text-ocean      border-ocean/40'
   return (
     <button

@@ -437,7 +437,7 @@ function DocumentReadingView({ project, segments, activeIdx, onJump }) {
                 <p
                   onClick={() => setOpenIdx(isOpen ? null : i)}
                   className={`relative cursor-pointer rounded-md transition-colors px-2 -mx-2 ${
-                    isOpen ? 'bg-ocean/5 ring-1 ring-ocean/30' : isActive ? 'bg-amber/5' : 'hover:bg-pale/60'
+                    isOpen ? 'bg-ocean/5 ring-1 ring-ocean/30' : isActive ? 'bg-[#FFFBF2]' : 'hover:bg-pale/60'
                   }`}
                 >
                   <span className={`inline-block w-1.5 h-1.5 rounded-full mr-2 align-middle ${dotClass}`} />
@@ -448,7 +448,7 @@ function DocumentReadingView({ project, segments, activeIdx, onJump }) {
                     <div className="flex items-center justify-between mb-2 text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
                       <span>SEG-{String(i + 1).padStart(3, '0')} · {decision}</span>
                       {s.flagCategories?.length > 0 && (
-                        <span className="inline-flex items-center gap-1 text-amber-deep">
+                        <span className="inline-flex items-center gap-1 text-[#996800]">
                           <Flag className="w-3 h-3" /> {s.flagCategories.join(' · ')}
                         </span>
                       )}
@@ -947,7 +947,7 @@ export default function QuickReviewWorkspace({
             <p className="text-[13px] font-semibold text-ink truncate">{task?.title || project?.name}</p>
             <p className="text-[10.5px] text-mist truncate" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
               {project?.requirements.sourceLanguage?.toUpperCase()} → {project?.requirements.targetLanguages?.[0]?.toUpperCase()}
-              {totalFlagged > 0 && <> · <span className={flaggedDone === totalFlagged ? 'text-teal' : 'text-amber-deep'}>{flaggedDone} of {totalFlagged} flagged resolved</span></>}
+              {totalFlagged > 0 && <> · <span className={flaggedDone === totalFlagged ? 'text-teal' : 'text-[#996800]'}>{flaggedDone} of {totalFlagged} flagged resolved</span></>}
               {' · '}{doneSeg}/{totalSeg} done
             </p>
           </div>
@@ -1123,12 +1123,12 @@ export default function QuickReviewWorkspace({
                       <button
                         onClick={() => setActiveIdx(i)}
                         className={`w-full text-left px-3 py-2 text-[12.5px] cursor-pointer flex items-start gap-2 border-l-2 ${
-                          isActive ? 'border-l-amber bg-amber/5 text-ink' : 'border-l-transparent hover:bg-pale/40 text-slate'
+                          isActive ? 'border-l-amber bg-[#FFFBF2] text-ink' : 'border-l-transparent hover:bg-pale/40 text-slate'
                         }`}
                       >
                         <span className="shrink-0 w-3.5 inline-flex justify-center mt-0.5">
                           {done && <Check className="w-3.5 h-3.5 text-teal" />}
-                          {!done && hasOpen && <AlertTriangle className="w-3.5 h-3.5 text-amber-deep" />}
+                          {!done && hasOpen && <AlertTriangle className="w-3.5 h-3.5 text-[#996800]" />}
                         </span>
                         <span className="font-mono text-mist w-6 text-right shrink-0" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{i + 1}</span>
                         <span className="leading-snug">{s.source.slice(0, 110)}{s.source.length > 110 ? '…' : ''}</span>
@@ -1194,9 +1194,9 @@ export default function QuickReviewWorkspace({
                 <div className="flex items-center justify-between mt-1.5 gap-2">
                   <p className="text-[11px] text-mist">
                     {escArmed
-                      ? <span className="text-amber-deep">Press Esc again to discard edits</span>
+                      ? <span className="text-[#996800]">Press Esc again to discard edits</span>
                       : qa.length > 0
-                        ? <><span className="text-amber-deep">{qa.length} issue{qa.length === 1 ? '' : 's'}</span> · see Live QA →</>
+                        ? <><span className="text-[#996800]">{qa.length} issue{qa.length === 1 ? '' : 's'}</span> · see Live QA →</>
                         : isDirty
                           ? <>Edited · ↩ save flagged · ⌘↩ save next</>
                           : <>No issues detected · accept to confirm</>}
@@ -1243,7 +1243,7 @@ export default function QuickReviewWorkspace({
                   </button>
                 )}
                 {!target.trim() && (
-                  <span className="inline-flex items-center gap-1.5 text-[12px] text-amber-deep">
+                  <span className="inline-flex items-center gap-1.5 text-[12px] text-[#996800]">
                     <AlertTriangle className="w-3.5 h-3.5" /> Target is empty
                   </span>
                 )}
@@ -1277,7 +1277,7 @@ export default function QuickReviewWorkspace({
               <PanelRow key={m.id} active={focusedPanel === 'tm' && i === focusedIdx} onClick={() => applyTM(m)}>
                 <div className="flex items-center justify-between mb-1">
                   <span className="inline-flex items-center gap-1.5">
-                    <span className={`text-[11px] font-mono px-1.5 py-0.5 rounded ${m.matchRatio >= 0.75 ? 'bg-teal/10 text-teal' : m.matchRatio >= 0.4 ? 'bg-ocean/10 text-ocean' : 'bg-amber/10 text-amber-deep'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                    <span className={`text-[11px] font-mono px-1.5 py-0.5 rounded ${m.matchRatio >= 0.75 ? 'bg-teal/10 text-teal' : m.matchRatio >= 0.4 ? 'bg-ocean/10 text-ocean' : 'bg-[#FFF7E6] text-[#996800]'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
                       {(m.matchRatio * 100).toFixed(0)}%
                     </span>
                     {i === 0 && (
@@ -1298,7 +1298,7 @@ export default function QuickReviewWorkspace({
           <Panel
             id="tb"
             icon={BookOpen}
-            iconClass="text-amber-deep"
+            iconClass="text-[#996800]"
             title={`Live TB · ${hits.length} term${hits.length === 1 ? '' : 's'}`}
             shortcut={<><Kbd>G</Kbd> focus · <Kbd>⇧G</Kbd> next · <Kbd>⌘1..9</Kbd> apply</>}
             isFocused={focusedPanel === 'tb'}
@@ -1323,7 +1323,7 @@ export default function QuickReviewWorkspace({
                   {h.usageNote && (
                     <p className="text-[10.5px] text-mist mt-1 italic">{h.usageNote}</p>
                   )}
-                  <p className={`text-[10.5px] mt-1 ${inTarget ? 'text-teal' : 'text-amber-deep'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                  <p className={`text-[10.5px] mt-1 ${inTarget ? 'text-teal' : 'text-[#996800]'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
                     {inTarget ? 'in target' : 'not yet in target'}
                   </p>
                 </PanelRow>
@@ -1349,7 +1349,7 @@ export default function QuickReviewWorkspace({
                 {visibleQa.map((issue, i) => (
                   <PanelRow key={issue.id} active={focusedPanel === 'qa' && i === focusedIdx} onClick={() => { if (issue.glossary) applyGlossaryFix(issue.glossary); else editorRef.current?.focus() }}>
                     <div className="flex items-start gap-2">
-                      <AlertTriangle className="w-3.5 h-3.5 text-amber-deep shrink-0 mt-0.5" />
+                      <AlertTriangle className="w-3.5 h-3.5 text-[#996800] shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
                         <p className="text-[12px] font-semibold text-ink">{issue.label}</p>
                         <p className="text-[11.5px] text-slate mt-0.5 leading-relaxed">{issue.detail}</p>
@@ -1564,7 +1564,7 @@ function SageFab({ open, onOpen, onClose }) {
 function glossPillClass(status) {
   switch (status) {
     case 'forbidden': return 'bg-error/10 text-error border border-error/30'
-    case 'required':  return 'bg-amber/15 text-amber-deep border border-amber/40'
+    case 'required':  return 'bg-[#FFF7E6] text-[#996800] border border-[#FFB000]/40'
     case 'dnt':       return 'bg-slate/10 text-slate border border-slate/30'
     case 'preferred': return 'bg-ocean/10 text-ocean border border-ocean/30'
     default:          return 'bg-pale text-mist border border-rule'

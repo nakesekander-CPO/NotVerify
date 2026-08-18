@@ -39,8 +39,8 @@ const STATUS_TONE = {
   active: { bg: 'bg-teal/10', text: 'text-teal', border: 'border-teal/30', icon: Check },
   'in-progress': { bg: 'bg-sky/15', text: 'text-ocean', border: 'border-ocean/20', icon: Clock },
   'in-vendor-review': { bg: 'bg-sky/15', text: 'text-ocean', border: 'border-ocean/20', icon: Clock },
-  'awaiting-approval': { bg: 'bg-amber/15', text: 'text-amber-deep', border: 'border-amber/30', icon: AlertTriangle },
-  'vendor-assignment-awaiting-approval': { bg: 'bg-amber/15', text: 'text-amber-deep', border: 'border-amber/30', icon: AlertTriangle },
+  'awaiting-approval': { bg: 'bg-[#FFF7E6]', text: 'text-[#996800]', border: 'border-[#FFB000]/40', icon: AlertTriangle },
+  'vendor-assignment-awaiting-approval': { bg: 'bg-[#FFF7E6]', text: 'text-[#996800]', border: 'border-[#FFB000]/40', icon: AlertTriangle },
   'vendor-recommended': { bg: 'bg-pale', text: 'text-ocean', border: 'border-ocean/20', icon: Clock },
   'vendor-auto-assigned': { bg: 'bg-teal/10', text: 'text-teal', border: 'border-teal/30', icon: Check },
   pending: { bg: 'bg-rule/50', text: 'text-slate', border: 'border-rule-strong', icon: Clock },
@@ -55,7 +55,7 @@ const STATUS_TONE = {
   locked: { bg: 'bg-slate/10', text: 'text-slate', border: 'border-slate/30', icon: Lock },
   high: { bg: 'bg-error/10', text: 'text-error', border: 'border-error/30', icon: AlertTriangle },
   critical: { bg: 'bg-error/15', text: 'text-error', border: 'border-error/40', icon: AlertTriangle },
-  medium: { bg: 'bg-amber/15', text: 'text-amber-deep', border: 'border-amber/30', icon: AlertTriangle },
+  medium: { bg: 'bg-[#FFF7E6]', text: 'text-[#996800]', border: 'border-[#FFB000]/40', icon: AlertTriangle },
   low: { bg: 'bg-teal/10', text: 'text-teal', border: 'border-teal/30', icon: Check },
 }
 

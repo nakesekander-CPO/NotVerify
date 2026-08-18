@@ -144,7 +144,7 @@ export default function FinalSignOff({ activeProjectId, currentUserId, navigate,
                         title={`Open ${o.segmentId} in the review workspace`}
                         className="group w-full flex items-center gap-2 rounded-md px-2 py-1 -mx-2 cursor-pointer hover:bg-pale/70 focus:outline-none focus:ring-2 focus:ring-ocean/30 transition-colors"
                       >
-                        <AlertTriangle className="w-3.5 h-3.5 text-amber shrink-0" />
+                        <AlertTriangle className="w-3.5 h-3.5 text-[#FFBD59] shrink-0" />
                         <span className="font-mono text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{o.segmentId}</span>
                         <span className="text-slate">{o.decision}</span>
                         <span className="ml-auto inline-flex items-center gap-1 text-[10.5px] text-ocean opacity-0 group-hover:opacity-100 transition-opacity" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
@@ -161,7 +161,7 @@ export default function FinalSignOff({ activeProjectId, currentUserId, navigate,
 
         <Card padding="p-0">
           <div className="px-5 py-3 border-b border-rule flex items-center gap-2">
-            <BadgeCheck className="w-4 h-4 text-amber" />
+            <BadgeCheck className="w-4 h-4 text-[#FFBD59]" />
             <p className="text-[13px] font-semibold text-ink">Sign-off controls</p>
           </div>
           <div className="px-5 py-4 space-y-4">
@@ -222,7 +222,7 @@ export default function FinalSignOff({ activeProjectId, currentUserId, navigate,
 }
 
 function Row({ label, value, tone, onJump }) {
-  const palette = { teal: 'text-teal', ocean: 'text-ocean', error: 'text-error', amber: 'text-amber-deep', slate: 'text-slate', mist: 'text-mist' }
+  const palette = { teal: 'text-teal', ocean: 'text-ocean', error: 'text-error', amber: 'text-[#996800]', slate: 'text-slate', mist: 'text-mist' }
   const clickable = typeof onJump === 'function' && value > 0
   return (
     <li>

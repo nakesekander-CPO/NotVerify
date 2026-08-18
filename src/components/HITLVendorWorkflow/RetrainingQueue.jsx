@@ -60,12 +60,12 @@ export default function RetrainingQueue({ currentUserId }) {
               <Card padding="p-0">
                 <div className="px-5 py-3 border-b border-rule flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <GraduationCap className="w-4 h-4 text-amber" />
+                    <GraduationCap className="w-4 h-4 text-[#FFBD59]" />
                     <p className="text-[13px] font-semibold text-ink">{c.id}</p>
                     <StatusBadge status={c.status} />
                     {c.eligibleTM && <span className="text-[10.5px] text-teal bg-teal/10 px-2 py-0.5 rounded-full">TM eligible</span>}
                     {c.eligibleTerminology && <span className="text-[10.5px] text-ocean bg-ocean/10 px-2 py-0.5 rounded-full">Terminology eligible</span>}
-                    {c.eligibleModel && <span className="text-[10.5px] text-amber-deep bg-amber/15 px-2 py-0.5 rounded-full">Model (RLHF) eligible</span>}
+                    {c.eligibleModel && <span className="text-[10.5px] text-[#996800] bg-[#FFF7E6] px-2 py-0.5 rounded-full">Model (RLHF) eligible</span>}
                   </div>
                   <span className="text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{c.domain} · {c.language} · {c.errorCategory}</span>
                 </div>

@@ -51,7 +51,7 @@ export default function BulkEditBar({ selectedCount, campaignLocales, onApply, o
                 key={t.id}
                 type="button"
                 onClick={() => { setEnsembleId(t.id); setShowEnsembleMenu(false); }}
-                className={`w-full text-left flex items-center gap-2 px-3 py-2.5 text-[12px] transition-colors cursor-pointer ${ensembleId === t.id ? 'bg-[#009eda]/20 text-[#009eda]' : 'text-gray-200 hover:bg-white/10'}`}
+                className={`w-full text-left flex items-center gap-2 px-3 py-2.5 text-[12px] transition-colors cursor-pointer ${ensembleId === t.id ? 'bg-[#3D16FA]/20 text-[#3D16FA]' : 'text-gray-200 hover:bg-white/10'}`}
               >
                 {t.name}
                 {ensembleId === t.id && <CheckCircle2 size={12} className="ml-auto" />}
@@ -79,7 +79,7 @@ export default function BulkEditBar({ selectedCount, campaignLocales, onApply, o
                   key={locale}
                   type="button"
                   onClick={() => toggleLocale(locale)}
-                  className={`w-full text-left flex items-center gap-2 px-3 py-2.5 text-[12px] transition-colors cursor-pointer ${selectedLocales.includes(locale) ? 'bg-[#009eda]/20 text-[#009eda]' : 'text-gray-200 hover:bg-white/10'}`}
+                  className={`w-full text-left flex items-center gap-2 px-3 py-2.5 text-[12px] transition-colors cursor-pointer ${selectedLocales.includes(locale) ? 'bg-[#3D16FA]/20 text-[#3D16FA]' : 'text-gray-200 hover:bg-white/10'}`}
                 >
                   {locale.toUpperCase()}
                   {selectedLocales.includes(locale) && <CheckCircle2 size={12} className="ml-auto" />}
@@ -95,7 +95,7 @@ export default function BulkEditBar({ selectedCount, campaignLocales, onApply, o
         type="button"
         onClick={handleApply}
         disabled={!canApply}
-        className={`text-[12px] font-semibold px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer ${canApply ? 'bg-[#009eda] text-white hover:bg-[#007bb5]' : 'bg-white/10 text-gray-500 cursor-not-allowed'}`}
+        className={`text-[12px] font-semibold px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer ${canApply ? 'bg-[#3D16FA] text-white hover:bg-[#007bb5]' : 'bg-white/10 text-gray-500 cursor-not-allowed'}`}
       >
         Apply
       </button>

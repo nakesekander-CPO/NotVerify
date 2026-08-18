@@ -58,7 +58,7 @@ export default function AgentConfiguration({ agentId, go }) {
       />
 
       {hasDraft && (
-        <div className="flex items-center gap-2 text-[12px] text-amber-deep bg-amber/10 border border-amber/30 rounded-lg px-3 py-2">
+        <div className="flex items-center gap-2 text-[12px] text-[#996800] bg-[#FFF7E6] border border-[#FFB000]/40 rounded-lg px-3 py-2">
           <Info className="w-3.5 h-3.5 shrink-0" /> You’re editing an unpublished <strong>draft (v{v.versionNumber})</strong>. The live version stays unchanged until you publish.
         </div>
       )}

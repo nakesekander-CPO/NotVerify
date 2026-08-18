@@ -226,9 +226,9 @@ function AuditTrailPanel({ item, audit }) {
         <div>
           <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Knowledge Base Evidence</h4>
           <div className="flex items-center gap-2 text-sm text-gray-700">
-            <Database className="h-4 w-4 text-[#1B5E8F] shrink-0" />
+            <Database className="h-4 w-4 text-[#3D16FA] shrink-0" />
             <span>
-              Matched against <span className="font-[JetBrains_Mono] text-gray-900">{audit.kbMatches}</span> entries in <span className="text-[#1B5E8F]">{audit.kbSource}</span>
+              Matched against <span className="font-[JetBrains_Mono] text-gray-900">{audit.kbMatches}</span> entries in <span className="text-[#3D16FA]">{audit.kbSource}</span>
             </span>
           </div>
         </div>
@@ -511,7 +511,7 @@ export default function IntelligenceTriage({ onApprove }) {
         transition={reduced ? { duration: 0 } : SPRING}
       >
         <div className="flex items-center gap-2">
-          <Brain className="h-5 w-5 text-[#1B5E8F]" />
+          <Brain className="h-5 w-5 text-[#3D16FA]" />
           <h2 className="text-lg font-semibold text-gray-900">Cumulative Intelligence Triage</h2>
         </div>
         <p className="mt-1 text-sm text-gray-500">
@@ -537,7 +537,7 @@ export default function IntelligenceTriage({ onApprove }) {
           <select
             value={autoThreshold}
             onChange={handleThresholdChange}
-            className="rounded-lg border border-black/[0.12] bg-[#ffffff] px-3 py-1.5 text-sm font-medium text-gray-900 outline-none transition-colors hover:border-black/[0.20] focus:border-[#1B5E8F]/50"
+            className="rounded-lg border border-black/[0.12] bg-[#ffffff] px-3 py-1.5 text-sm font-medium text-gray-900 outline-none transition-colors hover:border-black/[0.20] focus:border-[#3D16FA]/50"
           >
             {THRESHOLD_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>

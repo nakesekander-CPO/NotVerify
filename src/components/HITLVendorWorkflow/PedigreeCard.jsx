@@ -57,7 +57,7 @@ export function DocumentPedigreeCard({ pedigree }) {
           score={(pedigree.modelConfidence * 100).toFixed(1)}
           tone="ocean"
           desc="Composite of accepted agents' confidence on this document."
-          sparkline={<TrustSparkline values={series.modelConfidence} color="#1B5E8F" />}
+          sparkline={<TrustSparkline values={series.modelConfidence} color="#3D16FA" />}
         />
         <Axis
           icon={BadgeCheck}
@@ -116,13 +116,13 @@ export function SegmentPedigreeCard({ pedigree }) {
   return (
     <div className={
       sealed
-        ? 'rounded-md p-4 relative overflow-hidden bg-slate text-cream border border-amber/40 shadow-[inset_0_0_0_1px_rgba(212,134,10,0.25)]'
+        ? 'rounded-md p-4 relative overflow-hidden bg-slate text-cream border border-[#FFB000]/40 shadow-[inset_0_0_0_1px_rgba(212,134,10,0.25)]'
         : 'bg-cream/60 border border-rule rounded-md p-4'
     } style={sealed ? { backgroundImage: 'linear-gradient(135deg, #2A3F52 0%, #1B2A37 100%)' } : undefined}>
       {/* Wax-seal ornament */}
       {sealed && (
-        <div className="absolute top-3 right-3 w-8 h-8 rounded-full border-2 border-amber/60 flex items-center justify-center text-amber"
-             style={{ background: 'radial-gradient(circle at 30% 30%, #D4860A, #8a5408)' }}>
+        <div className="absolute top-3 right-3 w-8 h-8 rounded-full border-2 border-[#FFB000]/60 flex items-center justify-center text-[#FFBD59]"
+             style={{ background: 'radial-gradient(circle at 30% 30%, #B3843E, #8a5408)' }}>
           <span className="text-[10px] font-semibold text-cream" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>ar</span>
         </div>
       )}
@@ -130,7 +130,7 @@ export function SegmentPedigreeCard({ pedigree }) {
         <span className={`text-[10.5px] uppercase tracking-[0.16em] ${sealed ? 'text-amber/80' : 'text-slate'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
           {sealed ? 'Segment Pedigree · Sealed' : 'Segment Pedigree'}
         </span>
-        <span className={`text-[11px] font-semibold ${sealed ? 'text-amber' : DEPTH_TONE[pedigree.depth]}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+        <span className={`text-[11px] font-semibold ${sealed ? 'text-[#FFBD59]' : DEPTH_TONE[pedigree.depth]}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
           {DEPTH_LABEL[pedigree.depth].toUpperCase()} · {pedigree.composite}
         </span>
       </div>
@@ -147,9 +147,9 @@ export function SegmentPedigreeCard({ pedigree }) {
       {(pedigree.rationaleTags.length > 0 || pedigree.voiceRationaleId) && (
         <div className="flex flex-wrap items-center gap-1.5 mt-3">
           {pedigree.rationaleTags.map(t => (
-            <span key={t} className={`px-1.5 py-0.5 rounded-full text-[10.5px] ${sealed ? 'bg-amber/15 text-amber border border-amber/30' : 'bg-ocean/10 text-ocean'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{t}</span>
+            <span key={t} className={`px-1.5 py-0.5 rounded-full text-[10.5px] ${sealed ? 'bg-[#FFF7E6] text-[#FFBD59] border border-[#FFB000]/40' : 'bg-ocean/10 text-ocean'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{t}</span>
           ))}
-          {pedigree.voiceRationaleId && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber/15 text-amber text-[10.5px]"><Mic className="w-2.5 h-2.5" /> voice rationale</span>}
+          {pedigree.voiceRationaleId && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#FFF7E6] text-[#FFBD59] text-[10.5px]"><Mic className="w-2.5 h-2.5" /> voice rationale</span>}
         </div>
       )}
 
@@ -179,7 +179,7 @@ function Track({ label, value, color, placeholder, sealed, variant }) {
   // Sealed = wax-seal aesthetic: charcoal track with a gold fill on the human row.
   const trackBg = sealed ? 'bg-cream/15' : 'bg-rule'
   const fillStyle = sealed && variant === 'human'
-    ? { width: `${Math.min(100, (value || 0) * 100)}%`, backgroundImage: 'linear-gradient(90deg, #D4860A, #B5720A)' }
+    ? { width: `${Math.min(100, (value || 0) * 100)}%`, backgroundImage: 'linear-gradient(90deg, #B3843E, #B5720A)' }
     : { width: `${Math.min(100, (value || 0) * 100)}%` }
   const fillClass = sealed
     ? (variant === 'human' ? 'h-full rounded-full' : 'h-full rounded-full bg-cream/70')
@@ -208,7 +208,7 @@ function Track({ label, value, color, placeholder, sealed, variant }) {
 /* ─── Axis cell (used in document card) ────────────────────────── */
 
 function Axis({ icon: Icon, label, score, tone, desc, sparkline }) {
-  const palette = { ocean: 'text-ocean', teal: 'text-teal', amber: 'text-amber-deep' }
+  const palette = { ocean: 'text-ocean', teal: 'text-teal', amber: 'text-[#996800]' }
   return (
     <div>
       <div className="flex items-center gap-1.5">

@@ -48,12 +48,12 @@ export default function RiskMitigationSummary({ projectId, onPick }) {
                 <span className="inline-flex items-center gap-2 min-w-0">
                   {allCaught
                     ? <Check className="w-3.5 h-3.5 text-teal shrink-0" />
-                    : <AlertTriangle className="w-3.5 h-3.5 text-amber-deep shrink-0" />}
+                    : <AlertTriangle className="w-3.5 h-3.5 text-[#996800] shrink-0" />}
                   <span className="text-ink truncate">{caught} of {total} · {meta.label}</span>
                 </span>
                 <span className="inline-flex items-center gap-2 shrink-0">
                   {open > 0
-                    ? <span className="text-amber-deep text-[11px]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{open} OPEN</span>
+                    ? <span className="text-[#996800] text-[11px]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{open} OPEN</span>
                     : <span className="text-teal text-[11px]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>CLEARED</span>}
                   <span className="inline-flex items-center gap-1 text-[10.5px] text-ocean opacity-0 group-hover:opacity-100 transition-opacity" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
                     {open > 0 ? 'Resolve' : 'Review'} <ArrowRight className="w-3 h-3" />

@@ -52,7 +52,7 @@ export const SORT_OPTIONS = [
 ]
 
 export const TYPE_COLORS = {
-  'Agent': { bg: 'bg-[#009eda]/10', text: 'text-[#009eda]' },
+  'Agent': { bg: 'bg-[#3D16FA]/10', text: 'text-[#3D16FA]' },
   'Base Model': { bg: 'bg-violet-500/10', text: 'text-violet-500' },
   'Fine-Tuned Model': { bg: 'bg-emerald-500/10', text: 'text-emerald-600' },
 }
@@ -66,7 +66,7 @@ export const ICON_COLOR_MAP = {
   Globe: '#0ea5e9',
   Shield: '#a855f7',
   Activity: '#ec4899',
-  Building2: '#009eda',
+  Building2: '#3D16FA',
   Mic: '#10b981',
   Brain: '#8b5cf6',
   Briefcase: '#f97316',
@@ -74,13 +74,13 @@ export const ICON_COLOR_MAP = {
   Landmark: '#6366f1',
   Languages: '#0ea5e9',
   Gavel: '#64748b',
-  PenTool: '#d4860a',
+  PenTool: '#B3843E',
   Repeat: '#0ea5e9',
   Sparkles: '#f59e0b',
   Gauge: '#ec4899',
   BookOpen: '#6366f1',
   Video: '#ef4444',
-  Workflow: '#1B5E8F',
+  Workflow: '#3D16FA',
   Bot: '#8b5cf6',
   FileSearch: '#64748b',
 }

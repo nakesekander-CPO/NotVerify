@@ -115,14 +115,14 @@ function AccuracyChart({ data }) {
       })}
 
       {/* Area fill */}
-      <path d={areaPath} fill="rgba(27,94,143,0.1)" />
+      <path d={areaPath} fill="rgba(61,22,250,0.1)" />
 
       {/* Line */}
-      <path d={linePath} fill="none" stroke="#1B5E8F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={linePath} fill="none" stroke="#3D16FA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
 
       {/* Dots */}
       {points.map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r="3" fill="#1B5E8F" stroke="#ffffff" strokeWidth="1.5" />
+        <circle key={i} cx={p.x} cy={p.y} r="3" fill="#3D16FA" stroke="#ffffff" strokeWidth="1.5" />
       ))}
 
       {/* X-axis labels */}
@@ -216,7 +216,7 @@ export default function AgentProfile({ isOpen, onClose, agent, onContinueTrainin
               <div className="flex items-center gap-4">
                 <div
                   className="w-14 h-14 rounded-full flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: 'rgba(27,94,143,0.15)', color: '#1B5E8F' }}
+                  style={{ backgroundColor: 'rgba(61,22,250,0.15)', color: '#3D16FA' }}
                 >
                   <AgentIcon size={28} />
                 </div>
@@ -226,8 +226,8 @@ export default function AgentProfile({ isOpen, onClose, agent, onContinueTrainin
                     <span
                       className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full"
                       style={{
-                        backgroundColor: 'rgba(27,94,143,0.15)',
-                        color: '#1B5E8F',
+                        backgroundColor: 'rgba(61,22,250,0.15)',
+                        color: '#3D16FA',
                         fontFamily: "'JetBrains Mono', monospace",
                       }}
                     >
@@ -263,7 +263,7 @@ export default function AgentProfile({ isOpen, onClose, agent, onContinueTrainin
               {/* ── 2. Performance Metrics ── */}
               <section className="mt-6">
                 <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <TrendingUp size={14} className="text-[#1B5E8F]" />
+                  <TrendingUp size={14} className="text-[#3D16FA]" />
                   Performance Metrics
                 </h3>
                 <div className="flex gap-3 flex-wrap">
@@ -285,11 +285,11 @@ export default function AgentProfile({ isOpen, onClose, agent, onContinueTrainin
               <section className="mt-8">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider flex items-center gap-2">
-                    <BookOpen size={14} className="text-[#1B5E8F]" />
+                    <BookOpen size={14} className="text-[#3D16FA]" />
                     Learned Knowledge
                     <span
                       className="text-[10px] font-bold px-2 py-0.5 rounded-full ml-1"
-                      style={{ backgroundColor: 'rgba(27,94,143,0.15)', color: '#1B5E8F' }}
+                      style={{ backgroundColor: 'rgba(61,22,250,0.15)', color: '#3D16FA' }}
                     >
                       {filteredKnowledge.length}
                     </span>
@@ -304,7 +304,7 @@ export default function AgentProfile({ isOpen, onClose, agent, onContinueTrainin
                     placeholder="Search terms, sources, or domains..."
                     value={knowledgeSearch}
                     onChange={(e) => setKnowledgeSearch(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 rounded-lg text-sm text-gray-900 placeholder-gray-400 outline-none focus:ring-1 focus:ring-[#1B5E8F]"
+                    className="w-full pl-9 pr-4 py-2 rounded-lg text-sm text-gray-900 placeholder-gray-400 outline-none focus:ring-1 focus:ring-[#3D16FA]"
                     style={{ backgroundColor: '#f5f5f5', border: '1px solid rgba(0,0,0,0.06)' }}
                   />
                 </div>
@@ -360,7 +360,7 @@ export default function AgentProfile({ isOpen, onClose, agent, onContinueTrainin
               {/* ── 4. Tone Configuration ── */}
               <section className="mt-8">
                 <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <Sliders size={14} className="text-[#1B5E8F]" />
+                  <Sliders size={14} className="text-[#3D16FA]" />
                   Voice & Style Profile
                 </h3>
 
@@ -375,7 +375,7 @@ export default function AgentProfile({ isOpen, onClose, agent, onContinueTrainin
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] text-gray-500">Casual</span>
                         <div className="flex-1 h-1.5 rounded-full" style={{ backgroundColor: 'rgba(0,0,0,0.06)' }}>
-                          <div className="h-full rounded-full" style={{ width: '85%', backgroundColor: '#1B5E8F' }} />
+                          <div className="h-full rounded-full" style={{ width: '85%', backgroundColor: '#3D16FA' }} />
                         </div>
                         <span className="text-[10px] text-gray-500">Formal</span>
                       </div>
@@ -387,7 +387,7 @@ export default function AgentProfile({ isOpen, onClose, agent, onContinueTrainin
                       <div className="flex items-center gap-2">
                         <span
                           className="text-xs font-semibold px-2.5 py-1 rounded-lg text-white"
-                          style={{ backgroundColor: 'rgba(27,94,143,0.2)' }}
+                          style={{ backgroundColor: 'rgba(61,22,250,0.2)' }}
                         >
                           当社
                         </span>
@@ -407,7 +407,7 @@ export default function AgentProfile({ isOpen, onClose, agent, onContinueTrainin
                         </span>
                       </div>
                       <div className="h-2 rounded-full" style={{ backgroundColor: 'rgba(0,0,0,0.06)' }}>
-                        <div className="h-full rounded-full" style={{ width: '92%', backgroundColor: '#1B5E8F' }} />
+                        <div className="h-full rounded-full" style={{ width: '92%', backgroundColor: '#3D16FA' }} />
                       </div>
                     </div>
 
@@ -440,7 +440,7 @@ export default function AgentProfile({ isOpen, onClose, agent, onContinueTrainin
               {/* ── 5. Divergence Report ── */}
               <section className="mt-8">
                 <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <GitCompare size={14} className="text-[#1B5E8F]" />
+                  <GitCompare size={14} className="text-[#3D16FA]" />
                   How this agent differs from baseline
                 </h3>
 
@@ -503,7 +503,7 @@ export default function AgentProfile({ isOpen, onClose, agent, onContinueTrainin
               <button
                 onClick={() => onContinueTraining?.(agent)}
                 className="flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-lg text-white transition-colors hover:brightness-110"
-                style={{ backgroundColor: '#1B5E8F' }}
+                style={{ backgroundColor: '#3D16FA' }}
               >
                 <TrendingUp size={16} />
                 Continue Training

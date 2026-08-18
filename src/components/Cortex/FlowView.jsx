@@ -14,15 +14,15 @@ import { useCallback, useEffect, useRef } from 'react'
 import { FLOW_STAGES, FLOW_RIBBONS, CORTEX_AGENTS, agentFact } from '../../data/cortex'
 import useReducedMotion from '../../hooks/useReducedMotion'
 
-const TONE_HEX = { slate: '#A7B0BA', blue: '#2E7FB8', gold: '#D4860A', violet: '#7C5CDB' }
+const TONE_HEX = { slate: '#8087AC', blue: '#5A39FB', gold: '#FFBD59', violet: '#A38DFF' }
 
 const CARD_TONE = {
   slate: 'border-rule bg-white',
   blue: 'border-ocean/30 bg-ocean/[0.04]',
-  gold: 'border-amber/45 bg-amber/[0.07] shadow-[0_0_24px_rgba(212,134,10,0.12)]',
+  gold: 'border-[#FFBD59]/60 bg-[#FFBD59]/10 shadow-[0_0_24px_rgba(255,176,89,0.2)]',
   violet: 'border-violet-500/30 bg-violet-500/[0.05]',
 }
-const NUM_TONE = { slate: 'text-slate', blue: 'text-ocean', gold: 'text-amber-deep', violet: 'text-violet-700' }
+const NUM_TONE = { slate: 'text-slate', blue: 'text-ocean', gold: 'text-[#B3843E]', violet: 'text-violet-700' }
 
 function hexA(hex, a) {
   const n = parseInt(hex.slice(1), 16)
@@ -135,7 +135,7 @@ export default function FlowView({ lens, onInspect }) {
   const dimStage = (label) => Boolean(q) && !label.toLowerCase().includes(q)
 
   return (
-    <div ref={elRef} className="relative w-full h-full bg-[linear-gradient(180deg,#FFFDF8_0%,#FAF7EF_100%)]">
+    <div ref={elRef} className="relative w-full h-full bg-[linear-gradient(180deg,#FFFFFF_0%,#F4F5FF_100%)]">
       <style>{`
         .cortex-dash { animation: cortexDash 1.4s linear infinite; }
         .cortex-dash-slow { animation-duration: 2.6s; }
@@ -179,7 +179,7 @@ export default function FlowView({ lens, onInspect }) {
 
       <span
         ref={feedbackRef}
-        className="absolute -translate-x-1/2 text-[10.5px] text-amber-deep bg-white/90 border border-amber/30 rounded-full px-2.5 py-1 pointer-events-none"
+        className="absolute -translate-x-1/2 text-[10.5px] text-[#B3843E] bg-white/90 border border-[#FFBD59]/45 rounded-full px-2.5 py-1 pointer-events-none"
         style={{ fontFamily: "'IBM Plex Mono', monospace" }}
       >
         corrections compound ↩

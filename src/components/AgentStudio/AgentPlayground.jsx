@@ -91,7 +91,7 @@ export default function AgentPlayground({ agentId, go }) {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <ConfidenceBadge value={result.confidence} size="lg" />
-                  <span className="inline-flex items-center gap-1 text-[11px] text-slate"><Coins className="w-3 h-3 text-amber-deep" /> ~{result.creditEstimate} credits</span>
+                  <span className="inline-flex items-center gap-1 text-[11px] text-slate"><Coins className="w-3 h-3 text-[#996800]" /> ~{result.creditEstimate} credits</span>
                 </div>
                 <p className="text-[13px] text-ink leading-relaxed">{result.output}</p>
                 {result.sourcesUsed.length > 0 && (
@@ -174,8 +174,8 @@ function EvidenceRail({ result, version }) {
                 {result.toolCalls.length === 0 ? <Muted>None</Muted> : (
                   <ul className="space-y-1">{result.toolCalls.map((t, i) => (
                     <li key={i} className="flex items-center gap-1.5 text-slate">
-                      {t.requiresApproval ? <Lock className="w-3 h-3 text-amber-deep" /> : <Check className="w-3 h-3 text-teal" />}
-                      {t.label} {t.requiresApproval && <span className="text-[9px] text-amber-deep bg-amber/15 px-1 rounded">awaiting approval</span>}
+                      {t.requiresApproval ? <Lock className="w-3 h-3 text-[#996800]" /> : <Check className="w-3 h-3 text-teal" />}
+                      {t.label} {t.requiresApproval && <span className="text-[9px] text-[#996800] bg-[#FFF7E6] px-1 rounded">awaiting approval</span>}
                     </li>
                   ))}</ul>
                 )}
@@ -184,7 +184,7 @@ function EvidenceRail({ result, version }) {
               {result.qaIssues.length > 0 && (
                 <RailBlock icon={AlertTriangle} label="QA warnings">
                   <ul className="space-y-1">{result.qaIssues.map((q, i) => (
-                    <li key={i} className="text-amber-deep flex items-start gap-1.5"><AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" /> {q.text}</li>
+                    <li key={i} className="text-[#996800] flex items-start gap-1.5"><AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" /> {q.text}</li>
                   ))}</ul>
                 </RailBlock>
               )}

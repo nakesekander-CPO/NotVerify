@@ -78,7 +78,7 @@ function MergeLinkModal({ connector, onConnect, onClose }) {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="you@meridian-capital.com"
-                  className="w-full text-[13px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#009eda]/40 placeholder:text-gray-300"
+                  className="w-full text-[13px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#3D16FA]/40 placeholder:text-gray-300"
                 />
               </div>
               <div className="space-y-1.5 mb-4">
@@ -98,7 +98,7 @@ function MergeLinkModal({ connector, onConnect, onClose }) {
               )}
               <button
                 onClick={handleAuthorise}
-                className="w-full py-2.5 rounded-lg bg-[#009eda] text-white text-[13px] font-medium hover:bg-[#0089bf] cursor-pointer transition-colors"
+                className="w-full py-2.5 rounded-lg bg-[#3D16FA] text-white text-[13px] font-medium hover:bg-[#0089bf] cursor-pointer transition-colors"
               >
                 Authorise {connector.name}
               </button>
@@ -111,7 +111,7 @@ function MergeLinkModal({ connector, onConnect, onClose }) {
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
               >
-                <RefreshCw className="w-8 h-8 text-[#009eda]" />
+                <RefreshCw className="w-8 h-8 text-[#3D16FA]" />
               </motion.div>
               <p className="text-[13px] text-gray-600">Connecting to {connector.name}…</p>
             </div>
@@ -128,7 +128,7 @@ function MergeLinkModal({ connector, onConnect, onClose }) {
               </div>
               <button
                 onClick={() => { onConnect(connector); onClose() }}
-                className="w-full py-2.5 rounded-lg bg-[#009eda] text-white text-[13px] font-medium hover:bg-[#0089bf] cursor-pointer transition-colors"
+                className="w-full py-2.5 rounded-lg bg-[#3D16FA] text-white text-[13px] font-medium hover:bg-[#0089bf] cursor-pointer transition-colors"
               >
                 Done
               </button>
@@ -183,7 +183,7 @@ function ManageDrawer({ connector, onDisconnect, onClose }) {
                 <button
                   onClick={() => setAllowed(prev => ({ ...prev, [action.id]: !prev[action.id] }))}
                   className={`relative w-9 h-5 rounded-full transition-colors cursor-pointer ${
-                    allowed[action.id] ? 'bg-[#009eda]' : 'bg-gray-200'
+                    allowed[action.id] ? 'bg-[#3D16FA]' : 'bg-gray-200'
                   }`}
                 >
                   <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
@@ -246,7 +246,7 @@ function ConnectorCard({ connector, isConnected, onConnect, onManage }) {
         className={`w-full py-1.5 rounded-lg text-[12px] font-medium transition-colors cursor-pointer ${
           isConnected
             ? 'bg-gray-50 border border-black/[0.08] text-gray-600 hover:bg-black/[0.04]'
-            : 'bg-[#009eda] text-white hover:bg-[#0089bf]'
+            : 'bg-[#3D16FA] text-white hover:bg-[#0089bf]'
         }`}
       >
         {isConnected ? 'Manage' : 'Connect'}
@@ -295,7 +295,7 @@ export default function IntegrationsHub({ onBack, connectedIntegrations, onConne
       <div className="flex items-start justify-between mb-6">
         <div>
           <h1 className="text-[18px] font-semibold text-gray-900 flex items-center gap-2">
-            <Puzzle className="w-5 h-5 text-[#009eda]" />
+            <Puzzle className="w-5 h-5 text-[#3D16FA]" />
             Connected Tools
           </h1>
           <p className="text-[13px] text-gray-500 mt-1">
@@ -325,7 +325,7 @@ export default function IntegrationsHub({ onBack, connectedIntegrations, onConne
             onClick={() => setActiveTab(id)}
             className={`px-4 py-2.5 text-[13px] font-medium transition-colors cursor-pointer -mb-px border-b-2 ${
               activeTab === id
-                ? 'border-[#009eda] text-[#009eda]'
+                ? 'border-[#3D16FA] text-[#3D16FA]'
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
@@ -345,7 +345,7 @@ export default function IntegrationsHub({ onBack, connectedIntegrations, onConne
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search integrations…"
-                className="w-full text-[13px] text-gray-700 border border-black/[0.12] rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#009eda]/40 placeholder:text-gray-300"
+                className="w-full text-[13px] text-gray-700 border border-black/[0.12] rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#3D16FA]/40 placeholder:text-gray-300"
               />
             </div>
           </div>
@@ -356,7 +356,7 @@ export default function IntegrationsHub({ onBack, connectedIntegrations, onConne
                 onClick={() => setCategory(cat)}
                 className={`px-3 py-1 rounded-full text-[12px] font-medium transition-colors cursor-pointer ${
                   category === cat
-                    ? 'bg-[#009eda] text-white'
+                    ? 'bg-[#3D16FA] text-white'
                     : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                 }`}
               >
@@ -379,7 +379,7 @@ export default function IntegrationsHub({ onBack, connectedIntegrations, onConne
 
           <p className="text-[12px] text-center text-gray-400 mt-8">
             Don't see your tool?{' '}
-            <button className="text-[#009eda] hover:underline cursor-pointer">Request an integration</button>
+            <button className="text-[#3D16FA] hover:underline cursor-pointer">Request an integration</button>
           </p>
         </div>
       )}
@@ -393,7 +393,7 @@ export default function IntegrationsHub({ onBack, connectedIntegrations, onConne
               <p className="text-[13px] text-gray-500 font-medium">No tools connected yet</p>
               <button
                 onClick={() => setActiveTab('all')}
-                className="text-[13px] text-[#009eda] hover:underline cursor-pointer"
+                className="text-[13px] text-[#3D16FA] hover:underline cursor-pointer"
               >
                 Browse available integrations →
               </button>

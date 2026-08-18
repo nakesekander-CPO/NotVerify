@@ -119,8 +119,8 @@ export default function AnomalyTrendChart({
       >
         <defs>
           <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#1B5E8F" stopOpacity="0.18" />
-            <stop offset="100%" stopColor="#1B5E8F" stopOpacity="0" />
+            <stop offset="0%" stopColor="#3D16FA" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="#3D16FA" stopOpacity="0" />
           </linearGradient>
           {/* Pulse animation for anomaly ring */}
           {!prefersReduced && (
@@ -187,7 +187,7 @@ export default function AnomalyTrendChart({
         <text
           x={VIEW_W - PAD.right + 2}
           y={benchmarkY - 5}
-          className="fill-amber-500"
+          className="fill-[#FFBD59]-500"
           style={{ fontSize: 9, fontFamily: 'Inter, sans-serif' }}
           textAnchor="end"
         >
@@ -201,7 +201,7 @@ export default function AnomalyTrendChart({
         <path
           d={linePath}
           fill="none"
-          stroke="#1B5E8F"
+          stroke="#3D16FA"
           strokeWidth="2"
           strokeLinejoin="round"
           strokeLinecap="round"
@@ -304,7 +304,7 @@ export default function AnomalyTrendChart({
               cx={p.x}
               cy={p.y}
               r="3"
-              fill="#1B5E8F"
+              fill="#3D16FA"
               stroke="#ffffff"
               strokeWidth="1.5"
             />
@@ -399,9 +399,9 @@ export default function AnomalyTrendChart({
                 </p>
                 <button
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] font-medium text-white transition-colors"
-                  style={{ backgroundColor: '#1B5E8F' }}
+                  style={{ backgroundColor: '#3D16FA' }}
                   onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#164D75')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#1B5E8F')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3D16FA')}
                 >
                   {meta.action}
                   <ArrowRight className="w-3 h-3" />

@@ -12,7 +12,7 @@ import { ArrowRight, Target, TriangleAlert, FileText } from 'lucide-react'
 import { RECOMMENDATIONS, CLAIMS, EAVI_DIMENSION_META, HYPOTHESIS_LABEL } from '../../data/eav'
 import { SectionHeading, Card, MonoLabel, PrimaryButton, SecondaryButton } from './shared'
 
-const RISK_TONE = { low: 'text-teal', medium: 'text-amber-deep', high: 'text-error' }
+const RISK_TONE = { low: 'text-teal', medium: 'text-[#996800]', high: 'text-error' }
 const dimLabel = (k) => EAVI_DIMENSION_META.find(d => d.key === k)?.label || k
 const claimText = (id) => { const c = CLAIMS.find(x => x.id === id); return c ? `${c.subject} ${c.predicate} ${c.object}` : id }
 
@@ -67,7 +67,7 @@ function RecDetail({ rec, go, onBack }) {
 
           {rec.competitorEvidence && (
             <Card>
-              <div className="flex items-center gap-1.5 mb-1.5"><TriangleAlert className="w-3.5 h-3.5 text-amber-deep" /><MonoLabel>Competitor evidence</MonoLabel></div>
+              <div className="flex items-center gap-1.5 mb-1.5"><TriangleAlert className="w-3.5 h-3.5 text-[#996800]" /><MonoLabel>Competitor evidence</MonoLabel></div>
               <p className="text-[12.5px] text-slate">{rec.competitorEvidence}</p>
               <p className="text-[10px] text-mist mt-1.5">{HYPOTHESIS_LABEL}</p>
             </Card>
@@ -79,7 +79,7 @@ function RecDetail({ rec, go, onBack }) {
             {rec.missingClaims.length > 0 && (
               <>
                 <MonoLabel className="mt-3">Missing / needs-review claims</MonoLabel>
-                <ul className="mt-2 space-y-1 text-[12.5px] text-amber-deep list-disc pl-4">{rec.missingClaims.map(id => <li key={id}>{claimText(id)} <span className="text-mist">({id})</span></li>)}</ul>
+                <ul className="mt-2 space-y-1 text-[12.5px] text-[#996800] list-disc pl-4">{rec.missingClaims.map(id => <li key={id}>{claimText(id)} <span className="text-mist">({id})</span></li>)}</ul>
               </>
             )}
           </Card>

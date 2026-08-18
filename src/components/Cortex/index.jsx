@@ -95,9 +95,9 @@ export default function Cortex({ onClose, onNavigateBack, onCreateContent }) {
             <span className="font-bold text-teal" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{METRICS.trustScore}%</span>
             <span className="text-slate font-medium">Trust Score</span>
           </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber/10 border border-amber/30 text-[11.5px]">
-            <TrendingUp className="w-3.5 h-3.5 text-amber-deep" />
-            <span className="font-bold text-amber-deep" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>+{METRICS.compoundingPct}%</span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FFBD59]/15 border border-[#FFBD59]/40 text-[11.5px]">
+            <TrendingUp className="w-3.5 h-3.5 text-[#B3843E]" />
+            <span className="font-bold text-[#B3843E]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>+{METRICS.compoundingPct}%</span>
             <span className="text-slate font-medium">Compounding Memory</span>
           </span>
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-rule text-[11.5px]">

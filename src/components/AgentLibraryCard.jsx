@@ -12,7 +12,7 @@ const ICON_COMPONENTS = { Shield, Landmark, Heart, Gavel, Code }
 
 const TIER_STYLES = {
   Free:       'bg-gray-100 text-gray-500',
-  Standard:   'bg-[#009eda]/10 text-[#009eda]',
+  Standard:   'bg-[#3D16FA]/10 text-[#3D16FA]',
   Premium:    'bg-violet-100 text-violet-600',
   Enterprise: 'bg-amber-100 text-amber-700',
 }
@@ -20,7 +20,7 @@ const TIER_STYLES = {
 export default function AgentLibraryCard({ agent, index, isAssigned, onSelect, reducedMotion }) {
   const isComingSoon = agent.status === 'coming_soon'
   const IconComponent = ICON_COMPONENTS[agent.icon] || Shield
-  const iconColor = ICON_COLOR_MAP[agent.icon] || '#009eda'
+  const iconColor = ICON_COLOR_MAP[agent.icon] || '#3D16FA'
   const tier = agent.roi?.tier
   const tierStyle = TIER_STYLES[tier] || TIER_STYLES.Standard
   const certs = agent.compliance?.certifications?.slice(0, 3) || []
@@ -39,7 +39,7 @@ export default function AgentLibraryCard({ agent, index, isAssigned, onSelect, r
             ? 'border-black/[0.08] opacity-55 pointer-events-none select-none'
             : isAssigned
               ? 'border-emerald-500/30 bg-emerald-50/20 cursor-pointer hover:border-emerald-500/50'
-              : 'border-black/[0.12] cursor-pointer hover:border-[#009eda]/40 hover:shadow-sm'
+              : 'border-black/[0.12] cursor-pointer hover:border-[#3D16FA]/40 hover:shadow-sm'
         }`}
         onClick={isComingSoon ? undefined : () => onSelect(agent)}
         role={isComingSoon ? undefined : 'button'}
@@ -110,7 +110,7 @@ export default function AgentLibraryCard({ agent, index, isAssigned, onSelect, r
             <>
               <TrustScoreBadge score={agent.trustScore} size="sm" reducedMotion={reducedMotion} />
               <button
-                className="flex items-center gap-1 text-[11px] font-semibold text-[#009eda] hover:text-[#0089c4] transition-colors"
+                className="flex items-center gap-1 text-[11px] font-semibold text-[#3D16FA] hover:text-[#0089c4] transition-colors"
                 onClick={(e) => { e.stopPropagation(); onSelect(agent) }}
                 tabIndex={-1}
                 aria-hidden="true"

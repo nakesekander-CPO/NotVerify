@@ -114,7 +114,7 @@ export default function TimeJumpTransition({ onComplete }) {
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
-              background: 'radial-gradient(ellipse at center, rgba(27,94,143,0.08) 0%, transparent 70%)',
+              background: 'radial-gradient(ellipse at center, rgba(61,22,250,0.08) 0%, transparent 70%)',
             }}
           />
 
@@ -194,7 +194,7 @@ export default function TimeJumpTransition({ onComplete }) {
                           initial={{ scale: 0, opacity: 0 }}
                           animate={
                             i <= activeMonth
-                              ? { scale: 1, opacity: 1, backgroundColor: '#1B5E8F' }
+                              ? { scale: 1, opacity: 1, backgroundColor: '#3D16FA' }
                               : { scale: 0.6, opacity: 0.25, backgroundColor: '#d1d5db' }
                           }
                           transition={SPRING}

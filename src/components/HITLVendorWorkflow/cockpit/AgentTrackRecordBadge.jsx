@@ -18,7 +18,7 @@ export default function AgentTrackRecordBadge({ agentId, domain }) {
   }
   const overridePct = ((tr.overrideRate ?? 0) * 100).toFixed(0)
   const fpPct       = ((tr.fpRate ?? 0)       * 100).toFixed(0)
-  const tone = (tr.overrideRate ?? 0) > 0.3 ? 'text-amber-deep' : 'text-mist'
+  const tone = (tr.overrideRate ?? 0) > 0.3 ? 'text-[#996800]' : 'text-mist'
   return (
     <span className={`text-[10px] ${tone}`} title={`${tr.appearances} appearances in last 90 days · ${domain || 'all domains'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
       OVERRIDE {overridePct}% · FP {fpPct}%

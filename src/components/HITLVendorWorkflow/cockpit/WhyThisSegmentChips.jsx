@@ -14,7 +14,7 @@ import { FLAG_CATEGORIES } from '../../../data/hitlVendorWorkflow'
 import { explainFlagCategory } from '../../../services/hitl/cockpit'
 
 const TONE = {
-  amber: { bg: 'bg-amber/10', text: 'text-amber-deep', border: 'border-amber/40' },
+  amber: { bg: 'bg-[#FFF7E6]', text: 'text-[#996800]', border: 'border-[#FFB000]/40' },
   ocean: { bg: 'bg-ocean/10', text: 'text-ocean',      border: 'border-ocean/40' },
   error: { bg: 'bg-error/10', text: 'text-error',      border: 'border-error/40' },
   mist:  { bg: 'bg-rule',     text: 'text-slate',      border: 'border-rule-strong' },
@@ -22,7 +22,7 @@ const TONE = {
 
 const SEVERITY_TONE = {
   Low:      'text-mist',
-  Medium:   'text-amber-deep',
+  Medium:   'text-[#996800]',
   High:     'text-error',
   Critical: 'text-error',
 }
@@ -74,7 +74,7 @@ export default function WhyThisSegmentChips({ segment, project, candidates, dens
   return (
     <div className={`flex items-center gap-1.5 flex-wrap ${dense ? '' : 'mt-2'}`}>
       <span className="text-[10.5px] uppercase tracking-wider text-mist inline-flex items-center gap-1" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-        <AlertTriangle className="w-3 h-3 text-amber" /> Flag reason
+        <AlertTriangle className="w-3 h-3 text-[#FFBD59]" /> Flag reason
       </span>
       {cats.map(key => {
         const meta = FLAG_CATEGORIES[key]

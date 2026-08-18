@@ -366,7 +366,7 @@ export default function ColdStartDashboard({
                   ) : (
                     <Circle size={15} className="mt-0.5 shrink-0 text-gray-300" />
                   )}
-                  <span className={`${item.done ? 'text-gray-700' : item.onClick ? 'text-[#009eda]/70 group-hover:text-[#009eda]' : 'text-gray-400'} transition-colors`}>
+                  <span className={`${item.done ? 'text-gray-700' : item.onClick ? 'text-[#3D16FA]/70 group-hover:text-[#3D16FA]' : 'text-gray-400'} transition-colors`}>
                     {item.label}
                     <span className={`ml-1.5 ${item.done ? 'text-gray-500' : ''}`}>
                       {item.done ? `· ${item.value}` : item.onClick ? `· ${item.value}` : ''}
@@ -447,7 +447,7 @@ export default function ColdStartDashboard({
         {[
           { icon: FileUp,       label: 'Content Intake',         sub: 'Policies · Filings · Reports · Contracts', color: 'text-gray-500'     },
           { isArrow: true },
-          { icon: ShieldCheck,  label: 'Intelligence Extraction', sub: 'Compliance · Risk · Knowledge',           color: 'text-[#009eda]'    },
+          { icon: ShieldCheck,  label: 'Intelligence Extraction', sub: 'Compliance · Risk · Knowledge',           color: 'text-[#3D16FA]'    },
           { isArrow: true },
           { icon: CheckCircle2, label: 'Trusted Output',          sub: 'Confidence · Flags · Audit Trail',        color: 'text-emerald-600'  },
         ].map((item, i) => {
@@ -504,8 +504,8 @@ export default function ColdStartDashboard({
             onDrop={handleDrop}
             className={`flex flex-col h-full p-4 rounded-xl border cursor-pointer transition-all text-left ${
               isDragOver
-                ? 'border-dashed border-[#009eda] bg-[#009eda]/[0.04] scale-[1.01]'
-                : 'border-black/[0.08] bg-white hover:border-[#009eda]/30 hover:bg-[#009eda]/[0.02]'
+                ? 'border-dashed border-[#3D16FA] bg-[#3D16FA]/[0.04] scale-[1.01]'
+                : 'border-black/[0.08] bg-white hover:border-[#3D16FA]/30 hover:bg-[#3D16FA]/[0.02]'
             }`}
           >
             <div className="flex items-start gap-3 flex-1">
@@ -531,7 +531,7 @@ export default function ColdStartDashboard({
                 <button
                   type="button"
                   onClick={() => onStartFirstProject?.()}
-                  className="mt-2 text-[11px] font-medium text-[#009eda] hover:text-[#007bb5] transition-colors cursor-pointer"
+                  className="mt-2 text-[11px] font-medium text-[#3D16FA] hover:text-[#007bb5] transition-colors cursor-pointer"
                 >
                   Explore the pipeline →
                 </button>
@@ -546,10 +546,10 @@ export default function ColdStartDashboard({
         <button
           type="button"
           onClick={() => onStartCampaign?.()}
-          className="w-full flex items-center justify-between gap-4 px-5 py-4 rounded-xl border border-black/[0.08] bg-white hover:border-[#009eda]/30 hover:bg-[#009eda]/[0.02] transition-all group cursor-pointer text-left"
+          className="w-full flex items-center justify-between gap-4 px-5 py-4 rounded-xl border border-black/[0.08] bg-white hover:border-[#3D16FA]/30 hover:bg-[#3D16FA]/[0.02] transition-all group cursor-pointer text-left"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 group-hover:bg-[#009eda]/10 group-hover:text-[#009eda] transition-colors">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 group-hover:bg-[#3D16FA]/10 group-hover:text-[#3D16FA] transition-colors">
               <Layers size={16} />
             </div>
             <div>
@@ -557,7 +557,7 @@ export default function ColdStartDashboard({
               <p className="text-[11px] text-gray-400 leading-snug">Multi-document analysis, cross-document patterns, and a compliance heatmap</p>
             </div>
           </div>
-          <ChevronRight size={16} className="text-gray-300 group-hover:text-[#009eda] transition-colors shrink-0" />
+          <ChevronRight size={16} className="text-gray-300 group-hover:text-[#3D16FA] transition-colors shrink-0" />
         </button>
       </motion.div>
 
@@ -566,10 +566,10 @@ export default function ColdStartDashboard({
         <button
           type="button"
           onClick={() => onCreateContent?.()}
-          className="w-full flex items-center justify-between gap-4 px-5 py-4 rounded-xl border border-black/[0.08] bg-white hover:border-[#009eda]/30 hover:bg-[#009eda]/[0.02] transition-all group cursor-pointer text-left"
+          className="w-full flex items-center justify-between gap-4 px-5 py-4 rounded-xl border border-black/[0.08] bg-white hover:border-[#3D16FA]/30 hover:bg-[#3D16FA]/[0.02] transition-all group cursor-pointer text-left"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 group-hover:bg-[#009eda]/10 group-hover:text-[#009eda] transition-colors">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 group-hover:bg-[#3D16FA]/10 group-hover:text-[#3D16FA] transition-colors">
               <Brain size={16} />
             </div>
             <div>
@@ -577,7 +577,7 @@ export default function ColdStartDashboard({
               <p className="text-[11px] text-gray-400 leading-snug">Generate reports, memos, and disclosures from Cortex intelligence</p>
             </div>
           </div>
-          <ChevronRight size={16} className="text-gray-300 group-hover:text-[#009eda] transition-colors shrink-0" />
+          <ChevronRight size={16} className="text-gray-300 group-hover:text-[#3D16FA] transition-colors shrink-0" />
         </button>
       </motion.div>
 
@@ -587,7 +587,7 @@ export default function ColdStartDashboard({
         {/* Header */}
         <div className="px-6 pt-5 pb-4 border-b border-black/[0.06]">
           <div className="flex items-center gap-2.5 mb-1">
-            <Brain size={18} className="text-[#009eda]" />
+            <Brain size={18} className="text-[#3D16FA]" />
             <h2 className="text-[15px] font-semibold text-gray-900">Your Cortex</h2>
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-semibold border border-emerald-200">
               <CheckCircle2 size={10} /> 147 entries pre-loaded
@@ -676,10 +676,10 @@ export default function ColdStartDashboard({
    reviewing. Static render (no animation loop); click opens Cortex. */
 
 const MINI_CLUSTERS = [
-  { label: 'J-GAAP Terminology', n: 54, x: 0.22, y: 0.42, spread: 0.09, color: '#D4860A' },
-  { label: 'TSE Conventions', n: 43, x: 0.5, y: 0.3, spread: 0.08, color: '#1B5E8F' },
-  { label: 'IFRS Mappings', n: 31, x: 0.78, y: 0.46, spread: 0.07, color: '#1B5E8F' },
-  { label: 'Brand & Cultural', n: 19, x: 0.36, y: 0.72, spread: 0.06, color: '#1B5E8F' },
+  { label: 'J-GAAP Terminology', n: 54, x: 0.22, y: 0.42, spread: 0.09, color: '#FFBD59' },
+  { label: 'TSE Conventions', n: 43, x: 0.5, y: 0.3, spread: 0.08, color: '#3D16FA' },
+  { label: 'IFRS Mappings', n: 31, x: 0.78, y: 0.46, spread: 0.07, color: '#3D16FA' },
+  { label: 'Brand & Cultural', n: 19, x: 0.36, y: 0.72, spread: 0.06, color: '#3D16FA' },
 ]
 const MINI_EMPTY = [
   { label: 'Reviewer Corrections', x: 0.62, y: 0.74 },
@@ -737,7 +737,7 @@ function MiniConstellation({ onOpenCortex }) {
         type="button"
         onClick={() => onOpenCortex?.()}
         aria-label="Open Cortex"
-        className="relative w-full h-[210px] rounded-lg border border-black/[0.06] overflow-hidden cursor-pointer group text-left bg-[radial-gradient(ellipse_at_50%_40%,#FFFDF8_0%,#FAF7EF_60%,#F4EFE3_100%)]"
+        className="relative w-full h-[210px] rounded-lg border border-black/[0.06] overflow-hidden cursor-pointer group text-left bg-[radial-gradient(ellipse_at_50%_40%,#FFFFFF_0%,#F4F5FF_60%,#E9EBFA_100%)]"
       >
         <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
         {MINI_CLUSTERS.map(c => (

@@ -129,7 +129,7 @@ export function ToolPermissionSelector({ value = [], onChange }) {
                 <span className="block text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{PERM_LABEL[t.permission]}</span>
               </span>
               {t.requiresApproval && (
-                <span className="inline-flex items-center gap-1 text-[10px] text-amber-deep bg-amber/15 px-1.5 py-0.5 rounded-full shrink-0"><Lock className="w-2.5 h-2.5" /> approval</span>
+                <span className="inline-flex items-center gap-1 text-[10px] text-[#996800] bg-[#FFF7E6] px-1.5 py-0.5 rounded-full shrink-0"><Lock className="w-2.5 h-2.5" /> approval</span>
               )}
             </button>
           )
@@ -200,7 +200,7 @@ export function GuardrailBuilder({ value, onChange }) {
             const on = escalation.includes(e.id)
             return (
               <button key={e.id} type="button" onClick={() => setField('escalationRules', toggle(escalation, e.id))}
-                className={`px-2.5 py-1 rounded-full border text-[11px] cursor-pointer transition-colors ${on ? 'bg-amber/15 text-amber-deep border-amber/40' : 'bg-white text-slate border-rule hover:border-amber/40'}`}>
+                className={`px-2.5 py-1 rounded-full border text-[11px] cursor-pointer transition-colors ${on ? 'bg-[#FFF7E6] text-[#996800] border-[#FFB000]/40' : 'bg-white text-slate border-rule hover:border-[#FFB000]/40'}`}>
                 {on && <AlertTriangle className="w-2.5 h-2.5 inline mr-1" />}{e.label}
               </button>
             )
@@ -221,7 +221,7 @@ export function GuardrailBuilder({ value, onChange }) {
 function NumberField({ label, value, onChange, suffix, icon: Icon }) {
   return (
     <label className="block">
-      <span className="text-[11px] text-mist flex items-center gap-1">{Icon && <Icon className="w-3 h-3 text-amber-deep" />}{label}</span>
+      <span className="text-[11px] text-mist flex items-center gap-1">{Icon && <Icon className="w-3 h-3 text-[#996800]" />}{label}</span>
       <span className="flex items-center gap-1.5 mt-1">
         <input type="number" value={value ?? ''} onChange={e => onChange(Number(e.target.value))}
           className="w-full text-[13px] border border-rule rounded-md px-2 py-1.5 focus:outline-none focus:border-ocean/50" />

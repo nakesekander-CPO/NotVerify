@@ -19,7 +19,7 @@ const SPRING = { type: 'spring', stiffness: 300, damping: 20 }
 
 export default function AgentCard({ agent, index, reducedMotion, onSelect, onTestDrive, onDeploy }) {
   const IconComp = ICON_MAP[agent.icon] || Shield
-  const iconColor = ICON_COLOR_MAP[agent.icon] || '#009eda'
+  const iconColor = ICON_COLOR_MAP[agent.icon] || '#3D16FA'
   const typeColor = TYPE_COLORS[agent.type] || TYPE_COLORS['Agent']
 
   // Tier badge color
@@ -37,7 +37,7 @@ export default function AgentCard({ agent, index, reducedMotion, onSelect, onTes
       animate={{ opacity: 1, y: 0 }}
       transition={reducedMotion ? { duration: 0 } : { ...SPRING, delay: Math.min(index * 0.05, 0.3) }}
       onClick={() => onSelect(agent)}
-      className="bg-white border border-black/[0.12] rounded-lg p-5 flex flex-col cursor-pointer hover:border-[#009eda]/30 transition-colors group"
+      className="bg-white border border-black/[0.12] rounded-lg p-5 flex flex-col cursor-pointer hover:border-[#3D16FA]/30 transition-colors group"
     >
       {/* Top row: provider + type + rating */}
       <div className="flex items-center justify-between mb-3">
@@ -47,7 +47,7 @@ export default function AgentCard({ agent, index, reducedMotion, onSelect, onTes
             {agent.type}
           </span>
           <span className="flex items-center gap-0.5 text-[11px] text-amber-500">
-            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+            <Star className="w-3 h-3 fill-[#FFBD59]-400 text-amber-400" />
             {agent.rating}
           </span>
         </div>
@@ -62,7 +62,7 @@ export default function AgentCard({ agent, index, reducedMotion, onSelect, onTes
           <IconComp size={20} style={{ color: iconColor }} />
         </div>
         <div className="min-w-0">
-          <p className="text-[14px] font-semibold text-gray-900 truncate group-hover:text-[#009eda] transition-colors">
+          <p className="text-[14px] font-semibold text-gray-900 truncate group-hover:text-[#3D16FA] transition-colors">
             {agent.name}
           </p>
           <p className="text-[11px] text-gray-500 truncate">{agent.category}</p>
@@ -122,7 +122,7 @@ export default function AgentCard({ agent, index, reducedMotion, onSelect, onTes
         </button>
         <button
           onClick={e => { e.stopPropagation(); onDeploy(agent) }}
-          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#009eda] text-[12px] font-medium text-white hover:bg-[#0089c4] transition-colors cursor-pointer"
+          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#3D16FA] text-[12px] font-medium text-white hover:bg-[#0089c4] transition-colors cursor-pointer"
         >
           Deploy
         </button>

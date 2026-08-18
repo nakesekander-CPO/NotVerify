@@ -13,7 +13,7 @@ const RESULT_TONE = {
   'Observed improvement': 'text-teal bg-teal/10 border-teal/30',
   'Associated improvement': 'text-teal bg-teal/10 border-teal/30',
   'Statistically distinguishable benchmark change': 'text-teal bg-teal/10 border-teal/30',
-  Inconclusive: 'text-amber-deep bg-amber/15 border-amber/30',
+  Inconclusive: 'text-[#996800] bg-[#FFF7E6] border-[#FFB000]/40',
   'No measured change': 'text-mist bg-rule/60 border-rule-strong',
   'Negative movement': 'text-error bg-error/10 border-error/30',
 }

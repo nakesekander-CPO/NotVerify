@@ -3,7 +3,7 @@
  * across the segments of a document. Used on DocumentPedigreeCard.
  */
 
-export default function TrustSparkline({ values = [], color = '#1B5E8F', width = 96, height = 18, label }) {
+export default function TrustSparkline({ values = [], color = '#3D16FA', width = 96, height = 18, label }) {
   if (!values || values.length === 0) {
     return (
       <span className="inline-flex items-center gap-1.5 text-[10px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>

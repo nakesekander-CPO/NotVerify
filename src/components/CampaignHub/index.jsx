@@ -45,14 +45,14 @@ function StepBar({ step }) {
         const active = step === idx;
         return (
           <div key={label} className="flex items-center gap-2">
-            <div className={`flex items-center gap-1.5 text-[12px] font-medium transition-colors ${active ? 'text-gray-900' : done ? 'text-[#009eda]' : 'text-gray-400'}`}>
-              <div className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold shrink-0 ${active ? 'bg-gray-900 text-white' : done ? 'bg-[#009eda] text-white' : 'bg-gray-100 text-gray-400'}`}>
+            <div className={`flex items-center gap-1.5 text-[12px] font-medium transition-colors ${active ? 'text-gray-900' : done ? 'text-[#3D16FA]' : 'text-gray-400'}`}>
+              <div className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold shrink-0 ${active ? 'bg-gray-900 text-white' : done ? 'bg-[#3D16FA] text-white' : 'bg-gray-100 text-gray-400'}`}>
                 {done ? '✓' : idx}
               </div>
               {label}
             </div>
             {i < steps.length - 1 && (
-              <div className={`h-px w-6 shrink-0 ${done || active ? 'bg-[#009eda]/40' : 'bg-gray-200'}`} />
+              <div className={`h-px w-6 shrink-0 ${done || active ? 'bg-[#3D16FA]/40' : 'bg-gray-200'}`} />
             )}
           </div>
         );
@@ -74,7 +74,7 @@ function CampaignConfigPanel({ campaign, onChange }) {
             value={campaign.name}
             onChange={e => onChange({ name: e.target.value })}
             placeholder="e.g. Q3 Financial Package"
-            className="w-full rounded-lg border border-black/[0.10] bg-white px-3 py-2 text-[13px] text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#009eda] focus:ring-1 focus:ring-[#009eda]/30 transition"
+            className="w-full rounded-lg border border-black/[0.10] bg-white px-3 py-2 text-[13px] text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#3D16FA] focus:ring-1 focus:ring-[#3D16FA]/30 transition"
           />
         </div>
         <div>
@@ -84,7 +84,7 @@ function CampaignConfigPanel({ campaign, onChange }) {
             value={campaign.poNumber}
             onChange={e => onChange({ poNumber: e.target.value })}
             placeholder="Optional"
-            className="w-full rounded-lg border border-black/[0.10] bg-white px-3 py-2 text-[13px] text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#009eda] focus:ring-1 focus:ring-[#009eda]/30 transition"
+            className="w-full rounded-lg border border-black/[0.10] bg-white px-3 py-2 text-[13px] text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#3D16FA] focus:ring-1 focus:ring-[#3D16FA]/30 transition"
           />
         </div>
       </div>
@@ -102,7 +102,7 @@ function CampaignConfigPanel({ campaign, onChange }) {
           step={1}
           value={campaign.config.qualityThreshold}
           onChange={e => onChange({ config: { ...campaign.config, qualityThreshold: Number(e.target.value) } })}
-          className="w-full accent-[#009eda]"
+          className="w-full accent-[#3D16FA]"
         />
         <div className="flex justify-between text-[10px] text-gray-400 mt-0.5">
           <span>60%</span>
@@ -124,7 +124,7 @@ function CampaignConfigPanel({ campaign, onChange }) {
           aria-pressed={campaign.config.autoPublish}
         >
           {campaign.config.autoPublish
-            ? <ToggleRight size={28} className="text-[#009eda]" />
+            ? <ToggleRight size={28} className="text-[#3D16FA]" />
             : <ToggleLeft size={28} />}
         </button>
       </div>
@@ -262,8 +262,8 @@ export default function CampaignHub({
 
         {/* First-run context strip */}
         {isFirstRun && (
-          <motion.div {...m(fadeUp(0.03))} className="mb-6 flex items-center gap-3 flex-wrap px-4 py-3 rounded-xl border border-[#009eda]/20 bg-[#009eda]/[0.04]">
-            <Info size={13} className="text-[#009eda] shrink-0" />
+          <motion.div {...m(fadeUp(0.03))} className="mb-6 flex items-center gap-3 flex-wrap px-4 py-3 rounded-xl border border-[#3D16FA]/20 bg-[#3D16FA]/[0.04]">
+            <Info size={13} className="text-[#3D16FA] shrink-0" />
             <div className="flex items-center gap-3 flex-wrap text-[12px] text-gray-600">
               {configuredLocales.length > 0 && (
                 <span>
@@ -302,13 +302,13 @@ export default function CampaignHub({
             onDrop={handleDrop}
             className={`flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed transition-all py-16 px-8 text-center cursor-pointer ${
               isDragOver
-                ? 'border-[#009eda] bg-[#009eda]/[0.04]'
-                : 'border-black/[0.12] bg-gray-50/50 hover:border-[#009eda]/50 hover:bg-[#009eda]/[0.02]'
+                ? 'border-[#3D16FA] bg-[#3D16FA]/[0.04]'
+                : 'border-black/[0.12] bg-gray-50/50 hover:border-[#3D16FA]/50 hover:bg-[#3D16FA]/[0.02]'
             }`}
             onClick={() => fileInputRef.current?.click()}
           >
-            <div className={`flex h-14 w-14 items-center justify-center rounded-2xl transition-colors ${isDragOver ? 'bg-[#009eda]/10' : 'bg-white border border-black/[0.08]'}`}>
-              <Upload size={24} className={isDragOver ? 'text-[#009eda]' : 'text-gray-400'} />
+            <div className={`flex h-14 w-14 items-center justify-center rounded-2xl transition-colors ${isDragOver ? 'bg-[#3D16FA]/10' : 'bg-white border border-black/[0.08]'}`}>
+              <Upload size={24} className={isDragOver ? 'text-[#3D16FA]' : 'text-gray-400'} />
             </div>
             <div>
               <p className="text-[15px] font-semibold text-gray-800 mb-1">Drop files here</p>
@@ -347,7 +347,7 @@ export default function CampaignHub({
               setCampaign(sample);
               setView('preflight');
             }}
-            className="flex items-center gap-2 text-[13px] text-[#009eda] hover:text-[#007bb5] transition-colors cursor-pointer"
+            className="flex items-center gap-2 text-[13px] text-[#3D16FA] hover:text-[#007bb5] transition-colors cursor-pointer"
           >
             <Sparkles size={13} />
             Try with sample campaign (3 documents)
@@ -392,7 +392,7 @@ export default function CampaignHub({
             <button
               type="button"
               onClick={() => setShowConfig(v => !v)}
-              className={`flex items-center gap-1.5 text-[12px] border rounded-lg px-3 py-2 transition-colors cursor-pointer ${showConfig ? 'border-[#009eda]/40 bg-[#009eda]/[0.04] text-[#009eda]' : 'border-black/[0.10] bg-white text-gray-500 hover:text-gray-800'}`}
+              className={`flex items-center gap-1.5 text-[12px] border rounded-lg px-3 py-2 transition-colors cursor-pointer ${showConfig ? 'border-[#3D16FA]/40 bg-[#3D16FA]/[0.04] text-[#3D16FA]' : 'border-black/[0.10] bg-white text-gray-500 hover:text-gray-800'}`}
             >
               <Settings2 size={13} /> Campaign settings
             </button>
@@ -451,7 +451,7 @@ export default function CampaignHub({
         ) : (
           <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-black/[0.08] py-12 text-center">
             <p className="text-[13px] text-gray-400">No documents added yet.</p>
-            <button type="button" onClick={() => fileInputRef.current?.click()} className="mt-3 text-[13px] text-[#009eda] hover:text-[#007bb5] cursor-pointer transition-colors">Add files →</button>
+            <button type="button" onClick={() => fileInputRef.current?.click()} className="mt-3 text-[13px] text-[#3D16FA] hover:text-[#007bb5] cursor-pointer transition-colors">Add files →</button>
           </div>
         )}
 

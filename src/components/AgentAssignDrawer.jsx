@@ -7,7 +7,7 @@ const ICON_COMPONENTS = { Shield, Landmark, Heart, Gavel, Code }
 
 const TIER_STYLES = {
   Free:       'bg-gray-100 text-gray-500',
-  Standard:   'bg-[#009eda]/10 text-[#009eda]',
+  Standard:   'bg-[#3D16FA]/10 text-[#3D16FA]',
   Premium:    'bg-violet-100 text-violet-600',
   Enterprise: 'bg-amber-100 text-amber-700',
 }
@@ -16,7 +16,7 @@ export default function AgentAssignDrawer({ agent, isOpen, onClose, onAssign, is
   if (!agent) return null
 
   const IconComponent = ICON_COMPONENTS[agent.icon] || Shield
-  const iconColor = ICON_COLOR_MAP[agent.icon] || '#009eda'
+  const iconColor = ICON_COLOR_MAP[agent.icon] || '#3D16FA'
   const tier = agent.roi?.tier
   const tierStyle = TIER_STYLES[tier] || TIER_STYLES.Standard
   const certs = agent.compliance?.certifications || []
@@ -97,7 +97,7 @@ export default function AgentAssignDrawer({ agent, isOpen, onClose, onAssign, is
                   <tr className="bg-gray-50 border-b border-black/[0.08]">
                     <th className="text-left px-3 py-2 text-gray-500 font-semibold">Term</th>
                     <th className="text-left px-3 py-2 text-gray-500 font-semibold">Generic AI</th>
-                    <th className="text-left px-3 py-2 text-[#009eda] font-semibold bg-[#009eda]/[0.04]">
+                    <th className="text-left px-3 py-2 text-[#3D16FA] font-semibold bg-[#3D16FA]/[0.04]">
                       This Agent
                     </th>
                   </tr>
@@ -130,7 +130,7 @@ export default function AgentAssignDrawer({ agent, isOpen, onClose, onAssign, is
             className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-[14px] font-semibold transition-all ${
               isAlreadyAssigned
                 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-default'
-                : 'bg-[#009eda] hover:bg-[#0089c4] text-white cursor-pointer'
+                : 'bg-[#3D16FA] hover:bg-[#0089c4] text-white cursor-pointer'
             }`}
           >
             {isAlreadyAssigned ? (

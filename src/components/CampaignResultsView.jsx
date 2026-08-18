@@ -159,7 +159,7 @@ const DESTINATION_TYPES = [
 ];
 const DELIVERY_STATUS = {
   pending: { label: 'Pending', icon: Clock, color: 'text-gray-400', bg: 'bg-gray-50' },
-  sending: { label: 'Sending', icon: Loader2, color: 'text-[#009eda]', bg: 'bg-[#009eda]/[0.06]' },
+  sending: { label: 'Sending', icon: Loader2, color: 'text-[#3D16FA]', bg: 'bg-[#3D16FA]/[0.06]' },
   sent: { label: 'Invitation sent', icon: CheckCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
   failed: { label: 'Failed', icon: XCircle, color: 'text-red-500', bg: 'bg-red-50' },
 };
@@ -604,15 +604,15 @@ function DeliverView({ campaign, destinations, addDestination, updateDestination
       {/* Primary: Send for Review */}
       {!hasReviewer ? (
         <button type="button" onClick={() => addDestination('reviewer')}
-          className="w-full flex items-center gap-4 p-5 rounded-xl border-2 border-[#009eda]/20 bg-[#009eda]/[0.02] hover:border-[#009eda]/40 hover:bg-[#009eda]/[0.05] group cursor-pointer transition-all text-left">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#009eda]/10 group-hover:bg-[#009eda]/20 transition-colors shrink-0">
-            <Send size={20} className="text-[#009eda]" />
+          className="w-full flex items-center gap-4 p-5 rounded-xl border-2 border-[#3D16FA]/20 bg-[#3D16FA]/[0.02] hover:border-[#3D16FA]/40 hover:bg-[#3D16FA]/[0.05] group cursor-pointer transition-all text-left">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#3D16FA]/10 group-hover:bg-[#3D16FA]/20 transition-colors shrink-0">
+            <Send size={20} className="text-[#3D16FA]" />
           </div>
           <div className="flex-1">
             <p className="text-[14px] font-semibold text-gray-900">Send for Review</p>
             <p className="text-[12px] text-gray-500">Review happens in-platform</p>
           </div>
-          <ArrowRight size={16} className="text-gray-300 group-hover:text-[#009eda] transition-colors" />
+          <ArrowRight size={16} className="text-gray-300 group-hover:text-[#3D16FA] transition-colors" />
         </button>
       ) : (
         <ReviewerInlineForm
@@ -699,10 +699,10 @@ function ReviewerInlineForm({ dest, onChange, onRemove, onSend, defaultNote = ''
 
   // Pending state: inline form
   return (
-    <div className="rounded-xl border border-[#009eda]/20 bg-[#009eda]/[0.02] p-5 space-y-3">
+    <div className="rounded-xl border border-[#3D16FA]/20 bg-[#3D16FA]/[0.02] p-5 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Send size={15} className="text-[#009eda]" />
+          <Send size={15} className="text-[#3D16FA]" />
           <span className="text-[14px] font-semibold text-gray-900">Send for Review</span>
         </div>
         <button type="button" onClick={() => onRemove(dest.id)} className="text-[11px] text-gray-400 hover:text-gray-600 cursor-pointer transition-colors">
@@ -717,7 +717,7 @@ function ReviewerInlineForm({ dest, onChange, onRemove, onSend, defaultNote = ''
           placeholder="name@company.com"
           value={dest.emails ?? ''}
           onChange={e => onChange(dest.id, { emails: e.target.value })}
-          className="w-full rounded-lg border border-black/[0.08] bg-white px-3 py-2 text-[13px] text-gray-800 placeholder:text-gray-400 outline-none focus:border-[#009eda] focus:ring-1 focus:ring-[#009eda]/20 transition"
+          className="w-full rounded-lg border border-black/[0.08] bg-white px-3 py-2 text-[13px] text-gray-800 placeholder:text-gray-400 outline-none focus:border-[#3D16FA] focus:ring-1 focus:ring-[#3D16FA]/20 transition"
         />
       </div>
 
@@ -728,7 +728,7 @@ function ReviewerInlineForm({ dest, onChange, onRemove, onSend, defaultNote = ''
           placeholder="What should the reviewer focus on?"
           value={dest.message ?? ''}
           onChange={e => onChange(dest.id, { message: e.target.value })}
-          className="w-full rounded-lg border border-black/[0.08] bg-white px-3 py-2 text-[13px] text-gray-800 placeholder:text-gray-400 outline-none focus:border-[#009eda] focus:ring-1 focus:ring-[#009eda]/20 transition resize-none"
+          className="w-full rounded-lg border border-black/[0.08] bg-white px-3 py-2 text-[13px] text-gray-800 placeholder:text-gray-400 outline-none focus:border-[#3D16FA] focus:ring-1 focus:ring-[#3D16FA]/20 transition resize-none"
         />
       </div>
 
@@ -736,7 +736,7 @@ function ReviewerInlineForm({ dest, onChange, onRemove, onSend, defaultNote = ''
         type="button"
         onClick={() => onSend(dest.id)}
         disabled={isSending || !dest.emails?.trim()}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#009eda] hover:bg-[#007bb5] text-white text-[13px] font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#3D16FA] hover:bg-[#007bb5] text-white text-[13px] font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isSending ? <><Loader2 size={13} className="animate-spin" /> Sending...</> : <><Send size={13} /> Send for Review</>}
       </button>
@@ -768,7 +768,7 @@ function DeliveryDestinationForm({ dest, onChange, onRemove, onSend }) {
       </div>
       <div className="px-4 pb-3">
         <button type="button" onClick={() => onSend(dest.id)} disabled={dest.status === 'sending' || dest.status === 'sent'}
-          className={`flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 ${dest.type === 'straker' ? 'bg-[#009eda] hover:bg-[#007bb5] text-white' : 'bg-gray-900 hover:bg-gray-800 text-white'}`}>
+          className={`flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 ${dest.type === 'straker' ? 'bg-[#3D16FA] hover:bg-[#007bb5] text-white' : 'bg-gray-900 hover:bg-gray-800 text-white'}`}>
           {dest.status === 'sending' ? <><Loader2 size={11} className="animate-spin" /> Sending...</> : dest.status === 'sent' ? <><CheckCheck size={11} /> Sent</> : <><Send size={11} /> {dest.type === 'straker' ? 'Submit to arbitr' : 'Deliver'}</>}
         </button>
       </div>
@@ -777,7 +777,7 @@ function DeliveryDestinationForm({ dest, onChange, onRemove, onSend }) {
 }
 
 function FormField({ label, placeholder, value, onChange, secure, multiline }) {
-  const cls = "w-full rounded-lg border border-black/[0.08] bg-gray-50 px-2.5 py-1.5 text-[12px] text-gray-800 placeholder:text-gray-400 outline-none focus:border-[#009eda] focus:ring-1 focus:ring-[#009eda]/20 transition";
+  const cls = "w-full rounded-lg border border-black/[0.08] bg-gray-50 px-2.5 py-1.5 text-[12px] text-gray-800 placeholder:text-gray-400 outline-none focus:border-[#3D16FA] focus:ring-1 focus:ring-[#3D16FA]/20 transition";
   return (
     <div>
       <label className="block text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1">{label}</label>
@@ -818,16 +818,16 @@ function ExportWizard({ campaign, onDone }) {
   return (
     <div className="space-y-3">
       {step === 1 && (<div className="space-y-2">
-        {EXPORT_FORMATS.map(f => (<button key={f.id} type="button" onClick={() => setFormatId(f.id)} className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left cursor-pointer transition-all ${formatId === f.id ? 'border-[#009eda] bg-[#009eda]/[0.04]' : 'border-black/[0.08] bg-white hover:border-[#009eda]/30'}`}><div className="flex-1"><p className="text-[13px] font-medium text-gray-800">{f.label}</p><p className="text-[11px] text-gray-400">{f.description}</p></div>{formatId === f.id && <CheckCircle2 size={14} className="text-[#009eda]" />}</button>))}
+        {EXPORT_FORMATS.map(f => (<button key={f.id} type="button" onClick={() => setFormatId(f.id)} className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left cursor-pointer transition-all ${formatId === f.id ? 'border-[#3D16FA] bg-[#3D16FA]/[0.04]' : 'border-black/[0.08] bg-white hover:border-[#3D16FA]/30'}`}><div className="flex-1"><p className="text-[13px] font-medium text-gray-800">{f.label}</p><p className="text-[11px] text-gray-400">{f.description}</p></div>{formatId === f.id && <CheckCircle2 size={14} className="text-[#3D16FA]" />}</button>))}
         <button onClick={() => setStep(2)} className="mt-1 w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-gray-900 text-white text-[13px] font-semibold cursor-pointer hover:bg-gray-800 transition-colors">Next <ChevronRight size={14} /></button>
       </div>)}
       {step === 2 && (<div className="space-y-2">
-        {FOLDER_STRUCTURE_TEMPLATES.map(s => (<button key={s.id} type="button" onClick={() => setStructureId(s.id)} className={`w-full flex items-start gap-3 p-3 rounded-lg border text-left cursor-pointer transition-all ${structureId === s.id ? 'border-[#009eda] bg-[#009eda]/[0.04]' : 'border-black/[0.08] bg-white hover:border-[#009eda]/30'}`}><div className="flex-1"><p className="text-[13px] font-medium text-gray-800">{s.label}</p><p className="text-[11px] font-mono text-gray-400">{s.example}</p></div>{structureId === s.id && <CheckCircle2 size={14} className="text-[#009eda]" />}</button>))}
+        {FOLDER_STRUCTURE_TEMPLATES.map(s => (<button key={s.id} type="button" onClick={() => setStructureId(s.id)} className={`w-full flex items-start gap-3 p-3 rounded-lg border text-left cursor-pointer transition-all ${structureId === s.id ? 'border-[#3D16FA] bg-[#3D16FA]/[0.04]' : 'border-black/[0.08] bg-white hover:border-[#3D16FA]/30'}`}><div className="flex-1"><p className="text-[13px] font-medium text-gray-800">{s.label}</p><p className="text-[11px] font-mono text-gray-400">{s.example}</p></div>{structureId === s.id && <CheckCircle2 size={14} className="text-[#3D16FA]" />}</button>))}
         <div className="flex gap-2 mt-1"><button onClick={() => setStep(1)} className="flex-1 px-4 py-2.5 rounded-lg border border-black/[0.10] text-gray-600 text-[13px] font-medium cursor-pointer hover:bg-gray-50">Back</button><button onClick={() => setStep(3)} className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-gray-900 text-white text-[13px] font-semibold cursor-pointer hover:bg-gray-800">Next <ChevronRight size={14} /></button></div>
       </div>)}
       {step === 3 && (<div className="space-y-3">
         <div className="rounded-lg border border-black/[0.08] bg-white p-3 space-y-2 text-[12px]">{[{l:'Campaign',v:campaign.name},{l:'Documents',v:campaign.documents?.length},{l:'Format',v:EXPORT_FORMATS.find(f=>f.id===formatId)?.label},{l:'Structure',v:FOLDER_STRUCTURE_TEMPLATES.find(s=>s.id===structureId)?.label}].map(r=>(<div key={r.l} className="flex justify-between"><span className="text-gray-500">{r.l}</span><span className="text-gray-800 font-medium">{r.v}</span></div>))}</div>
-        <div className="flex gap-2"><button onClick={() => setStep(2)} className="flex-1 px-4 py-2.5 rounded-lg border border-black/[0.10] text-gray-600 text-[13px] font-medium cursor-pointer hover:bg-gray-50">Back</button><button onClick={handleDownload} disabled={downloading} className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-[#009eda] text-white text-[13px] font-semibold cursor-pointer hover:bg-[#007bb5] disabled:opacity-60">{downloading ? <><Loader2 size={13} className="animate-spin" /> Generating...</> : <><Download size={13} /> Download .zip</>}</button></div>
+        <div className="flex gap-2"><button onClick={() => setStep(2)} className="flex-1 px-4 py-2.5 rounded-lg border border-black/[0.10] text-gray-600 text-[13px] font-medium cursor-pointer hover:bg-gray-50">Back</button><button onClick={handleDownload} disabled={downloading} className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-[#3D16FA] text-white text-[13px] font-semibold cursor-pointer hover:bg-[#007bb5] disabled:opacity-60">{downloading ? <><Loader2 size={13} className="animate-spin" /> Generating...</> : <><Download size={13} /> Download .zip</>}</button></div>
       </div>)}
     </div>
   );

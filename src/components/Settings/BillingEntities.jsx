@@ -55,7 +55,7 @@ export default function BillingEntities() {
         </div>
         <button
           onClick={() => setShowAdd(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-[#009eda] text-white hover:bg-[#0089bf] transition-colors cursor-pointer shrink-0"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-[#3D16FA] text-white hover:bg-[#0089bf] transition-colors cursor-pointer shrink-0"
         >
           <Plus className="w-3.5 h-3.5" />
           Add entity
@@ -89,21 +89,21 @@ function EntityCard({ entity, isEditing, draft, onDraftChange, onEdit, onSave, o
     <div className="border border-black/[0.08] rounded-xl p-4 bg-white">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
-          <div className="w-8 h-8 rounded-lg bg-[#009eda]/10 flex items-center justify-center shrink-0 mt-0.5">
-            <Building2 className="w-4 h-4 text-[#009eda]" />
+          <div className="w-8 h-8 rounded-lg bg-[#3D16FA]/10 flex items-center justify-center shrink-0 mt-0.5">
+            <Building2 className="w-4 h-4 text-[#3D16FA]" />
           </div>
           <div className="min-w-0">
             {isEditing ? (
               <input
                 value={draft.name}
                 onChange={e => onDraftChange({ ...draft, name: e.target.value })}
-                className="text-[13px] font-semibold text-gray-900 w-full border border-black/[0.12] rounded-md px-2 py-1 mb-2 focus:outline-none focus:ring-1 focus:ring-[#009eda]/40"
+                className="text-[13px] font-semibold text-gray-900 w-full border border-black/[0.12] rounded-md px-2 py-1 mb-2 focus:outline-none focus:ring-1 focus:ring-[#3D16FA]/40"
               />
             ) : (
               <div className="flex items-center gap-2">
                 <p className="text-[13px] font-semibold text-gray-900">{entity.name}</p>
                 {entity.primary && (
-                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-[#009eda]/10 text-[#009eda]">Primary</span>
+                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-[#3D16FA]/10 text-[#3D16FA]">Primary</span>
                 )}
               </div>
             )}
@@ -117,7 +117,7 @@ function EntityCard({ entity, isEditing, draft, onDraftChange, onEdit, onSave, o
               <div className="flex items-center gap-2 mt-0.5">
                 <CreditCard className="w-3 h-3 text-gray-400 shrink-0" />
                 <span className="text-[12px] text-gray-500">{entity.paymentMethod}</span>
-                <button className="text-[11px] text-[#009eda] hover:underline cursor-pointer">Update</button>
+                <button className="text-[11px] text-[#3D16FA] hover:underline cursor-pointer">Update</button>
               </div>
             </div>
           </div>
@@ -130,7 +130,7 @@ function EntityCard({ entity, isEditing, draft, onDraftChange, onEdit, onSave, o
               <button onClick={onCancel} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-black/[0.04] transition-colors cursor-pointer">
                 <X className="w-3.5 h-3.5" />
               </button>
-              <button onClick={onSave} className="p-1.5 rounded-lg text-[#009eda] hover:bg-[#009eda]/10 transition-colors cursor-pointer">
+              <button onClick={onSave} className="p-1.5 rounded-lg text-[#3D16FA] hover:bg-[#3D16FA]/10 transition-colors cursor-pointer">
                 <Check className="w-3.5 h-3.5" />
               </button>
             </>
@@ -160,7 +160,7 @@ function Field({ label, value, isEditing, onChange, short }) {
         <input
           value={value}
           onChange={e => onChange(e.target.value)}
-          className={`text-[12px] text-gray-700 border border-black/[0.12] rounded-md px-2 py-0.5 focus:outline-none focus:ring-1 focus:ring-[#009eda]/40 ${short ? 'w-20' : 'flex-1'}`}
+          className={`text-[12px] text-gray-700 border border-black/[0.12] rounded-md px-2 py-0.5 focus:outline-none focus:ring-1 focus:ring-[#3D16FA]/40 ${short ? 'w-20' : 'flex-1'}`}
         />
       ) : (
         <span className="text-[12px] text-gray-700">{value}</span>
@@ -203,7 +203,7 @@ function AddEntityModal({ onClose, onAdd }) {
               <select
                 value={form.currency}
                 onChange={e => set('currency', e.target.value)}
-                className="w-full text-[12px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#009eda]/40 bg-white"
+                className="w-full text-[12px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#3D16FA]/40 bg-white"
               >
                 {['USD', 'GBP', 'EUR', 'SGD', 'AUD'].map(c => <option key={c}>{c}</option>)}
               </select>
@@ -216,7 +216,7 @@ function AddEntityModal({ onClose, onAdd }) {
           <button
             onClick={() => valid && onAdd(form)}
             disabled={!valid}
-            className={`px-4 py-1.5 rounded-lg text-[12px] font-medium transition-colors ${valid ? 'bg-[#009eda] text-white hover:bg-[#0089bf] cursor-pointer' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
+            className={`px-4 py-1.5 rounded-lg text-[12px] font-medium transition-colors ${valid ? 'bg-[#3D16FA] text-white hover:bg-[#0089bf] cursor-pointer' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
           >
             Add entity
           </button>
@@ -234,7 +234,7 @@ function FormField({ label, value, onChange, placeholder }) {
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full text-[12px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#009eda]/40 placeholder:text-gray-300"
+        className="w-full text-[12px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#3D16FA]/40 placeholder:text-gray-300"
       />
     </div>
   )

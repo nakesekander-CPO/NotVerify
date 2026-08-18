@@ -118,7 +118,7 @@ function SelectField({ label, value, onChange, options }) {
       <select
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="w-full text-[12px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#009eda]/40 bg-white"
+        className="w-full text-[12px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#3D16FA]/40 bg-white"
       >
         <option value="">Select…</option>
         {options.map(o => (
@@ -137,7 +137,7 @@ function TextField({ label, value, onChange, placeholder }) {
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full text-[12px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#009eda]/40 placeholder:text-gray-300"
+        className="w-full text-[12px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#3D16FA]/40 placeholder:text-gray-300"
       />
     </div>
   )
@@ -262,7 +262,7 @@ function WorkflowBuilder({ connectedIntegrations }) {
               value={bName}
               onChange={e => setBName(e.target.value)}
               placeholder="e.g. Notify team on completion"
-              className="w-full text-[13px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#009eda]/40 placeholder:text-gray-300"
+              className="w-full text-[13px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#3D16FA]/40 placeholder:text-gray-300"
             />
           </div>
           <div>
@@ -271,7 +271,7 @@ function WorkflowBuilder({ connectedIntegrations }) {
               value={bDescription}
               onChange={e => setBDescription(e.target.value)}
               placeholder="What does this workflow do?"
-              className="w-full text-[13px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#009eda]/40 placeholder:text-gray-300"
+              className="w-full text-[13px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#3D16FA]/40 placeholder:text-gray-300"
             />
           </div>
         </div>
@@ -324,7 +324,7 @@ function WorkflowBuilder({ connectedIntegrations }) {
             <>
               <button
                 onClick={() => setBCondition({ type: '', value: '' })}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-black/[0.12] text-[12px] text-gray-400 hover:border-[#009eda]/40 hover:text-[#009eda] cursor-pointer transition-colors mt-8 h-fit"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-black/[0.12] text-[12px] text-gray-400 hover:border-[#3D16FA]/40 hover:text-[#3D16FA] cursor-pointer transition-colors mt-8 h-fit"
               >
                 <Plus className="w-3 h-3" />
                 Add condition
@@ -385,7 +385,7 @@ function WorkflowBuilder({ connectedIntegrations }) {
             })}
             <button
               onClick={() => setBActions(prev => [...prev, { connectorId: '', actionId: '', config: {} }])}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-black/[0.12] text-[12px] text-gray-400 hover:border-[#009eda]/40 hover:text-[#009eda] cursor-pointer transition-colors mt-8 h-fit"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-black/[0.12] text-[12px] text-gray-400 hover:border-[#3D16FA]/40 hover:text-[#3D16FA] cursor-pointer transition-colors mt-8 h-fit"
             >
               <Plus className="w-3 h-3" />
               Add action
@@ -416,7 +416,7 @@ function WorkflowBuilder({ connectedIntegrations }) {
             onClick={saveWorkflow}
             disabled={!canSave}
             className={`px-4 py-1.5 rounded-lg text-[12px] font-medium transition-colors ${
-              canSave ? 'bg-[#009eda] text-white hover:bg-[#0089bf] cursor-pointer' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              canSave ? 'bg-[#3D16FA] text-white hover:bg-[#0089bf] cursor-pointer' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             }`}
           >
             Save workflow
@@ -494,7 +494,7 @@ function WorkflowBuilder({ connectedIntegrations }) {
             disabled={connectedIntegrations.length === 0}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors ${
               connectedIntegrations.length > 0
-                ? 'bg-[#009eda] text-white hover:bg-[#0089bf] cursor-pointer'
+                ? 'bg-[#3D16FA] text-white hover:bg-[#0089bf] cursor-pointer'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             }`}
           >
@@ -511,7 +511,7 @@ function WorkflowBuilder({ connectedIntegrations }) {
             key={id}
             onClick={() => setTab(id)}
             className={`px-3 py-2 text-[13px] font-medium transition-colors cursor-pointer -mb-px border-b-2 ${
-              tab === id ? 'border-[#009eda] text-[#009eda]' : 'border-transparent text-gray-500 hover:text-gray-700'
+              tab === id ? 'border-[#3D16FA] text-[#3D16FA]' : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
             {label}
@@ -532,9 +532,9 @@ function WorkflowBuilder({ connectedIntegrations }) {
               <Zap className="w-8 h-8 text-gray-200" />
               <p className="text-[13px] text-gray-500 font-medium">No workflows yet</p>
               <div className="flex items-center gap-2">
-                <button onClick={() => setShowTemplates(true)} className="text-[12px] text-[#009eda] hover:underline cursor-pointer">Browse templates</button>
+                <button onClick={() => setShowTemplates(true)} className="text-[12px] text-[#3D16FA] hover:underline cursor-pointer">Browse templates</button>
                 <span className="text-gray-300">or</span>
-                <button onClick={startNew} className="text-[12px] text-[#009eda] hover:underline cursor-pointer">create one from scratch</button>
+                <button onClick={startNew} className="text-[12px] text-[#3D16FA] hover:underline cursor-pointer">create one from scratch</button>
               </div>
             </div>
           ) : (
@@ -632,7 +632,7 @@ function WorkflowBuilder({ connectedIntegrations }) {
                         </div>
                         <button
                           onClick={() => cloneTemplate(template)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-[#009eda] text-white hover:bg-[#0089bf] cursor-pointer shrink-0"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-[#3D16FA] text-white hover:bg-[#0089bf] cursor-pointer shrink-0"
                         >
                           <Copy className="w-3 h-3" />
                           Use

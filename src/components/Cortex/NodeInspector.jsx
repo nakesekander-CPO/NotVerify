@@ -39,7 +39,7 @@ export default function NodeInspector({ fact, onClose }) {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-1.5">
-                <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-amber-deep bg-amber/15 border border-amber/30 rounded-full px-2 py-0.5" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#B3843E] bg-[#FFBD59]/20 border border-[#FFBD59]/45 rounded-full px-2 py-0.5" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
                   <BadgeCheck className="w-3 h-3" /> Verified
                 </span>
                 <MonoLabel>{fact.s}</MonoLabel>
@@ -94,15 +94,15 @@ export default function NodeInspector({ fact, onClose }) {
                   const current = v.includes('Current')
                   return (
                     <div key={v} className="flex flex-col items-center gap-1.5">
-                      <span className={`w-[11px] h-[11px] rounded-full border-2 ${current ? 'bg-amber border-amber-deep' : 'bg-white border-rule'}`} />
-                      <span className={`text-[10px] ${current ? 'text-amber-deep font-semibold' : 'text-mist'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{v}</span>
+                      <span className={`w-[11px] h-[11px] rounded-full border-2 ${current ? 'bg-[#FFBD59] border-[#B3843E]' : 'bg-white border-rule'}`} />
+                      <span className={`text-[10px] ${current ? 'text-[#B3843E] font-semibold' : 'text-mist'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{v}</span>
                     </div>
                   )
                 })}
               </div>
             </div>
             {fact.note && (
-              <p className="mt-3.5 text-[12.5px] text-slate leading-relaxed bg-amber/[0.07] border border-amber/25 rounded-lg px-3 py-2.5">
+              <p className="mt-3.5 text-[12.5px] text-slate leading-relaxed bg-[#FFBD59]/10 border border-[#FFBD59]/35 rounded-lg px-3 py-2.5">
                 {fact.note}
                 <span className="block text-[10.5px] text-mist mt-1" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>— {fact.versions[fact.versions.length - 1]} change note</span>
               </p>

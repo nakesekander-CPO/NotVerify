@@ -46,8 +46,8 @@ export function PlansPanel({ account }) {
           const isCurrent = cta.emphasis === 'current'
           return (
             <div key={cta.planId} aria-label={cta.ariaLabel}
-              className={`rounded-xl bg-white p-5 flex flex-col gap-3 relative ${isCurrent ? 'border-2 border-[#009eda]' : 'border border-black/[0.12]'}`}>
-              {isCurrent && <span className="absolute -top-3 left-4 text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#009eda] text-white">Current plan</span>}
+              className={`rounded-xl bg-white p-5 flex flex-col gap-3 relative ${isCurrent ? 'border-2 border-[#3D16FA]' : 'border border-black/[0.12]'}`}>
+              {isCurrent && <span className="absolute -top-3 left-4 text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#3D16FA] text-white">Current plan</span>}
               <div>
                 <p className="text-[14px] font-bold text-gray-900">{p.name}</p>
                 <p className="text-[11px] text-gray-500 mt-0.5 leading-relaxed">{p.blurb}</p>
@@ -65,7 +65,7 @@ export function PlansPanel({ account }) {
               {isCurrent ? (
                 <div aria-label={cta.ariaLabel} className="mt-auto px-4 py-2.5 rounded-lg text-center text-[13px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Current plan</div>
               ) : cta.emphasis === 'primary' ? (
-                <button aria-label={cta.ariaLabel} className="mt-auto w-full px-4 py-2.5 rounded-lg text-[13px] font-semibold bg-[#009eda] text-white hover:bg-[#0089c4] cursor-pointer">
+                <button aria-label={cta.ariaLabel} className="mt-auto w-full px-4 py-2.5 rounded-lg text-[13px] font-semibold bg-[#3D16FA] text-white hover:bg-[#0089c4] cursor-pointer">
                   {cta.label}
                 </button>
               ) : (
@@ -90,7 +90,7 @@ function ContractPanel({ account }) {
     <div className="space-y-4">
       <Card>
         <div className="flex items-center gap-2 mb-1">
-          <Building2 className="w-4 h-4 text-[#009eda]" />
+          <Building2 className="w-4 h-4 text-[#3D16FA]" />
           <h4 className="text-[13px] font-semibold text-gray-900">Enterprise contract</h4>
           <span className="ml-auto text-[10.5px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Active</span>
         </div>
@@ -102,7 +102,7 @@ function ContractPanel({ account }) {
           <Metric label="Available now" value={w.availableTotal.toLocaleString()} sub="all buckets" />
         </div>
         <div className="mt-4 pt-4 border-t border-black/[0.06] flex items-center gap-2 flex-wrap">
-          <button aria-label="Contact account team about Enterprise plan" className="px-4 py-2 rounded-lg bg-[#009eda] text-white text-[12.5px] font-semibold hover:bg-[#0089c4] cursor-pointer inline-flex items-center gap-1.5">
+          <button aria-label="Contact account team about Enterprise plan" className="px-4 py-2 rounded-lg bg-[#3D16FA] text-white text-[12.5px] font-semibold hover:bg-[#0089c4] cursor-pointer inline-flex items-center gap-1.5">
             <Phone className="w-3.5 h-3.5" /> Contact account team
           </button>
           <button className="px-4 py-2 rounded-lg border border-black/[0.12] text-[12.5px] font-medium text-gray-700 hover:bg-black/[0.03] cursor-pointer">View contract</button>
@@ -162,7 +162,7 @@ function TrustHeader({ account, blurb }) {
   return (
     <>
       <div className="flex items-center gap-2">
-        <ShieldCheck className="w-4 h-4 text-[#009eda]" />
+        <ShieldCheck className="w-4 h-4 text-[#3D16FA]" />
         <h4 className="text-[13px] font-semibold text-gray-900">Trust Credits</h4>
         <span className="ml-auto text-[11px] text-gray-400 tabular-nums">
           {account.trustCredits.used} of {account.trustCredits.grantThisCycle} used · {account.trustCredits.available} available
@@ -194,12 +194,12 @@ function TrustCardTopUp({ account, appendTrustLedger, appendReceipt }) {
       <div className="flex items-center gap-2 flex-wrap">
         {TRUST_OPTIONS.map((o, i) => (
           <button key={o.credits} onClick={() => setSel(i)}
-            className={`text-left rounded-lg border px-3 py-2 cursor-pointer transition-colors ${sel === i ? 'border-[#009eda] bg-[#009eda]/5' : 'border-black/[0.12] hover:border-black/[0.25]'}`}>
+            className={`text-left rounded-lg border px-3 py-2 cursor-pointer transition-colors ${sel === i ? 'border-[#3D16FA] bg-[#3D16FA]/5' : 'border-black/[0.12] hover:border-black/[0.25]'}`}>
             <span className="text-[12.5px] font-semibold text-gray-900">{o.label} — {fmtMoney(trustPriceFor(o.credits))}</span>
             {o.bundle && <span className="ml-1.5 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Bundle</span>}
           </button>
         ))}
-        <button onClick={buy} className="ml-auto px-4 py-2 rounded-lg bg-[#009eda] text-white text-[12.5px] font-semibold hover:bg-[#0089c4] cursor-pointer">
+        <button onClick={buy} className="ml-auto px-4 py-2 rounded-lg bg-[#3D16FA] text-white text-[12.5px] font-semibold hover:bg-[#0089c4] cursor-pointer">
           Pay {fmtMoney(price)}
         </button>
       </div>
@@ -214,10 +214,10 @@ function PackageGrid({ selected, onSelect }) {
     <div className="grid grid-cols-5 gap-2">
       {pkgs.map((p, i) => (
         <button key={p.credits} onClick={() => onSelect(i)}
-          className={`text-left rounded-lg border p-3 cursor-pointer transition-colors ${selected === i ? 'border-[#009eda] bg-[#009eda]/5' : 'border-black/[0.12] hover:border-black/[0.25]'}`}>
+          className={`text-left rounded-lg border p-3 cursor-pointer transition-colors ${selected === i ? 'border-[#3D16FA] bg-[#3D16FA]/5' : 'border-black/[0.12] hover:border-black/[0.25]'}`}>
           <div className="flex items-center justify-between gap-1 min-h-[16px]">
             <span className="text-[10px] text-gray-400 tabular-nums">${p.rate.toFixed(4)}/cr</span>
-            {p.bestValue && <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#009eda] text-white font-semibold">Best value</span>}
+            {p.bestValue && <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#3D16FA] text-white font-semibold">Best value</span>}
             {!p.bestValue && p.save > 0 && <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">−{p.save}%</span>}
           </div>
           <p className="text-[16px] font-bold text-gray-900 mt-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{p.credits.toLocaleString()}</p>
@@ -258,7 +258,7 @@ function CardTopUp({ account, appendLedger, appendReceipt }) {
         <div className="flex flex-wrap gap-2 mt-4">
           {[account.cardTopUpsEnabled && ['card', 'Card — Visa •••• 4242'], account.achEnabled && ['ach', 'ACH — instant credit, 2–3 day settlement']].filter(Boolean).map(([id, label]) => (
             <button key={id} onClick={() => setMethod(id)}
-              className={`px-3 py-2 rounded-lg border text-[12px] cursor-pointer ${method === id ? 'border-[#009eda] bg-[#009eda]/5 text-gray-900' : 'border-black/[0.12] text-gray-600 hover:border-black/[0.25]'}`}>
+              className={`px-3 py-2 rounded-lg border text-[12px] cursor-pointer ${method === id ? 'border-[#3D16FA] bg-[#3D16FA]/5 text-gray-900' : 'border-black/[0.12] text-gray-600 hover:border-black/[0.25]'}`}>
               {label}
             </button>
           ))}
@@ -268,7 +268,7 @@ function CardTopUp({ account, appendLedger, appendReceipt }) {
             <p className="text-[16px] font-bold text-gray-900">{pkg.credits.toLocaleString()} credits · {fmtMoney(pkg.price)}</p>
             <p className="text-[10.5px] text-gray-400">${pkg.rate.toFixed(4)} per credit{pkg.save > 0 ? ` · ${pkg.save}% below baseline` : ' · baseline rate'}</p>
           </div>
-          <button onClick={buy} className="px-5 py-2.5 rounded-lg bg-[#009eda] text-white text-[13px] font-semibold hover:bg-[#0089c4] cursor-pointer">
+          <button onClick={buy} className="px-5 py-2.5 rounded-lg bg-[#3D16FA] text-white text-[13px] font-semibold hover:bg-[#0089c4] cursor-pointer">
             Pay {fmtMoney(pkg.price)}
           </button>
         </div>
@@ -278,7 +278,7 @@ function CardTopUp({ account, appendLedger, appendReceipt }) {
       <Card>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#009eda]" />
+            <Sparkles className="w-4 h-4 text-[#3D16FA]" />
             <h4 className="text-[13px] font-semibold text-gray-900">Auto top-up</h4>
           </div>
           <Toggle on={auto.enabled} onChange={() => setAuto(s => ({ ...s, enabled: !s.enabled }))} label={auto.enabled ? 'Enabled' : 'Off'} />
@@ -387,7 +387,7 @@ function InvoiceTopUp({ account, appendLedger, appendTrustLedger }) {
           </div>
           {trustAvailable && (
             <div className="grid grid-cols-[120px_1fr_auto] gap-3 items-center">
-              <span className="text-[12px] font-medium text-gray-700 inline-flex items-center gap-1"><ShieldCheck className="w-3.5 h-3.5 text-[#009eda]" /> Trust</span>
+              <span className="text-[12px] font-medium text-gray-700 inline-flex items-center gap-1"><ShieldCheck className="w-3.5 h-3.5 text-[#3D16FA]" /> Trust</span>
               <select value={tc} onChange={e => setTc(Number(e.target.value))} className="w-full px-2.5 py-1.5 rounded-md border border-black/[0.12] text-[12px] bg-white">
                 {TC_AMOUNTS.map(v => (
                   <option key={v} value={v}>{v === 0 ? 'None' : `${v} credits — ${fmtMoney(trustPriceFor(v))}${v === 3 ? ' (bundle)' : ''}`}</option>
@@ -427,7 +427,7 @@ function InvoiceTopUp({ account, appendLedger, appendTrustLedger }) {
               {items.map(it => (
                 <li key={it.type} className="flex items-center justify-between text-[12px]">
                   <span className="inline-flex items-center gap-1.5 text-gray-700">
-                    {it.type === 'trust' ? <ShieldCheck className="w-3.5 h-3.5 text-[#009eda]" /> : <Sparkles className="w-3.5 h-3.5 text-gray-400" />}
+                    {it.type === 'trust' ? <ShieldCheck className="w-3.5 h-3.5 text-[#3D16FA]" /> : <Sparkles className="w-3.5 h-3.5 text-gray-400" />}
                     {requestLineLabel(it)}
                     <span className="text-[10px] text-gray-400">→ {it.type === 'trust' ? 'Trust wallet' : 'Intelligence wallet'}</span>
                   </span>
@@ -448,7 +448,7 @@ function InvoiceTopUp({ account, appendLedger, appendTrustLedger }) {
             )}
             <button onClick={submit} disabled={!validation.ok}
               title={validation.ok ? undefined : validation.errors.join(' ')}
-              className="px-4 py-2.5 rounded-lg bg-[#009eda] text-white text-[13px] font-semibold hover:bg-[#0089c4] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+              className="px-4 py-2.5 rounded-lg bg-[#3D16FA] text-white text-[13px] font-semibold hover:bg-[#0089c4] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
               Submit purchase request
             </button>
             </div>
@@ -466,14 +466,14 @@ function InvoiceTopUp({ account, appendLedger, appendTrustLedger }) {
                 <div className="min-w-0">
                   <p className="text-gray-900 font-medium">
                     {r.id}
-                    {r.items.length > 1 && <span className="ml-1.5 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#009eda]/10 text-[#0089c4] border border-[#009eda]/20 font-semibold">Combined</span>}
+                    {r.items.length > 1 && <span className="ml-1.5 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#3D16FA]/10 text-[#0089c4] border border-[#3D16FA]/20 font-semibold">Combined</span>}
                   </p>
                   {/* Separate, itemized line items per credit type */}
                   <ul className="mt-1 space-y-0.5">
                     {r.items.map(it => (
                       <li key={it.type} className="flex items-center gap-1.5 text-[11.5px] text-gray-600">
                         {it.type === 'trust'
-                          ? <ShieldCheck className="w-3 h-3 text-[#009eda] shrink-0" />
+                          ? <ShieldCheck className="w-3 h-3 text-[#3D16FA] shrink-0" />
                           : <Sparkles className="w-3 h-3 text-gray-400 shrink-0" />}
                         <span className="text-gray-800">{requestLineLabel(it)}</span>
                         <span className="text-gray-400">→ {it.type === 'trust' ? 'Trust wallet' : 'Intelligence wallet'}</span>
@@ -491,7 +491,7 @@ function InvoiceTopUp({ account, appendLedger, appendTrustLedger }) {
                   <StatusPill status={r.status} />
                   {r.status !== 'completed' && (
                     <button onClick={() => grant(r)}
-                      className="text-[10.5px] text-[#009eda] hover:text-[#0089c4] cursor-pointer whitespace-nowrap font-medium">
+                      className="text-[10.5px] text-[#3D16FA] hover:text-[#0089c4] cursor-pointer whitespace-nowrap font-medium">
                       Mark paid &amp; grant →
                     </button>
                   )}
@@ -546,7 +546,7 @@ export function UsageLedgerPanel({ account, filter, setFilter }) {
         <div className="flex items-center gap-1">
           {[['all', 'All wallet activity'], ...Object.entries(BUCKET_LABEL)].map(([id, label]) => (
             <button key={id} onClick={() => setFilter(id)}
-              className={`px-2.5 py-1 rounded-md text-[11px] font-medium cursor-pointer transition-colors ${filter === id ? 'bg-[#009eda] text-white' : 'text-gray-500 hover:bg-black/[0.04]'}`}>
+              className={`px-2.5 py-1 rounded-md text-[11px] font-medium cursor-pointer transition-colors ${filter === id ? 'bg-[#3D16FA] text-white' : 'text-gray-500 hover:bg-black/[0.04]'}`}>
               {label}
             </button>
           ))}
@@ -598,7 +598,7 @@ export function UsageLedgerPanel({ account, filter, setFilter }) {
       {account.trustCredits?.ledger?.length > 0 && (
         <Card>
           <div className="flex items-center gap-2 mb-2">
-            <ShieldCheck className="w-4 h-4 text-[#009eda]" />
+            <ShieldCheck className="w-4 h-4 text-[#3D16FA]" />
             <h4 className="text-[13px] font-semibold text-gray-900">Trust Credit activity</h4>
             <span className="ml-auto text-[11px] text-gray-400 tabular-nums">
               {account.trustCredits.available} available · {account.trustCredits.used} of {account.trustCredits.grantThisCycle} used this cycle
@@ -647,7 +647,7 @@ export function InvoicesPanel({ account, filter = 'all', setFilter, onPayAll, pa
           {filter === 'past_due' && (
             <span className="ml-2 text-[11px] font-normal text-gray-500">
               showing past-due only ·{' '}
-              <button onClick={() => setFilter?.('all')} className="text-[#009eda] hover:text-[#0089c4] cursor-pointer underline underline-offset-2">Show all</button>
+              <button onClick={() => setFilter?.('all')} className="text-[#3D16FA] hover:text-[#0089c4] cursor-pointer underline underline-offset-2">Show all</button>
             </span>
           )}
         </h4>
@@ -669,12 +669,12 @@ export function InvoicesPanel({ account, filter = 'all', setFilter, onPayAll, pa
         const inv = account.invoices.find(i => i.id === payOpen)
         if (!inv) return null
         return (
-          <div className="rounded-lg border border-[#009eda]/25 bg-[#009eda]/5 p-4 text-[12px] text-gray-800">
+          <div className="rounded-lg border border-[#3D16FA]/25 bg-[#3D16FA]/5 p-4 text-[12px] text-gray-800">
             <div className="flex items-start justify-between gap-3">
               <div className="space-y-1.5">
                 <p className="font-semibold text-gray-900">Pay {inv.id} · {fmtMoney(inv.amount)}{inv.status === 'past_due' ? ` · past due since ${fmtDate(inv.dueDate)}` : ` · due ${fmtDate(inv.dueDate)}`}</p>
                 <p>Pay by bank transfer using the remittance details on the invoice PDF. Include the invoice number <span className="font-mono">{inv.id}</span>{inv.po ? <> and PO <span className="font-mono">{inv.po}</span></> : null} in the payment reference.</p>
-                <p className="text-gray-600">Status updates within 1 business day of receipt{inv.status === 'past_due' ? '; paying clears the past-due hold on new credit grants' : ''}. Questions or disputes: <span className="text-[#009eda]">billing@arbitr.com</span>.</p>
+                <p className="text-gray-600">Status updates within 1 business day of receipt{inv.status === 'past_due' ? '; paying clears the past-due hold on new credit grants' : ''}. Questions or disputes: <span className="text-[#3D16FA]">billing@arbitr.com</span>.</p>
                 {account.cardTopUpsEnabled && (
                   <button className="mt-1 px-3 py-1.5 rounded-md border border-black/[0.12] text-[11.5px] text-gray-700 hover:bg-white cursor-pointer">Pay by card for this one-time invoice</button>
                 )}
@@ -707,8 +707,8 @@ export function InvoicesPanel({ account, filter = 'all', setFilter, onPayAll, pa
                 <td className="px-4 py-2.5"><StatusPill status={inv.status} /></td>
                 <td className={`px-4 py-2.5 tabular-nums whitespace-nowrap hidden md:table-cell ${inv.status === 'past_due' ? 'text-red-600 font-medium' : 'text-gray-500'}`}>{fmtDate(inv.dueDate)}</td>
                 <td className="px-4 py-2.5 whitespace-nowrap text-right min-w-[132px] sticky right-0 bg-white shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.12)]">
-                  <button aria-label={`Download invoice ${inv.id}`} className="text-[11px] text-[#009eda] hover:text-[#0089c4] cursor-pointer mr-3 px-1 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009eda]/40">Download</button>
-                  {inv.status !== 'paid' && <button onClick={() => setPayOpen(inv.id)} aria-label={`Pay invoice ${inv.id}`} className="text-[11px] text-[#009eda] hover:text-[#0089c4] cursor-pointer px-1 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009eda]/40">Pay</button>}
+                  <button aria-label={`Download invoice ${inv.id}`} className="text-[11px] text-[#3D16FA] hover:text-[#0089c4] cursor-pointer mr-3 px-1 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3D16FA]/40">Download</button>
+                  {inv.status !== 'paid' && <button onClick={() => setPayOpen(inv.id)} aria-label={`Pay invoice ${inv.id}`} className="text-[11px] text-[#3D16FA] hover:text-[#0089c4] cursor-pointer px-1 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3D16FA]/40">Pay</button>}
                 </td>
               </tr>
             ))}
@@ -757,7 +757,7 @@ export function PaymentsReceiptsPanel({ account }) {
                 <td className="px-4 py-2.5 text-gray-500 tabular-nums whitespace-nowrap">{fmtDate(r.date)}</td>
                 <td className="px-4 py-2.5 text-gray-700 whitespace-nowrap hidden md:table-cell">
                   {r.type}
-                  {r.creditType === 'trust' && <span className="ml-1.5 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#009eda]/10 text-[#0089c4] border border-[#009eda]/20 font-semibold">Trust</span>}
+                  {r.creditType === 'trust' && <span className="ml-1.5 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#3D16FA]/10 text-[#0089c4] border border-[#3D16FA]/20 font-semibold">Trust</span>}
                 </td>
                 <td className="px-4 py-2.5 text-gray-500 max-w-[150px] truncate hidden md:table-cell" title={r.method}>{r.method}</td>
                 <td className="px-4 py-2.5 text-gray-900 tabular-nums whitespace-nowrap">{fmtMoney(r.amount)}</td>
@@ -765,7 +765,7 @@ export function PaymentsReceiptsPanel({ account }) {
                 <td className="px-4 py-2.5 text-right whitespace-nowrap min-w-[104px] sticky right-0 bg-white shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.12)]">
                   <button
                     aria-label={`Download receipt ${r.id}`}
-                    className="text-[11px] text-[#009eda] hover:text-[#0089c4] cursor-pointer px-1 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009eda]/40"
+                    className="text-[11px] text-[#3D16FA] hover:text-[#0089c4] cursor-pointer px-1 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3D16FA]/40"
                   >
                     Download
                   </button>

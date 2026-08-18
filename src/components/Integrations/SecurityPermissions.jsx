@@ -141,7 +141,7 @@ export default function SecurityPermissions({ connectedIntegrations }) {
           <button
             onClick={() => setRequireApproval(!requireApproval)}
             className={`relative w-10 h-5.5 rounded-full transition-colors shrink-0 cursor-pointer focus:outline-none mt-0.5 ${
-              requireApproval ? 'bg-[#009eda]' : 'bg-gray-200'
+              requireApproval ? 'bg-[#3D16FA]' : 'bg-gray-200'
             }`}
             role="switch"
             aria-checked={requireApproval}
@@ -183,9 +183,9 @@ export default function SecurityPermissions({ connectedIntegrations }) {
                     value={scopeDraft}
                     onChange={e => setScopeDraft(e.target.value)}
                     placeholder="e.g. /Deliverables/Meridian-Capital"
-                    className="flex-1 text-[12px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#009eda]/40"
+                    className="flex-1 text-[12px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#3D16FA]/40"
                   />
-                  <button onClick={() => { setScopes(s => ({ ...s, [conn.id]: scopeDraft })); setScopeEditing(null) }} className="p-1.5 rounded-lg text-[#009eda] hover:bg-[#009eda]/10 cursor-pointer">
+                  <button onClick={() => { setScopes(s => ({ ...s, [conn.id]: scopeDraft })); setScopeEditing(null) }} className="p-1.5 rounded-lg text-[#3D16FA] hover:bg-[#3D16FA]/10 cursor-pointer">
                     <Check className="w-3.5 h-3.5" />
                   </button>
                   <button onClick={() => setScopeEditing(null)} className="p-1.5 rounded-lg text-gray-400 hover:bg-black/[0.04] cursor-pointer">

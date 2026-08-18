@@ -151,7 +151,7 @@ function StepIndicator({ currentPhase }) {
               <div
                 className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-colors ${
                   isActive
-                    ? 'bg-[#1B5E8F] text-white'
+                    ? 'bg-[#3D16FA] text-white'
                     : isComplete
                       ? 'bg-emerald-500 text-white'
                       : 'bg-gray-200 text-gray-500'
@@ -166,7 +166,7 @@ function StepIndicator({ currentPhase }) {
               <span
                 className={`mt-1 text-[10px] font-medium ${
                   isActive
-                    ? 'text-[#1B5E8F]'
+                    ? 'text-[#3D16FA]'
                     : isComplete
                       ? 'text-emerald-400'
                       : 'text-gray-400'
@@ -274,7 +274,7 @@ function ConfigureState({ config, onConfigChange, onNext }) {
           type="text"
           value={agentName}
           onChange={(e) => onConfigChange({ ...config, agentName: e.target.value })}
-          className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-[#1B5E8F]"
+          className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-[#3D16FA]"
           placeholder="e.g. Acme Corp Custom Agent"
         />
       </div>
@@ -294,7 +294,7 @@ function ConfigureState({ config, onConfigChange, onNext }) {
                 onClick={() => toggleFocus(area)}
                 className={`rounded-lg border px-3 py-2 text-xs font-medium transition-colors ${
                   selected
-                    ? 'border-[#1B5E8F] bg-[rgba(27,94,143,0.15)] text-[#1B5E8F]'
+                    ? 'border-[#3D16FA] bg-[rgba(61,22,250,0.15)] text-[#3D16FA]'
                     : 'border-gray-300 bg-gray-50 text-gray-500 hover:border-gray-400'
                 }`}
               >
@@ -311,7 +311,7 @@ function ConfigureState({ config, onConfigChange, onNext }) {
         <div className="mb-2 flex items-center justify-between">
           <label className="text-xs font-medium text-gray-500">Quality Target</label>
           <span
-            className="text-sm font-semibold text-[#1B5E8F]"
+            className="text-sm font-semibold text-[#3D16FA]"
             style={{ fontFamily: 'JetBrains Mono, monospace' }}
           >
             {qualityTarget}%
@@ -325,7 +325,7 @@ function ConfigureState({ config, onConfigChange, onNext }) {
           onChange={(e) =>
             onConfigChange({ ...config, qualityTarget: Number(e.target.value) })
           }
-          className="slider-straker w-full accent-[#1B5E8F]"
+          className="slider-straker w-full accent-[#3D16FA]"
         />
         <div className="mt-1 flex justify-between text-[10px] text-gray-400">
           <span>85%</span>
@@ -349,13 +349,13 @@ function ConfigureState({ config, onConfigChange, onNext }) {
                 onClick={() => onConfigChange({ ...config, baseModel: model.id })}
                 className={`flex flex-col items-center gap-2 rounded-lg border p-4 text-center transition-colors ${
                   selected
-                    ? 'border-[#1B5E8F] bg-[rgba(27,94,143,0.1)]'
+                    ? 'border-[#3D16FA] bg-[rgba(61,22,250,0.1)]'
                     : 'border-gray-300 bg-gray-50 hover:border-gray-400'
                 }`}
               >
                 <Icon
                   size={24}
-                  className={selected ? 'text-[#1B5E8F]' : 'text-gray-500'}
+                  className={selected ? 'text-[#3D16FA]' : 'text-gray-500'}
                 />
                 <span
                   className={`text-xs font-semibold ${
@@ -478,7 +478,7 @@ function UploadState({ files, onFilesChange, onBeginTraining, trainingRound, tra
           className="w-full rounded-lg border border-gray-300 bg-gray-50 p-4"
         >
           <h4 className="mb-2 text-xs font-semibold text-gray-700">
-            <RotateCcw size={12} className="mr-1.5 inline text-[#1B5E8F]" />
+            <RotateCcw size={12} className="mr-1.5 inline text-[#3D16FA]" />
             Previous Training
           </h4>
           {trainingHistory.map((round) => (
@@ -511,7 +511,7 @@ function UploadState({ files, onFilesChange, onBeginTraining, trainingRound, tra
         onDrop={handleDrop}
         className={`flex w-full cursor-pointer flex-col items-center gap-3 rounded-lg border-2 border-dashed px-8 py-12 transition-colors ${
           dragging
-            ? 'border-straker-400 bg-[rgba(27,94,143,0.1)]'
+            ? 'border-straker-400 bg-[rgba(61,22,250,0.1)]'
             : 'border-gray-300 bg-white'
         }`}
       >
@@ -665,7 +665,7 @@ function TrainingState({ completedSteps, activeStep, logMessages }) {
         <motion.div
           animate={{ rotate: [0, 360] }}
           transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-          className="rounded-full bg-gradient-to-br from-[#1B5E8F] to-[#34d399] p-5"
+          className="rounded-full bg-gradient-to-br from-[#3D16FA] to-[#34d399] p-5"
         >
           <Brain size={48} className="text-white" />
         </motion.div>
@@ -673,7 +673,7 @@ function TrainingState({ completedSteps, activeStep, logMessages }) {
         {/* Overall progress bar */}
         <div className="h-1.5 w-48 overflow-hidden rounded-full bg-gray-200">
           <motion.div
-            className="h-full rounded-full bg-gradient-to-r from-[#1B5E8F] to-[#34d399]"
+            className="h-full rounded-full bg-gradient-to-r from-[#3D16FA] to-[#34d399]"
             initial={{ width: 0 }}
             animate={{ width: `${overallProgress}%` }}
             transition={{ duration: 0.4 }}
@@ -708,7 +708,7 @@ function TrainingState({ completedSteps, activeStep, logMessages }) {
                   <motion.div
                     animate={{ opacity: [0.4, 1, 0.4] }}
                     transition={{ duration: 1.2, repeat: Infinity }}
-                    className="h-4 w-4 rounded-full bg-[#1B5E8F]"
+                    className="h-4 w-4 rounded-full bg-[#3D16FA]"
                   />
                 ) : (
                   <div className="h-4 w-4 rounded-full border border-gray-300" />
@@ -745,7 +745,7 @@ function TrainingState({ completedSteps, activeStep, logMessages }) {
                       isComplete
                         ? 'bg-emerald-400'
                         : isActive
-                          ? 'bg-[#1B5E8F]'
+                          ? 'bg-[#3D16FA]'
                           : 'bg-transparent'
                     }`}
                     initial={{ width: 0 }}
@@ -957,10 +957,10 @@ function ScoreProgressionChart({ history }) {
     <div className="flex flex-col items-center gap-1">
       <span className="text-[10px] font-medium text-gray-500">Score Progression</span>
       <svg width={chartW} height={chartH} className="overflow-visible">
-        <path d={pathD} fill="none" stroke="#1B5E8F" strokeWidth={2} />
+        <path d={pathD} fill="none" stroke="#3D16FA" strokeWidth={2} />
         {coords.map((c) => (
           <g key={c.round}>
-            <circle cx={c.x} cy={c.y} r={3} fill="#1B5E8F" />
+            <circle cx={c.x} cy={c.y} r={3} fill="#3D16FA" />
             <text
               x={c.x}
               y={c.y - 8}
@@ -1014,7 +1014,7 @@ function CompleteState({ agentName, trainingRound, trainingHistory, previousScor
       >
         {/* Icon area */}
         <div className="mb-6 flex flex-col items-center gap-4">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[#1B5E8F] to-[#34d399]">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[#3D16FA] to-[#34d399]">
             <Building2 size={40} className="text-white" />
           </div>
           <div className="text-center">

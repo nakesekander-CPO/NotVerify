@@ -21,7 +21,7 @@ export default function AgentLibrarySection({ agents, agentStates, onSelectAgent
         aria-controls="agent-library-grid"
       >
         <div className="flex items-center gap-2.5">
-          <Library className="w-4 h-4 text-[#009eda] shrink-0" />
+          <Library className="w-4 h-4 text-[#3D16FA] shrink-0" />
           <span className="text-[13px] font-semibold text-gray-900">Agent Library</span>
           <span className="text-[11px] text-gray-400">
             {activeCount} agents available

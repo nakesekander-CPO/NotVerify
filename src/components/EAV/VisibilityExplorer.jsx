@@ -101,7 +101,7 @@ function ResponseDrawer({ obs, onClose }) {
           {obs.competitors.length > 0 && (
             <div>
               <MonoLabel>Competitors present</MonoLabel>
-              <div className="flex flex-wrap gap-1.5 mt-1.5">{obs.competitors.map(c => <span key={c} className="text-[11px] px-2 py-0.5 rounded-full bg-amber/10 text-amber-deep border border-amber/30">{c}</span>)}</div>
+              <div className="flex flex-wrap gap-1.5 mt-1.5">{obs.competitors.map(c => <span key={c} className="text-[11px] px-2 py-0.5 rounded-full bg-[#FFF7E6] text-[#996800] border border-[#FFB000]/40">{c}</span>)}</div>
             </div>
           )}
           <div className="pt-3 border-t border-rule">

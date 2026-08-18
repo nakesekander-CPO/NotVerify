@@ -10,7 +10,7 @@ export function Card({ children, className = '' }) {
 export function Toggle({ on, onChange, label }) {
   return (
     <button type="button" onClick={onChange} className="inline-flex items-center gap-2 cursor-pointer overflow-visible select-none">
-      <span className={`relative shrink-0 rounded-full transition-colors ${on ? 'bg-[#009eda]' : 'bg-gray-200'}`} style={{ width: 32, height: 18 }}>
+      <span className={`relative shrink-0 rounded-full transition-colors ${on ? 'bg-[#3D16FA]' : 'bg-gray-200'}`} style={{ width: 32, height: 18 }}>
         <span
           className="absolute top-[2px] w-3.5 h-3.5 rounded-full bg-white shadow transition-transform"
           style={{ left: 2, transform: on ? 'translateX(14px)' : 'translateX(0)' }}
@@ -33,9 +33,9 @@ export function Field({ label, children }) {
 export function StatusPill({ status }) {
   const map = {
     paid:      ['Paid', 'bg-emerald-100 text-emerald-700 border-emerald-200'],
-    open:      ['Open', 'bg-[#009eda]/10 text-[#0089c4] border-[#009eda]/20'],
+    open:      ['Open', 'bg-[#3D16FA]/10 text-[#0089c4] border-[#3D16FA]/20'],
     past_due:  ['Past due', 'bg-red-50 text-red-700 border-red-200'],
-    invoiced:  ['Invoiced', 'bg-[#009eda]/10 text-[#0089c4] border-[#009eda]/20'],
+    invoiced:  ['Invoiced', 'bg-[#3D16FA]/10 text-[#0089c4] border-[#3D16FA]/20'],
     requested: ['Requested', 'bg-violet-50 text-violet-700 border-violet-200'],
     completed: ['Completed', 'bg-emerald-100 text-emerald-700 border-emerald-200'],
     rejected:  ['Rejected', 'bg-red-50 text-red-700 border-red-200'],
