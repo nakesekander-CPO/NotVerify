@@ -88,7 +88,7 @@ export function NewProjectWizard({ onCreate }) {
               <p className="text-[13px] text-ink">Drop a PDF, PowerPoint, or media file here</p>
               <p className="text-[11px] text-mist mt-0.5">適時開示・四半期報告書・決算説明資料・有価証券報告書・動画</p>
             </div>
-            <MonoLabel>Or pick a sample file (demo)</MonoLabel>
+            <MonoLabel>Or pick a sample file</MonoLabel>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
               {SAMPLE_FILES.map(f => (
                 <button key={f.name} onClick={() => pickFile(f)}

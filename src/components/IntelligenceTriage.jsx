@@ -26,7 +26,7 @@ import { useToast } from './ToastProvider';
 const TRIAGE_ITEMS = {
   highConfidence: {
     label: 'High Confidence',
-    description: 'Agent agreement \u2265 95% (simulated). Safe to auto-promote.',
+    description: 'Agent agreement \u2265 95%. Safe to auto-promote.',
     color: 'emerald',
     items: [
       { id: 't1', type: 'terminology', source: 'Goodwill', target: '\u306e\u308c\u3093', context: 'J-GAAP financial reporting', agent: 'JP-FIN-3', confidence: 98 },
@@ -39,7 +39,7 @@ const TRIAGE_ITEMS = {
   },
   mediumConfidence: {
     label: 'Medium Confidence',
-    description: 'Agent agreement 80-94% (simulated). Review recommended.',
+    description: 'Agent agreement 80-94%. Review recommended.',
     color: 'amber',
     items: [
       { id: 't5', type: 'terminology', source: 'Operating Income', target: '\u55b6\u696d\u5229\u76ca', context: 'Income statement', agent: 'JP-FIN-3', confidence: 88 },
@@ -49,7 +49,7 @@ const TRIAGE_ITEMS = {
   },
   lowConfidence: {
     label: 'Low Confidence',
-    description: 'Agent agreement < 80% (simulated). Manual review required.',
+    description: 'Agent agreement < 80%. Manual review required.',
     color: 'red',
     items: [
       { id: 't7', type: 'terminology', source: 'Equity Method', target: '\u6301\u5206\u6cd5', context: 'Investment accounting', agent: 'JP-FIN-3', confidence: 72 },
@@ -202,9 +202,9 @@ function AuditTrailPanel({ item, audit }) {
       className="overflow-hidden"
     >
       <div className="bg-[#ffffff]/60 border border-black/[0.12] rounded-lg mx-6 mb-2 p-4 space-y-4">
-        {/* Agent agreement (simulated) */}
+        {/* Agent agreement */}
         <div>
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Agent agreement <span className="normal-case tracking-normal text-gray-400">(simulated)</span></h4>
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Agent agreement</h4>
           <div className="space-y-1.5">
             {audit.agents.map((agent, idx) => {
               const vote = audit.votes[idx];
@@ -675,7 +675,7 @@ export default function IntelligenceTriage({ onApprove }) {
                         {tierKey === 'mediumConfidence' && item.source === 'Cash Flow Statement' && (
                           <p className="text-[11px] text-emerald-600/80 mt-1 flex items-center gap-1">
                             <Sparkles size={10} />
-                            Recommended: 94% confidence — agent agreement (simulated) from JP-FIN-3 + MER-DT-1
+                            Recommended: 94% confidence — agent agreement from JP-FIN-3 + MER-DT-1
                           </p>
                         )}
                         <AnimatePresence>

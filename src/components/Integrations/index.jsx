@@ -386,7 +386,7 @@ export default function IntegrationsHub({ onBack, connectedIntegrations, onConne
 
           <p className="text-[12px] text-center text-gray-400 mt-8">
             Don't see your tool?{' '}
-            <button onClick={() => addToast('Integration request logged — the connector team will follow up (demo)', 'success')} className="text-[#3D16FA] hover:underline cursor-pointer">Request an integration</button>
+            <button onClick={() => addToast('Integration request logged — the connector team will follow up', 'success')} className="text-[#3D16FA] hover:underline cursor-pointer">Request an integration</button>
           </p>
         </div>
       )}

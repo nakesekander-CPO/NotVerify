@@ -144,8 +144,8 @@ export default function SwiftBridge({ currentUserId, navigate, onBack }) {
       <footer className="pt-2 border-t border-rule flex items-center justify-between text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
         <span>© 2026 SwiftBridge K.K. · Operated on the arbitr platform（アビタAI）</span>
         <span className="flex gap-4">
-          <button onClick={() => downloadText('swiftbridge-terms.txt', 'SwiftBridge 利用規約 / Terms of Service — placeholder legal copy (demo).')} className="hover:text-slate cursor-pointer underline underline-offset-2">利用規約 Terms</button>
-          <button onClick={() => downloadText('swiftbridge-privacy.txt', 'SwiftBridge プライバシーポリシー / Privacy Policy — placeholder legal copy (demo).')} className="hover:text-slate cursor-pointer underline underline-offset-2">プライバシーポリシー Privacy</button>
+          <button onClick={() => downloadText('swiftbridge-terms.txt', 'SwiftBridge 利用規約 / Terms of Service — placeholder legal copy.')} className="hover:text-slate cursor-pointer underline underline-offset-2">利用規約 Terms</button>
+          <button onClick={() => downloadText('swiftbridge-privacy.txt', 'SwiftBridge プライバシーポリシー / Privacy Policy — placeholder legal copy.')} className="hover:text-slate cursor-pointer underline underline-offset-2">プライバシーポリシー Privacy</button>
         </span>
       </footer>
     </div>

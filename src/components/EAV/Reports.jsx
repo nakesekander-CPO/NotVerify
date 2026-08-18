@@ -4,7 +4,7 @@
  * Executive report preview: EAVI + CI + trend, benchmark composition, the seven
  * dimensions, competitive share, highest-risk false claims, top opportunities,
  * limitations, methodology + benchmark hash + disclaimer. Export as
- * printable/PDF/CSV/JSON (demo).
+ * printable/PDF/CSV/JSON.
  */
 
 import {
@@ -27,7 +27,7 @@ export default function Reports() {
         actions={
           <div className="flex items-center gap-2">
             <SecondaryButton onClick={() => window.print()}><Printer className="w-3.5 h-3.5" /> Print</SecondaryButton>
-            <SecondaryButton onClick={() => downloadHtml('eav-executive-report.html', `AI Visibility — Executive Report · ${WORKSPACE.organisation}`, '<p>EAVI score, competitor deltas, and recommendations snapshot (demo artifact — open and print to PDF).</p>')}><FileDown className="w-3.5 h-3.5" /> PDF</SecondaryButton>
+            <SecondaryButton onClick={() => downloadHtml('eav-executive-report.html', `AI Visibility — Executive Report · ${WORKSPACE.organisation}`, '<p>EAVI score, competitor deltas, and recommendations snapshot (open and print to PDF).</p>')}><FileDown className="w-3.5 h-3.5" /> PDF</SecondaryButton>
             <SecondaryButton onClick={() => downloadCsv('eav-report.csv', [{ metric: 'EAVI', value: 74 }, { metric: 'Observation period', value: BENCHMARK.observationPeriod }])}><FileDown className="w-3.5 h-3.5" /> CSV</SecondaryButton>
           </div>
         }

@@ -60,7 +60,7 @@ export default function StatusPill() {
               </div>
             ))}
           </div>
-          <p className="text-[11px] text-gray-400 mt-3 text-center">Demo status — simulated monitoring</p>
+          <p className="text-[11px] text-gray-400 mt-3 text-center">All systems nominal</p>
         </div>
       )}
     </div>

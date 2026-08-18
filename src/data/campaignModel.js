@@ -294,7 +294,7 @@ export function simulateCampaignResults(campaign) {
   }
 }
 
-/* ─── Sample campaign (demo) ─────────────────────────────────── */
+/* ─── Sample campaign ─────────────────────────────────── */
 
 /**
  * Pre-built demo campaign for the "Try with samples" CTA.

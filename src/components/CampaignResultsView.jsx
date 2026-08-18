@@ -470,7 +470,7 @@ export default function CampaignResultsView({ campaign, threshold = 85, onReset,
                       <div><p className="text-[12px] text-gray-700 font-medium">quality_report.pdf</p><p className="text-[10px] text-gray-400">Quality Assessment Report</p></div>
                     </div>
                   </div>
-                  <button type="button" onClick={() => downloadText('arbitr-batch-deliverables.txt', 'arbitr batch deliverable bundle — demo artifact.\nIncludes: checked documents and quality_report.pdf stub.')} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-amber hover:bg-amber-deep text-white font-semibold text-[12px] transition-all cursor-pointer">
+                  <button type="button" onClick={() => downloadText('arbitr-batch-deliverables.txt', 'arbitr batch deliverable bundle.\nIncludes: checked documents and quality_report.pdf stub.')} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-amber hover:bg-amber-deep text-white font-semibold text-[12px] transition-all cursor-pointer">
                     <Download size={14} /> Download Files
                   </button>
                 </div>

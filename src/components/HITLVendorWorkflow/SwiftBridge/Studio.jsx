@@ -105,7 +105,7 @@ export function DubbingStudio({ job }) {
                     <span key={i} className="flex-1 rounded-sm bg-ocean/40" style={{ height: `${20 + Math.abs(((i * 37) % 60) - 30)}%` }} />
                   ))}
                 </div>
-                <span className="text-[11px] text-mist tabular-nums" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{playing ? '0:07' : '0:00'} / 3:04 {playing && '· playing (demo)'}</span>
+                <span className="text-[11px] text-mist tabular-nums" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{playing ? '0:07' : '0:00'} / 3:04 {playing && '· playing'}</span>
               </div>
               <p className="text-[11px] text-slate">Voice: {VOICE_OPTIONS.find(v => v.id === voiceId)?.name} · {VOICE_OPTIONS.find(v => v.id === voiceId)?.tone}. Preview is regenerated whenever the script or voice changes.</p>
               <button onClick={advance} className="px-4 py-2 rounded-lg bg-ocean text-white text-[12.5px] font-semibold hover:bg-ocean/90 cursor-pointer">Send for approval →</button>

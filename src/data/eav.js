@@ -3,7 +3,7 @@
  *
  * Frontend demo, isolated so real APIs can replace it later. Everything here is
  * FIXTURE data for a fictional workspace ("Northstar Business School") — it is
- * clearly labelled "Demo data" in the UI and must never be presented as live.
+ * fixture data; the in-UI provenance chip was removed per ruling 2026-08-18.
  *
  * The score is the Enterprise AI Visibility Index (EAVI), computed by the
  * versioned, reproducible `computeEAVI` below. Vocabulary follows the spec:

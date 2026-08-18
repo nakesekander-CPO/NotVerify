@@ -4,7 +4,7 @@
  * Mounted as the `ai-visibility` phase (nav sibling of Cortex / Analytics).
  * 14 sections grouped by lifecycle (Measure · Improve · Monitor · Measure
  * Outcomes). Everything is FIXTURE data for the seeded Northstar workspace
- * (the header carries a "Demo data" provenance label).
+ * (the header provenance chip was removed per ruling 2026-08-18).
  */
 
 import { useState } from 'react'

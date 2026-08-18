@@ -120,7 +120,7 @@ function EntityCard({ entity, isEditing, draft, onDraftChange, onEdit, onSave, o
               <div className="flex items-center gap-2 mt-0.5">
                 <CreditCard className="w-3 h-3 text-gray-400 shrink-0" />
                 <span className="text-[12px] text-gray-500">{entity.paymentMethod}</span>
-                <button onClick={() => addToast('Payment-method update link emailed to the billing contact (demo)', 'success')} className="text-[11px] text-[#3D16FA] hover:underline cursor-pointer">Update</button>
+                <button onClick={() => addToast('Payment-method update link emailed to the billing contact', 'success')} className="text-[11px] text-[#3D16FA] hover:underline cursor-pointer">Update</button>
               </div>
             </div>
           </div>
@@ -143,7 +143,7 @@ function EntityCard({ entity, isEditing, draft, onDraftChange, onEdit, onSave, o
                 <Edit2 className="w-3 h-3" />
                 Edit
               </button>
-              <button onClick={() => addToast(`${entity.name} archived — restore any time from account settings (demo)`, 'info')} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px] text-gray-400 hover:bg-black/[0.04] hover:text-gray-600 transition-colors cursor-pointer border border-black/[0.06]">
+              <button onClick={() => addToast(`${entity.name} archived — restore any time from account settings`, 'info')} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px] text-gray-400 hover:bg-black/[0.04] hover:text-gray-600 transition-colors cursor-pointer border border-black/[0.06]">
                 <Archive className="w-3 h-3" />
                 Archive
               </button>

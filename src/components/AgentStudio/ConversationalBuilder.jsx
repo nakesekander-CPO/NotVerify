@@ -1,5 +1,5 @@
 /**
- * Agent Studio — conversational builder (simulated).
+ * Agent Studio — conversational builder.
  *
  * Ported from the standalone arbitr Agent Studio prototype: describe a job
  * in plain language, the builder plans first (job → shape → risks → an
@@ -340,7 +340,7 @@ export default function ConversationalBuilder({ onCancel, onCreated }) {
             <Sparkles className="w-4 h-4 text-ocean" />
             <p className="text-[13px] font-semibold text-ink">Agent Builder</p>
             <span className="text-[10px] text-mist uppercase tracking-[0.14em]" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-              {panelTab === 'plan' && !spec ? 'Planning' : deployed ? 'Deployed' : 'Building'} · simulated
+              {panelTab === 'plan' && !spec ? 'Planning' : deployed ? 'Deployed' : 'Building'}
             </span>
           </div>
           <GateStrip plan={plan} spec={spec} dryRun={dryRun} deployed={deployed} />

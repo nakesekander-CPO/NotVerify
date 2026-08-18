@@ -86,7 +86,7 @@ export default function ContentApprovals({ ctx }) {
                 </div>
               )}
               {state === 'approved' && <PrimaryButton onClick={() => setState('published')}>Publish (generic adapter)</PrimaryButton>}
-              {state === 'published' && <p className="text-[12.5px] text-teal">✓ Published (demo) · version recorded · rollback available.</p>}
+              {state === 'published' && <p className="text-[12.5px] text-teal">✓ Published · version recorded · rollback available.</p>}
               <p className="text-[10.5px] text-mist">Approval is required before publication. Publishing is versioned and audited; nothing is published autonomously.</p>
             </div>
           </Card>
@@ -94,9 +94,9 @@ export default function ContentApprovals({ ctx }) {
             <MonoLabel>Export</MonoLabel>
             <div className="mt-2 flex flex-wrap gap-2">
               {['Markdown', 'HTML', 'JSON'].map(f => (
-                <SecondaryButton key={f} onClick={() => downloadText(`eav-content.${f.toLowerCase() === 'markdown' ? 'md' : f.toLowerCase()}`, `Approved content export (${f}) — demo artifact`)}><FileDown className="w-3.5 h-3.5" /> {f}</SecondaryButton>
+                <SecondaryButton key={f} onClick={() => downloadText(`eav-content.${f.toLowerCase() === 'markdown' ? 'md' : f.toLowerCase()}`, `Approved content export (${f})`)}><FileDown className="w-3.5 h-3.5" /> {f}</SecondaryButton>
               ))}
-              <SecondaryButton onClick={() => downloadText('eav-content-preview.txt', 'Content preview — demo artifact')}><Eye className="w-3.5 h-3.5" /> Preview</SecondaryButton>
+              <SecondaryButton onClick={() => downloadText('eav-content-preview.txt', 'Content preview')}><Eye className="w-3.5 h-3.5" /> Preview</SecondaryButton>
             </div>
           </Card>
           <Card>

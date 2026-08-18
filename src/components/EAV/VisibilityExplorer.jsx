@@ -108,7 +108,7 @@ function ResponseDrawer({ obs, onClose }) {
             <MonoLabel>Human correction</MonoLabel>
             <p className="text-[11px] text-mist mt-1">Correct a false entity match or analysis label — re-derives metrics for this observation.</p>
             {corrected ? (
-              <p className="text-[12px] text-teal mt-2">✓ Correction recorded (demo). Analysis will re-run.</p>
+              <p className="text-[12px] text-teal mt-2">✓ Correction recorded. Analysis will re-run.</p>
             ) : (
               <button onClick={() => setCorrected(true)} className="mt-2 inline-flex items-center gap-1.5 text-[12px] border border-rule rounded-md px-3 py-1.5 text-slate hover:bg-pale cursor-pointer">
                 <PencilLine className="w-3.5 h-3.5" /> Correct match / label

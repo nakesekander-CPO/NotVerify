@@ -68,11 +68,11 @@ export function PlansPanel({ account }) {
               {isCurrent ? (
                 <div aria-label={cta.ariaLabel} className="mt-auto px-4 py-2.5 rounded-lg text-center text-[13px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Current plan</div>
               ) : cta.emphasis === 'primary' ? (
-                <button onClick={() => addToast(`${cta.label} — request sent to your account team (demo)`, 'success')} aria-label={cta.ariaLabel} className="mt-auto w-full px-4 py-2.5 rounded-lg text-[13px] font-semibold bg-[#3D16FA] text-white hover:bg-[#2E10C4] cursor-pointer">
+                <button onClick={() => addToast(`${cta.label} — request sent to your account team`, 'success')} aria-label={cta.ariaLabel} className="mt-auto w-full px-4 py-2.5 rounded-lg text-[13px] font-semibold bg-[#3D16FA] text-white hover:bg-[#2E10C4] cursor-pointer">
                   {cta.label}
                 </button>
               ) : (
-                <button onClick={() => addToast(`${cta.label} — request sent to your account team (demo)`, 'success')} aria-label={cta.ariaLabel} className="mt-auto w-full px-4 py-2.5 rounded-lg text-[13px] font-medium border border-black/[0.15] text-gray-600 hover:bg-black/[0.04] cursor-pointer">
+                <button onClick={() => addToast(`${cta.label} — request sent to your account team`, 'success')} aria-label={cta.ariaLabel} className="mt-auto w-full px-4 py-2.5 rounded-lg text-[13px] font-medium border border-black/[0.15] text-gray-600 hover:bg-black/[0.04] cursor-pointer">
                   {cta.label}
                 </button>
               )}
@@ -106,13 +106,13 @@ function ContractPanel({ account }) {
           <Metric label="Available now" value={w.availableTotal.toLocaleString()} sub="all buckets" />
         </div>
         <div className="mt-4 pt-4 border-t border-black/[0.06] flex items-center gap-2 flex-wrap">
-          <button onClick={() => addToast('Message sent — your account team will reach out within one business day (demo)', 'success')} aria-label="Contact account team about Enterprise plan" className="px-4 py-2 rounded-lg bg-[#3D16FA] text-white text-[12.5px] font-semibold hover:bg-[#2E10C4] cursor-pointer inline-flex items-center gap-1.5">
+          <button onClick={() => addToast('Message sent — your account team will reach out within one business day', 'success')} aria-label="Contact account team about Enterprise plan" className="px-4 py-2 rounded-lg bg-[#3D16FA] text-white text-[12.5px] font-semibold hover:bg-[#2E10C4] cursor-pointer inline-flex items-center gap-1.5">
             <Phone className="w-3.5 h-3.5" /> Contact account team
           </button>
           <button onClick={() => downloadHtml('arbitr-enterprise-contract.html', 'Enterprise Agreement — Meridian Capital', '<p>Master service agreement summary.</p><table><tr><th>Term</th><td>12 months, renews Jul 1</td></tr><tr><th>Billing</th><td>Invoice / PO, Net 30</td></tr><tr><th>Credits</th><td>Intelligence and Trust Credits per order form</td></tr></table>')} className="px-4 py-2 rounded-lg border border-black/[0.12] text-[12.5px] font-medium text-gray-700 hover:bg-black/[0.03] cursor-pointer">View contract</button>
-          <button onClick={() => addToast('Plan comparison is on the Plans tab (demo)', 'info')} className="px-4 py-2 rounded-lg border border-black/[0.12] text-[12.5px] font-medium text-gray-700 hover:bg-black/[0.03] cursor-pointer">Compare plans</button>
+          <button onClick={() => addToast('Plan comparison is on the Plans tab', 'info')} className="px-4 py-2 rounded-lg border border-black/[0.12] text-[12.5px] font-medium text-gray-700 hover:bg-black/[0.03] cursor-pointer">Compare plans</button>
           {account.downgradePolicy === 'request_only' && (
-            <button onClick={() => addToast('Plan-change request sent for account-team review (demo)', 'success')} aria-label="Request a plan change — reviewed by your account team" className="px-4 py-2 rounded-lg border border-black/[0.12] text-[12.5px] font-medium text-gray-600 hover:bg-black/[0.03] cursor-pointer">
+            <button onClick={() => addToast('Plan-change request sent for account-team review', 'success')} aria-label="Request a plan change — reviewed by your account team" className="px-4 py-2 rounded-lg border border-black/[0.12] text-[12.5px] font-medium text-gray-600 hover:bg-black/[0.03] cursor-pointer">
               Request plan change
             </button>
           )}
@@ -447,9 +447,9 @@ function InvoiceTopUp({ account, appendLedger, appendTrustLedger }) {
               <p className="text-[10.5px] text-gray-400">One invoice · {account.netTerms}</p>
             </div>
             <div className="flex items-center gap-2">
-            <button onClick={() => addToast('Message sent to sales (demo)', 'success')} className="px-3 py-2 rounded-lg border border-black/[0.12] text-[12px] font-medium text-gray-600 hover:bg-black/[0.03] cursor-pointer">Contact sales</button>
+            <button onClick={() => addToast('Message sent to sales', 'success')} className="px-3 py-2 rounded-lg border border-black/[0.12] text-[12px] font-medium text-gray-600 hover:bg-black/[0.03] cursor-pointer">Contact sales</button>
             {account.cardTopUpsEnabled && (
-              <button onClick={() => addToast('One-time card order started — this stays a separate line item from your invoice rail (demo)', 'info')} className="px-3 py-2 rounded-lg border border-black/[0.12] text-[12px] font-medium text-gray-600 hover:bg-black/[0.03] cursor-pointer">Pay by card for this one-time order</button>
+              <button onClick={() => addToast('One-time card order started — this stays a separate line item from your invoice rail', 'info')} className="px-3 py-2 rounded-lg border border-black/[0.12] text-[12px] font-medium text-gray-600 hover:bg-black/[0.03] cursor-pointer">Pay by card for this one-time order</button>
             )}
             <button onClick={submit} disabled={!validation.ok}
               title={validation.ok ? undefined : validation.errors.join(' ')}

@@ -2,7 +2,7 @@
  * Enterprise AI Visibility — shared UI.
  *
  * Re-exports the arbitr design-system primitives and adds EAV-specific badges:
- * the "Demo data" / provenance labels (so fixture is never mistaken for live),
+ * the provenance labels (Live/Manual; the fixture chip was removed 2026-08-18),
  * prominence band, accuracy, severity, attribution level, and a dimension bar.
  */
 
@@ -30,11 +30,11 @@ function Pill({ tone = 'mist', icon: Icon, children, title }) {
   )
 }
 
-/* Provenance — fixture / live / manual. Fixture must always read "Demo data". */
+/* Provenance — fixture chip removed per ruling 2026-08-18; Live/Manual chips remain. */
 export function ProvenanceBadge({ provenance = 'fixture' }) {
   if (provenance === 'live_api') return <Pill tone="teal" icon={Radio} title="Live API observation">Live</Pill>
   if (provenance === 'manual_import') return <Pill tone="ocean" icon={Hand} title="Manually imported observation">Manual</Pill>
-  return <Pill tone="amber" icon={FlaskConical} title="Fixture / demonstration data — not a live observation">Demo data</Pill>
+  return null // provenance chip removed per ruling 2026-08-18 — the room knows
 }
 
 export function ProminenceBadge({ band }) {

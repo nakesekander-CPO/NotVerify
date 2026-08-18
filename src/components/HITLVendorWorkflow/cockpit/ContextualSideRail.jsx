@@ -172,7 +172,7 @@ function SourceAnchor({ segment }) {
         </div>
       </div>
       <p className="text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>p.{page} · bbox [{bbox.join(', ')}]</p>
-      <button onClick={() => downloadText('source-excerpt.txt', `Source document excerpt (p.${page})\n\n${snippet}\n\n— arbitr evidence trail, demo artifact`)} className="mt-1 text-[11px] text-ocean hover:text-ocean-deep cursor-pointer">Open full source ↗</button>
+      <button onClick={() => downloadText('source-excerpt.txt', `Source document excerpt (p.${page})\n\n${snippet}\n\n— arbitr evidence trail`)} className="mt-1 text-[11px] text-ocean hover:text-ocean-deep cursor-pointer">Open full source ↗</button>
     </div>
   )
 }

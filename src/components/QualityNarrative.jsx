@@ -825,7 +825,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
                   )
                 ) : (
                   <button
-                    onClick={() => downloadText('arbitr-deliverables.txt', 'arbitr deliverable bundle — demo artifact.\nIncludes: checked document, decision report, evidence trail.')}
+                    onClick={() => downloadText('arbitr-deliverables.txt', 'arbitr deliverable bundle.\nIncludes: checked document, decision report, evidence trail.')}
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-amber hover:bg-amber-deep text-white font-semibold text-[13px] transition-all cursor-pointer"
                   >
                     <Download className="w-4 h-4" />
@@ -1268,7 +1268,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
                           <p className="text-[13px] text-gray-900 mb-2">{jaDiagnosticData.actions[1].label}</p>
                           <div className="flex items-center gap-3">
                             <button
-                              onClick={() => addToast('Correction queued for the retraining pass (demo)', 'success')}
+                              onClick={() => addToast('Correction queued for the retraining pass', 'success')}
                               className="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-straker-50 hover:bg-straker-500/25 text-straker-600 text-[12px] font-semibold transition-all cursor-pointer"
                             >
                               <span>{jaDiagnosticData.actions[1].button}</span>
@@ -1287,7 +1287,7 @@ export default function QualityNarrative({ data, computedQuality, enabledUpsells
                         <div className="flex-1 min-w-0">
                           <p className="text-[13px] text-gray-900 mb-2">{jaDiagnosticData.actions[2].label}</p>
                           <button
-                            onClick={() => addToast('Segments queued for manual review (demo)', 'info')}
+                            onClick={() => addToast('Segments queued for manual review', 'info')}
                             className="group inline-flex items-center gap-1 text-[12px] font-medium text-straker-600 hover:text-straker-300 transition-colors cursor-pointer"
                           >
                             <span>{jaDiagnosticData.actions[2].button}</span>
@@ -1355,7 +1355,7 @@ function OutputFile({ name, type }) {
         <p className="text-[13px] font-medium text-gray-700 truncate">{name}</p>
         <p className="text-[11px] text-gray-500">{type}</p>
       </div>
-      <button onClick={() => downloadText(name.replace(/\.[a-z]+$/i, '.txt'), `${name} (${type})\n— arbitr deliverable, demo artifact`)} aria-label={`Download ${name}`} className="text-gray-500 hover:text-straker-600 transition-colors cursor-pointer opacity-0 group-hover:opacity-100">
+      <button onClick={() => downloadText(name.replace(/\.[a-z]+$/i, '.txt'), `${name} (${type})\n— arbitr deliverable`)} aria-label={`Download ${name}`} className="text-gray-500 hover:text-straker-600 transition-colors cursor-pointer opacity-0 group-hover:opacity-100">
         <Download className="w-4 h-4" />
       </button>
     </div>
