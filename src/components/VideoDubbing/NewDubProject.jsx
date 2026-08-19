@@ -250,7 +250,7 @@ function DubOutput({ langs, log, onComplete }) {
               key="sample-dub"
               controls
               className="w-full aspect-video rounded-lg border border-rule bg-midnight"
-              src="/sample-dub.mp4"
+              src={`${import.meta.env.BASE_URL}sample-dub.mp4`}
               onError={() => setVideoMissing(true)}
               aria-label={`Dubbed sample video — ${activeLang} track`}
             />

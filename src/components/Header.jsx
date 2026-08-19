@@ -40,7 +40,9 @@ export default function Header({ companyName, onOpenSettings, onOpenMarketplace,
         >
           {/* DS v2 reversed wordmark — white letterforms + cyan lens ring,
               the released artwork for dark grounds (no CSS filter needed) */}
-          <img src="/wordmark-reversed.svg" alt="arbitr" className="h-[18px] w-auto" />
+          {/* BASE_URL-aware: the deployed site serves under /NotVerify/, so an
+              absolute /… path 404s there (this was the broken-logo bug). */}
+          <img src={`${import.meta.env.BASE_URL}wordmark-reversed.svg`} alt="arbitr" className="h-[18px] w-auto" />
           {companyName && (
             <>
               <div className="h-4 w-px bg-white/15" />
