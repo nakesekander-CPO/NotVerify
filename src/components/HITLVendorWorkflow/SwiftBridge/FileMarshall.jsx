@@ -10,6 +10,8 @@
  *   TermEvidencePanel — per-term proof that the Terminology Guardian
  *                    checked AND applied the client glossary (before→after,
  *                    slide numbers, pending terms held).
+ *
+ * All UI copy routes through the section language switch (i18n.jsx).
  */
 
 import { useEffect, useState } from 'react'
@@ -18,6 +20,9 @@ import {
   AlertTriangle, Wrench, UserCog, BookOpen,
 } from 'lucide-react'
 import { PREP_CHOICES } from '../../../services/swiftbridge/swiftbridgeModel'
+import {
+  useSBLang, fmtDateTime, JA_MARSHALL_ISSUES, JA_EVIDENCE_REASONS,
+} from '../../../services/swiftbridge/i18n'
 import useReducedMotion from '../../../hooks/useReducedMotion'
 import { Card, MonoLabel } from '../shared'
 
@@ -30,6 +35,7 @@ const SEVERITY_TONE = {
 /* ── File Marshall scan ──────────────────────────────────────── */
 
 export function MarshallScan({ scan, onContinue }) {
+  const { lang, t } = useSBLang()
   const reduced = useReducedMotion()
   const [scanning, setScanning] = useState(!reduced)
   const [slideDone, setSlideDone] = useState(reduced ? scan.slides : 0)
@@ -37,11 +43,13 @@ export function MarshallScan({ scan, onContinue }) {
   useEffect(() => {
     if (reduced) return
     if (slideDone >= scan.slides) { setScanning(false); return }
-    const t = setTimeout(() => setSlideDone(n => n + 1), 190)
-    return () => clearTimeout(t)
+    const timer = setTimeout(() => setSlideDone(n => n + 1), 190)
+    return () => clearTimeout(timer)
   }, [slideDone, scan.slides, reduced])
 
   const issueSlides = new Set(scan.issues.map(i => i.slide))
+  const issueText = (i) => lang === 'ja' ? (JA_MARSHALL_ISSUES[i.id]?.issue ?? i.issueJa) : i.issue
+  const issueDetail = (i) => lang === 'ja' ? (JA_MARSHALL_ISSUES[i.id]?.detail ?? i.detail) : i.detail
 
   return (
     <Card padding="p-0">
@@ -49,25 +57,25 @@ export function MarshallScan({ scan, onContinue }) {
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-ocean/10 flex items-center justify-center"><ScanSearch className="w-4 h-4 text-ocean" /></div>
           <div>
-            <p className="text-[13px] font-semibold text-ink">File Marshall · ファイル診断</p>
+            <p className="text-[13px] font-semibold text-ink">{t('fm.title')}</p>
             <p className="text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-              {scan.scannedBy.id} · scanning {scan.fileName}
+              {t('fm.scanningFile', { id: scan.scannedBy.id, file: scan.fileName })}
             </p>
           </div>
         </div>
         {!scanning && (
           <div className="flex items-center gap-1.5 flex-wrap">
-            <Chip tone="bg-white text-ink border-rule">{scan.slides} slides</Chip>
-            <Chip tone={SEVERITY_TONE.critical}>{scan.critical} critical</Chip>
-            <Chip tone={SEVERITY_TONE.major}>{scan.major} major</Chip>
-            <Chip tone={SEVERITY_TONE.minor}>{scan.minor} minor</Chip>
+            <Chip tone="bg-white text-ink border-rule">{t('fm.slidesChip', { n: scan.slides })}</Chip>
+            <Chip tone={SEVERITY_TONE.critical}>{t('qa.critical', { n: scan.critical })}</Chip>
+            <Chip tone={SEVERITY_TONE.major}>{t('qa.major', { n: scan.major })}</Chip>
+            <Chip tone={SEVERITY_TONE.minor}>{t('qa.minor', { n: scan.minor })}</Chip>
           </div>
         )}
       </div>
 
       {/* Slide strip */}
       <div className="px-5 pt-4">
-        <MonoLabel>Slides {scanning ? `· scanning ${Math.min(slideDone + 1, scan.slides)}/${scan.slides}` : '· scan complete'}</MonoLabel>
+        <MonoLabel>{scanning ? t('fm.slidesScanning', { a: Math.min(slideDone + 1, scan.slides), b: scan.slides }) : t('fm.slidesDone')}</MonoLabel>
         <div className="grid grid-cols-8 gap-2 mt-2">
           {Array.from({ length: scan.slides }, (_, i) => i + 1).map(n => {
             const scanned = n <= slideDone
@@ -88,17 +96,17 @@ export function MarshallScan({ scan, onContinue }) {
       {!scanning && (
         <>
           <div className="px-5 pt-4">
-            <MonoLabel>Issues to fix before translation · 修正が必要な項目</MonoLabel>
+            <MonoLabel>{t('fm.issuesLabel')}</MonoLabel>
             <ul className="mt-2 divide-y divide-rule/70 border border-rule rounded-lg overflow-hidden">
               {scan.issues.map(i => (
                 <li key={i.id} className="px-3.5 py-2.5 flex items-start gap-3 bg-white">
-                  <span className={`text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded border shrink-0 mt-0.5 ${SEVERITY_TONE[i.severity]}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{i.severity}</span>
+                  <span className={`text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded border shrink-0 mt-0.5 ${SEVERITY_TONE[i.severity]}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{t(`sev.${i.severity}`)}</span>
                   <div className="min-w-0">
                     <p className="text-[12.5px] text-ink font-medium">
-                      <span className="text-mist font-normal" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>Slide {i.slide} · </span>
-                      {i.issue} <span className="text-mist font-normal">· {i.issueJa}</span>
+                      <span className="text-mist font-normal" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{t('fm.slideN', { n: i.slide })}</span>
+                      {issueText(i)}{lang === 'current' && <span className="text-mist font-normal"> · {i.issueJa}</span>}
                     </p>
-                    <p className="text-[11px] text-slate mt-0.5">{i.detail}</p>
+                    <p className="text-[11px] text-slate mt-0.5">{issueDetail(i)}</p>
                   </div>
                 </li>
               ))}
@@ -106,7 +114,7 @@ export function MarshallScan({ scan, onContinue }) {
           </div>
           <div className="px-5 py-4 flex justify-end">
             <button onClick={onContinue} className="px-4 py-2 rounded-lg bg-amber hover:bg-amber-deep text-white text-[13px] font-semibold cursor-pointer inline-flex items-center gap-2">
-              Hand off to Sage <ChevronRight className="w-4 h-4" />
+              {t('fm.handoff')} <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </>
@@ -122,8 +130,14 @@ function Chip({ children, tone }) {
 /* ── Sage prep choice ────────────────────────────────────────── */
 
 export function SageChoice({ scan, choice, onChoose, onContinue }) {
-  const eta = (hours) => new Date(Date.now() + hours * 3600_000)
-    .toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+  const { lang, t } = useSBLang()
+  const eta = (hours) => {
+    const d = new Date(Date.now() + hours * 3600_000)
+    if (lang === 'ja') return fmtDateTime(d, 'ja')
+    return d.toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+  }
+  const slaText = (sla) => lang === 'ja' ? sla.labelJa : sla.label
+  const prepNote = (id) => lang === 'ja' ? t(`prep.${id === 'self_fix' ? 'self' : 'dtp'}.note`) : PREP_CHOICES[id].note
 
   return (
     <Card padding="p-0">
@@ -132,11 +146,9 @@ export function SageChoice({ scan, choice, onChoose, onContinue }) {
         <div className="flex items-start gap-3">
           <div className="w-8 h-8 rounded-full bg-ocean flex items-center justify-center shrink-0"><Sparkles className="w-4 h-4 text-white" /></div>
           <div>
-            <p className="text-[11px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>Sage · arbitr assistant</p>
+            <p className="text-[11px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{t('sage.label')}</p>
             <p className="text-[13px] text-ink mt-1 leading-relaxed max-w-2xl">
-              File Marshall found <strong>{scan.issues.length} source issues</strong> across your {scan.slides} slides
-              that would break the translated layout. You have two ways forward — the delivery
-              commitment changes with your choice.
+              {t('sage.msgA')}<strong>{t('sage.msgStrong', { n: scan.issues.length })}</strong>{t('sage.msgB', { s: scan.slides })}
             </p>
           </div>
         </div>
@@ -148,22 +160,21 @@ export function SageChoice({ scan, choice, onChoose, onContinue }) {
           active={choice === 'self_fix'}
           onClick={() => onChoose('self_fix')}
           icon={UserCog}
-          title="Fix it yourself"
-          titleJa="お客様ご自身で修正"
-          sla={PREP_CHOICES.self_fix}
+          title={t('choice.selfTitle')}
+          titleJa={lang === 'current' ? 'お客様ご自身で修正' : null}
+          slaLabel={slaText(PREP_CHOICES.self_fix)}
+          note={prepNote('self_fix')}
           fast
-          points={[
-            'We send you the prep checklist for all 6 issues',
-            'Re-upload the fixed deck — the 72h clock starts then',
-            'Fastest path to delivery',
-          ]}
+          fasterLabel={t('choice.faster')}
+          selectedLabel={t('choice.selected')}
+          points={[t('choice.self.p1'), t('choice.self.p2'), t('choice.self.p3')]}
           extra={
             <span className="inline-flex items-center gap-3 mt-2">
               <button onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1 text-[11px] text-ocean hover:text-ocean/80 cursor-pointer underline underline-offset-2">
-                <Download className="w-3 h-3" /> Download prep checklist
+                <Download className="w-3 h-3" /> {t('choice.downloadChecklist')}
               </button>
               <button onClick={(e) => e.stopPropagation()} className="text-[11px] text-ocean hover:text-ocean/80 cursor-pointer underline underline-offset-2">
-                See delivery timeframes
+                {t('choice.seeTimeframes')}
               </button>
             </span>
           }
@@ -172,14 +183,13 @@ export function SageChoice({ scan, choice, onChoose, onContinue }) {
           active={choice === 'dtp_fix'}
           onClick={() => onChoose('dtp_fix')}
           icon={Wrench}
-          title="We fix it for you"
-          titleJa="SwiftBridgeにお任せ"
-          sla={PREP_CHOICES.dtp_fix}
-          points={[
-            'arbitr DTP pipeline repairs all 6 issues first',
-            '24h pre-flight, then the standard 72h workflow',
-            'Zero effort on your side',
-          ]}
+          title={t('choice.dtpTitle')}
+          titleJa={lang === 'current' ? 'SwiftBridgeにお任せ' : null}
+          slaLabel={slaText(PREP_CHOICES.dtp_fix)}
+          note={prepNote('dtp_fix')}
+          fasterLabel={t('choice.faster')}
+          selectedLabel={t('choice.selected')}
+          points={[t('choice.dtp.p1'), t('choice.dtp.p2'), t('choice.dtp.p3')]}
         />
       </div>
 
@@ -187,20 +197,18 @@ export function SageChoice({ scan, choice, onChoose, onContinue }) {
       <div className="px-5 pb-5 flex items-center justify-between gap-3 flex-wrap">
         <p className="text-[11px] text-slate">
           <Clock className="w-3 h-3 inline -mt-0.5 mr-1 text-mist" />
-          Estimated delivery — yourself: <span className="font-semibold text-ink">{eta(72)}</span>
-          <span className="text-mist"> · </span>
-          we fix: <span className="font-semibold text-ink">{eta(96)}</span>
+          {t('sage.eta', { a: eta(72), b: eta(96) })}
         </p>
         <button onClick={onContinue} disabled={!choice}
           className="px-4 py-2 rounded-lg bg-amber hover:bg-amber-deep text-white text-[13px] font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-2">
-          Continue <ChevronRight className="w-4 h-4" />
+          {t('btn.continue')} <ChevronRight className="w-4 h-4" />
         </button>
       </div>
     </Card>
   )
 }
 
-function ChoiceCard({ active, onClick, icon: Icon, title, titleJa, sla, points, fast, extra }) {
+function ChoiceCard({ active, onClick, icon: Icon, title, titleJa, slaLabel, note, points, fast, fasterLabel, selectedLabel, extra }) {
   // div-with-button-role, not <button>: the card contains its own links
   // (checklist download etc.) and buttons cannot nest.
   return (
@@ -212,11 +220,11 @@ function ChoiceCard({ active, onClick, icon: Icon, title, titleJa, sla, points, 
           <span className={`w-8 h-8 rounded-lg flex items-center justify-center ${active ? 'bg-ocean text-white' : 'bg-pale text-slate'}`}><Icon className="w-4 h-4" /></span>
           <span>
             <span className="block text-[13.5px] font-semibold text-ink">{title}</span>
-            <span className="block text-[10.5px] text-mist">{titleJa}</span>
+            {titleJa && <span className="block text-[10.5px] text-mist">{titleJa}</span>}
           </span>
         </span>
         <span className={`text-[10.5px] px-2 py-1 rounded-full border whitespace-nowrap ${fast ? 'bg-teal/10 text-teal border-teal/30' : 'bg-pale text-slate border-rule'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-          {sla.label}{fast ? ' · faster' : ''}
+          {slaLabel}{fast ? fasterLabel : ''}
         </span>
       </div>
       <ul className="mt-3 space-y-1">
@@ -226,9 +234,9 @@ function ChoiceCard({ active, onClick, icon: Icon, title, titleJa, sla, points, 
           </li>
         ))}
       </ul>
-      <p className="text-[10.5px] text-mist mt-2">{sla.note}</p>
+      <p className="text-[10.5px] text-mist mt-2">{note}</p>
       {extra}
-      {active && <p className="text-[10px] text-ocean mt-2 font-semibold uppercase tracking-wider">Selected</p>}
+      {active && <p className="text-[10px] text-ocean mt-2 font-semibold uppercase tracking-wider">{selectedLabel}</p>}
     </div>
   )
 }
@@ -236,43 +244,45 @@ function ChoiceCard({ active, onClick, icon: Icon, title, titleJa, sla, points, 
 /* ── Terminology evidence panel ──────────────────────────────── */
 
 const ACTION_TONE = {
-  applied: { label: 'Applied', tone: 'bg-[#FFF7E6] text-[#996800] border-[#FFB000]/40' },
-  pass: { label: 'Pass', tone: 'bg-teal/10 text-teal border-teal/30' },
-  held: { label: 'Held', tone: 'bg-violet-50 text-violet-700 border-violet-200' },
+  applied: 'bg-[#FFF7E6] text-[#996800] border-[#FFB000]/40',
+  pass: 'bg-teal/10 text-teal border-teal/30',
+  held: 'bg-violet-50 text-violet-700 border-violet-200',
 }
 
 export function TermEvidencePanel({ evidence }) {
+  const { lang, t } = useSBLang()
+  const reason = (r) => lang === 'ja' ? (JA_EVIDENCE_REASONS[`${r.term.id}:${r.action}`] ?? r.reason) : r.reason
   return (
     <div className="mt-2 rounded-lg border border-rule bg-pale/30 overflow-hidden">
       <div className="px-3.5 py-2.5 border-b border-rule flex items-center justify-between gap-2 flex-wrap bg-white">
         <p className="text-[11.5px] font-semibold text-ink inline-flex items-center gap-1.5">
-          <BookOpen className="w-3.5 h-3.5 text-ocean" /> Terminology evidence · {evidence.glossaryName}
+          <BookOpen className="w-3.5 h-3.5 text-ocean" /> {t('evidence.title', { g: evidence.glossaryName })}
         </p>
         <p className="text-[10.5px] text-slate" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-          {evidence.checked} terms checked · <span className="text-[#996800] font-semibold">{evidence.applied} corrections applied</span> · {evidence.held} held for client · {evidence.violationsRemaining} violations remaining
+          {t('evidence.stats', { checked: evidence.checked, applied: evidence.applied, held: evidence.held, v: evidence.violationsRemaining })}
         </p>
       </div>
       <ul className="divide-y divide-rule/60">
         {evidence.rows.map(r => (
           <li key={r.term.id} className="px-3.5 py-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 items-baseline bg-white/60">
-            <span className={`text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded border ${ACTION_TONE[r.action].tone}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-              {ACTION_TONE[r.action].label}
+            <span className={`text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded border ${ACTION_TONE[r.action]}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+              {t(`evidence.${r.action}`)}
             </span>
             <div className="min-w-0">
               <p className="text-[12px] text-ink">
                 <span className="font-medium">{r.term.ja}</span>
                 {r.action === 'applied' && <> → <span className="line-through text-error/70">{r.before}</span> → <span className="font-semibold text-ink">{r.after}</span></>}
                 {r.action === 'pass' && <> → <span className="font-medium">{r.after}</span></>}
-                {r.action === 'held' && <span className="text-mist"> — not applied</span>}
-                <span className="text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}> · slide {r.slide}</span>
+                {r.action === 'held' && <span className="text-mist">{t('evidence.notApplied')}</span>}
+                <span className="text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{t('evidence.slide', { n: r.slide })}</span>
               </p>
-              <p className="text-[10.5px] text-slate">{r.reason}</p>
+              <p className="text-[10.5px] text-slate">{reason(r)}</p>
             </div>
           </li>
         ))}
       </ul>
       <p className="px-3.5 py-2 text-[10px] text-mist border-t border-rule/60" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-        Checked and applied by {evidence.agent.id} · {evidence.agent.name} — pending glossary terms are never applied without client approval
+        {t('evidence.footer', { id: evidence.agent.id, name: evidence.agent.name })}
       </p>
     </div>
   )

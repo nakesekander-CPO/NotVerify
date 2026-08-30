@@ -8,6 +8,9 @@
  * status, the arbitr agent powering automated steps, retry on blocked
  * steps, note-gated ops override, and a deep link from human-review
  * steps into the real arbitr Review Workspace.
+ *
+ * All UI copy routes through the section language switch (i18n.jsx):
+ * 'current' preserves the original mixed bilingual rendering.
  */
 
 import { useMemo, useState } from 'react'
@@ -19,6 +22,9 @@ import {
   DOC_TYPES, SERVICE_TYPES, slaFor, slaCountdown, slaWithPrep,
   retryStep, overrideStep, marshallScan, PREP_CHOICES,
 } from '../../../services/swiftbridge/swiftbridgeModel'
+import {
+  useSBLang, pickLabel, stepName, ownerLabel, fmtDateTime, fmtTime, JA_SERVICE_LABELS,
+} from '../../../services/swiftbridge/i18n'
 import { Card, MonoLabel } from '../shared'
 import { SlaChip } from './index'
 import { MarshallScan, SageChoice, TermEvidencePanel } from './FileMarshall'
@@ -34,6 +40,7 @@ const SAMPLE_FILES = [
 ]
 
 export function NewProjectWizard({ onCreate }) {
+  const { lang, t } = useSBLang()
   // Standard path: 0 upload · 1 type · 2 services · 3 confirm
   // PPTX path:     0 upload · 'scan' File Marshall · 'sage' prep choice · 3 confirm
   const [stage, setStage] = useState(0)
@@ -64,9 +71,11 @@ export function NewProjectWizard({ onCreate }) {
   }
 
   const stages = isPptx
-    ? [[0, 'Upload アップロード'], ['scan', 'File Marshall ファイル診断'], ['sage', 'Sage — prep choice 修正方法'], [3, 'Confirm 確認']]
-    : [[0, 'Upload アップロード'], [1, 'Document type 文書種別'], [2, 'Services サービス'], [3, 'Confirm 確認']]
+    ? [[0, t('wiz.stage.upload')], ['scan', t('wiz.stage.scan')], ['sage', t('wiz.stage.sage')], [3, t('wiz.stage.confirm')]]
+    : [[0, t('wiz.stage.upload')], [1, t('wiz.stage.docType')], [2, t('wiz.stage.services')], [3, t('wiz.stage.confirm')]]
   const stageIdx = stages.findIndex(([id]) => id === stage)
+
+  const slaText = (s) => lang === 'ja' ? s.labelJa : s.label
 
   return (
     <div className="space-y-4">
@@ -81,14 +90,14 @@ export function NewProjectWizard({ onCreate }) {
 
       {stage === 0 && (
         <Card padding="p-0">
-          <div className="px-5 py-3 border-b border-rule"><p className="text-[13px] font-semibold text-ink">Upload a file ファイルをアップロード</p></div>
+          <div className="px-5 py-3 border-b border-rule"><p className="text-[13px] font-semibold text-ink">{t('wiz.uploadTitle')}</p></div>
           <div className="p-5">
             <div className="rounded-xl border-2 border-dashed border-rule bg-pale/30 p-8 text-center mb-4">
               <Upload className="w-6 h-6 text-mist mx-auto mb-2" />
-              <p className="text-[13px] text-ink">Drop a PDF, PowerPoint, or media file here</p>
-              <p className="text-[11px] text-mist mt-0.5">適時開示・四半期報告書・決算説明資料・有価証券報告書・動画</p>
+              <p className="text-[13px] text-ink">{t('wiz.dropHint')}</p>
+              <p className="text-[11px] text-mist mt-0.5">{t('wiz.dropTypes')}</p>
             </div>
-            <MonoLabel>Or pick a sample file</MonoLabel>
+            <MonoLabel>{t('wiz.samplePick')}</MonoLabel>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
               {SAMPLE_FILES.map(f => (
                 <button key={f.name} onClick={() => pickFile(f)}
@@ -115,7 +124,7 @@ export function NewProjectWizard({ onCreate }) {
 
       {stage === 1 && (
         <Card padding="p-0">
-          <div className="px-5 py-3 border-b border-rule"><p className="text-[13px] font-semibold text-ink">Document type — each type carries a delivery commitment</p></div>
+          <div className="px-5 py-3 border-b border-rule"><p className="text-[13px] font-semibold text-ink">{t('wiz.docTypeTitle')}</p></div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 p-5">
             {DOC_TYPES.map(d => {
               const s = slaFor(d.id)
@@ -123,9 +132,9 @@ export function NewProjectWizard({ onCreate }) {
               return (
                 <button key={d.id} onClick={() => setDocType(d.id)}
                   className={`text-left rounded-lg border p-4 cursor-pointer transition-colors ${active ? 'border-ocean bg-ocean/5' : 'border-rule hover:border-ocean/40'}`}>
-                  <p className="text-[13px] font-semibold text-ink">{d.label}</p>
-                  <p className="text-[11px] text-mist">{d.labelJa}</p>
-                  <p className="text-[11px] mt-2 inline-flex items-center gap-1 text-ocean font-medium"><Clock className="w-3 h-3" /> {s.label} · {s.labelJa}</p>
+                  <p className="text-[13px] font-semibold text-ink">{pickLabel(d, lang)}</p>
+                  {lang === 'current' && <p className="text-[11px] text-mist">{d.labelJa}</p>}
+                  <p className="text-[11px] mt-2 inline-flex items-center gap-1 text-ocean font-medium"><Clock className="w-3 h-3" /> {lang === 'current' ? `${s.label} · ${s.labelJa}` : slaText(s)}</p>
                 </button>
               )
             })}
@@ -136,7 +145,7 @@ export function NewProjectWizard({ onCreate }) {
 
       {stage === 2 && (
         <Card padding="p-0">
-          <div className="px-5 py-3 border-b border-rule"><p className="text-[13px] font-semibold text-ink">Services サービス選択</p></div>
+          <div className="px-5 py-3 border-b border-rule"><p className="text-[13px] font-semibold text-ink">{t('wiz.servicesTitle')}</p></div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 p-5">
             {SERVICE_TYPES.map(s => {
               const on = services.includes(s.id)
@@ -147,8 +156,8 @@ export function NewProjectWizard({ onCreate }) {
                     {on && <CheckCircle2 className="w-3 h-3 text-white" />}
                   </span>
                   <span>
-                    <span className="block text-[12.5px] font-medium text-ink">{s.label}</span>
-                    <span className="block text-[10.5px] text-mist">{s.labelJa}</span>
+                    <span className="block text-[12.5px] font-medium text-ink">{pickLabel(s, lang, JA_SERVICE_LABELS[s.id])}</span>
+                    {lang === 'current' && <span className="block text-[10.5px] text-mist">{s.labelJa}</span>}
                   </span>
                 </button>
               )
@@ -160,23 +169,25 @@ export function NewProjectWizard({ onCreate }) {
 
       {stage === 3 && (
         <Card padding="p-0">
-          <div className="px-5 py-3 border-b border-rule"><p className="text-[13px] font-semibold text-ink">Project brief 確認</p></div>
+          <div className="px-5 py-3 border-b border-rule"><p className="text-[13px] font-semibold text-ink">{t('wiz.confirmTitle')}</p></div>
           <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-[12.5px]">
-            <Row k="File" v={`${file?.name} · ${file?.size}`} />
-            <Row k="Document type" v={`${DOC_TYPES.find(d => d.id === docType)?.label}（${DOC_TYPES.find(d => d.id === docType)?.labelJa}）`} />
-            <Row k="Services" v={services.map(id => SERVICE_TYPES.find(s => s.id === id)?.label).join(' · ')} />
-            <Row k="Language pair" v="JA → EN" />
+            <Row k={t('row.file')} v={`${file?.name} · ${file?.size}`} />
+            <Row k={t('row.docType')} v={lang === 'current'
+              ? `${DOC_TYPES.find(d => d.id === docType)?.label}（${DOC_TYPES.find(d => d.id === docType)?.labelJa}）`
+              : pickLabel(DOC_TYPES.find(d => d.id === docType), lang)} />
+            <Row k={t('row.services')} v={services.map(id => pickLabel(SERVICE_TYPES.find(s => s.id === id), lang, JA_SERVICE_LABELS[id])).join(' · ')} />
+            <Row k={t('row.langPair')} v="JA → EN" />
             {isPptx && prepChoice && (
-              <Row k="Source prep" v={prepChoice === 'self_fix' ? 'Customer fixes source issues (checklist sent)' : 'arbitr DTP pre-flight fixes (24h)'} />
+              <Row k={t('row.sourcePrep')} v={prepChoice === 'self_fix' ? t('row.prep.self') : t('row.prep.dtp')} />
             )}
-            <Row k="Delivery commitment" v={`${sla.label}（${sla.labelJa}）${isPptx && prepChoice ? ` — ${PREP_CHOICES[prepChoice].note}` : ''}`} accent />
-            <Row k="Estimated delivery" v={dueAt?.toLocaleString()} accent />
+            <Row k={t('row.delivery')} v={`${lang === 'current' ? `${sla.label}（${sla.labelJa}）` : slaText(sla)}${isPptx && prepChoice ? ` — ${lang === 'ja' ? t(`prep.${prepChoice === 'self_fix' ? 'self' : 'dtp'}.note`) : PREP_CHOICES[prepChoice].note}` : ''}`} accent />
+            <Row k={t('row.eta')} v={fmtDateTime(dueAt, lang)} accent />
           </div>
           <div className="px-5 pb-5 flex items-center justify-between">
-            <button onClick={() => setStage(isPptx ? 'sage' : 2)} className="px-3 py-2 rounded-lg border border-rule text-[12px] text-slate hover:bg-pale cursor-pointer">← Back</button>
+            <button onClick={() => setStage(isPptx ? 'sage' : 2)} className="px-3 py-2 rounded-lg border border-rule text-[12px] text-slate hover:bg-pale cursor-pointer">{t('wiz.back')}</button>
             <button onClick={() => onCreate({ fileName: file.name, fileSize: file.size, docType, services, prepChoice: isPptx ? prepChoice : null, marshall: isPptx ? scan : null })}
               className="px-5 py-2.5 rounded-lg bg-ocean text-white text-[13px] font-semibold hover:bg-ocean/90 cursor-pointer inline-flex items-center gap-2">
-              Submit project 案件を作成 <ArrowRight className="w-4 h-4" />
+              {t('wiz.submit')} <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </Card>
@@ -186,12 +197,13 @@ export function NewProjectWizard({ onCreate }) {
 }
 
 function WizardNav({ onBack, onNext, nextDisabled }) {
+  const { t } = useSBLang()
   return (
     <div className="px-5 pb-5 flex items-center justify-between">
-      <button onClick={onBack} className="px-3 py-2 rounded-lg border border-rule text-[12px] text-slate hover:bg-pale cursor-pointer">← Back</button>
+      <button onClick={onBack} className="px-3 py-2 rounded-lg border border-rule text-[12px] text-slate hover:bg-pale cursor-pointer">{t('wiz.back')}</button>
       <button onClick={onNext} disabled={nextDisabled}
         className="px-4 py-2 rounded-lg bg-ocean text-white text-[12.5px] font-semibold hover:bg-ocean/90 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
-        Next →
+        {t('wiz.next')}
       </button>
     </div>
   )
@@ -209,20 +221,21 @@ function Row({ k, v, accent }) {
 /* ── Workflow timeline ───────────────────────────────────────── */
 
 const KIND_META = {
-  agent:           { label: 'AI agent', labelJa: 'AIエージェント', icon: Bot,       tone: 'bg-ocean/10 text-ocean border-ocean/25' },
-  human_review:    { label: 'Human review', labelJa: '人によるレビュー', icon: UserCheck, tone: 'bg-[#FFF7E6] text-[#996800] border-[#FFB000]/40' },
-  customer_action: { label: 'Customer action', labelJa: 'お客様の操作', icon: Hand,      tone: 'bg-violet-50 text-violet-700 border-violet-200' },
+  agent:           { icon: Bot,       tone: 'bg-ocean/10 text-ocean border-ocean/25' },
+  human_review:    { icon: UserCheck, tone: 'bg-[#FFF7E6] text-[#996800] border-[#FFB000]/40' },
+  customer_action: { icon: Hand,      tone: 'bg-violet-50 text-violet-700 border-violet-200' },
 }
 
-const STATUS_META = {
-  pending:      { label: 'Pending',      tone: 'bg-pale text-mist border-rule' },
-  in_progress:  { label: 'In progress',  tone: 'bg-ocean/10 text-ocean border-ocean/25' },
-  completed:    { label: 'Completed',    tone: 'bg-teal/10 text-teal border-teal/30' },
-  blocked:      { label: 'Blocked',      tone: 'bg-error/10 text-error border-error/30' },
-  needs_review: { label: 'Needs review', tone: 'bg-[#FFF7E6] text-[#996800] border-[#FFB000]/40' },
+const STATUS_TONE = {
+  pending:      'bg-pale text-mist border-rule',
+  in_progress:  'bg-ocean/10 text-ocean border-ocean/25',
+  completed:    'bg-teal/10 text-teal border-teal/30',
+  blocked:      'bg-error/10 text-error border-error/30',
+  needs_review: 'bg-[#FFF7E6] text-[#996800] border-[#FFB000]/40',
 }
 
 export function WorkflowTimeline({ projects, project, onSelect, onUpdateSteps, onOpenReview }) {
+  const { lang, t } = useSBLang()
   const [overrideFor, setOverrideFor] = useState(null)
   const [overrideNote, setOverrideNote] = useState('')
   const [showEvidence, setShowEvidence] = useState(false)
@@ -246,18 +259,20 @@ export function WorkflowTimeline({ projects, project, onSelect, onUpdateSteps, o
           {projects.map(p => <option key={p.id} value={p.id}>{p.id} · {p.name}</option>)}
         </select>
         <div className="flex items-center gap-2">
-          <span className="text-[11px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{project.slaLabel} · {project.slaLabelJa}</span>
+          <span className="text-[11px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
+            {lang === 'current' ? `${project.slaLabel} · ${project.slaLabelJa}` : lang === 'ja' ? project.slaLabelJa : project.slaLabel}
+          </span>
           <SlaChip project={project} countdown={c} />
         </div>
       </div>
 
       {/* Legend */}
       <div className="flex items-center gap-2 flex-wrap text-[10.5px]">
-        {Object.values(KIND_META).map(k => {
+        {Object.entries(KIND_META).map(([kind, k]) => {
           const Icon = k.icon
-          return <span key={k.label} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border ${k.tone}`}><Icon className="w-3 h-3" />{k.label} {k.labelJa}</span>
+          return <span key={kind} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border ${k.tone}`}><Icon className="w-3 h-3" />{t(`kind.${kind}`)}</span>
         })}
-        <span className="text-mist ml-auto" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>Automated steps run on arbitr · アビタAI agents</span>
+        <span className="text-mist ml-auto" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{t('legend.agents')}</span>
       </div>
 
       {/* Timeline */}
@@ -265,7 +280,6 @@ export function WorkflowTimeline({ projects, project, onSelect, onUpdateSteps, o
         <ul className="divide-y divide-rule">
           {project.steps.map((s, i) => {
             const kind = KIND_META[s.kind]
-            const status = STATUS_META[s.status]
             const KindIcon = kind.icon
             return (
               <li key={s.id} className="px-5 py-3.5">
@@ -276,16 +290,19 @@ export function WorkflowTimeline({ projects, project, onSelect, onUpdateSteps, o
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-[11px] text-mist tabular-nums" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{String(i + 1).padStart(2, '0')}</span>
-                      <p className="text-[13px] font-medium text-ink">{s.name} <span className="text-mist font-normal">· {s.nameJa}</span></p>
-                      <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded border ${status.tone}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{status.label}</span>
-                      {s.overridden && <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded border bg-violet-50 text-violet-700 border-violet-200" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>Ops override</span>}
+                      <p className="text-[13px] font-medium text-ink">
+                        {stepName(s, lang)}
+                        {lang === 'current' && <span className="text-mist font-normal"> · {s.nameJa}</span>}
+                      </p>
+                      <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded border ${STATUS_TONE[s.status]}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{t(`status.${s.status}`)}</span>
+                      {s.overridden && <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded border bg-violet-50 text-violet-700 border-violet-200" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{t('step.opsOverride')}</span>}
                     </div>
                     <p className="text-[11px] text-slate mt-0.5">
                       {s.agentId
-                        ? <>Powered by <span className="font-medium text-ocean">{s.agentId}</span> · {s.agentName} <span className="text-mist">(arbitr · アビタAI)</span></>
-                        : <>Owner: {s.owner}</>}
-                      {s.completedAt && <span className="text-mist"> · done {new Date(s.completedAt).toLocaleTimeString()}</span>}
-                      {s.retryCount > 0 && <span className="text-[#996800]"> · {s.retryCount} retr{s.retryCount === 1 ? 'y' : 'ies'}</span>}
+                        ? <>{t('step.poweredByPrefix')}<span className="font-medium text-ocean">{s.agentId}</span> · {s.agentName} <span className="text-mist">{t('step.arbitrSuffix')}</span></>
+                        : <>{t('step.owner', { o: ownerLabel(s.owner, lang) })}</>}
+                      {s.completedAt && <span className="text-mist">{t('step.done', { t: fmtTime(s.completedAt, lang) })}</span>}
+                      {s.retryCount > 0 && <span className="text-[#996800]">{s.retryCount === 1 && lang !== 'ja' ? t('step.retryOne') : t('step.retryMany', { n: s.retryCount })}</span>}
                     </p>
                     {s.notes && <p className="text-[11px] text-[#996800] mt-1 inline-flex items-center gap-1"><AlertTriangle className="w-3 h-3 shrink-0" /> {s.notes}</p>}
 
@@ -294,22 +311,22 @@ export function WorkflowTimeline({ projects, project, onSelect, onUpdateSteps, o
                       {s.status === 'blocked' && (
                         <>
                           <button onClick={() => doRetry(s.id)} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-ocean text-white text-[11px] font-semibold hover:bg-ocean/90 cursor-pointer">
-                            <RefreshCw className="w-3 h-3" /> Retry
+                            <RefreshCw className="w-3 h-3" /> {t('btn.retry')}
                           </button>
                           <button onClick={() => setOverrideFor(overrideFor === s.id ? null : s.id)} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-rule text-[11px] text-slate hover:bg-pale cursor-pointer">
-                            <Wrench className="w-3 h-3" /> Ops override
+                            <Wrench className="w-3 h-3" /> {t('btn.opsOverride')}
                           </button>
                         </>
                       )}
                       {s.kind === 'human_review' && s.status !== 'completed' && (
                         <button onClick={onOpenReview} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-[#FFB000]/40 bg-[#FFF7E6] text-[#996800] text-[11px] font-semibold hover:bg-[#FFEFD1] cursor-pointer">
-                          Open in Review Workspace <ChevronRight className="w-3 h-3" />
+                          {t('btn.openReview')} <ChevronRight className="w-3 h-3" />
                         </button>
                       )}
                       {s.key === 'glossary-match' && s.status === 'completed' && project.termEvidence && (
                         <button onClick={() => setShowEvidence(v => !v)} aria-expanded={showEvidence}
                           className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-ocean/30 bg-ocean/5 text-ocean text-[11px] font-semibold hover:bg-ocean/10 cursor-pointer">
-                          {showEvidence ? 'Hide' : 'Show'} terminology evidence
+                          {showEvidence ? t('btn.hideEvidence') : t('btn.showEvidence')}
                           <ChevronRight className={`w-3 h-3 transition-transform ${showEvidence ? 'rotate-90' : ''}`} />
                         </button>
                       )}
@@ -319,11 +336,11 @@ export function WorkflowTimeline({ projects, project, onSelect, onUpdateSteps, o
                     )}
                     {overrideFor === s.id && (
                       <div className="mt-2 flex items-center gap-2">
-                        <input value={overrideNote} onChange={e => setOverrideNote(e.target.value)} placeholder="Override note (required — written to audit log)"
+                        <input value={overrideNote} onChange={e => setOverrideNote(e.target.value)} placeholder={t('override.placeholder')}
                           className="flex-1 px-2.5 py-1.5 rounded-md border border-rule text-[11.5px] bg-white" />
                         <button onClick={() => doOverride(s.id)} disabled={!overrideNote.trim()}
                           className="px-3 py-1.5 rounded-md bg-ink text-white text-[11px] font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
-                          Apply
+                          {t('btn.apply')}
                         </button>
                       </div>
                     )}

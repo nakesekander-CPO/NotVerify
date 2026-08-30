@@ -8,6 +8,11 @@
  * real arbitr marketplace agents, human-review steps deep-link into
  * the existing HITL Review Workspace, and actions write to the
  * shared audit log.
+ *
+ * The header carries a section-scoped language toggle (Current / EN /
+ * 日本語 — see services/swiftbridge/i18n.jsx). "Current" preserves the
+ * pre-toggle mixed bilingual UI verbatim as the localisation "before"
+ * state; EN and JA are the clean single-language states.
  */
 
 import { useMemo, useState } from 'react'
@@ -19,6 +24,9 @@ import {
 import {
   getSwiftBridgeDemo, slaCountdown, slaWithPrep, buildWorkflow, buildTermEvidence,
 } from '../../../services/swiftbridge/swiftbridgeModel'
+import {
+  SBLangProvider, useSBLang, LangToggle, JA_TAB_LABELS, JA_V2_FEATURES, fmtDateTime,
+} from '../../../services/swiftbridge/i18n'
 import { appendAuditEvent } from '../../../services/hitl/auditLog'
 import { downloadText } from '../../../utils/demoFiles'
 import { SectionHeading, Card, MonoLabel, StatusBadge } from '../shared'
@@ -42,7 +50,24 @@ const MASCOTS = [
   { id: 'fukuro',    name: 'Fukurō',   nameJa: '梟',     icon: Eye,      tone: 'from-slate-600 to-slate-400', desc: 'The night owl — vigilant QA; nothing ships unseen.' },
 ]
 
-export default function SwiftBridge({ currentUserId, navigate, onBack }) {
+const V2_EVOLUTION = [
+  'Reliability & execution stability',
+  'Scalable AI workflow automation',
+  'AI Dubbing',
+  'Customer-managed glossary & custom agents',
+  'Transparent workflows with human review',
+]
+
+export default function SwiftBridge(props) {
+  return (
+    <SBLangProvider>
+      <SwiftBridgeShell {...props} />
+    </SBLangProvider>
+  )
+}
+
+function SwiftBridgeShell({ currentUserId, navigate, onBack }) {
+  const { lang, t } = useSBLang()
   const demo = useMemo(() => getSwiftBridgeDemo(), [])
   const [projects, setProjects] = useState(demo.projects)
   const [tab, setTab] = useState('dashboard')
@@ -50,6 +75,15 @@ export default function SwiftBridge({ currentUserId, navigate, onBack }) {
   const [mascot] = useState('tsuru') // Tsuru kept for the Delivery empty state
 
   const selected = projects.find(p => p.id === selectedId) || projects[0]
+
+  // Tab labels per language state: current keeps the two-line gloss,
+  // en drops the JA sub-line, ja is single-line Japanese (AI Dubbing
+  // stays English per the keep-English list).
+  const tabs = useMemo(() => TABS.map(({ id, label, labelJa, icon }) => (
+    lang === 'current' ? { id, label, labelJa, icon }
+      : lang === 'ja' ? { id, label: JA_TAB_LABELS[id] ?? labelJa, icon }
+        : { id, label, icon }
+  )), [lang])
 
   const audit = (eventType, projectId, reason) => {
     try {
@@ -100,19 +134,22 @@ export default function SwiftBridge({ currentUserId, navigate, onBack }) {
               <h2 className="text-[20px] font-bold tracking-tight">SwiftBridge AI</h2>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/20 border border-white/30">V2</span>
             </div>
-            <p className="text-[12px] text-white/80 mt-1">
-              スイフトブリッジAI — faster, more reliable AI-powered IR localization &amp; disclosure workflows
-            </p>
+            <p className="text-[12px] text-white/80 mt-1">{t('header.tagline')}</p>
           </div>
           <div className="flex items-center gap-4">
+            <LangToggle />
             <div className="text-right">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-white/60">Powered by</p>
-              <p className="text-[13px] font-semibold">arbitr <span className="text-white/70">·</span> アビタAI</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-white/60">{t('header.poweredBy')}</p>
+              <p className="text-[13px] font-semibold">
+                {lang === 'current'
+                  ? <>arbitr <span className="text-white/70">·</span> アビタAI</>
+                  : t('header.platformLockup')}
+              </p>
             </div>
             {onBack && (
               <button onClick={onBack} aria-label="Go back"
                 className="px-3 py-2 rounded-lg border border-white/25 text-[12.5px] font-medium text-white/85 hover:bg-white/10 cursor-pointer">
-                ← Back
+                {t('header.back')}
               </button>
             )}
           </div>
@@ -120,7 +157,7 @@ export default function SwiftBridge({ currentUserId, navigate, onBack }) {
       </div>
 
       {/* ── Tab bar ──────────────────────────────────────────── */}
-      <Tabs ariaLabel="SwiftBridge sections" tabs={TABS} active={tab} onChange={setTab} />
+      <Tabs ariaLabel="SwiftBridge sections" tabs={tabs} active={tab} onChange={setTab} />
 
       {tab === 'dashboard' && (
         <Dashboard projects={projects}
@@ -142,10 +179,10 @@ export default function SwiftBridge({ currentUserId, navigate, onBack }) {
 
       {/* ── Legal footer (placeholder copy per brief) ────────── */}
       <footer className="pt-2 border-t border-rule flex items-center justify-between text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-        <span>© 2026 SwiftBridge K.K. · Operated on the arbitr platform（アビタAI）</span>
+        <span>{t('footer.copyright')}</span>
         <span className="flex gap-4">
-          <button onClick={() => downloadText('swiftbridge-terms.txt', 'SwiftBridge 利用規約 / Terms of Service — placeholder legal copy.')} className="hover:text-slate cursor-pointer underline underline-offset-2">利用規約 Terms</button>
-          <button onClick={() => downloadText('swiftbridge-privacy.txt', 'SwiftBridge プライバシーポリシー / Privacy Policy — placeholder legal copy.')} className="hover:text-slate cursor-pointer underline underline-offset-2">プライバシーポリシー Privacy</button>
+          <button onClick={() => downloadText('swiftbridge-terms.txt', 'SwiftBridge 利用規約 / Terms of Service — placeholder legal copy.')} className="hover:text-slate cursor-pointer underline underline-offset-2">{t('footer.terms')}</button>
+          <button onClick={() => downloadText('swiftbridge-privacy.txt', 'SwiftBridge プライバシーポリシー / Privacy Policy — placeholder legal copy.')} className="hover:text-slate cursor-pointer underline underline-offset-2">{t('footer.privacy')}</button>
         </span>
       </footer>
     </div>
@@ -154,44 +191,40 @@ export default function SwiftBridge({ currentUserId, navigate, onBack }) {
 
 /* ── Dashboard ───────────────────────────────────────────────── */
 
-const V2_EVOLUTION = [
-  'Reliability & execution stability',
-  'Scalable AI workflow automation',
-  'AI Dubbing',
-  'Customer-managed glossary & custom agents',
-  'Transparent workflows with human review',
-]
-
 function Dashboard({ projects, onOpen, onNew }) {
+  const { lang, t } = useSBLang()
   const active = projects.filter(p => p.status !== 'delivered')
   const delivered = projects.filter(p => p.status === 'delivered')
   const pendingReviews = projects.flatMap(p => p.steps.filter(s => (s.kind === 'human_review' || s.kind === 'customer_action') && ['in_progress', 'needs_review'].includes(s.status)))
   const blocked = projects.filter(p => p.status === 'blocked')
   const nextDue = active.map(p => ({ p, c: slaCountdown(p) })).sort((a, b) => a.c.dueAt - b.c.dueAt)[0]
 
+  const v2Features = lang === 'ja' ? JA_V2_FEATURES : V2_EVOLUTION
+  const slaText = (p) => lang === 'ja' ? p.slaLabelJa : p.slaLabel
+
   return (
     <div className="space-y-5">
       <SectionHeading
-        title="IR localization, on time — every time"
-        subtitle="Upload a disclosure document, follow the AI-orchestrated workflow, review where it matters, and receive delivery within the committed SLA."
-        actions={<button onClick={onNew} className="px-4 py-2 rounded-lg bg-ocean text-white text-[13px] font-semibold hover:bg-ocean/90 cursor-pointer">＋ New project 新規案件</button>}
+        title={t('dash.title')}
+        subtitle={t('dash.subtitle')}
+        actions={<button onClick={onNew} className="px-4 py-2 rounded-lg bg-ocean text-white text-[13px] font-semibold hover:bg-ocean/90 cursor-pointer">{t('dash.newProject')}</button>}
       />
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Stat label="Active projects" labelJa="進行中" value={active.length} sub={blocked.length ? `${blocked.length} blocked — action needed` : 'All running normally'} tone={blocked.length ? 'amber' : 'ok'} />
-        <Stat label="Next SLA deadline" labelJa="次の納期" value={nextDue ? `${nextDue.c.remainingHours}h` : '—'} sub={nextDue ? `${nextDue.p.name} · ${nextDue.p.slaLabel}` : 'No live deadlines'} tone={nextDue && nextDue.c.remainingHours < 6 ? 'amber' : 'ok'} />
-        <Stat label="Pending reviews" labelJa="レビュー待ち" value={pendingReviews.length} sub="Human & customer gates" tone={pendingReviews.length ? 'info' : 'ok'} />
-        <Stat label="Delivered" labelJa="納品済み" value={delivered.length} sub="100% on time this quarter" tone="ok" />
+        <Stat label={t('stat.active')} value={active.length} sub={blocked.length ? t('stat.active.subBlocked', { n: blocked.length }) : t('stat.active.subOk')} tone={blocked.length ? 'amber' : 'ok'} />
+        <Stat label={t('stat.nextSla')} value={nextDue ? `${nextDue.c.remainingHours}h` : '—'} sub={nextDue ? `${nextDue.p.name} · ${slaText(nextDue.p)}` : t('stat.nextSla.subNone')} tone={nextDue && nextDue.c.remainingHours < 6 ? 'amber' : 'ok'} />
+        <Stat label={t('stat.pending')} value={pendingReviews.length} sub={t('stat.pending.sub')} tone={pendingReviews.length ? 'info' : 'ok'} />
+        <Stat label={t('stat.delivered')} value={delivered.length} sub={t('stat.delivered.sub')} tone="ok" />
       </div>
 
       {/* V2 evolution strip */}
       <Card padding="p-4">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-ocean shrink-0">
-            <Sparkles className="w-3.5 h-3.5" /> New in V2
+            <Sparkles className="w-3.5 h-3.5" /> {t('v2.newIn')}
           </span>
-          {V2_EVOLUTION.map(f => (
+          {v2Features.map(f => (
             <span key={f} className="text-[11px] px-2.5 py-1 rounded-full bg-pale text-ink border border-rule">{f}</span>
           ))}
         </div>
@@ -200,8 +233,8 @@ function Dashboard({ projects, onOpen, onNew }) {
       {/* Project list */}
       <Card padding="p-0">
         <div className="px-5 py-3 border-b border-rule flex items-center justify-between">
-          <p className="text-[13px] font-semibold text-ink">Projects 案件一覧</p>
-          <MonoLabel>SLA tracked by arbitr · アビタAI</MonoLabel>
+          <p className="text-[13px] font-semibold text-ink">{t('projects.header')}</p>
+          <MonoLabel>{t('projects.slaTracked')}</MonoLabel>
         </div>
         <ul className="divide-y divide-rule">
           {projects.map(p => {
@@ -213,10 +246,10 @@ function Dashboard({ projects, onOpen, onNew }) {
                     <p className="text-[13px] font-medium text-ink truncate">{p.name}{p.nameJa && <span className="text-mist font-normal"> · {p.nameJa}</span>}</p>
                     <p className="text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{p.id} · {p.langPair} · {p.files[0]?.name}</p>
                   </div>
-                  <span className="text-[10.5px] px-2 py-0.5 rounded-full bg-ocean/10 text-ocean border border-ocean/20 whitespace-nowrap" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{p.slaLabel}</span>
+                  <span className="text-[10.5px] px-2 py-0.5 rounded-full bg-ocean/10 text-ocean border border-ocean/20 whitespace-nowrap" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{slaText(p)}</span>
                   <SlaChip project={p} countdown={c} />
                   <StatusBadge status={p.status === 'delivered' ? 'signed-off' : p.status === 'blocked' ? 'needs-rework' : 'in-progress'}>
-                    {p.status === 'delivered' ? 'Delivered' : p.status === 'blocked' ? 'Blocked' : 'In progress'}
+                    {p.status === 'delivered' ? t('badge.delivered') : p.status === 'blocked' ? t('badge.blocked') : t('badge.inProgress')}
                   </StatusBadge>
                 </button>
               </li>
@@ -229,11 +262,11 @@ function Dashboard({ projects, onOpen, onNew }) {
   )
 }
 
-function Stat({ label, labelJa, value, sub, tone }) {
+function Stat({ label, value, sub, tone }) {
   const tones = { ok: 'text-teal', amber: 'text-[#996800]', info: 'text-ocean' }
   return (
     <Card padding="p-4">
-      <p className="text-[10.5px] uppercase tracking-wider text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{label} · {labelJa}</p>
+      <p className="text-[10.5px] uppercase tracking-wider text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{label}</p>
       <p className="text-[26px] font-bold text-ink mt-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{value}</p>
       <p className={`text-[11px] mt-0.5 ${tones[tone] || 'text-slate'}`}>{sub}</p>
     </Card>
@@ -241,27 +274,30 @@ function Stat({ label, labelJa, value, sub, tone }) {
 }
 
 export function SlaChip({ project, countdown }) {
+  const { t } = useSBLang()
   const c = countdown || slaCountdown(project)
   if (c.delivered) {
     return <span className={`inline-flex items-center gap-1 text-[10.5px] px-2 py-0.5 rounded-full border whitespace-nowrap ${c.met ? 'bg-teal/10 text-teal border-teal/30' : 'bg-error/10 text-error border-error/30'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-      <CheckCircle2 className="w-3 h-3" /> {c.met ? 'SLA met' : 'SLA missed'}
+      <CheckCircle2 className="w-3 h-3" /> {c.met ? t('sla.met') : t('sla.missed')}
     </span>
   }
   if (c.breached) {
-    return <span className="inline-flex items-center gap-1 text-[10.5px] px-2 py-0.5 rounded-full bg-error/10 text-error border border-error/30 whitespace-nowrap" style={{ fontFamily: "'IBM Plex Mono', monospace" }}><AlertTriangle className="w-3 h-3" /> SLA breached</span>
+    return <span className="inline-flex items-center gap-1 text-[10.5px] px-2 py-0.5 rounded-full bg-error/10 text-error border border-error/30 whitespace-nowrap" style={{ fontFamily: "'IBM Plex Mono', monospace" }}><AlertTriangle className="w-3 h-3" /> {t('sla.breached')}</span>
   }
   const low = c.remainingHours <= 6
   return <span className={`inline-flex items-center gap-1 text-[10.5px] px-2 py-0.5 rounded-full border whitespace-nowrap ${low ? 'bg-[#FFF7E6] text-[#996800] border-[#FFB000]/40' : 'bg-pale text-slate border-rule'}`} style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-    <Clock className="w-3 h-3" /> {c.remainingHours}h left
+    <Clock className="w-3 h-3" /> {t('sla.left', { h: c.remainingHours })}
   </span>
 }
 
 /* ── Delivery ────────────────────────────────────────────────── */
 
 function DeliveryPanel({ projects, mascot }) {
+  const { lang, t } = useSBLang()
   const delivered = projects.filter(p => p.status === 'delivered')
   const [stars, setStars] = useState(0)
   const MascotIcon = mascot?.icon || Bird
+  const mascotName = lang === 'ja' ? (mascot?.nameJa || mascot?.name) : mascot?.name
 
   if (delivered.length === 0) {
     return (
@@ -270,8 +306,8 @@ function DeliveryPanel({ projects, mascot }) {
           <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${mascot?.tone || 'from-teal-600 to-emerald-400'} flex items-center justify-center mx-auto mb-3`}>
             <MascotIcon className="w-7 h-7 text-white" />
           </div>
-          <p className="text-[14px] font-semibold text-ink">{mascot?.name} says: nothing delivered yet</p>
-          <p className="text-[12px] text-slate mt-1">Your completed deliverables will appear here with SLA status and version history.</p>
+          <p className="text-[14px] font-semibold text-ink">{t('delivery.emptyTitle', { name: mascotName })}</p>
+          <p className="text-[12px] text-slate mt-1">{t('delivery.emptyBody')}</p>
         </div>
       </Card>
     )
@@ -287,33 +323,33 @@ function DeliveryPanel({ projects, mascot }) {
               <div>
                 <p className="text-[14px] font-semibold text-ink">{p.name} <span className="text-mist font-normal">· {p.nameJa}</span></p>
                 <p className="text-[10.5px] text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
-                  Delivered {new Date(p.deliveredAt).toLocaleString()} · {p.slaLabel}
+                  {t('delivery.deliveredAt', { dt: fmtDateTime(p.deliveredAt, lang), sla: lang === 'ja' ? p.slaLabelJa : p.slaLabel })}
                 </p>
               </div>
               <SlaChip project={p} countdown={c} />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 p-5">
               <div>
-                <MonoLabel>Deliverables 納品物</MonoLabel>
+                <MonoLabel>{t('delivery.deliverables')}</MonoLabel>
                 <ul className="mt-2 space-y-1.5">
                   {[`${p.name} (EN).pdf`, 'QA report.pdf', 'Glossary compliance memo.pdf'].map(f => (
                     <li key={f} className="flex items-center justify-between text-[12px] text-ink">
                       <span className="truncate">{f}</span>
-                      <button onClick={() => downloadText(f.replace(/\.(pdf|docx)$/i, '.txt'), `${f}\nDelivered by arbitr · SwiftBridge — demo deliverable stub.\nProject: ${p.name} (${p.id})`)} aria-label={`Download ${f}`} className="text-ocean hover:text-ocean/80 cursor-pointer inline-flex items-center gap-1 text-[11px] shrink-0 ml-3"><Download className="w-3 h-3" /> Download</button>
+                      <button onClick={() => downloadText(f.replace(/\.(pdf|docx)$/i, '.txt'), `${f}\nDelivered by arbitr · SwiftBridge — demo deliverable stub.\nProject: ${p.name} (${p.id})`)} aria-label={`Download ${f}`} className="text-ocean hover:text-ocean/80 cursor-pointer inline-flex items-center gap-1 text-[11px] shrink-0 ml-3"><Download className="w-3 h-3" /> {t('delivery.download')}</button>
                     </li>
                   ))}
                 </ul>
               </div>
               <div>
-                <MonoLabel>Version history</MonoLabel>
+                <MonoLabel>{t('delivery.versionHistory')}</MonoLabel>
                 <ul className="mt-2 space-y-1.5 text-[12px]">
-                  <li className="flex items-center gap-2 text-ink"><span className="font-mono text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>v2</span> Final — human review + QA fixes applied <ChevronRight className="w-3 h-3 text-mist" /></li>
-                  <li className="flex items-center gap-2 text-slate"><span className="font-mono text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>v1</span> AI draft (arbitr · アビタAI)</li>
+                  <li className="flex items-center gap-2 text-ink"><span className="font-mono text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>v2</span> {t('delivery.v2Line')} <ChevronRight className="w-3 h-3 text-mist" /></li>
+                  <li className="flex items-center gap-2 text-slate"><span className="font-mono text-mist" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>v1</span> {t('delivery.v1Line')}</li>
                 </ul>
-                <p className="text-[11px] text-slate mt-3"><span className="text-mist">Review note:</span> Terminology aligned to Meridian IR Glossary v3. Footnote 7 retranslated.</p>
+                <p className="text-[11px] text-slate mt-3"><span className="text-mist">{t('delivery.reviewNoteLabel')}</span> {t('delivery.reviewNote')}</p>
               </div>
               <div>
-                <MonoLabel>Your feedback ご評価</MonoLabel>
+                <MonoLabel>{t('delivery.feedback')}</MonoLabel>
                 <div className="flex items-center gap-1 mt-2">
                   {[1, 2, 3, 4, 5].map(n => (
                     <button key={n} onClick={() => setStars(n)} aria-label={`${n} stars`} className="cursor-pointer">
@@ -321,7 +357,7 @@ function DeliveryPanel({ projects, mascot }) {
                     </button>
                   ))}
                 </div>
-                {stars > 0 && <p className="text-[11px] text-teal mt-1.5">ありがとうございます — feedback recorded.</p>}
+                {stars > 0 && <p className="text-[11px] text-teal mt-1.5">{t('delivery.thanks')}</p>}
               </div>
             </div>
           </Card>
