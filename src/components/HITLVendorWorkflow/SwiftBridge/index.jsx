@@ -206,7 +206,6 @@ function Dashboard({ projects, onOpen, onNew }) {
     <div className="space-y-5">
       <SectionHeading
         title={t('dash.title')}
-        subtitle={t('dash.subtitle')}
         actions={<button onClick={onNew} className="px-4 py-2 rounded-lg bg-ocean text-white text-[13px] font-semibold hover:bg-ocean/90 cursor-pointer">{t('dash.newProject')}</button>}
       />
 

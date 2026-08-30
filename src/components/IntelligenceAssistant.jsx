@@ -267,12 +267,12 @@ export default function IntelligenceAssistant({ companyName, userName, currentPh
             exit={{ scale: 0, opacity: 0 }}
             transition={SPRING}
             onClick={handleOpen}
-            className="fixed bottom-6 left-6 z-[60] w-14 h-14 rounded-full bg-gradient-to-br from-straker-500 to-straker-700 shadow-lg shadow-straker-500/15 flex items-center justify-center cursor-pointer hover:shadow-straker-500/40 hover:scale-105 transition-all group"
+            className="fixed bottom-6 right-6 z-[60] w-14 h-14 rounded-full bg-gradient-to-br from-straker-500 to-straker-700 shadow-lg shadow-straker-500/15 flex items-center justify-center cursor-pointer hover:shadow-straker-500/40 hover:scale-105 transition-all group"
             aria-label="Open Sage"
           >
             <Bot className="w-6 h-6 text-white" />
             {/* Tooltip */}
-            <span className="absolute left-full ml-3 px-3 py-1.5 rounded-lg bg-gray-50 border border-black/[0.12] text-[12px] text-gray-800 font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            <span className="absolute right-full mr-3 px-3 py-1.5 rounded-lg bg-gray-50 border border-black/[0.12] text-[12px] text-gray-800 font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
               Chat with Sage
             </span>
           </motion.button>
@@ -287,7 +287,7 @@ export default function IntelligenceAssistant({ companyName, userName, currentPh
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={SPRING}
-            className="fixed bottom-6 left-6 z-[60] w-[400px] h-[560px] rounded-lg bg-white border border-black/[0.12]  shadow-black/10 flex flex-col overflow-hidden"
+            className="fixed bottom-6 right-6 z-[60] w-[400px] h-[560px] rounded-lg bg-white border border-black/[0.12]  shadow-black/10 flex flex-col overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-black/[0.12] bg-gray-50 shrink-0">

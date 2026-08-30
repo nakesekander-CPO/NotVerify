@@ -53,10 +53,6 @@ export const STR = {
 
   /* Dashboard */
   'dash.title': { en: 'IR localization, on time — every time', ja: 'IR翻訳、常に納期どおり' },
-  'dash.subtitle': {
-    en: 'Upload a disclosure document, follow the AI-orchestrated workflow, review where it matters, and receive delivery within the committed SLA.',
-    ja: '開示文書をアップロードすると、AIが構成したワークフローが進みます。要所は人がレビューし、約束した納期内に納品します。',
-  },
   'dash.newProject': { en: '＋ New project', ja: '＋ 新規案件', current: '＋ New project 新規案件' },
   'stat.active': { en: 'Active projects', ja: '進行中', current: 'Active projects · 進行中' },
   'stat.nextSla': { en: 'Next SLA deadline', ja: '次の納期', current: 'Next SLA deadline · 次の納期' },
