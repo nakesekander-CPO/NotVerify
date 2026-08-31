@@ -1,36 +1,39 @@
 /**
  * Governance dashboard — the unified home surface ("actions start here").
  *
- * Replaces both the old cold-start dashboard and the CommandSurface:
- * one component, two data states keyed off projectsCompleted. Anchored on
- * the held-changes queue under a Checks → Flags → Publishes stat row; the
- * right rail carries the entry actions (check a document, sample run,
- * module shortcuts); the Cortex mini-constellation closes the page.
+ * Operator-first bento layout:
+ *   1. Decision strip — reconciling stat chips (three filter the queue),
+ *      the single most urgent hold with the page's one primary CTA, and
+ *      a compact check-a-document drop target.
+ *   2. Offerings rail — every product surface as a compact live tile,
+ *      ranked so tiles with open work sort first.
+ *   3. Triage queue — split-pane: dense row list + docked decision
+ *      panel; the pane owns its height so the page never grows.
+ *   4. Cortex band — the compounding-memory story, kept legible.
  * Frontend-only simulation, DS v2 Split Frame tokens throughout.
  */
 
 import { useCallback, useMemo, useRef, useState } from 'react'
 import {
-  Upload, Bot, Radar, Pen, Layers, ChevronRight, Brain, RotateCcw,
+  Bot, Radar, Pen, Layers, Brain, Languages, Clapperboard,
 } from 'lucide-react'
-import { applyDecision, getDashboardState, PRELOADED_ENTRIES } from '../../data/governanceDashboard'
+import { applyDecision, getDashboardState, isOpen, triageOrder, PRELOADED_ENTRIES } from '../../data/governanceDashboard'
 import { METRICS } from '../../data/cortex'
-import { Card, MonoLabel } from '../HITLVendorWorkflow/shared'
+import { EAVI, ALERTS } from '../../data/eav'
+import { AGENTS } from '../../data/agentStudio'
+import { ENSEMBLE_TEMPLATES } from '../../data/campaignModel'
+import { dubbingSummary, DUB_PROJECTS } from '../../data/videoDubbing'
+import { getSwiftBridgeDemo, slaCountdown } from '../../services/swiftbridge/swiftbridgeModel'
+import { Card } from '../HITLVendorWorkflow/shared'
 import { useToast } from '../ToastProvider'
-import MechanicStrip from './MechanicStrip'
-import StatRow from './StatRow'
-import HeldQueue from './HeldQueue'
+import DecisionStrip from './DecisionStrip'
+import OfferingTile from './OfferingTile'
+import TriageQueue from './TriageQueue'
 import MiniConstellation from './MiniConstellation'
-import HoldDetailDrawer from './HoldDetailDrawer'
-import SwiftBridgeCard from './SwiftBridgeCard'
-import VideoDubbingCard from './VideoDubbingCard'
 
 const ACCEPTED_EXTENSIONS = '.docx, .pdf, .pptx, .xlsx, .mp4'
 
 export default function GovernanceDashboard({
-  userName = 'Alex',
-  companyName = 'Meridian Capital',
-  projectsCompleted = 0,
   onFileAccepted,
   onStartCampaign,
   onCreateContent,
@@ -40,22 +43,12 @@ export default function GovernanceDashboard({
   onOpenSwiftBridge,
   onOpenVideoDubbing,
 }) {
-  /* The dashboard seeds itself into the live state so the queue has
-     something to govern. App-level Day 0 (projectsCompleted) is left
-     untouched — the first-run time-jump keys off it — so the cold-start
-     story stays reachable through "Reset to Day 0" below. */
   const { addToast } = useToast()
-  const [demoMode, setDemoMode] = useState('live') // 'live' | 'day0'
   const [liveState, setLiveState] = useState(() => getDashboardState(1))
   const [filter, setFilter] = useState(null)
-  const [detail, setDetail] = useState(null) // { id, reject }
+  const [selectedHoldId, setSelectedHoldId] = useState(() => triageOrder(getDashboardState(1).heldChanges)[0]?.id ?? null)
 
-  const day0State = useMemo(() => getDashboardState(0), [])
-  const hasRealProjects = projectsCompleted > 0
-  const showLive = demoMode === 'live' || hasRealProjects
-  const { mode, stats, heldChanges } = showLive ? liveState : day0State
-
-  const openChange = detail ? heldChanges.find(c => c.id === detail.id) : null
+  const { mode, stats, heldChanges } = liveState
 
   /* Decisions are computed off the current state, never inside a state
      updater — an updater can run twice, which would double-toast. */
@@ -70,22 +63,19 @@ export default function GovernanceDashboard({
           : `Sent back — ${change.title} returned to the author.`,
         decision === 'approved' ? 'success' : 'info',
       )
+      // Triage flow: after deciding, move the operator to the next open hold.
+      const nextOpen = triageOrder(next.heldChanges).find(c => isOpen(c) && c.id !== id)
+      setSelectedHoldId(nextOpen ? nextOpen.id : id)
     }
-    setDetail(null)
   }, [liveState, addToast])
 
-  const handleOpenDetail = useCallback((id, reject = false) => setDetail({ id, reject }), [])
-
-  const handleToggleDemo = useCallback(() => {
-    if (demoMode === 'live') {
-      setDemoMode('day0')
-    } else {
-      setLiveState(getDashboardState(1)) // fresh week, decisions rolled back
-      setDemoMode('live')
-    }
-    setFilter(null)
-    setDetail(null)
-  }, [demoMode])
+  const queueRef = useRef(null)
+  /* The strip's Review button and the chips land the operator on the
+     triage pane itself — no separate drawer surface to learn. */
+  const handleOpenDetail = useCallback((id) => {
+    setSelectedHoldId(id)
+    queueRef.current?.scrollIntoView({ block: 'start' })
+  }, [])
 
   const fileInputRef = useRef(null)
   const dropRef = useRef(null)
@@ -109,12 +99,84 @@ export default function GovernanceDashboard({
     if (file && onFileAccepted) onFileAccepted(file)
   }, [onFileAccepted])
 
-  const shortcuts = [
-    { icon: Bot, label: 'Agent Studio', desc: 'Governed agents on your Cortex', onClick: onOpenAgentStudio },
-    { icon: Radar, label: 'AI Visibility', desc: 'How AI answers speak about you', onClick: onOpenAIVisibility },
-    { icon: Pen, label: 'Create with Cortex', desc: 'Reports & disclosures from verified memory', onClick: onCreateContent },
-    { icon: Layers, label: 'Check a batch', desc: 'Multi-document run with a risk heatmap', onClick: onStartCampaign },
-  ]
+  /* ── The offerings, each with its live work state ─────────────
+     `urgency` ranks the grid: cards with open work sort first, ties
+     keep the declaration order below. All numbers come from the same
+     seeded models the module pages themselves render — one story. */
+  const offerings = useMemo(() => {
+    const sb = getSwiftBridgeDemo()
+    const sbActive = sb.projects.filter(p => p.status !== 'delivered')
+    const sbBlocked = sbActive.filter(p => p.status === 'blocked')
+    const sbNext = sbActive
+      .map(p => ({ p, c: slaCountdown(p) }))
+      .sort((a, b) => a.c.dueAt - b.c.dueAt)[0]
+
+    const dub = dubbingSummary()
+    const heldTrack = DUB_PROJECTS.flatMap(p => p.tracks).find(t => t.status === 'held' && t.stage === 'consent')
+
+    const visAlerts = ALERTS.filter(a => !a.ack).length
+    const activeAgents = AGENTS.filter(a => a.status === 'active')
+    const agentIssues = activeAgents.reduce((n, a) => n + (a.openIssues || 0), 0)
+
+    return [
+      {
+        key: 'swiftbridge', icon: Languages, iconClass: 'bg-straker-900 text-lens',
+        label: 'SwiftBridge · Japan IR', mono: 'SLA-committed delivery',
+        headline: sbActive.length, headlineSuffix: 'active',
+        attention: sbBlocked.length
+          ? `${sbBlocked.length} blocked — action needed`
+          : (sbNext ? `next SLA ${sbNext.c.remainingHours}h` : null),
+        allClear: 'on schedule',
+        urgency: sbBlocked.length,
+        onClick: onOpenSwiftBridge,
+      },
+      {
+        key: 'video-dubbing', icon: Clapperboard,
+        label: 'Video Dubbing', mono: 'one source video · every language',
+        headline: dub.tracks, headlineSuffix: 'tracks',
+        attention: dub.held ? `${dub.held} held — consent gate holding ${heldTrack ? heldTrack.lang : 'a track'}` : null,
+        allClear: 'all cleared',
+        urgency: dub.held,
+        onClick: onOpenVideoDubbing,
+      },
+      {
+        key: 'ai-visibility', icon: Radar,
+        label: 'AI Visibility', mono: 'how AI answers speak about you',
+        headline: EAVI.display, headlineSuffix: `/100 ▲${EAVI.trend90d}`,
+        attention: visAlerts ? `${visAlerts} open alerts` : null,
+        allClear: 'no open alerts',
+        urgency: visAlerts,
+        onClick: onOpenAIVisibility,
+      },
+      {
+        key: 'agent-studio', icon: Bot,
+        label: 'Agent Studio', mono: 'governed agents on your Cortex',
+        headline: activeAgents.length, headlineSuffix: 'agents',
+        attention: agentIssues ? `${agentIssues} open issues across agents` : null,
+        allClear: 'all healthy',
+        urgency: agentIssues,
+        onClick: onOpenAgentStudio,
+      },
+      {
+        key: 'create', icon: Pen,
+        label: 'Create with Cortex', mono: 'reports & disclosures from verified memory',
+        headline: METRICS.verifiedEntries.toLocaleString(), headlineSuffix: 'entries',
+        attention: null,
+        allClear: 'ready to draft',
+        urgency: 0,
+        onClick: onCreateContent,
+      },
+      {
+        key: 'batch', icon: Layers,
+        label: 'Check a batch', mono: 'multi-document run · risk heatmap',
+        headline: ENSEMBLE_TEMPLATES.length, headlineSuffix: 'ensembles',
+        attention: null,
+        allClear: 'drop files to start',
+        urgency: 0,
+        onClick: onStartCampaign,
+      },
+    ].sort((a, b) => b.urgency - a.urgency)
+  }, [onOpenSwiftBridge, onOpenVideoDubbing, onOpenAIVisibility, onOpenAgentStudio, onCreateContent, onStartCampaign])
 
   return (
     <div className="w-full max-w-[1280px] xl:max-w-[1440px] 2xl:max-w-[1600px] mx-auto px-6 lg:px-8 xl:px-12 2xl:px-16 py-6 space-y-5">
@@ -123,106 +185,36 @@ export default function GovernanceDashboard({
         onChange={handleFileInputChange} className="hidden" aria-hidden="true" tabIndex={-1}
       />
 
-      {/* ── Context line ── */}
-      <div className="flex items-end justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-[22px] font-bold text-ink tracking-tight">
-            {mode === 'day0' ? `Welcome, ${userName}` : `Good morning, ${userName}`}
-          </h1>
-          <p className="text-[12.5px] text-slate mt-0.5">
-            arbitr decides what's safe to publish — every change checked against {companyName}'s rules first.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <MonoLabel>Checks → Flags → Publishes</MonoLabel>
-          {!hasRealProjects && (
-          <button
-            type="button"
-            onClick={handleToggleDemo}
-            className="inline-flex items-center gap-1.5 text-[11px] font-medium text-mist hover:text-ocean transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ocean rounded"
-            title={showLive ? 'Show the cold-start dashboard' : 'Load the example week'}
-          >
-            <RotateCcw className="w-3 h-3" />
-            {showLive ? 'Reset to Day 0' : 'Load example data'}
-          </button>
-          )}
-        </div>
+      {/* ── 1 · Decision strip ── */}
+      <DecisionStrip
+        stats={stats} mode={mode}
+        heldChanges={heldChanges} onOpenDetail={handleOpenDetail}
+        onJumpToQueue={() => queueRef.current?.scrollIntoView({ block: 'start' })}
+        dropRef={dropRef} isDragOver={isDragOver} openFilePicker={openFilePicker}
+        onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
+      />
+
+      {/* ── 2 · Offerings rail ── */}
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+        {offerings.map(({ key, ...tile }) => (
+          <OfferingTile key={key} {...tile} />
+        ))}
       </div>
 
-      {/* ── Mechanic strip ── */}
-      <MechanicStrip />
-
-      {/* ── Stats ── */}
-      <StatRow stats={stats} mode={mode} activeFilter={filter} onFilterChange={setFilter} />
-
-      {/* ── Main zone: queue + action rail ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5 items-start">
-        <HeldQueue
+      {/* ── 3 · Triage queue ── */}
+      <div ref={queueRef}>
+        <TriageQueue
           heldChanges={heldChanges}
           mode={mode}
           filter={filter}
-          onClearFilter={() => setFilter(null)}
+          onFilterChange={setFilter}
+          selectedId={selectedHoldId}
+          onSelect={setSelectedHoldId}
           onDecide={handleDecide}
-          onOpenDetail={handleOpenDetail}
         />
-
-        <aside className="space-y-4 lg:sticky lg:top-[120px]">
-          {/* Check a document */}
-          <div
-            ref={dropRef}
-            role="button" tabIndex={0}
-            onClick={openFilePicker}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFilePicker() } }}
-            onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
-            aria-label="Check a document"
-            className={`rounded-lg border-2 border-dashed p-5 text-center cursor-pointer transition-colors bg-white ${isDragOver ? 'border-ocean bg-ocean/5' : 'border-rule hover:border-ocean/40'}`}
-          >
-            <Upload className="w-5 h-5 text-ocean mx-auto mb-2" />
-            <p className="text-[13px] font-semibold text-ink">Check a document</p>
-            <p className="text-[11px] text-mist mt-0.5">Drop a file to run it through your rules · {ACCEPTED_EXTENSIONS}</p>
-          </div>
-
-          {/* Specific workflows, surfaced where actions start */}
-          <SwiftBridgeCard onOpenSwiftBridge={onOpenSwiftBridge} />
-          <VideoDubbingCard onOpenVideoDubbing={onOpenVideoDubbing} />
-
-          {/* Module shortcuts */}
-          <Card padding="p-0">
-            <ul className="divide-y divide-rule">
-              {shortcuts.map(s => {
-                const Icon = s.icon
-                return (
-                  <li key={s.label}>
-                    <button
-                      onClick={() => s.onClick?.()}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-pale/60 transition-colors cursor-pointer"
-                    >
-                      <span className="w-8 h-8 rounded-lg bg-ocean/10 flex items-center justify-center shrink-0">
-                        <Icon className="w-4 h-4 text-ocean" />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-[12.5px] font-semibold text-ink">{s.label}</span>
-                        <span className="block text-[10.5px] text-mist truncate">{s.desc}</span>
-                      </span>
-                      <ChevronRight className="w-3.5 h-3.5 text-mist shrink-0" />
-                    </button>
-                  </li>
-                )
-              })}
-            </ul>
-          </Card>
-        </aside>
       </div>
 
-      <HoldDetailDrawer
-        key={detail ? `${detail.id}-${detail.reject}` : 'closed'}
-        change={openChange}
-        initialReject={Boolean(detail?.reject)}
-        onClose={() => setDetail(null)}
-        onDecide={handleDecide}
-      />
-
-      {/* ── Cortex ── */}
+      {/* ── 4 · Cortex band ── */}
       <Card padding="p-0">
         <div className="px-5 py-3.5 border-b border-rule flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2.5">

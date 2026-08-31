@@ -39,11 +39,11 @@ export default function MiniConstellation({ onOpenCortex }) {
         for (let i = 0; i < c.n; i++) {
           const recent = rnd() < 0.2
           ctx.beginPath()
-          ctx.fillStyle = hexA(c.color, recent ? 0.85 : 0.4)
+          ctx.fillStyle = hexA(c.color, recent ? 0.95 : 0.65)
           ctx.arc(
             (c.x + gauss() * c.spread * 2.4) * s.width,
             (c.y + gauss() * c.spread * 2.2) * s.height,
-            (1 + rnd() * 1.2) * (recent ? 1.4 : 1),
+            (1.5 + rnd() * 1.4) * (recent ? 1.4 : 1),
             0, Math.PI * 2,
           )
           ctx.fill()

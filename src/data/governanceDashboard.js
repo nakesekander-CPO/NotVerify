@@ -47,6 +47,13 @@ export const DAY0_STATS = {
 /* ── Held-changes queue ────────────────────────────────────────── */
 
 // status: 'critical-hold' | 'held' | 'cleared' | 'rejected'
+/** Triage order: open critical holds first, then open holds, then
+ *  resolved — stable within each band so the queue keeps arrival order. */
+export function triageOrder(changes) {
+  const rank = (c) => (isOpen(c) ? (c.status === 'critical-hold' ? 0 : 1) : 2)
+  return [...changes].sort((a, b) => rank(a) - rank(b))
+}
+
 export const HELD_CHANGES = [
   {
     id: 'hold-01',
