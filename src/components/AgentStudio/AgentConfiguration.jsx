@@ -12,6 +12,7 @@ import { Rocket, Info } from 'lucide-react'
 import {
   getAgentById, activeVersion, ensureDraftVersion, publishAgent, useAgentStore, ACTIVE_CUSTOMER,
 } from '../../data/agentStudio'
+import { selectableModels, getModelByKey } from '../../data/modelRegistry'
 import {
   SectionHeading, Card, MonoLabel, PrimaryButton, SecondaryButton,
 } from './shared'
@@ -75,6 +76,17 @@ export default function AgentConfiguration({ agentId, go }) {
               <Field label="Agent name"><input value={v.name} onChange={e => edit({ name: e.target.value })} className="w-full text-[13px] border border-rule rounded-md px-2.5 py-2 focus:outline-none focus:border-ocean/50" /></Field>
               <Field label="Description"><input value={agent.description} onChange={e => { agent.description = e.target.value; refresh() }} className="w-full text-[13px] border border-rule rounded-md px-2.5 py-2 focus:outline-none focus:border-ocean/50" /></Field>
               <Field label="Response style"><input value={v.responseStyle} onChange={e => edit({ responseStyle: e.target.value })} className="w-full text-[13px] border border-rule rounded-md px-2.5 py-2 focus:outline-none focus:border-ocean/50" /></Field>
+              <Field label="Model">
+                <ModelSelect
+                  value={v.modelConfig?.model}
+                  onChange={key => edit({ modelConfig: { ...v.modelConfig, model: key } })}
+                />
+                <p className="text-[11.5px] text-mist mt-1.5">
+                  Only models enabled in the{' '}
+                  <button type="button" onClick={() => go('models', { modelId: null })} className="text-ocean hover:text-ocean/80 cursor-pointer underline underline-offset-2">Model Registry</button>
+                  {' '}are selectable.
+                </p>
+              </Field>
             </div>
           )}
           {tab === 'Instructions' && (
@@ -112,6 +124,32 @@ export default function AgentConfiguration({ agentId, go }) {
 
 function Field({ label, children }) {
   return <label className="block"><span className="text-[11px] text-mist">{label}</span><div className="mt-1">{children}</div></label>
+}
+
+/** Model picker bound to the registry — only governed-enabled models are offered. */
+function ModelSelect({ value, onChange }) {
+  const options = selectableModels()
+  const current = getModelByKey(value)
+  const currentIsSelectable = current && current.status === 'enabled'
+  return (
+    <select
+      value={value || ''}
+      onChange={e => onChange(e.target.value)}
+      aria-label="Model"
+      className="w-full text-[13px] border border-rule rounded-md px-2.5 py-2 bg-white cursor-pointer focus:outline-none focus:border-ocean/50"
+    >
+      {!currentIsSelectable && (
+        <option value={value || ''} disabled>
+          {current ? `${current.name} (current — not enabled in registry)` : `${value || 'No model set'} (current — not in registry)`}
+        </option>
+      )}
+      {options.map(m => (
+        <option key={m.modelKey} value={m.modelKey}>
+          {m.name} · {m.creditCostPerRun} cr/check
+        </option>
+      ))}
+    </select>
+  )
 }
 function Toggle({ label, checked, onChange }) {
   return (

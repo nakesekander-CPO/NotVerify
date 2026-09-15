@@ -35,6 +35,24 @@ export function AgentStatusBadge({ status }) {
   )
 }
 
+/* ─── Model registry status ────────────────────────────────────── */
+
+const MODEL_TONE = {
+  enabled: { bg: 'bg-teal/10', text: 'text-teal', border: 'border-teal/30', icon: Check, label: 'Enabled' },
+  available: { bg: 'bg-rule/50', text: 'text-slate', border: 'border-rule-strong', icon: Clock, label: 'Available' },
+  evaluation: { bg: 'bg-[#FFF7E6]', text: 'text-[#996800]', border: 'border-[#FFB000]/40', icon: AlertTriangle, label: 'In evaluation' },
+}
+
+export function ModelStatusBadge({ status }) {
+  const t = MODEL_TONE[status] || MODEL_TONE.available
+  const Icon = t.icon
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border ${t.bg} ${t.text} ${t.border} text-[11px] font-medium`}>
+      <Icon className="w-3 h-3" /> {t.label}
+    </span>
+  )
+}
+
 /* ─── Output / run status (the trust-first states) ─────────────── */
 
 const OUTPUT_TONE = {

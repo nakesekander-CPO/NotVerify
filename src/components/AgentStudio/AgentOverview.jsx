@@ -17,6 +17,7 @@ import {
   duplicateAgent, DEPLOYMENT_SURFACES, KNOWLEDGE_CATALOG, CAPABILITY_CATALOG,
   GUARDRAIL_CATALOG,
 } from '../../data/agentStudio'
+import { getModelByKey } from '../../data/modelRegistry'
 import {
   SectionHeading, Card, MonoLabel, KeyValueRow, PrimaryButton, SecondaryButton,
   OutputStatusBadge, ConfidenceBadge, CreditUsageBadge,
@@ -83,6 +84,7 @@ export default function AgentOverview({ agentId, go }) {
             <div className="px-5 py-3 border-b border-rule"><p className="text-[13px] font-semibold text-ink">Configuration</p></div>
             <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 text-[12.5px]">
               <KeyValueRow label="Type" value={agent.type.replace(/_/g, ' ')} />
+              <KeyValueRow label="Model" value={getModelByKey(v?.modelConfig?.model)?.name || v?.modelConfig?.model || '—'} />
               <KeyValueRow label="Mission" value={v?.mission || '—'} />
               <KeyValueRow label="Owner" value={agent.owner} />
               <KeyValueRow label="Languages" value={(agent.supportedLanguages || [agent.defaultLanguage]).join(', ')} mono />

@@ -11,13 +11,16 @@
 import { useState, useCallback } from 'react'
 import { Bot, ChevronRight, ArrowLeft } from 'lucide-react'
 import { useAgentStore, getAgentById } from '../../data/agentStudio'
+import { getModelById } from '../../data/modelRegistry'
 import { MonoLabel } from './shared'
-import { PageHeader } from '../ui'
+import { PageHeader, Tabs } from '../ui'
 import AgentStudioDashboard from './AgentStudioDashboard'
 import ConversationalBuilder from './ConversationalBuilder'
 import AgentDetail from './AgentDetail'
 import AgentPlayground from './AgentPlayground'
 import AgentRunTrace from './AgentRunTrace'
+import ModelRegistry from './ModelRegistry'
+import ModelDetail from './ModelDetail'
 
 // Legacy agent-scoped view ids → tabs on the single agent page.
 const AGENT_TABS = { overview: 'overview', configure: 'configure', analytics: 'analytics', deployments: 'configure' }
@@ -29,23 +32,30 @@ const VIEW_LABEL = {
 
 export default function AgentStudio({ onBack, currentUserId = 'You' }) {
   useAgentStore() // subscribe to store mutations
-  const [nav, setNav] = useState({ view: 'dashboard', agentId: null, runId: null, template: null })
+  const [nav, setNav] = useState({ view: 'dashboard', agentId: null, runId: null, modelId: null, template: null })
 
   const go = useCallback((view, extra = {}) => {
     setNav(prev => ({
       view,
       agentId: extra.agentId ?? prev.agentId,
       runId: extra.runId ?? prev.runId,
+      modelId: extra.modelId ?? prev.modelId,
       template: view === 'new' ? (extra.template ?? null) : prev.template,
     }))
     if (typeof window !== 'undefined') window.scrollTo({ top: 0 })
   }, [])
 
+  const isModelView = nav.view === 'models' || nav.view === 'model-detail'
   const agent = nav.agentId ? getAgentById(nav.agentId) : null
+  const model = nav.view === 'model-detail' && nav.modelId ? getModelById(nav.modelId) : null
 
   // Breadcrumb trail: Agent Studio › [Agent name] › (Playground / Run trace)
-  const crumbs = [{ label: 'Agent Studio', onClick: () => go('dashboard', { agentId: null, runId: null }) }]
-  if (agent && nav.view !== 'dashboard' && nav.view !== 'new') {
+  // — or Agent Studio › Models › [Model name] on registry views.
+  const crumbs = [{ label: 'Agent Studio', onClick: () => go('dashboard', { agentId: null, runId: null, modelId: null }) }]
+  if (nav.view === 'model-detail') {
+    crumbs.push({ label: 'Models', onClick: () => go('models', { modelId: null }) })
+    if (model) crumbs.push({ label: model.name })
+  } else if (agent && !isModelView && nav.view !== 'dashboard' && nav.view !== 'new') {
     crumbs.push({ label: agent.name, onClick: () => go('overview') })
   }
   if (nav.view === 'new') crumbs.push({ label: 'New agent' })
@@ -54,6 +64,10 @@ export default function AgentStudio({ onBack, currentUserId = 'You' }) {
   let screen
   if (nav.view === 'new') {
     screen = <ConversationalBuilder onCancel={() => go('dashboard')} onCreated={(id) => go('overview', { agentId: id })} />
+  } else if (nav.view === 'models') {
+    screen = <ModelRegistry go={go} />
+  } else if (nav.view === 'model-detail') {
+    screen = <ModelDetail modelId={nav.modelId} go={go} />
   } else if (AGENT_TABS[nav.view]) {
     screen = <AgentDetail agentId={nav.agentId} tab={AGENT_TABS[nav.view]} go={go} />
   } else if (nav.view === 'playground') {
@@ -86,6 +100,19 @@ export default function AgentStudio({ onBack, currentUserId = 'You' }) {
           </span>
         ))}
       </nav>
+      )}
+
+      {/* Top-level section tabs — only on the two list surfaces; deeper
+          views (agent page, model card, builder) rely on breadcrumbs. */}
+      {(nav.view === 'dashboard' || nav.view === 'models') && (
+        <div className="mb-5">
+          <Tabs
+            ariaLabel="Agent Studio sections"
+            tabs={[{ id: 'agents', label: 'Agents' }, { id: 'models', label: 'Models' }]}
+            active={nav.view === 'models' ? 'models' : 'agents'}
+            onChange={(id) => go(id === 'models' ? 'models' : 'dashboard', { agentId: null, modelId: null })}
+          />
+        </div>
       )}
 
       {screen}
