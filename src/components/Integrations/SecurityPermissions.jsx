@@ -1,270 +1,167 @@
-import { useState } from 'react'
-import { Shield, Lock, Check, X, Download, Edit2, ChevronDown } from 'lucide-react'
+/**
+ * Agent access — rule 5 of the RBAC alignment.
+ *
+ * An agent's reach is a GRANT like anyone else's: same table, same
+ * engine, same audit log. The old surface here (a connector toggle
+ * matrix, an approval switch, and scoping fields wired to nothing) is
+ * gone — every control below reads and writes the real grant table,
+ * and the log is the single unified audit log.
+ */
+
+import { useMemo, useState } from 'react'
+import { Shield, Lock, Download, Trash2, Plus } from 'lucide-react'
 import { downloadCsv } from '../../utils/demoFiles'
+import { PRINCIPAL_DIRECTORY, ROLES, ORG_NODES, AUDIT_LOG, getNodePath } from '../../data/rbacModel'
+import { useRbacStore, grantsForPrincipal, can, tenantPlan } from '../../services/rbac/engine'
+import { addGrant, removeGrant } from '../../services/rbac/grants'
 
-const DEFAULT_AGENTS = [
-  { id: 'JP-FIN-3', name: 'Meridian JA Reviewer', version: 'v4.2' },
-  { id: 'MER-DT-1', name: "Meridian Capital Digital Twin", version: 'v2.1' },
-  { id: 'BV-SENT-1', name: 'Brand Voice', version: 'v1.8' },
-  { id: 'COMP-MON', name: 'Compliance Monitor', version: 'v3.0' },
-]
+const TENANT = 'meridian'
+const CURRENT_ADMIN = 'alex' // replaced by View-as once the switcher lands
 
-const MOCK_AUDIT_LOG = [
-  { ts: '2026-03-30 14:22', by: 'Alex Kim', byType: 'user', tool: 'Slack', op: 'Send message to #deliveries', status: 'success' },
-  { ts: '2026-03-30 14:22', by: 'JP-FIN-3', byType: 'agent', tool: 'Jira', op: 'Create ticket COMP-114', status: 'success' },
-  { ts: '2026-03-30 11:05', by: 'COMP-MON', byType: 'agent', tool: 'Slack', op: 'Send DM to @priya-mehta', status: 'success' },
-  { ts: '2026-03-29 16:48', by: 'Alex Kim', byType: 'user', tool: 'Google Drive', op: 'Upload Q3_Earnings_Final.docx', status: 'success' },
-  { ts: '2026-03-29 16:48', by: 'Workflow', byType: 'workflow', tool: 'Confluence', op: 'Create page: J-GAAP Term Update', status: 'success' },
-  { ts: '2026-03-28 09:33', by: 'BV-SENT-1', byType: 'agent', tool: 'Slack', op: 'Send message to #brand-alerts', status: 'failed' },
-  { ts: '2026-03-27 15:10', by: 'Alex Kim', byType: 'user', tool: 'Salesforce', op: 'Update opportunity: Meridian Q3', status: 'success' },
-  { ts: '2026-03-26 10:00', by: 'Workflow', byType: 'workflow', tool: 'Slack', op: 'Send message to #deliveries', status: 'success' },
-]
+export default function SecurityPermissions() {
+  useRbacStore()
+  const [adding, setAdding] = useState(null) // agent id with open add-form
+  const [roleId, setRoleId] = useState('viewer')
+  const [scopeId, setScopeId] = useState('')
+  const [refusal, setRefusal] = useState(null)
 
-function buildDefaultPermissions(connectedIntegrations) {
-  const perms = {}
-  DEFAULT_AGENTS.forEach(agent => {
-    perms[agent.id] = {}
-    connectedIntegrations.forEach(conn => {
-      // Compliance Monitor only gets Jira + Slack by default; Brand Voice only Slack
-      if (agent.id === 'COMP-MON') {
-        perms[agent.id][conn.id] = conn.id === 'jira' || conn.id === 'slack'
-      } else if (agent.id === 'BV-SENT-1') {
-        perms[agent.id][conn.id] = conn.id === 'slack'
-      } else {
-        perms[agent.id][conn.id] = true
-      }
+  const agents = PRINCIPAL_DIRECTORY.filter(p => p.type === 'agent')
+  const planOk = tenantPlan(TENANT) === 'enterprise'
+  const meridianNodes = ORG_NODES.filter(n => n.tenantId === TENANT && n.type !== 'vendor-org')
+  const grantableRoles = ROLES.filter(r => !r.internal && r.level !== 'tenant')
+
+  const agentAudit = useMemo(() =>
+    AUDIT_LOG.filter(e => e.actorType === 'agent'
+      || (e.targetUser === null && agents.some(a => (e.details || '').includes(a.id)))
+      || agents.some(a => e.actor === a.id))
+      .slice(0, 20),
+  [agents, AUDIT_LOG.length]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const submitGrant = (agent) => {
+    const res = addGrant({
+      principal: { type: 'agent', id: agent.id }, roleId, nodeId: scopeId,
+      tenantId: TENANT, actorId: CURRENT_ADMIN,
     })
-  })
-  return perms
-}
-
-export default function SecurityPermissions({ connectedIntegrations }) {
-  const [permissions, setPermissions] = useState(() => buildDefaultPermissions(connectedIntegrations))
-  const [requireApproval, setRequireApproval] = useState(false)
-  const [scopeEditing, setScopeEditing] = useState(null)
-  const [scopeDraft, setScopeDraft] = useState('')
-  const [scopes, setScopes] = useState(() => {
-    const s = {}
-    connectedIntegrations.forEach(c => { s[c.id] = '' })
-    return s
-  })
-
-  const togglePerm = (agentId, connId) => {
-    setPermissions(prev => ({
-      ...prev,
-      [agentId]: { ...prev[agentId], [connId]: !prev[agentId]?.[connId] },
-    }))
-  }
-
-  if (connectedIntegrations.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 gap-3">
-        <Shield className="w-8 h-8 text-gray-200" />
-        <p className="text-[13px] text-gray-500 font-medium">No integrations connected</p>
-        <p className="text-[12px] text-gray-400">Connect tools to manage agent permissions and view the audit log.</p>
-      </div>
-    )
+    if (res.error) { setRefusal(res.error); return }
+    setRefusal(null); setAdding(null); setScopeId('')
   }
 
   return (
     <div className="flex flex-col gap-6">
+      {!planOk && (
+        <div className="px-4 py-3 rounded-xl bg-gray-50 border border-black/[0.08] text-[12px] text-gray-600 flex items-center gap-2">
+          <Lock className="w-3.5 h-3.5 text-[#3D16FA] shrink-0" />
+          Agent principals are an Enterprise capability — on this plan the engine denies every agent decision with reason <span className="font-mono">plan</span>. Grants below stay visible but inert.
+        </div>
+      )}
 
-      {/* ── Per-agent permissions ── */}
+      {/* ── Agent principals & their grants ── */}
       <section className="border border-black/[0.08] rounded-xl overflow-hidden bg-white">
         <div className="px-5 py-4 border-b border-black/[0.06] flex items-center gap-2">
           <Lock className="w-4 h-4 text-gray-400" />
-          <h3 className="text-[13px] font-semibold text-gray-900">Per-Agent Permissions</h3>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-[12px]">
-            <thead>
-              <tr className="border-b border-black/[0.06]">
-                <th className="text-left px-5 py-3 text-gray-400 font-medium w-44">Agent</th>
-                {connectedIntegrations.map(conn => (
-                  <th key={conn.id} className="px-3 py-3 text-center text-gray-500 font-medium whitespace-nowrap">
-                    <div className="flex flex-col items-center gap-1">
-                      <div
-                        className="w-6 h-6 rounded flex items-center justify-center text-white text-[10px] font-bold shrink-0"
-                        style={{ backgroundColor: conn.color }}
-                      >
-                        {conn.letter}
-                      </div>
-                      <span className="text-[10px] text-gray-400 max-w-[56px] leading-tight">{conn.name}</span>
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {DEFAULT_AGENTS.map((agent, i) => (
-                <tr key={agent.id} className={i % 2 === 0 ? 'bg-gray-50/40' : ''}>
-                  <td className="px-5 py-3">
-                    <p className="text-[12px] font-medium text-gray-700">{agent.name}</p>
-                    <p className="text-[10px] text-gray-400 font-mono">{agent.id}</p>
-                  </td>
-                  {connectedIntegrations.map(conn => {
-                    const allowed = permissions[agent.id]?.[conn.id] ?? true
-                    return (
-                      <td key={conn.id} className="px-3 py-3 text-center">
-                        <button
-                          onClick={() => togglePerm(agent.id, conn.id)}
-                          className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto transition-colors cursor-pointer ${
-                            allowed
-                              ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200'
-                              : 'bg-gray-100 text-gray-300 hover:bg-gray-200'
-                          }`}
-                          aria-label={`${allowed ? 'Revoke' : 'Grant'} ${agent.name} access to ${conn.name}`}
-                        >
-                          {allowed ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
-                        </button>
-                      </td>
-                    )
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* ── Approval gates ── */}
-      <section className="border border-black/[0.08] rounded-xl p-5 bg-white">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <Shield className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
-            <div>
-              <p className="text-[13px] font-semibold text-gray-900">Approval Gates</p>
-              <p className="text-[12px] text-gray-500 mt-0.5 leading-relaxed">
-                Require human confirmation before any integration action is executed. Agents will pause and prompt a reviewer.
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => setRequireApproval(!requireApproval)}
-            className={`relative w-10 h-5.5 rounded-full transition-colors shrink-0 cursor-pointer focus:outline-none mt-0.5 ${
-              requireApproval ? 'bg-[#3D16FA]' : 'bg-gray-200'
-            }`}
-            role="switch"
-            aria-checked={requireApproval}
-          >
-            <span
-              className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
-                requireApproval ? 'translate-x-5' : 'translate-x-0.5'
-              }`}
-            />
-          </button>
-        </div>
-        {requireApproval && (
-          <div className="mt-3 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-[12px] text-amber-700">
-            All Merge-powered actions will show a confirm dialog before executing.
-          </div>
-        )}
-      </section>
-
-      {/* ── Data scoping ── */}
-      <section className="border border-black/[0.08] rounded-xl overflow-hidden bg-white">
-        <div className="px-5 py-4 border-b border-black/[0.06] flex items-center gap-2">
-          <Lock className="w-4 h-4 text-gray-400" />
-          <h3 className="text-[13px] font-semibold text-gray-900">Data Scoping</h3>
-          <p className="text-[12px] text-gray-400 ml-1">— Least-privilege access paths per connector</p>
+          <h3 className="text-[13px] font-semibold text-gray-900">Agent access</h3>
+          <p className="text-[12px] text-gray-400 ml-1">— an agent's reach is a grant, evaluated by the same engine as a person's</p>
         </div>
         <div className="divide-y divide-black/[0.06]">
-          {connectedIntegrations.map(conn => (
-            <div key={conn.id} className="flex items-center gap-3 px-5 py-3">
-              <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-[11px] font-bold shrink-0"
-                style={{ backgroundColor: conn.color }}
-              >
-                {conn.letter}
+          {agents.map(agent => {
+            const grants = grantsForPrincipal({ type: 'agent', id: agent.id }, TENANT)
+            return (
+              <div key={agent.id} className="px-5 py-4">
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <div>
+                    <p className="text-[13px] font-medium text-gray-800">{agent.name}</p>
+                    <p className="text-[10px] text-gray-400 font-mono">{agent.id} · {agent.description}</p>
+                  </div>
+                  {!adding && (
+                    <button onClick={() => { setAdding(agent.id); setRefusal(null) }}
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] text-[#3D16FA] hover:bg-[#3D16FA]/10 border border-[#3D16FA]/20 cursor-pointer">
+                      <Plus className="w-3 h-3" /> Grant access
+                    </button>
+                  )}
+                </div>
+
+                {grants.length === 0 && (
+                  <p className="text-[12px] text-gray-400">No grants — the engine denies every request from this agent, and each denial is logged.</p>
+                )}
+                {grants.map(g => {
+                  const role = ROLES.find(r => r.id === g.roleId)
+                  const scope = ORG_NODES.find(n => n.id === g.scope.nodeId)
+                  const probe = can({ principal: { type: 'agent', id: agent.id }, permission: role?.permissions[0] || 'view_resource', nodeId: g.scope.nodeId })
+                  return (
+                    <div key={g.id} className="flex items-center gap-3 py-2 group">
+                      <span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium border bg-[#3D16FA]/10 text-[#3D16FA] border-[#3D16FA]/20">
+                        {role?.name} @ {scope?.name}
+                      </span>
+                      <span className="text-[10px] text-gray-400 font-mono flex-1">
+                        {getNodePath(g.scope.nodeId).map(n => n.name).join(' › ')}
+                        {g.conditions?.expiresAt ? ` · expires ${g.conditions.expiresAt.slice(0, 10)}` : ''}
+                        {g.lastUsedAt ? ` · last used ${new Date(g.lastUsedAt).toLocaleDateString()}` : ' · never used'}
+                      </span>
+                      <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${probe.allow ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}
+                        title={probe.reason}>
+                        {probe.allow ? 'active' : probe.decisivePolicy}
+                      </span>
+                      <button onClick={() => removeGrant({ grantId: g.id, actorId: CURRENT_ADMIN })}
+                        className="opacity-0 group-hover:opacity-100 p-1 text-gray-300 hover:text-red-500 cursor-pointer transition-all" aria-label={`Revoke ${role?.name} at ${scope?.name}`}>
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )
+                })}
+
+                {adding === agent.id && (
+                  <div className="mt-2 rounded-lg border border-[#3D16FA]/30 bg-[#3D16FA]/[0.04] p-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <select value={roleId} onChange={e => setRoleId(e.target.value)}
+                        className="flex-1 rounded-lg border border-black/[0.08] bg-white px-2.5 py-1.5 text-[12px] outline-none focus:border-[#3D16FA]">
+                        {grantableRoles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                      </select>
+                      <select value={scopeId} onChange={e => setScopeId(e.target.value)}
+                        className="flex-1 rounded-lg border border-black/[0.08] bg-white px-2.5 py-1.5 text-[12px] outline-none focus:border-[#3D16FA]">
+                        <option value="">Select scope…</option>
+                        {meridianNodes.map(n => <option key={n.id} value={n.id}>{'  '.repeat(getNodePath(n.id).length - 1)}{n.name}</option>)}
+                      </select>
+                      <button onClick={() => scopeId && submitGrant(agent)} disabled={!scopeId}
+                        className="px-3 py-1.5 rounded-lg bg-[#3D16FA] text-white text-[11px] font-semibold cursor-pointer hover:bg-[#2E10C4] disabled:opacity-50 disabled:cursor-not-allowed">Grant</button>
+                      <button onClick={() => { setAdding(null); setRefusal(null) }}
+                        className="px-3 py-1.5 rounded-lg border border-black/[0.08] text-gray-500 text-[11px] cursor-pointer hover:bg-gray-50">Cancel</button>
+                    </div>
+                    {refusal && <p className="text-[11px] text-red-600">{refusal}</p>}
+                  </div>
+                )}
               </div>
-              <p className="text-[12px] font-medium text-gray-700 w-32 shrink-0">{conn.name}</p>
-              {scopeEditing === conn.id ? (
-                <div className="flex items-center gap-2 flex-1">
-                  <input
-                    value={scopeDraft}
-                    onChange={e => setScopeDraft(e.target.value)}
-                    placeholder="e.g. /Deliverables/Meridian-Capital"
-                    className="flex-1 text-[12px] text-gray-700 border border-black/[0.12] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#3D16FA]/40"
-                  />
-                  <button onClick={() => { setScopes(s => ({ ...s, [conn.id]: scopeDraft })); setScopeEditing(null) }} className="p-1.5 rounded-lg text-[#3D16FA] hover:bg-[#3D16FA]/10 cursor-pointer">
-                    <Check className="w-3.5 h-3.5" />
-                  </button>
-                  <button onClick={() => setScopeEditing(null)} className="p-1.5 rounded-lg text-gray-400 hover:bg-black/[0.04] cursor-pointer">
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 flex-1">
-                  <span className="text-[12px] text-gray-400 font-mono flex-1">
-                    {scopes[conn.id] || 'Full access — click Edit to scope'}
-                  </span>
-                  <button
-                    onClick={() => { setScopeDraft(scopes[conn.id] || ''); setScopeEditing(conn.id) }}
-                    className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] text-gray-500 hover:bg-black/[0.04] cursor-pointer border border-black/[0.06]"
-                  >
-                    <Edit2 className="w-3 h-3" />
-                    Edit
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
+            )
+          })}
         </div>
       </section>
 
-      {/* ── Audit Log ── */}
+      {/* ── Unified audit log — agent slice ── */}
       <section className="border border-black/[0.08] rounded-xl overflow-hidden bg-white">
         <div className="px-5 py-4 border-b border-black/[0.06] flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Shield className="w-4 h-4 text-gray-400" />
-            <h3 className="text-[13px] font-semibold text-gray-900">Audit Log</h3>
+            <h3 className="text-[13px] font-semibold text-gray-900">Audit log — agent activity</h3>
+            <p className="text-[12px] text-gray-400 ml-1">— the same single log everything else writes to</p>
           </div>
-          <button onClick={() => downloadCsv('arbitr-integration-audit.csv', MOCK_AUDIT_LOG)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] text-gray-500 hover:bg-black/[0.04] border border-black/[0.06] cursor-pointer">
-            <Download className="w-3 h-3" />
-            Export CSV
+          <button onClick={() => downloadCsv('arbitr-agent-audit.csv', agentAudit.map(e => ({ timestamp: e.timestamp, actor: e.actor, action: e.action, scope: e.scopeId || '', details: e.details || '' })))}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] text-gray-500 hover:bg-black/[0.04] border border-black/[0.06] cursor-pointer">
+            <Download className="w-3 h-3" /> Export CSV
           </button>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-[12px]">
-            <thead>
-              <tr className="border-b border-black/[0.06] bg-gray-50/50">
-                <th className="text-left px-5 py-2.5 text-gray-400 font-medium">Timestamp</th>
-                <th className="text-left px-4 py-2.5 text-gray-400 font-medium">Triggered by</th>
-                <th className="text-left px-4 py-2.5 text-gray-400 font-medium">Tool</th>
-                <th className="text-left px-4 py-2.5 text-gray-400 font-medium">Operation</th>
-                <th className="text-left px-4 py-2.5 text-gray-400 font-medium">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-black/[0.04]">
-              {MOCK_AUDIT_LOG.map((row, i) => (
-                <tr key={i} className="hover:bg-black/[0.01]">
-                  <td className="px-5 py-2.5 text-gray-400 font-mono whitespace-nowrap">{row.ts}</td>
-                  <td className="px-4 py-2.5">
-                    <div className="flex items-center gap-1.5">
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
-                        row.byType === 'agent' ? 'bg-straker-50 text-straker-600'
-                        : row.byType === 'workflow' ? 'bg-violet-50 text-violet-600'
-                        : 'bg-gray-100 text-gray-500'
-                      }`}>
-                        {row.byType}
-                      </span>
-                      <span className="text-gray-700">{row.by}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-2.5 text-gray-700">{row.tool}</td>
-                  <td className="px-4 py-2.5 text-gray-500 max-w-[200px] truncate">{row.op}</td>
-                  <td className="px-4 py-2.5">
-                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
-                      row.status === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'
-                    }`}>
-                      {row.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {agentAudit.length === 0 ? (
+          <p className="px-5 py-6 text-[12px] text-gray-400">No agent events yet — grant an agent access, or let one act, and the decision lands here.</p>
+        ) : (
+          <div className="divide-y divide-black/[0.04]">
+            {agentAudit.map(e => (
+              <div key={e.id} className="flex items-center gap-3 px-5 py-2.5">
+                <span className="text-[10px] text-gray-400 font-mono whitespace-nowrap w-36 shrink-0">{new Date(e.timestamp).toLocaleString()}</span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0 ${e.action === 'access.denied' ? 'bg-red-50 text-red-500' : e.action === 'access.allowed' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'}`}>{e.action}</span>
+                <span className="text-[12px] text-gray-700 shrink-0">{e.actor}</span>
+                <span className="text-[11px] text-gray-400 truncate">{e.details}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   )

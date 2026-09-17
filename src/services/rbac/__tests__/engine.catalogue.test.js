@@ -48,16 +48,16 @@ describe('the catalogue', () => {
 describe('assigned-only is a condition, evaluated by the engine', () => {
   it('an assignedOnly grant works only on assigned work', () => {
     const { grant } = addGrant({
-      principal: { type: 'user', id: 'hana' }, roleId: 'vendor-user',
+      principal: { type: 'user', id: 'test-vendor' }, roleId: 'vendor-user',
       nodeId: 'mc-japan-finance', tenantId: 'meridian',
       conditions: { assignedOnly: true }, actorId: 'alex',
     })
     // not assigned → denied with the assigned-only policy named
-    const denied = can({ principal: 'hana', permission: 'edit_segment', nodeId: 'mc-japan-finance' })
+    const denied = can({ principal: 'test-vendor', permission: 'edit_segment', nodeId: 'mc-japan-finance' })
     expect(denied.allow).toBe(false)
     expect(denied.decisivePolicy).toBe('assigned-only')
     // assigned → allowed through the very same grant
-    const allowed = can({ principal: 'hana', permission: 'edit_segment', nodeId: 'mc-japan-finance', context: { assignedUserIds: ['hana'] } })
+    const allowed = can({ principal: 'test-vendor', permission: 'edit_segment', nodeId: 'mc-japan-finance', context: { assignedUserIds: ['test-vendor'] } })
     expect(allowed.allow).toBe(true)
     expect(allowed.grantId).toBe(grant.id)
     removeGrant({ grantId: grant.id, actorId: 'alex' })

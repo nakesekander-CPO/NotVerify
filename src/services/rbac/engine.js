@@ -17,7 +17,8 @@
 
 import { useCallback, useState } from 'react'
 import {
-  GRANTS, ROLES, ORG_NODES, USERS, TENANTS, AUDIT_LOG, getNodePath, getNodeDescendants,
+  GRANTS, ROLES, ORG_NODES, USERS, TENANTS, AUDIT_LOG, PRINCIPAL_DIRECTORY,
+  getNodePath, getNodeDescendants,
 } from '../../data/rbacModel'
 
 /* ─── Store: mutable module state + re-render hook ─────────────── */
@@ -177,16 +178,19 @@ export function can({ principal, permission, nodeId, tenantId, at, context } = {
     // to — callers supply context.assignedUserIds for the entity at hand.
     const assignedBlocked = !!g.conditions?.assignedOnly
       && !(context?.assignedUserIds || []).includes(p.id)
+    // JIT (rule 5, ruled): a requiresApproval grant is inert until a
+    // tenant admin approves it.
+    const pendingApproval = !!g.conditions?.requiresApproval && !g.conditions?.approval
     const grantResidency = residencyOf(g.scope.nodeId)
     const residencyBlocked = !!targetResidency
       && grantResidency !== targetResidency
       && !(g.conditions?.residency || []).includes(targetResidency)
-    return { g, role, hasPerm, cov: scopeCovers(g, nodeId), expired: isExpired(g, now), assignedBlocked, residencyBlocked }
+    return { g, role, hasPerm, cov: scopeCovers(g, nodeId), expired: isExpired(g, now), assignedBlocked, residencyBlocked, pendingApproval }
   })
 
   // 1. Explicit deny beats everything.
   const denies = evaluated
-    .filter(e => e.g.effect === 'deny' && e.hasPerm && e.cov.covers && !e.expired && !e.assignedBlocked && !e.residencyBlocked)
+    .filter(e => e.g.effect === 'deny' && e.hasPerm && e.cov.covers && !e.expired && !e.assignedBlocked && !e.residencyBlocked && !e.pendingApproval)
     .sort(byPrecedence)
   if (denies.length) {
     const e = denies[0]
@@ -195,7 +199,7 @@ export function can({ principal, permission, nodeId, tenantId, at, context } = {
 
   // 2. Nearest-scope allow, then inherited allow (same comparator).
   const allows = evaluated
-    .filter(e => (e.g.effect ?? 'allow') === 'allow' && e.hasPerm && e.cov.covers && !e.expired && !e.assignedBlocked && !e.residencyBlocked)
+    .filter(e => (e.g.effect ?? 'allow') === 'allow' && e.hasPerm && e.cov.covers && !e.expired && !e.assignedBlocked && !e.residencyBlocked && !e.pendingApproval)
     .sort(byPrecedence)
   if (allows.length) {
     const e = allows[0]
@@ -221,6 +225,10 @@ export function can({ principal, permission, nodeId, tenantId, at, context } = {
   if (barrierHit) {
     const wall = barrierHit.cov.blockedByBarrier
     return { allow: false, reason: `Information barrier on ${wall.name}: inherited access from ${scopeNameOf(barrierHit.g)} stops at the barrier — a direct, audited crossing grant is required`, grantId: barrierHit.g.id, decisivePolicy: 'barrier', role: barrierHit.role }
+  }
+  const pendingHit = evaluated.find(e => e.hasPerm && e.cov.covers && !e.expired && e.pendingApproval)
+  if (pendingHit) {
+    return { allow: false, reason: `Grant ${pendingHit.g.id} is awaiting customer approval — support access activates only when a tenant admin approves it`, grantId: pendingHit.g.id, decisivePolicy: 'pending-approval', role: pendingHit.role }
   }
   const residencyHit = evaluated.find(e => e.hasPerm && e.cov.covers && !e.expired && e.residencyBlocked)
   if (residencyHit) {
@@ -312,8 +320,11 @@ export function effectiveMembers(nodeId, { at } = {}) {
     if (!cov.covers) continue
     if (targetResidency && residencyOf(g.scope.nodeId) !== targetResidency
       && !(g.conditions?.residency || []).includes(targetResidency)) continue
+    if (g.conditions?.requiresApproval && !g.conditions?.approval) continue
     const role = roleById(g.roleId)
-    const user = g.principal.type === 'user' ? USERS.find(u => u.id === g.principal.id) : null
+    const user = g.principal.type === 'user'
+      ? USERS.find(u => u.id === g.principal.id)
+      : principalDisplay(g.principal)
     if (!role || !user) continue
     const entry = byPerson.get(user.id) || { user, grants: [] }
     entry.grants.push({
@@ -350,6 +361,18 @@ export function grantsForUser(userId, tenantId, { at } = {}) {
         expired: isExpired(g, now),
       }
     })
+}
+
+/** Display identity for a non-user principal (agents, vendor orgs, support sessions). */
+export function principalDisplay(principal) {
+  const d = PRINCIPAL_DIRECTORY.find(x => x.type === principal.type && x.id === principal.id)
+  if (d) return { id: d.id, name: d.name, initials: d.initials, internal: d.internal, principalType: d.type }
+  return { id: principal.id, name: `${principal.type} ${principal.id}`, initials: '··', principalType: principal.type }
+}
+
+/** All grants held by one principal in a tenant (display, active + inert). */
+export function grantsForPrincipal(principal, tenantId = 'meridian') {
+  return GRANTS.filter(g => g.principal.type === principal.type && g.principal.id === principal.id && g.tenantId === tenantId)
 }
 
 /** Grants scoped directly at a node (active only) — for tree badges. */

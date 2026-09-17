@@ -446,7 +446,7 @@ export default function IntegrationsHub({ onBack, connectedIntegrations, onConne
 
       {/* SECURITY tab */}
       {activeTab === 'security' && (
-        <SecurityPermissions connectedIntegrations={connectedEnriched} />
+        <SecurityPermissions />
       )}
 
       {/* Merge Link modal */}

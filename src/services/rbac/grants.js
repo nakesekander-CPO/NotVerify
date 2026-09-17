@@ -288,3 +288,30 @@ export function setNodeBarrier({ nodeId, barrier, barrierReason, actorId, tenant
   bumpRbac()
   return { node }
 }
+
+/* ─── JIT approval (rule 5, ruled 2026-09-17) ──────────────────── */
+
+/**
+ * Activate a pending (requiresApproval) grant. Only an actor holding
+ * manage_members (or *) covering the grant's scope may approve —
+ * support access is approved by the CUSTOMER, never by the platform.
+ */
+export function approveGrant({ grantId, actorId }) {
+  const g = GRANTS.find(x => x.id === grantId)
+  if (!g) return { error: 'Grant not found' }
+  if (!g.conditions?.requiresApproval) return { error: 'This grant does not require approval' }
+  if (g.conditions.approval) return { error: 'Already approved' }
+  const held = granterPermissionsAt(actorId, g.tenantId, g.scope.nodeId)
+  if (!held.has('*') && !held.has('manage_members')) {
+    return { error: 'Approving this access requires manage_members at its scope' }
+  }
+  g.conditions = { ...g.conditions, approval: { approvedBy: actorId, at: new Date().toISOString() } }
+  appendAdminEvent({
+    actorId, action: 'grant.approved', tenantId: g.tenantId, scopeId: g.scope.nodeId,
+    targetUser: g.principal.type === 'user' ? g.principal.id : null, roleId: g.roleId,
+    details: `Approved ${g.principal.type} ${g.principal.id} — ${g.conditions.justification || 'no justification recorded'}${g.conditions.expiresAt ? ` (expires ${g.conditions.expiresAt.slice(0, 10)})` : ''}`,
+    internal: true,
+  })
+  bumpRbac()
+  return { grant: g }
+}

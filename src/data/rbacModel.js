@@ -44,6 +44,9 @@ export const ORG_NODES = [
   { id: 'mc-nz-operations',   tenantId: 'meridian', parentId: 'mc-nz',           name: 'Operations',            type: 'business-unit' },
   { id: 'mc-nz-ops',          tenantId: 'meridian', parentId: 'mc-nz-operations', name: 'Client Operations',    type: 'department' },
   { id: 'mc-nz-legal',        tenantId: 'meridian', parentId: 'mc-nz-operations', name: 'Legal',                type: 'department' },
+  // Vendor partner space — a vendor organisation is a first-class node
+  // so vendor access is scoped and visible like everything else.
+  { id: 'mc-vendor-nihon',    tenantId: 'meridian', parentId: 'mc-root',         name: 'Nihon Linguistics K.K.', type: 'vendor-org' },
   // Global shared — group function at company level (deliberate exception)
   { id: 'mc-global-risk',     tenantId: 'meridian', parentId: 'mc-root',         name: 'Global Risk & Compliance', type: 'department' },
   // arbitr — secondary tenant (minimal)
@@ -62,6 +65,7 @@ export const NODE_TYPE_STYLES = {
   department:  { bg: 'bg-amber-50',    text: 'text-amber-600',   border: 'border-amber-200',   label: 'Department' },
   team:        { bg: 'bg-emerald-50',  text: 'text-emerald-600', border: 'border-emerald-200', label: 'Team' },
   'legal-entity': { bg: 'bg-cyan-50',  text: 'text-cyan-600',    border: 'border-cyan-200',    label: 'Legal Entity' },
+  'vendor-org':   { bg: 'bg-purple-50', text: 'text-purple-600',  border: 'border-purple-200',  label: 'Vendor Org' },
   workspace:   { bg: 'bg-indigo-50',   text: 'text-indigo-600',  border: 'border-indigo-200',  label: 'Workspace' },
 };
 
@@ -122,6 +126,17 @@ export const USERS = [
   { id: 'sofia',   name: 'Sofia Romano',     initials: 'SR', email: 'sofia.romano@milano-finance.it',    status: 'offline', lastActive: '2026-03-30T17:45:00Z' },
 ];
 
+/* ─── Non-user principals ────────────────────────────────────────
+   Agents, vendor organisations, and support sessions are principals
+   like anyone else: their reach is a grant, evaluated by can(), in the
+   same audit log. This directory only supplies display identity. */
+
+export const PRINCIPAL_DIRECTORY = [
+  { type: 'agent',           id: 'AG-1001',              name: 'Meridian JA Reviewer (agent)', initials: 'JA', description: 'Agent Studio agent — reviews EN→JA IR translations' },
+  { type: 'vendor-org',      id: 'v-nihon-linguistics',  name: 'Nihon Linguistics K.K.',       initials: 'NL', description: 'Vendor organisation — JA linguistic services' },
+  { type: 'support-session', id: 'support-session-4921', name: 'arbitr Support (session 4921)', initials: 'AS', description: 'Time-boxed support session — pending customer approval', internal: true },
+];
+
 /* ─── Grants ─────────────────────────────────────────────────────
    Access is a grant, not a role (RBAC alignment, 2026-09-17).
    Shape: { id, principal:{type,id}, tenantId, roleId,
@@ -178,6 +193,23 @@ export const GRANTS = [
   // justified. His group-wide auditor grant (ra-13) does not cross the
   // barrier; this direct grant is the deliberate, audited exception.
   { id: 'ra-14', principal: { type: 'user', id: 'james' },  tenantId: 'meridian', roleId: 'auditor', scope: { nodeId: 'mc-japan-ma', type: 'team' },               conditions: { expiresAt: '2026-10-15T00:00:00Z', justification: 'Quarterly conflicts audit — Project Keystone', ticketRef: 'AUD-2026-114' }, assignedBy: 'alex', assignedAt: '2026-09-10T00:00:00Z', lastUsedAt: '2026-09-15T08:55:00Z' },
+  // The four vendor-side people finally hold grants — assigned-only,
+  // engagement-bounded, scoped to the client area they work in.
+  { id: 'ra-20', principal: { type: 'user', id: 'hana' },   tenantId: 'meridian', roleId: 'vendor-user', scope: { nodeId: 'mc-japan-finance', type: 'department' },   conditions: { assignedOnly: true, expiresAt: '2026-12-31T00:00:00Z' }, assignedBy: 'kenji', assignedAt: '2026-05-12T00:00:00Z', lastUsedAt: '2026-09-14T05:20:00Z' },
+  { id: 'ra-21', principal: { type: 'user', id: 'ren' },    tenantId: 'meridian', roleId: 'vendor-user', scope: { nodeId: 'mc-japan-finance', type: 'department' },   conditions: { assignedOnly: true, expiresAt: '2026-12-31T00:00:00Z' }, assignedBy: 'kenji', assignedAt: '2026-05-12T00:00:00Z', lastUsedAt: '2026-09-13T07:10:00Z' },
+  { id: 'ra-22', principal: { type: 'user', id: 'klaus' },  tenantId: 'meridian', roleId: 'vendor-user', scope: { nodeId: 'mc-germany-tax', type: 'department' },     conditions: { assignedOnly: true, expiresAt: '2026-11-30T00:00:00Z' }, assignedBy: 'marcus', assignedAt: '2026-06-01T00:00:00Z', lastUsedAt: '2026-09-10T11:45:00Z' },
+  { id: 'ra-23', principal: { type: 'user', id: 'sofia' },  tenantId: 'meridian', roleId: 'vendor-user', scope: { nodeId: 'mc-germany-wealth', type: 'department' },  conditions: { assignedOnly: true, expiresAt: '2026-11-30T00:00:00Z' }, assignedBy: 'marcus', assignedAt: '2026-06-01T00:00:00Z', lastUsedAt: null },
+  // Hana also administers her own vendor organisation — scoped to it.
+  { id: 'ra-24', principal: { type: 'user', id: 'hana' },   tenantId: 'meridian', roleId: 'vendor-admin', scope: { nodeId: 'mc-vendor-nihon', type: 'vendor-org' },   conditions: {}, assignedBy: 'alex', assignedAt: '2026-05-12T00:00:00Z', lastUsedAt: '2026-09-01T04:00:00Z' },
+  // The vendor ORGANISATION itself holds a scoped, expiring engagement grant.
+  { id: 'ra-25', principal: { type: 'vendor-org', id: 'v-nihon-linguistics' }, tenantId: 'meridian', roleId: 'vendor-user', scope: { nodeId: 'mc-japan-finance', type: 'department' }, conditions: { assignedOnly: true, expiresAt: '2026-12-31T00:00:00Z', justification: 'SwiftBridge engagement — Q3/Q4 disclosure cycle' }, assignedBy: 'alex', assignedAt: '2026-05-12T00:00:00Z', lastUsedAt: '2026-09-14T05:20:00Z' },
+  // An AGENT is a principal like anyone else: narrow reviewer grant,
+  // same engine, same audit log (rule 5).
+  { id: 'ra-26', principal: { type: 'agent', id: 'AG-1001' }, tenantId: 'meridian', roleId: 'internal-reviewer', scope: { nodeId: 'mc-japan-finance', type: 'department' }, conditions: {}, assignedBy: 'alex', assignedAt: '2026-07-01T00:00:00Z', lastUsedAt: '2026-09-16T06:40:00Z' },
+  // JIT support session (ruled 2026-09-17): the grant exists but is
+  // PENDING — it activates only when a tenant admin approves, then
+  // expires on its own. Until approval the engine denies it.
+  { id: 'ra-27', principal: { type: 'support-session', id: 'support-session-4921' }, tenantId: 'meridian', roleId: 'support-operator', scope: { nodeId: 'mc-root', type: 'tenant' }, conditions: { requiresApproval: true, expiresAt: '2026-09-24T00:00:00Z', justification: 'Support ticket #4921 — billing ledger investigation', ticketRef: 'TCK-4921', residency: ['JP', 'EU', 'NZ'] }, assignedBy: 'platform', assignedAt: '2026-09-16T09:00:00Z', lastUsedAt: null, internal: true },
   // Internal support — scoped to entire tenant, time-bounded. EXPIRED
   // 2026-04-25: the engine denies it and drops it from member lists.
   { id: 'ra-10', principal: { type: 'user', id: 'support-bot' }, tenantId: 'meridian', roleId: 'support-operator', scope: { nodeId: 'mc-root', type: 'tenant' },        conditions: { expiresAt: '2026-04-25T10:00:00Z', justification: 'Support session for ticket #4821', ticketRef: 'TCK-4821', residency: ['JP', 'EU', 'NZ'] }, assignedBy: 'platform', assignedAt: '2026-03-25T10:00:00Z', lastUsedAt: '2026-04-20T15:00:00Z', internal: true },
