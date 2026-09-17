@@ -10,8 +10,9 @@ import {
   getNodePath, getNodeChildren,
 } from '../../data/rbacModel'
 import { useRbacStore, effectiveMembers, grantsForUser, grantsAtNode, staleGrants } from '../../services/rbac/engine'
-import { addUser, addGrant, removeGrant, removeAllGrantsForUser, approveGrant } from '../../services/rbac/grants'
+import { addUser, addGrant, removeGrant, removeAllGrantsForUser, approveGrant, previewMove, moveNode } from '../../services/rbac/grants'
 import { useViewAs } from '../../services/rbac/viewAs'
+import AccessExplorer from './AccessExplorer'
 import { PRINCIPAL_DIRECTORY } from '../../data/rbacModel'
 
 /* ─── Shared sub-components ──────────────────────────────────── */
@@ -120,6 +121,10 @@ function TreeNode({ nodeId, depth, expanded, onToggle, selected, onSelect }) {
 }
 
 function StructureTab({ tenantId }) {
+  const [actingUserId] = useViewAs()
+  const [moveTarget, setMoveTarget] = useState('')
+  const [movePreview, setMovePreview] = useState(null)
+  const [moveError, setMoveError] = useState(null)
   const rootNodes = ORG_NODES.filter(n => n.tenantId === tenantId && !n.parentId)
   const regionIds = rootNodes.flatMap(r => getNodeChildren(r.id).map(c => c.id))
   // Pre-expand through the business-unit level so the four-level structure
@@ -131,6 +136,10 @@ function StructureTab({ tenantId }) {
 
   const selNode = sel ? ORG_NODES.find(n => n.id === sel) : null
   const selMembers = sel ? memberRows(sel) : []
+  const moveCandidates = selNode
+    ? ORG_NODES.filter(n => n.tenantId === tenantId && n.id !== sel && n.id !== selNode.parentId && n.type !== 'vendor-org')
+        .filter(n => !getNodePath(n.id).some(a => a.id === sel))
+    : []
 
   return (
     <div className="flex gap-0 min-h-[400px]">
@@ -177,6 +186,43 @@ function StructureTab({ tenantId }) {
               ))}
               {selMembers.filter(m => !m.isDirect).length === 0 && <p className="text-[11px] text-gray-400">No inherited access.</p>}
             </div>
+
+            {/* Move node — with an inheritance preview and confirmation */}
+            {selNode.parentId && (
+              <div className="p-4 border-t border-black/[0.06]">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-2">Move node</p>
+                <select value={moveTarget}
+                  onChange={e => {
+                    const target = e.target.value
+                    setMoveTarget(target)
+                    setMoveError(null)
+                    setMovePreview(target ? previewMove({ nodeId: sel, newParentId: target }) : null)
+                  }}
+                  className="w-full rounded-lg border border-black/[0.08] bg-white px-2.5 py-1.5 text-[12px] outline-none focus:border-[#3D16FA]">
+                  <option value="">Move under…</option>
+                  {moveCandidates.map(n => <option key={n.id} value={n.id}>{'\u00A0\u00A0'.repeat(getNodePath(n.id).length - 1)}{n.name}</option>)}
+                </select>
+                {movePreview && !movePreview.error && (
+                  <div className="mt-2 rounded-lg border border-[#FFB000]/40 bg-[#FFF7E6] p-2.5">
+                    <p className="text-[11px] text-[#996800]">
+                      Moving {selNode.name} here: <span className="font-semibold">{movePreview.gained.length}</span> access gain{movePreview.gained.length === 1 ? '' : 's'}, <span className="font-semibold">{movePreview.lost.length}</span> loss{movePreview.lost.length === 1 ? '' : 'es'} across the subtree.
+                    </p>
+                    {movePreview.barrierNote && <p className="text-[10px] text-[#996800] mt-1 flex items-start gap-1"><Lock className="w-2.5 h-2.5 mt-0.5 shrink-0" /> {movePreview.barrierNote}</p>}
+                    <button type="button"
+                      onClick={() => {
+                        const r = moveNode({ nodeId: sel, newParentId: moveTarget, actorId: actingUserId })
+                        if (r.error) { setMoveError(r.error); return }
+                        setMoveTarget(''); setMovePreview(null)
+                      }}
+                      className="mt-2 px-2.5 py-1 rounded-lg bg-[#996800] text-white text-[10.5px] font-semibold cursor-pointer hover:opacity-90">
+                      Confirm move
+                    </button>
+                  </div>
+                )}
+                {movePreview?.error && <p className="text-[11px] text-red-600 mt-1.5">{movePreview.error}</p>}
+                {moveError && <p className="text-[11px] text-red-600 mt-1.5">{moveError}</p>}
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -664,8 +710,9 @@ export default function OrgAccess({ activeTab, tier }) {
   }, [activeTenant, actingUserId])
 
   // Rule 11: below Enterprise the capability is visible but locked —
-  // an upsell, never a silently missing menu.
-  if (tier !== 'enterprise') {
+  // an upsell, never a silently missing menu. The Access Explorer is
+  // the exception: ruled available on every tier.
+  if (tier !== 'enterprise' && activeTab !== 'explorer') {
     return (
       <div className="rounded-xl border border-black/[0.08] bg-gray-50 p-8 text-center max-w-lg">
         <Shield className="w-8 h-8 mx-auto mb-3 text-[#3D16FA]" />
@@ -703,6 +750,7 @@ export default function OrgAccess({ activeTab, tier }) {
       {activeTab === 'members' && <MembersTab tenantId={activeTenant} users={users} grants={grants} actingUserId={actingUserId} onInvite={handleInvite} onAddRole={handleAddRole} onRemoveRole={handleRemoveRole} onRemoveMember={handleRemoveMember} />}
       {activeTab === 'roles' && <RolesTab grants={grants} />}
       {activeTab === 'audit' && <AuditTab tenantId={activeTenant} auditLog={audit} users={users} />}
+      {activeTab === 'explorer' && <AccessExplorer />}
     </div>
   )
 }

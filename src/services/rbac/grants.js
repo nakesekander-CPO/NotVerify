@@ -10,7 +10,7 @@
  */
 
 import { GRANTS, ROLES, ORG_NODES, USERS, TENANTS, AUDIT_LOG } from '../../data/rbacModel'
-import { bumpRbac, planAllows } from './engine'
+import { bumpRbac, planAllows, effectiveMembers } from './engine'
 
 function nodeById(id) { return ORG_NODES.find(n => n.id === id) || null }
 
@@ -314,4 +314,64 @@ export function approveGrant({ grantId, actorId }) {
   })
   bumpRbac()
   return { grant: g }
+}
+
+/* ─── Org structure: moving nodes (demo surface 3) ─────────────── */
+
+/**
+ * What would change if `nodeId` moved under `newParentId`? Pure
+ * simulation: apply, measure effective members across the moved
+ * subtree, revert. Returns { gained, lost, barrierNote } where gained/
+ * lost are [{ name, nodeName }] of person-level access changes.
+ */
+export function previewMove({ nodeId, newParentId }) {
+  const node = nodeById(nodeId)
+  const newParent = nodeById(newParentId)
+  if (!node || !newParent) return { error: 'Unknown node' }
+  if (nodeId === newParentId || isSelfOrAncestor(nodeId, newParentId)) {
+    return { error: 'Cannot move a node under itself or its own subtree' }
+  }
+  const subtree = [nodeId, ...ORG_NODES.filter(n => isSelfOrAncestor(nodeId, n.id) && n.id !== nodeId).map(n => n.id)]
+  const snapshot = (id) => new Set(effectiveMembers(id).map(m => `${m.user.id}`))
+  const beforeSets = new Map(subtree.map(id => [id, snapshot(id)]))
+  const oldParent = node.parentId
+  node.parentId = newParentId
+  const gained = []
+  const lost = []
+  for (const id of subtree) {
+    const after = snapshot(id)
+    const before = beforeSets.get(id)
+    const nodeName = nodeById(id)?.name
+    for (const uid of after) if (!before.has(uid)) gained.push({ userId: uid, nodeName })
+    for (const uid of before) if (!after.has(uid)) lost.push({ userId: uid, nodeName })
+  }
+  node.parentId = oldParent
+  const barrierOnPath = (() => {
+    let cur = newParent
+    while (cur) { if (cur.barrier) return cur; cur = cur.parentId ? nodeById(cur.parentId) : null }
+    return node.barrier ? node : null
+  })()
+  return { gained, lost, barrierNote: barrierOnPath ? `The new location sits ${barrierOnPath.id === nodeId ? 'behind its own' : `behind the ${barrierOnPath.name}`} information barrier — inherited access changes accordingly.` : null }
+}
+
+/** Apply a move. manage_structure required; one audit event. */
+export function moveNode({ nodeId, newParentId, actorId, tenantId = 'meridian' }) {
+  const node = nodeById(nodeId)
+  const newParent = nodeById(newParentId)
+  if (!node || !newParent) return { error: 'Unknown node' }
+  if (nodeId === newParentId || isSelfOrAncestor(nodeId, newParentId)) {
+    return { error: 'Cannot move a node under itself or its own subtree' }
+  }
+  const held = granterPermissionsAt(actorId, tenantId, node.parentId || nodeId)
+  if (!held.has('*') && !held.has('manage_structure')) {
+    return { error: `Moving ${node.name} requires manage_structure over it` }
+  }
+  const from = nodeById(node.parentId)
+  node.parentId = newParentId
+  appendAdminEvent({
+    actorId, action: 'structure.moved', tenantId, scopeId: nodeId,
+    details: `Moved ${node.name} from ${from?.name || 'root'} to ${newParent.name} — inherited access recomputed`,
+  })
+  bumpRbac()
+  return { node }
 }

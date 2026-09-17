@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowLeft, Puzzle, Building2, LayoutList, Shield, Users, ScrollText, Network, Receipt, Settings as SettingsIcon } from 'lucide-react'
+import { ArrowLeft, Puzzle, Building2, LayoutList, Shield, Users, ScrollText, Network, Receipt, Compass, Settings as SettingsIcon } from 'lucide-react'
 import Billing from './Billing'
 import BillingEntities from './BillingEntities'
 import BudgetsAndAllocations from './BudgetsAndAllocations'
@@ -36,6 +36,7 @@ export default function SettingsPage({ onBack, onOpenIntegrations }) {
     { id: 'org-members', label: 'Members', icon: Users, active: true, indent: true },
     { id: 'org-roles', label: 'Roles', icon: Shield, active: true, indent: true },
     { id: 'org-audit', label: 'Audit Log', icon: ScrollText, active: true, indent: true },
+    { id: 'org-explorer', label: 'Access Explorer', icon: Compass, active: true, indent: true },
   ]
 
   return (
