@@ -14,6 +14,120 @@ import { bumpRbac } from './engine'
 
 function nodeById(id) { return ORG_NODES.find(n => n.id === id) || null }
 
+/* ─── Granter constraints (rule 7) ─────────────────────────────── */
+
+/**
+ * Barrier-agnostic ancestry: barriers bind ACCESS, not administration.
+ * The audited act of granting into a walled node IS the crossing
+ * mechanism — if administration were also walled, no crossing could
+ * ever be created.
+ */
+function isSelfOrAncestor(maybeAncestorId, nodeId) {
+  let cur = nodeById(nodeId)
+  while (cur) {
+    if (cur.id === maybeAncestorId) return true
+    cur = cur.parentId ? nodeById(cur.parentId) : null
+  }
+  return false
+}
+
+function activeGrantsOf(principalId, tenantId, now = Date.now()) {
+  return GRANTS.filter(g =>
+    g.principal.type === 'user' && g.principal.id === principalId && g.tenantId === tenantId
+    && (!g.conditions?.expiresAt || new Date(g.conditions.expiresAt).getTime() > now))
+}
+
+/** The permission set a granter wields over `nodeId` (union, barrier-agnostic). */
+function granterPermissionsAt(actorId, tenantId, nodeId) {
+  const perms = new Set()
+  for (const g of activeGrantsOf(actorId, tenantId)) {
+    if (!isSelfOrAncestor(g.scope.nodeId, nodeId)) continue
+    const role = ROLES.find(r => r.id === g.roleId)
+    for (const p of role?.permissions || []) perms.add(p)
+  }
+  return perms
+}
+
+/**
+ * Rule 7: a granter may only hand out what they hold, where they hold it.
+ * Returns null when allowed, or a human-readable refusal string.
+ */
+export function grantRefusalReason({ actorId, roleId, nodeId, tenantId }) {
+  const role = ROLES.find(r => r.id === roleId)
+  const node = nodeById(nodeId)
+  if (!role || !node) return 'Unknown role or scope node'
+
+  // role.level must match scope.type: tenant/platform roles bind at the root.
+  if ((role.level === 'tenant' || role.level === 'platform') && node.type !== 'tenant') {
+    return `${role.name} is a ${role.level}-level role — it can only be granted at the ${TENANTS.find(t => t.id === tenantId)?.name || 'tenant'} root, not at a ${node.type}`
+  }
+
+  const held = granterPermissionsAt(actorId, tenantId, nodeId)
+  if (held.size === 0) {
+    return `You hold no grant covering ${node.name} — grantable scopes are limited to your own subtree`
+  }
+  if (!held.has('*') && !held.has('manage_members')) {
+    return `Granting roles at ${node.name} requires manage_members there — your grants covering it do not include it`
+  }
+  if (!held.has('*')) {
+    const missing = role.permissions.filter(p => !held.has(p))
+    if (missing.length) {
+      return `You cannot grant ${role.name}: it carries ${missing.length === 1 ? 'a permission' : 'permissions'} you do not hold at ${node.name} (${missing.slice(0, 3).join(', ')}${missing.length > 3 ? '…' : ''})`
+    }
+  }
+  return null
+}
+
+/* ─── Separation of duties (rule 8) ────────────────────────────── */
+
+/**
+ * Permission pairs one person must not hold at overlapping scope:
+ * making the thing + approving the thing, editing + approving, and
+ * contributing + auditing your own area.
+ */
+export const SOD_CONFLICT_PAIRS = [
+  ['create_resource', 'approve_resource'],
+  ['edit_resource', 'approve_resource'],
+  ['create_resource', 'view_audit'],
+]
+
+function scopesOverlap(nodeA, nodeB) {
+  return isSelfOrAncestor(nodeA, nodeB) || isSelfOrAncestor(nodeB, nodeA)
+}
+
+/**
+ * Would granting `roleId` at `nodeId` create a conflicting-duties pair
+ * with a grant the principal already holds at an overlapping scope?
+ * Returns null or { pair, withGrant, message }.
+ */
+export function sodConflictFor({ principalId, roleId, nodeId, tenantId }) {
+  const newRole = ROLES.find(r => r.id === roleId)
+  if (!newRole) return null
+  const newPerms = new Set(newRole.permissions)
+  for (const g of activeGrantsOf(principalId, tenantId)) {
+    if (!scopesOverlap(g.scope.nodeId, nodeId)) continue
+    const heldRole = ROLES.find(r => r.id === g.roleId)
+    const heldPerms = new Set(heldRole?.permissions || [])
+    for (const [a, b] of SOD_CONFLICT_PAIRS) {
+      const clash = (newPerms.has(a) && heldPerms.has(b)) || (newPerms.has(b) && heldPerms.has(a))
+      if (clash) {
+        return {
+          pair: [a, b],
+          withGrant: g,
+          message: `Conflicting duties: ${newRole.name} (${newPerms.has(a) ? a : b}) clashes with ${heldRole.name} at ${nodeById(g.scope.nodeId)?.name} (${newPerms.has(a) ? b : a}). A named exception with an approver is required.`,
+        }
+      }
+    }
+  }
+  return null
+}
+
+/** Non-expired tenant-admin grants in a tenant (rule 7 last-admin guard). */
+function tenantAdminGrants(tenantId, now = Date.now()) {
+  return GRANTS.filter(g => g.tenantId === tenantId && g.roleId === 'tenant-admin'
+    && (!g.conditions?.expiresAt || new Date(g.conditions.expiresAt).getTime() > now))
+}
+
 let _seq = 5000
 function nextId(prefix) { _seq += 1; return `${prefix}-${_seq}` }
 
@@ -53,11 +167,27 @@ export function addUser({ name, email, actorId, tenantId }) {
  * policy refusal. The scope's node type is recorded on the grant so the
  * engine and the UI agree about the grant's altitude.
  */
-export function addGrant({ principal, roleId, nodeId, tenantId, conditions = {}, actorId }) {
+export function addGrant({ principal, roleId, nodeId, tenantId, conditions = {}, actorId, sodException }) {
   const node = nodeById(nodeId)
   const role = ROLES.find(r => r.id === roleId)
   if (!node || !role) return { error: 'Unknown role or scope node' }
   const p = typeof principal === 'string' ? { type: 'user', id: principal } : principal
+
+  // Rule 7: the granter's own permissions and subtree bound what they
+  // can hand out. Refusals are returned, never thrown — the UI shows them.
+  const refusal = grantRefusalReason({ actorId, roleId, nodeId, tenantId })
+  if (refusal) return { error: refusal }
+
+  // Rule 8: conflicting duties are caught at assign time. A named
+  // exception (approver + reason) records the override on the grant.
+  if (p.type === 'user') {
+    const conflict = sodConflictFor({ principalId: p.id, roleId, nodeId, tenantId })
+    if (conflict && !sodException) return { conflict }
+    if (conflict && sodException) {
+      conditions = { ...conditions, sodException: { ...sodException, pair: conflict.pair, at: new Date().toISOString() } }
+    }
+  }
+
   const grant = {
     id: nextId('ra'),
     principal: p,
@@ -73,7 +203,7 @@ export function addGrant({ principal, roleId, nodeId, tenantId, conditions = {},
   const who = p.type === 'user' ? (USERS.find(u => u.id === p.id)?.name || p.id) : `${p.type} ${p.id}`
   appendAdminEvent({
     actorId, action: 'role.assigned', tenantId, scopeId: nodeId, targetUser: p.type === 'user' ? p.id : null, roleId,
-    details: `Assigned ${role.name} at ${node.name} to ${who}${node.barrier ? ' — barrier crossing' : ''}${conditions.expiresAt ? ` (expires ${conditions.expiresAt.slice(0, 10)})` : ''}`,
+    details: `Assigned ${role.name} at ${node.name} to ${who}${node.barrier ? ' — barrier crossing' : ''}${conditions.expiresAt ? ` (expires ${conditions.expiresAt.slice(0, 10)})` : ''}${conditions.sodException ? ` — SoD exception approved by ${conditions.sodException.approvedBy}` : ''}`,
   })
   bumpRbac()
   return { grant }
@@ -84,6 +214,11 @@ export function removeGrant({ grantId, actorId }) {
   const idx = GRANTS.findIndex(g => g.id === grantId)
   if (idx === -1) return { error: 'Grant not found' }
   const g = GRANTS[idx]
+  // Rule 7: the last Tenant Admin grant cannot be removed — a tenant
+  // with no admin is unrecoverable in this model.
+  if (g.roleId === 'tenant-admin' && tenantAdminGrants(g.tenantId).length <= 1) {
+    return { error: 'Cannot remove the last Tenant Admin grant — assign another Tenant Admin first' }
+  }
   const role = ROLES.find(r => r.id === g.roleId)
   const node = nodeById(g.scope.nodeId)
   const who = g.principal.type === 'user' ? (USERS.find(u => u.id === g.principal.id)?.name || g.principal.id) : `${g.principal.type} ${g.principal.id}`
@@ -100,6 +235,9 @@ export function removeGrant({ grantId, actorId }) {
 /** Remove every grant a user holds in a tenant (remove-member flow). */
 export function removeAllGrantsForUser({ userId, tenantId, actorId }) {
   const mine = GRANTS.filter(g => g.principal.type === 'user' && g.principal.id === userId && g.tenantId === tenantId)
+  if (mine.some(g => g.roleId === 'tenant-admin') && tenantAdminGrants(tenantId).length <= mine.filter(g => g.roleId === 'tenant-admin').length) {
+    return { error: 'Cannot remove this member — they hold the last Tenant Admin grant. Assign another Tenant Admin first' }
+  }
   for (const g of mine) {
     const idx = GRANTS.indexOf(g)
     if (idx !== -1) GRANTS.splice(idx, 1)
