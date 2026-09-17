@@ -16,7 +16,7 @@ import {
   REVIEW_DECISIONS,
   createReviewDecision,
 } from '../../data/hitlVendorWorkflow';
-import { requirePermission, getUserRoles, hasPermission, isRole } from './rbac';
+import { requirePermission, getUserRoles, isRole } from './rbac';
 import { isSecondEditor, secondEditorCanStart } from './taskAssignment';
 import { appendAuditEvent } from './auditLog';
 
@@ -140,7 +140,7 @@ export function addSegmentComment({ segmentId, actorId, text }) {
   const seg = HITL_SEGMENTS.find(s => s.id === segmentId);
   if (!seg) throw new Error(`segment not found: ${segmentId}`);
   // Comments require any scope-level view + comment perm.
-  requirePermission(actorId, 'comment_assigned_segment', { segmentId });
+  requirePermission(actorId, 'comment_assigned_segment', { projectId: seg.projectId, segmentId });
   const comment = {
     id: `cm-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
     actorId,

@@ -113,54 +113,49 @@ export const USERS = [
   { id: 'sofia',   name: 'Sofia Romano',     initials: 'SR', email: 'sofia.romano@milano-finance.it',    status: 'offline', lastActive: '2026-03-30T17:45:00Z' },
 ];
 
-/* ─── Tenant Memberships ─────────────────────────────────────── */
+/* ─── Grants ─────────────────────────────────────────────────────
+   Access is a grant, not a role (RBAC alignment, 2026-09-17).
+   Shape: { id, principal:{type,id}, tenantId, roleId,
+            scope:{nodeId,type}, conditions:{ expiresAt, justification,
+            ticketRef, assignedOnly, residency, classification },
+            assignedBy, assignedAt, lastUsedAt }
+   Principal types: user | group | agent | vendor-org | support-session.
+   Conditions are evaluated on EVERY decision by the engine
+   (src/services/rbac/engine.js) — nothing else may read this table
+   to make an access decision. `effect: 'deny'` marks an explicit
+   deny grant, which beats every allow. */
 
-export const MEMBERSHIPS = [
-  { userId: 'alex',    tenantId: 'meridian' },
-  { userId: 'kenji',   tenantId: 'meridian' },
-  { userId: 'sarah',   tenantId: 'meridian' },
-  { userId: 'marcus',  tenantId: 'meridian' },
-  { userId: 'thomas',  tenantId: 'meridian' },
-  { userId: 'priya',   tenantId: 'meridian' },
-  { userId: 'yuki',    tenantId: 'meridian' },
-  { userId: 'lena',    tenantId: 'meridian' },
-  { userId: 'james',   tenantId: 'meridian' },
-  { userId: 'support-bot', tenantId: 'meridian' },
-  { userId: 'support-bot', tenantId: 'straker' },
-];
-
-/* ─── Role Assignments (scoped) ──────────────────────────────── */
-
-export const ROLE_ASSIGNMENTS = [
+export const GRANTS = [
   // Alex — Tenant Admin (full access to all of Meridian)
-  { id: 'ra-1',  userId: 'alex',        tenantId: 'meridian', roleId: 'tenant-admin',     scopeType: 'tenant',     scopeId: 'mc-root',            assignedAt: '2025-06-01T00:00:00Z', assignedBy: 'system' },
-  // Kenji — Org Manager for Japan (inherits to Financial Reporting, Compliance, M&A)
-  { id: 'ra-3',  userId: 'kenji',       tenantId: 'meridian', roleId: 'org-manager',      scopeType: 'country',    scopeId: 'mc-japan',           assignedAt: '2025-03-01T00:00:00Z', assignedBy: 'alex' },
+  { id: 'ra-1',  principal: { type: 'user', id: 'alex' },   tenantId: 'meridian', roleId: 'tenant-admin', scope: { nodeId: 'mc-root', type: 'tenant' },                 conditions: {}, assignedBy: 'system', assignedAt: '2025-06-01T00:00:00Z', lastUsedAt: '2026-09-16T17:40:00Z' },
+  // Kenji — Org Manager for Meridian Japan
+  { id: 'ra-3',  principal: { type: 'user', id: 'kenji' },  tenantId: 'meridian', roleId: 'org-manager', scope: { nodeId: 'mc-japan', type: 'country' },                conditions: {}, assignedBy: 'alex', assignedAt: '2025-03-01T00:00:00Z', lastUsedAt: '2026-09-15T08:42:00Z' },
   // Sarah — Approver for the Japan Securities BU (sign-off authority lives
   // at business-unit altitude; inherits to Financial Reporting + Compliance)
-  { id: 'ra-4',  userId: 'sarah',       tenantId: 'meridian', roleId: 'approver',         scopeType: 'business-unit', scopeId: 'mc-japan-securities', assignedAt: '2025-04-10T00:00:00Z', assignedBy: 'kenji' },
-  // Marcus — Org Manager for Germany (inherits to Tax & Audit, Wealth Management)
-  { id: 'ra-5',  userId: 'marcus',      tenantId: 'meridian', roleId: 'org-manager',      scopeType: 'country',    scopeId: 'mc-germany',         assignedAt: '2025-05-20T00:00:00Z', assignedBy: 'alex' },
-  // Thomas — Viewer at Germany Tax & Audit (narrowest scope)
-  { id: 'ra-6',  userId: 'thomas',      tenantId: 'meridian', roleId: 'viewer',           scopeType: 'department', scopeId: 'mc-germany-tax',     assignedAt: '2025-07-01T00:00:00Z', assignedBy: 'marcus' },
-  // Priya — Contributor for Germany Wealth Management
-  { id: 'ra-7',  userId: 'priya',       tenantId: 'meridian', roleId: 'contributor',      scopeType: 'department', scopeId: 'mc-germany-wealth',  assignedAt: '2025-08-12T00:00:00Z', assignedBy: 'marcus' },
+  { id: 'ra-4',  principal: { type: 'user', id: 'sarah' },  tenantId: 'meridian', roleId: 'approver', scope: { nodeId: 'mc-japan-securities', type: 'business-unit' },  conditions: {}, assignedBy: 'kenji', assignedAt: '2025-04-10T00:00:00Z', lastUsedAt: '2026-09-16T07:30:00Z' },
+  // Marcus — Org Manager for Meridian Germany
+  { id: 'ra-5',  principal: { type: 'user', id: 'marcus' }, tenantId: 'meridian', roleId: 'org-manager', scope: { nodeId: 'mc-germany', type: 'country' },              conditions: {}, assignedBy: 'alex', assignedAt: '2025-05-20T00:00:00Z', lastUsedAt: '2026-09-14T16:20:00Z' },
+  // Thomas — Viewer at Germany Tax & Audit (narrowest scope; stale — unused 90+ days)
+  { id: 'ra-6',  principal: { type: 'user', id: 'thomas' }, tenantId: 'meridian', roleId: 'viewer', scope: { nodeId: 'mc-germany-tax', type: 'department' },            conditions: {}, assignedBy: 'marcus', assignedAt: '2025-07-01T00:00:00Z', lastUsedAt: '2026-05-02T09:00:00Z' },
+  // Priya — Contributor for Germany Wealth Management (never used — review candidate)
+  { id: 'ra-7',  principal: { type: 'user', id: 'priya' },  tenantId: 'meridian', roleId: 'contributor', scope: { nodeId: 'mc-germany-wealth', type: 'department' },    conditions: {}, assignedBy: 'marcus', assignedAt: '2025-08-12T00:00:00Z', lastUsedAt: null },
   // Yuki — Approver for the Japan Investment Banking BU (covers M&A Advisory;
   // one BU's approver has no reach into the sibling Securities BU)
-  { id: 'ra-8',  userId: 'yuki',        tenantId: 'meridian', roleId: 'approver',         scopeType: 'business-unit', scopeId: 'mc-japan-ib',        assignedAt: '2025-09-01T00:00:00Z', assignedBy: 'kenji' },
-  // Lena — Org Manager for New Zealand (inherits to Operations, Legal)
-  { id: 'ra-9',  userId: 'lena',        tenantId: 'meridian', roleId: 'org-manager',      scopeType: 'country',    scopeId: 'mc-nz',              assignedAt: '2025-10-15T00:00:00Z', assignedBy: 'alex' },
-  // James — Contributor for Global Risk
-  { id: 'ra-2',  userId: 'james',       tenantId: 'meridian', roleId: 'contributor',      scopeType: 'department', scopeId: 'mc-global-risk',     assignedAt: '2025-09-15T00:00:00Z', assignedBy: 'alex' },
-  // Yuki — Compliance Reviewer at Japan Compliance & Regulatory (second role:
+  { id: 'ra-8',  principal: { type: 'user', id: 'yuki' },   tenantId: 'meridian', roleId: 'approver', scope: { nodeId: 'mc-japan-ib', type: 'business-unit' },          conditions: {}, assignedBy: 'kenji', assignedAt: '2025-09-01T00:00:00Z', lastUsedAt: '2026-09-10T06:15:00Z' },
+  // Lena — Org Manager for New Zealand
+  { id: 'ra-9',  principal: { type: 'user', id: 'lena' },   tenantId: 'meridian', roleId: 'org-manager', scope: { nodeId: 'mc-nz', type: 'country' },                   conditions: {}, assignedBy: 'alex', assignedAt: '2025-10-15T00:00:00Z', lastUsedAt: '2026-09-16T09:00:00Z' },
+  // James — Contributor for Global Risk (stale — unused 90+ days)
+  { id: 'ra-2',  principal: { type: 'user', id: 'james' },  tenantId: 'meridian', roleId: 'contributor', scope: { nodeId: 'mc-global-risk', type: 'department' },       conditions: {}, assignedBy: 'alex', assignedAt: '2025-09-15T00:00:00Z', lastUsedAt: '2026-06-01T11:30:00Z' },
+  // Yuki — Compliance Reviewer at Japan Compliance & Regulatory (second grant:
   // department-level review duty alongside the BU approver seat)
-  { id: 'ra-11', userId: 'yuki',        tenantId: 'meridian', roleId: 'compliance-reviewer', scopeType: 'department', scopeId: 'mc-japan-compliance', assignedAt: '2026-01-12T00:00:00Z', assignedBy: 'kenji' },
-  // Lena — Legal Reviewer at New Zealand Legal (second role)
-  { id: 'ra-12', userId: 'lena',        tenantId: 'meridian', roleId: 'legal-reviewer',   scopeType: 'department', scopeId: 'mc-nz-legal',        assignedAt: '2026-02-03T00:00:00Z', assignedBy: 'alex' },
+  { id: 'ra-11', principal: { type: 'user', id: 'yuki' },   tenantId: 'meridian', roleId: 'compliance-reviewer', scope: { nodeId: 'mc-japan-compliance', type: 'department' }, conditions: {}, assignedBy: 'kenji', assignedAt: '2026-01-12T00:00:00Z', lastUsedAt: '2026-09-12T14:00:00Z' },
+  // Lena — Legal Reviewer at New Zealand Legal (second grant)
+  { id: 'ra-12', principal: { type: 'user', id: 'lena' },   tenantId: 'meridian', roleId: 'legal-reviewer', scope: { nodeId: 'mc-nz-legal', type: 'department' },       conditions: {}, assignedBy: 'alex', assignedAt: '2026-02-03T00:00:00Z', lastUsedAt: '2026-08-28T10:10:00Z' },
   // James — Auditor across the whole group (read-only oversight from the top)
-  { id: 'ra-13', userId: 'james',       tenantId: 'meridian', roleId: 'auditor',          scopeType: 'tenant',     scopeId: 'mc-root',            assignedAt: '2026-02-03T00:00:00Z', assignedBy: 'alex' },
-  // Internal support — scoped to entire tenant, time-bounded
-  { id: 'ra-10', userId: 'support-bot', tenantId: 'meridian', roleId: 'support-operator', scopeType: 'tenant',     scopeId: 'mc-root',            assignedAt: '2026-03-25T10:00:00Z', assignedBy: 'platform', internal: true, expiresAt: '2026-04-25T10:00:00Z' },
+  { id: 'ra-13', principal: { type: 'user', id: 'james' },  tenantId: 'meridian', roleId: 'auditor', scope: { nodeId: 'mc-root', type: 'tenant' },                      conditions: {}, assignedBy: 'alex', assignedAt: '2026-02-03T00:00:00Z', lastUsedAt: '2026-09-15T08:55:00Z' },
+  // Internal support — scoped to entire tenant, time-bounded. EXPIRED
+  // 2026-04-25: the engine denies it and drops it from member lists.
+  { id: 'ra-10', principal: { type: 'user', id: 'support-bot' }, tenantId: 'meridian', roleId: 'support-operator', scope: { nodeId: 'mc-root', type: 'tenant' },        conditions: { expiresAt: '2026-04-25T10:00:00Z', justification: 'Support session for ticket #4821', ticketRef: 'TCK-4821' }, assignedBy: 'platform', assignedAt: '2026-03-25T10:00:00Z', lastUsedAt: '2026-04-20T15:00:00Z', internal: true },
 ];
 
 /* ─── Audit Log ──────────────────────────────────────────────── */
@@ -195,6 +190,8 @@ export const ACTION_STYLES = {
   'member.removed':    { bg: 'bg-red-50',     text: 'text-red-700',     label: 'Member Removed' },
   'support.access':    { bg: 'bg-purple-50',  text: 'text-purple-700',  label: 'Support Access' },
   'resource.accessed': { bg: 'bg-gray-50',    text: 'text-gray-600',    label: 'Resource Accessed' },
+  'access.allowed':    { bg: 'bg-emerald-50', text: 'text-emerald-700', label: 'Access Allowed' },
+  'access.denied':     { bg: 'bg-red-50',     text: 'text-red-700',     label: 'Access Denied' },
 };
 
 /* ═══════════════════════════════════════════════════════════════
@@ -232,108 +229,10 @@ export function getNodeDescendants(nodeId) {
   return descendants;
 }
 
-/** Check if targetNodeId is a descendant of ancestorNodeId */
-function isDescendantOf(targetNodeId, ancestorNodeId) {
-  let current = ORG_NODES.find(n => n.id === targetNodeId);
-  while (current) {
-    if (current.id === ancestorNodeId) return true;
-    current = current.parentId ? ORG_NODES.find(n => n.id === current.parentId) : null;
-  }
-  return false;
-}
-
-/** Get all role assignments for a user in a tenant, with coverage info */
-export function getUserEffectiveRoles(userId, tenantId) {
-  const assignments = ROLE_ASSIGNMENTS.filter(a => a.userId === userId && a.tenantId === tenantId);
-  return assignments.map(a => {
-    const role = ROLES.find(r => r.id === a.roleId);
-    const scopeNode = ORG_NODES.find(n => n.id === a.scopeId);
-    const descendants = getNodeDescendants(a.scopeId);
-    const coveredNodes = scopeNode ? [scopeNode, ...descendants] : descendants;
-    return {
-      ...a,
-      role,
-      scopeNode,
-      coveredNodes,
-      path: getNodePath(a.scopeId),
-    };
-  });
-}
-
-/** Check if a user has a specific permission at a given node */
-export function checkAccess(userId, tenantId, nodeId, permission) {
-  const assignments = ROLE_ASSIGNMENTS.filter(a => a.userId === userId && a.tenantId === tenantId);
-
-  for (const assignment of assignments) {
-    const role = ROLES.find(r => r.id === assignment.roleId);
-    if (!role) continue;
-
-    const hasPermission = role.permissions.includes('*') || role.permissions.includes(permission);
-    if (!hasPermission) continue;
-
-    // Check if the node is at or under the assignment's scope
-    if (assignment.scopeId === nodeId || isDescendantOf(nodeId, assignment.scopeId)) {
-      const scopeNode = ORG_NODES.find(n => n.id === assignment.scopeId);
-      const targetNode = ORG_NODES.find(n => n.id === nodeId);
-      const isDirect = assignment.scopeId === nodeId;
-      return {
-        allowed: true,
-        assignmentId: assignment.id,
-        role: role.name,
-        scopeNode,
-        targetNode,
-        isDirect,
-        reason: isDirect
-          ? `Direct: ${role.name} at ${scopeNode?.name}`
-          : `Inherited: ${role.name} at ${scopeNode?.name} (via ${getNodePath(nodeId).map(n => n.name).join(' > ')})`,
-        path: getNodePath(nodeId),
-        internal: assignment.internal || false,
-      };
-    }
-  }
-
-  return { allowed: false, reason: 'No matching role assignment covers this scope' };
-}
-
-/** Get all users who have access to a given node (direct + inherited) */
-export function getNodeEffectiveMembers(nodeId) {
-  const node = ORG_NODES.find(n => n.id === nodeId);
-  if (!node) return [];
-
-  const tenantId = node.tenantId;
-  const tenantAssignments = ROLE_ASSIGNMENTS.filter(a => a.tenantId === tenantId);
-  const members = [];
-
-  for (const assignment of tenantAssignments) {
-    // Does this assignment's scope cover the target node?
-    if (assignment.scopeId === nodeId || isDescendantOf(nodeId, assignment.scopeId)) {
-      const user = USERS.find(u => u.id === assignment.userId);
-      const role = ROLES.find(r => r.id === assignment.roleId);
-      const scopeNode = ORG_NODES.find(n => n.id === assignment.scopeId);
-      const isDirect = assignment.scopeId === nodeId;
-
-      if (user && role) {
-        members.push({
-          user,
-          role,
-          assignment,
-          scopeNode,
-          isDirect,
-          inheritancePath: isDirect ? null : getNodePath(assignment.scopeId).map(n => n.name).join(' > '),
-        });
-      }
-    }
-  }
-
-  return members;
-}
-
-/** Get the count of direct children for each node */
-export function getNodeChildCount(nodeId) {
-  return ORG_NODES.filter(n => n.parentId === nodeId).length;
-}
-
-/** Get the count of direct role assignments at a node */
-export function getNodeAssignmentCount(nodeId) {
-  return ROLE_ASSIGNMENTS.filter(a => a.scopeId === nodeId).length;
-}
+/*
+ * Access decisions live in ONE place: src/services/rbac/engine.js (`can`).
+ * The scope-aware-but-display-only `checkAccess`, the scope-blind service
+ * path, and the per-component member-list re-implementations were all
+ * removed in the 2026-09 RBAC alignment. Only pure tree utilities remain
+ * here.
+ */

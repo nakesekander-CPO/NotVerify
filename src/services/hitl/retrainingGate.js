@@ -33,7 +33,7 @@ import {
   getProjectById,
   nextId,
 } from '../../data/hitlVendorWorkflow';
-import { requirePermission, getUserRoles, isRole } from './rbac';
+import { requirePermission, getUserRoles } from './rbac';
 import { appendAuditEvent } from './auditLog';
 
 /** Return all decisions for a segment, newest first. */
@@ -147,9 +147,9 @@ const PIPELINE_ELIGIBILITY = { tm: 'eligibleTM', terminology: 'eligibleTerminolo
 const PIPELINE_LABEL = { tm: 'Translation Memory', terminology: 'terminology dataset', model: 'model improvement' };
 
 export function approveRetrainingCandidate({ candidateId, actorId, target }) {
-  requirePermission(actorId, 'approve_retraining', { candidateId });
   const c = RETRAINING_CANDIDATES.find(x => x.id === candidateId);
   if (!c) throw new Error(`candidate not found: ${candidateId}`);
+  requirePermission(actorId, 'approve_retraining', { projectId: c.projectId, candidateId });
   if (c.status !== 'pending') throw new Error(`candidate not pending (status: ${c.status})`);
 
   // target: 'tm' | 'terminology' | 'model' | 'all'
@@ -210,9 +210,9 @@ export function approveRetrainingCandidate({ candidateId, actorId, target }) {
 
 export function rejectRetrainingCandidate({ candidateId, actorId, reason }) {
   if (!reason) throw new Error('rejectRetrainingCandidate: reason is required');
-  requirePermission(actorId, 'approve_retraining', { candidateId });
   const c = RETRAINING_CANDIDATES.find(x => x.id === candidateId);
   if (!c) throw new Error(`candidate not found: ${candidateId}`);
+  requirePermission(actorId, 'approve_retraining', { projectId: c.projectId, candidateId });
   c.status = 'rejected';
   c.reviewerNotes = reason;
   appendAuditEvent({

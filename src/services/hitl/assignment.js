@@ -162,9 +162,9 @@ export function manualOverride({ projectId, vendorId, actorId, reason }) {
 }
 
 export function approveAssignment({ assignmentId, actorId, comment }) {
-  requirePermission(actorId, 'approve_assignment', { assignmentId });
   const a = VENDOR_ASSIGNMENTS.find(x => x.id === assignmentId);
   if (!a) throw new Error(`assignment not found: ${assignmentId}`);
+  requirePermission(actorId, 'approve_assignment', { projectId: a.projectId, assignmentId });
   a.status = 'active';
   a.approvalDecision = { decision: 'approved', actorId, at: new Date().toISOString(), comment: comment || '' };
   setProjectStatus(a.projectId, 'in-vendor-review');
@@ -178,9 +178,9 @@ export function approveAssignment({ assignmentId, actorId, comment }) {
 
 export function rejectAssignment({ assignmentId, actorId, reason }) {
   if (!reason || !reason.trim()) throw new Error('rejectAssignment: reason is required');
-  requirePermission(actorId, 'approve_assignment', { assignmentId });
   const a = VENDOR_ASSIGNMENTS.find(x => x.id === assignmentId);
   if (!a) throw new Error(`assignment not found: ${assignmentId}`);
+  requirePermission(actorId, 'approve_assignment', { projectId: a.projectId, assignmentId });
   a.status = 'rejected';
   a.approvalDecision = { decision: 'rejected', actorId, at: new Date().toISOString(), reason };
   setProjectStatus(a.projectId, 'vendor-selection-pending');

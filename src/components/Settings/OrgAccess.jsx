@@ -6,12 +6,11 @@ import {
 } from 'lucide-react'
 import {
   TENANTS, ORG_NODES, ROLES,
-  USERS as INITIAL_USERS,
-  ROLE_ASSIGNMENTS as INITIAL_ASSIGNMENTS,
-  AUDIT_LOG as INITIAL_AUDIT,
   NODE_TYPE_STYLES, ACTION_STYLES,
-  getNodePath, getNodeChildren, getNodeDescendants,
+  getNodePath, getNodeChildren,
 } from '../../data/rbacModel'
+import { useRbacStore, effectiveMembers, grantsForUser, grantsAtNode } from '../../services/rbac/engine'
+import { addUser, addGrant, removeGrant, removeAllGrantsForUser } from '../../services/rbac/grants'
 
 /* ─── Shared sub-components ──────────────────────────────────── */
 
@@ -65,47 +64,31 @@ function ScopeBreadcrumb({ nodeId }) {
   )
 }
 
-/* ─── Local data helpers (operate on passed-in arrays) ───────── */
+/* ─── Data access ──────────────────────────────────────────────
+   All member lists, counts, and coverage come from the RBAC engine —
+   the same conditions (expiry, barriers) that gate actions also shape
+   what this admin surface displays. No local re-implementations. */
 
-function getEffectiveRoles(userId, tenantId, assignments) {
-  return assignments.filter(a => a.userId === userId && a.tenantId === tenantId).map(a => {
-    const role = ROLES.find(r => r.id === a.roleId)
-    const scopeNode = ORG_NODES.find(n => n.id === a.scopeId)
-    const descendants = getNodeDescendants(a.scopeId)
-    return { ...a, role, scopeNode, coveredNodes: scopeNode ? [scopeNode, ...descendants] : descendants, path: getNodePath(a.scopeId) }
-  })
-}
-
-function getEffectiveMembers(nodeId, assignments, users) {
-  const node = ORG_NODES.find(n => n.id === nodeId)
-  if (!node) return []
-  const ta = assignments.filter(a => a.tenantId === node.tenantId)
-  const members = []
-  for (const a of ta) {
-    const covers = a.scopeId === nodeId || (() => { let cur = ORG_NODES.find(n => n.id === nodeId); while (cur) { if (cur.id === a.scopeId) return true; cur = cur.parentId ? ORG_NODES.find(n => n.id === cur.parentId) : null } return false })()
-    if (covers) {
-      const user = users.find(u => u.id === a.userId)
-      const role = ROLES.find(r => r.id === a.roleId)
-      const scopeNode = ORG_NODES.find(n => n.id === a.scopeId)
-      if (user && role) members.push({ user, role, assignment: a, scopeNode, isDirect: a.scopeId === nodeId, inheritancePath: a.scopeId !== nodeId ? getNodePath(a.scopeId).map(n => n.name).join(' > ') : null })
-    }
-  }
-  return members
+/** Flatten engine person-entries into per-grant display rows. */
+function memberRows(nodeId) {
+  return effectiveMembers(nodeId).flatMap(m =>
+    m.grants.map(g => ({ user: m.user, role: g.role, grant: g.grant, scopeNode: g.scopeNode, isDirect: g.isDirect, inheritancePath: g.inheritancePath })))
 }
 
 /* ═══════════════════════════════════════════════════════════════
    STRUCTURE TAB
    ═══════════════════════════════════════════════════════════════ */
 
-function TreeNode({ nodeId, depth, expanded, onToggle, selected, onSelect, assignments, users }) {
+function TreeNode({ nodeId, depth, expanded, onToggle, selected, onSelect }) {
   const node = ORG_NODES.find(n => n.id === nodeId)
   if (!node) return null
   const children = getNodeChildren(nodeId)
   const hasChildren = children.length > 0
   const isExp = expanded.has(nodeId)
   const isSel = selected === nodeId
-  const ac = assignments.filter(a => a.scopeId === nodeId).length
-  const mc = getEffectiveMembers(nodeId, assignments, users).length
+  const ac = grantsAtNode(nodeId).length
+  // People, not grants: one person with two covering grants counts once.
+  const mc = effectiveMembers(nodeId).length
 
   return (
     <>
@@ -124,12 +107,12 @@ function TreeNode({ nodeId, depth, expanded, onToggle, selected, onSelect, assig
           {ac > 0 && <span>{ac} <KeyRound className="w-2.5 h-2.5 inline -mt-0.5" /></span>}
         </span>
       </button>
-      {hasChildren && isExp && children.map(c => <TreeNode key={c.id} nodeId={c.id} depth={depth + 1} expanded={expanded} onToggle={onToggle} selected={selected} onSelect={onSelect} assignments={assignments} users={users} />)}
+      {hasChildren && isExp && children.map(c => <TreeNode key={c.id} nodeId={c.id} depth={depth + 1} expanded={expanded} onToggle={onToggle} selected={selected} onSelect={onSelect} />)}
     </>
   )
 }
 
-function StructureTab({ tenantId, assignments, users }) {
+function StructureTab({ tenantId }) {
   const rootNodes = ORG_NODES.filter(n => n.tenantId === tenantId && !n.parentId)
   const regionIds = rootNodes.flatMap(r => getNodeChildren(r.id).map(c => c.id))
   // Pre-expand through the business-unit level so the four-level structure
@@ -140,12 +123,12 @@ function StructureTab({ tenantId, assignments, users }) {
   const toggle = id => setExpanded(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n })
 
   const selNode = sel ? ORG_NODES.find(n => n.id === sel) : null
-  const selMembers = sel ? getEffectiveMembers(sel, assignments, users) : []
+  const selMembers = sel ? memberRows(sel) : []
 
   return (
     <div className="flex gap-0 min-h-[400px]">
       <div className="flex-1 min-w-0">
-        {rootNodes.map(r => <TreeNode key={r.id} nodeId={r.id} depth={0} expanded={expanded} onToggle={toggle} selected={sel} onSelect={setSel} assignments={assignments} users={users} />)}
+        {rootNodes.map(r => <TreeNode key={r.id} nodeId={r.id} depth={0} expanded={expanded} onToggle={toggle} selected={sel} onSelect={setSel} />)}
       </div>
       <AnimatePresence>
         {selNode && (
@@ -288,20 +271,20 @@ function AddRoleForm({ tenantId, onAdd, onCancel }) {
    MEMBERS TAB
    ═══════════════════════════════════════════════════════════════ */
 
-function MembersTab({ tenantId, users, assignments, onInvite, onAddRole, onRemoveRole, onRemoveMember }) {
+function MembersTab({ tenantId, users, grants, onInvite, onAddRole, onRemoveRole, onRemoveMember }) {
   const [sel, setSel] = useState(null)
   const [search, setSearch] = useState('')
   const [showInvite, setShowInvite] = useState(false)
   const [showAddRole, setShowAddRole] = useState(false)
 
   const tenantUsers = useMemo(() => {
-    const ids = new Set(assignments.filter(a => a.tenantId === tenantId).map(a => a.userId))
+    const ids = new Set(grants.filter(g => g.tenantId === tenantId && g.principal.type === 'user').map(g => g.principal.id))
     return users.filter(u => ids.has(u.id))
-  }, [tenantId, assignments, users])
+  }, [tenantId, grants, users])
 
   const filtered = search ? tenantUsers.filter(u => u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase())) : tenantUsers
   const selUser = sel ? users.find(u => u.id === sel) : null
-  const selRoles = sel ? getEffectiveRoles(sel, tenantId, assignments) : []
+  const selRoles = sel ? grantsForUser(sel, tenantId) : []
 
   return (
     <>
@@ -332,7 +315,7 @@ function MembersTab({ tenantId, users, assignments, onInvite, onAddRole, onRemov
             </thead>
             <tbody>
               {filtered.map(user => {
-                const roles = getEffectiveRoles(user.id, tenantId, assignments)
+                const roles = grantsForUser(user.id, tenantId)
                 return (
                   <tr key={user.id} onClick={() => { setSel(user.id); setShowAddRole(false) }}
                     className={`border-b border-black/[0.04] cursor-pointer transition-colors ${sel === user.id ? 'bg-[#3D16FA]/[0.06]' : 'hover:bg-gray-50'}`}>
@@ -342,7 +325,7 @@ function MembersTab({ tenantId, users, assignments, onInvite, onAddRole, onRemov
                         <div><p className="text-[12px] font-medium text-gray-800">{user.name}</p><p className="text-[10px] text-gray-400">{user.email}</p></div>
                       </div>
                     </td>
-                    <td className="py-2.5 pr-3"><div className="flex flex-wrap gap-1">{roles.map(r => <RoleBadge key={r.id} role={r.role} scopeNode={r.scopeNode} />)}</div></td>
+                    <td className="py-2.5 pr-3"><div className="flex flex-wrap gap-1">{roles.map(r => <RoleBadge key={r.grant.id} role={r.role} scopeNode={r.scopeNode} />)}</div></td>
                     <td className="py-2.5 pr-3"><div className="flex items-center gap-1.5"><StatusDot status={user.status} /><span className="text-[11px] text-gray-500 capitalize">{user.status}</span></div></td>
                     <td className="py-2.5 text-right text-[11px] text-gray-400">{timeAgo(user.lastActive)}</td>
                   </tr>
@@ -391,22 +374,26 @@ function MembersTab({ tenantId, users, assignments, onInvite, onAddRole, onRemov
                 {/* Existing assignments */}
                 <div className="space-y-3">
                   {selRoles.map(a => (
-                    <div key={a.id} className={`rounded-lg border p-3 group ${a.internal ? 'border-purple-200 bg-purple-50/30 border-l-4 border-l-purple-400' : 'border-black/[0.08]'}`}>
+                    <div key={a.grant.id} className={`rounded-lg border p-3 group ${a.grant.internal ? 'border-purple-200 bg-purple-50/30 border-l-4 border-l-purple-400' : 'border-black/[0.08]'}`}>
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-2">
-                          <Shield className={`w-3.5 h-3.5 ${a.internal ? 'text-purple-600' : 'text-[#3D16FA]'}`} />
+                          <Shield className={`w-3.5 h-3.5 ${a.grant.internal ? 'text-purple-600' : 'text-[#3D16FA]'}`} />
                           <span className="text-[13px] font-semibold text-gray-900">{a.role?.name}</span>
                         </div>
-                        {!a.internal && (
-                          <button type="button" onClick={() => onRemoveRole(a.id)}
+                        {!a.grant.internal && (
+                          <button type="button" onClick={() => onRemoveRole(a.grant.id)}
                             className="opacity-0 group-hover:opacity-100 p-1 text-gray-300 hover:text-red-500 cursor-pointer transition-all" title="Remove role">
                             <Trash2 className="w-3 h-3" />
                           </button>
                         )}
                       </div>
-                      <ScopeBreadcrumb nodeId={a.scopeId} />
+                      <ScopeBreadcrumb nodeId={a.grant.scope.nodeId} />
                       {a.coveredNodes.length > 1 && <p className="text-[10px] text-gray-400 mt-1">Inherits to: {a.coveredNodes.slice(1, 5).map(n => n.name).join(', ')}{a.coveredNodes.length > 5 ? ` +${a.coveredNodes.length - 5} more` : ''}</p>}
-                      {a.expiresAt && <p className="text-[10px] text-amber-600 mt-1 flex items-center gap-1"><Clock className="w-2.5 h-2.5" /> Expires {new Date(a.expiresAt).toLocaleDateString()}</p>}
+                      {a.grant.conditions?.expiresAt && (
+                        <p className={`text-[10px] mt-1 flex items-center gap-1 ${a.expired ? 'text-red-600 font-medium' : 'text-amber-600'}`}>
+                          <Clock className="w-2.5 h-2.5" /> {a.expired ? 'Expired' : 'Expires'} {new Date(a.grant.conditions.expiresAt).toLocaleDateString()}{a.expired ? ' — no longer grants access' : ''}
+                        </p>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -439,8 +426,8 @@ function MembersTab({ tenantId, users, assignments, onInvite, onAddRole, onRemov
    ROLES TAB
    ═══════════════════════════════════════════════════════════════ */
 
-function RolesTab({ assignments }) {
-  const counts = useMemo(() => { const c = {}; assignments.forEach(a => { c[a.roleId] = (c[a.roleId] || 0) + 1 }); return c }, [assignments])
+function RolesTab({ grants }) {
+  const counts = useMemo(() => { const c = {}; grants.forEach(g => { c[g.roleId] = (c[g.roleId] || 0) + 1 }); return c }, [grants])
   return (
     <div className="space-y-3">
       {ROLES.filter(r => !r.hidden).map(role => (
@@ -521,52 +508,30 @@ function AuditTab({ tenantId, auditLog, users }) {
    ═══════════════════════════════════════════════════════════════ */
 
 export default function OrgAccess({ activeTab, tier }) {
+  // All state lives in the RBAC module store; this hook re-renders the
+  // panel whenever the engine reports a mutation (grant added, decision
+  // logged, member invited). No React-local copies of the grant table.
+  const { grants, users, audit } = useRbacStore()
   const [activeTenant, setActiveTenant] = useState('meridian')
-  const [users, setUsers] = useState(() => [...INITIAL_USERS])
-  const [assignments, setAssignments] = useState(() => [...INITIAL_ASSIGNMENTS])
-  const [auditLog, setAuditLog] = useState(() => [...INITIAL_AUDIT])
-
-  const addAuditEntry = useCallback((action, scopeId, targetUser, roleId, details, internal) => {
-    setAuditLog(prev => [{ id: `al-${Date.now()}`, timestamp: new Date().toISOString(), actor: 'alex', action, tenantId: activeTenant, scopeId, targetUser, roleId, details, internal: internal || false }, ...prev])
-  }, [activeTenant])
+  // Until the View-as switcher lands, the acting admin is the demo user.
+  const CURRENT_ADMIN = 'alex'
 
   const handleInvite = useCallback(({ name, email, roleId, scopeId }) => {
-    const id = `user-${Date.now()}`
-    const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
-    const newUser = { id, name, initials, email, status: 'offline', lastActive: new Date().toISOString() }
-    setUsers(prev => [...prev, newUser])
-    const assignId = `ra-${Date.now()}`
-    const scopeNode = ORG_NODES.find(n => n.id === scopeId)
-    const role = ROLES.find(r => r.id === roleId)
-    setAssignments(prev => [...prev, { id: assignId, userId: id, tenantId: activeTenant, roleId, scopeType: scopeNode?.type || 'org', scopeId, assignedAt: new Date().toISOString(), assignedBy: 'alex' }])
-    addAuditEntry('member.added', scopeId, id, null, `Invited ${name} to ${TENANTS.find(t => t.id === activeTenant)?.name}`)
-    addAuditEntry('role.assigned', scopeId, id, roleId, `Assigned ${role?.name} at ${scopeNode?.name}`)
-  }, [activeTenant, addAuditEntry])
+    const user = addUser({ name, email, actorId: CURRENT_ADMIN, tenantId: activeTenant })
+    addGrant({ principal: user.id, roleId, nodeId: scopeId, tenantId: activeTenant, actorId: CURRENT_ADMIN })
+  }, [activeTenant])
 
   const handleAddRole = useCallback((userId, roleId, scopeId) => {
-    const assignId = `ra-${Date.now()}`
-    const scopeNode = ORG_NODES.find(n => n.id === scopeId)
-    const role = ROLES.find(r => r.id === roleId)
-    const user = users.find(u => u.id === userId)
-    setAssignments(prev => [...prev, { id: assignId, userId, tenantId: activeTenant, roleId, scopeType: scopeNode?.type || 'org', scopeId, assignedAt: new Date().toISOString(), assignedBy: 'alex' }])
-    addAuditEntry('role.assigned', scopeId, userId, roleId, `Assigned ${role?.name} at ${scopeNode?.name} to ${user?.name}`)
-  }, [activeTenant, users, addAuditEntry])
+    addGrant({ principal: userId, roleId, nodeId: scopeId, tenantId: activeTenant, actorId: CURRENT_ADMIN })
+  }, [activeTenant])
 
-  const handleRemoveRole = useCallback((assignmentId) => {
-    const a = assignments.find(x => x.id === assignmentId)
-    if (!a) return
-    const user = users.find(u => u.id === a.userId)
-    const role = ROLES.find(r => r.id === a.roleId)
-    const scopeNode = ORG_NODES.find(n => n.id === a.scopeId)
-    setAssignments(prev => prev.filter(x => x.id !== assignmentId))
-    addAuditEntry('role.removed', a.scopeId, a.userId, a.roleId, `Removed ${role?.name} at ${scopeNode?.name} from ${user?.name}`)
-  }, [assignments, users, addAuditEntry])
+  const handleRemoveRole = useCallback((grantId) => {
+    removeGrant({ grantId, actorId: CURRENT_ADMIN })
+  }, [])
 
   const handleRemoveMember = useCallback((userId) => {
-    const user = users.find(u => u.id === userId)
-    setAssignments(prev => prev.filter(a => !(a.userId === userId && a.tenantId === activeTenant)))
-    addAuditEntry('member.removed', ORG_NODES.find(n => n.tenantId === activeTenant && !n.parentId)?.id, userId, null, `Removed ${user?.name} from ${TENANTS.find(t => t.id === activeTenant)?.name}`)
-  }, [activeTenant, users, addAuditEntry])
+    removeAllGrantsForUser({ userId, tenantId: activeTenant, actorId: CURRENT_ADMIN })
+  }, [activeTenant])
 
   return (
     <div>
@@ -579,10 +544,10 @@ export default function OrgAccess({ activeTab, tier }) {
           ))}
         </div>
       </div>
-      {activeTab === 'structure' && <StructureTab tenantId={activeTenant} assignments={assignments} users={users} />}
-      {activeTab === 'members' && <MembersTab tenantId={activeTenant} users={users} assignments={assignments} onInvite={handleInvite} onAddRole={handleAddRole} onRemoveRole={handleRemoveRole} onRemoveMember={handleRemoveMember} />}
-      {activeTab === 'roles' && <RolesTab assignments={assignments} />}
-      {activeTab === 'audit' && <AuditTab tenantId={activeTenant} auditLog={auditLog} users={users} />}
+      {activeTab === 'structure' && <StructureTab tenantId={activeTenant} />}
+      {activeTab === 'members' && <MembersTab tenantId={activeTenant} users={users} grants={grants} onInvite={handleInvite} onAddRole={handleAddRole} onRemoveRole={handleRemoveRole} onRemoveMember={handleRemoveMember} />}
+      {activeTab === 'roles' && <RolesTab grants={grants} />}
+      {activeTab === 'audit' && <AuditTab tenantId={activeTenant} auditLog={audit} users={users} />}
     </div>
   )
 }

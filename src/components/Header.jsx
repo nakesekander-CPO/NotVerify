@@ -1,16 +1,17 @@
 import { useState, useRef, useEffect } from 'react'
 import { ChevronDown, User, Settings, Headphones, LogOut, Store, Workflow } from 'lucide-react'
 import StatusPill from './StatusPill'
-import { USERS, ROLE_ASSIGNMENTS, ROLES, TENANTS } from '../data/rbacModel'
+import { USERS, TENANTS } from '../data/rbacModel'
+import { primaryRoleOf } from '../services/rbac/engine'
 
 const CURRENT_USER_ID = 'alex'
 
 export default function Header({ companyName, onOpenSettings, onOpenMarketplace, onNavigateHome, onOpenHitlWorkflow }) {
   const [accountOpen, setAccountOpen] = useState(false)
   const currentUser = USERS.find(u => u.id === CURRENT_USER_ID)
-  const primaryAssignment = ROLE_ASSIGNMENTS.find(a => a.userId === CURRENT_USER_ID && a.scopeType === 'tenant') || ROLE_ASSIGNMENTS.find(a => a.userId === CURRENT_USER_ID)
-  const roleName = ROLES.find(r => r.id === primaryAssignment?.roleId)?.name || 'User'
-  const tenantName = TENANTS.find(t => t.id === primaryAssignment?.tenantId)?.name || ''
+  const primary = primaryRoleOf(CURRENT_USER_ID)
+  const roleName = primary?.role?.name || 'User'
+  const tenantName = TENANTS.find(t => t.id === primary?.tenantId)?.name || ''
   const accountRef = useRef(null)
 
   useEffect(() => {

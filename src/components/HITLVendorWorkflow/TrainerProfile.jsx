@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
 import { Award, Brain, Sparkles, BookOpen, Mic, ArrowRight } from 'lucide-react'
-import { USERS, ROLE_ASSIGNMENTS, ROLES } from '../../data/rbacModel'
+import { USERS } from '../../data/rbacModel'
+import { rolesOfUser } from '../../services/rbac/engine'
 import {
-  REVIEW_DECISIONS, ORG_BRAIN_UPDATES, RATIONALE_CHIPS, HITL_SEGMENTS, getProjectById,
+  REVIEW_DECISIONS, ORG_BRAIN_UPDATES, RATIONALE_CHIPS, HITL_SEGMENTS,
 } from '../../data/hitlVendorWorkflow'
 import { contributorLifetimeImpact } from '../../services/hitl/pedigree'
 import { SectionHeading, Card, MonoLabel, ScoreBar, KeyValueRow } from './shared'
@@ -18,7 +19,7 @@ import { SectionHeading, Card, MonoLabel, ScoreBar, KeyValueRow } from './shared
 export default function TrainerProfile({ currentUserId }) {
   const [viewedUserId, setViewedUserId] = useState(currentUserId || 'sarah')
   const user = USERS.find(u => u.id === viewedUserId)
-  const roles = ROLE_ASSIGNMENTS.filter(a => a.userId === viewedUserId).map(a => ROLES.find(r => r.id === a.roleId)).filter(Boolean)
+  const roles = rolesOfUser(viewedUserId)
   const impact = useMemo(() => contributorLifetimeImpact(viewedUserId), [viewedUserId, REVIEW_DECISIONS.length, ORG_BRAIN_UPDATES.length])
 
   const memoryEntries = ORG_BRAIN_UPDATES.filter(o => (o.contributorFootprint || []).some(c => c.userId === viewedUserId))
