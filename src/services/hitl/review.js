@@ -15,10 +15,25 @@ import {
   HITL_TASKS,
   REVIEW_DECISIONS,
   createReviewDecision,
+  getProjectById,
 } from '../../data/hitlVendorWorkflow';
-import { requirePermission, getUserRoles } from './rbac';
+import { requirePermission } from './rbac';
+import { can } from '../rbac/engine';
 import { isSecondEditor, secondEditorCanStart } from './taskAssignment';
 import { appendAuditEvent } from './auditLog';
+
+/** Role of the actor's decisive view grant at the project's node — used
+ * only for attributing pre-gate denial events. */
+function probeRole(actorId, projectId) {
+  try {
+    const nodeId = getProjectById(projectId)?.clientNodeId;
+    if (!nodeId) return null;
+    const d = can({ principal: actorId, permission: 'view_resource', nodeId });
+    return d.role?.id || null;
+  } catch {
+    return null;
+  }
+}
 
 const PERMISSION_BY_ACTION = {
   confirmed: 'verify_segment',
@@ -46,7 +61,9 @@ export function decideSegment({ segmentId, actorId, action, newValue, reason, ch
   if (!seg) throw new Error(`segment not found: ${segmentId}`);
   if (seg.locked) {
     appendAuditEvent({
-      actorId, actorRole: getUserRoles(actorId)[0]?.id, projectId: seg.projectId, segmentId,
+      // Pre-gate event: attribute by the decisive view grant at this
+      // project's node (pure probe — the real gate has not run yet).
+      actorId, actorRole: probeRole(actorId, seg.projectId), projectId: seg.projectId, segmentId,
       eventType: 'segment.write-on-locked-rejected',
       reason: 'Segment is locked; only an authorised role may reopen',
     });
@@ -54,14 +71,17 @@ export function decideSegment({ segmentId, actorId, action, newValue, reason, ch
   }
   const perm = PERMISSION_BY_ACTION[action];
   if (!perm) throw new Error(`unknown action: ${action}`);
-  requirePermission(actorId, perm, { projectId: seg.projectId, segmentId });
+  const auth = requirePermission(actorId, perm, { projectId: seg.projectId, segmentId });
+  // Rule 10: actor-role attribution is the DECISIVE grant's role, never
+  // "first role in the list".
+  const actorRole = auth.role?.id || null;
 
   // Sequential second edit: a second editor can only start once the
   // first editor has finished. The two editors never touch the same
   // segment at the same time.
   if (seg.taskId && isSecondEditor(actorId, seg.taskId) && !secondEditorCanStart(seg.taskId)) {
     appendAuditEvent({
-      actorId, actorRole: getUserRoles(actorId)[0]?.id, projectId: seg.projectId, segmentId,
+      actorId, actorRole, projectId: seg.projectId, segmentId,
       eventType: 'segment.second-editor-too-early',
       reason: 'Second edit is sequential; the first editor has not finished.',
     });
@@ -80,7 +100,7 @@ export function decideSegment({ segmentId, actorId, action, newValue, reason, ch
   const decision = createReviewDecision({
     segmentId,
     actorId,
-    actorRole: getUserRoles(actorId)[0]?.id,
+    actorRole,
     action,
     originalValue: before,
     newValue: newValue ?? null,
@@ -109,7 +129,7 @@ export function decideSegment({ segmentId, actorId, action, newValue, reason, ch
   if (action === 'locked') seg.locked = true;
 
   appendAuditEvent({
-    actorId, actorRole: getUserRoles(actorId)[0]?.id, projectId: seg.projectId, segmentId,
+    actorId, actorRole, projectId: seg.projectId, segmentId,
     eventType: `segment.${action}`,
     beforeValue: before,
     afterValue: newValue ?? null,
@@ -123,11 +143,11 @@ export function addSegmentComment({ segmentId, actorId, text }) {
   const seg = HITL_SEGMENTS.find(s => s.id === segmentId);
   if (!seg) throw new Error(`segment not found: ${segmentId}`);
   // Comments require any scope-level view + comment perm.
-  requirePermission(actorId, 'comment_segment', { projectId: seg.projectId, segmentId });
+  const auth = requirePermission(actorId, 'comment_segment', { projectId: seg.projectId, segmentId });
   const comment = {
     id: `cm-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
     actorId,
-    actorRole: getUserRoles(actorId)[0]?.id,
+    actorRole: auth.role?.id || null,
     text,
     timestamp: new Date().toISOString(),
   };

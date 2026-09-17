@@ -204,6 +204,12 @@ export const AUDIT_LOG = [
   { id: 'al-18', timestamp: '2026-01-12T14:10:00Z', actor: 'kenji',       action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-japan-compliance', targetUser: 'yuki',       roleId: 'compliance-reviewer', details: 'Assigned Compliance Reviewer role at Compliance & Regulatory' },
 ];
 
+// Unified-log aliases (rule 10): admin/access seed rows also answer to
+// the HITL viewer's field names.
+for (const e of AUDIT_LOG) {
+  if (!e.eventType) { e.eventType = e.action; e.actorId = e.actor; e.reason = e.details || null; }
+}
+
 /* ─── Action type styling ────────────────────────────────────── */
 
 export const ACTION_STYLES = {

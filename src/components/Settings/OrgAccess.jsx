@@ -471,7 +471,7 @@ function AuditTab({ tenantId, auditLog, users }) {
     <div>
       <div className="flex items-center gap-1.5 mb-4 flex-wrap">
         <button type="button" onClick={() => setFilter('all')} className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors cursor-pointer ${filter === 'all' ? 'bg-gray-900 text-white' : 'bg-white border border-black/[0.10] text-gray-500 hover:text-gray-800'}`}>All</button>
-        {types.map(t => { const s = ACTION_STYLES[t] || ACTION_STYLES['resource.accessed']; return (
+        {types.map(t => { const s = ACTION_STYLES[t] || { ...ACTION_STYLES['resource.accessed'], label: t.replace(/[._-]/g, ' ') }; return (
           <button key={t} type="button" onClick={() => setFilter(t)} className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors cursor-pointer ${filter === t ? 'bg-gray-900 text-white' : 'bg-white border border-black/[0.10] text-gray-500 hover:text-gray-800'}`}>{s.label}</button>
         ) })}
       </div>
@@ -480,7 +480,7 @@ function AuditTab({ tenantId, auditLog, users }) {
           const actor = users.find(u => u.id === e.actor)
           const target = e.targetUser ? users.find(u => u.id === e.targetUser) : null
           const scope = ORG_NODES.find(n => n.id === e.scopeId)
-          const as = ACTION_STYLES[e.action] || ACTION_STYLES['resource.accessed']
+          const as = ACTION_STYLES[e.action] || { ...ACTION_STYLES['resource.accessed'], label: (e.action || '').replace(/[._-]/g, ' ') }
           return (
             <div key={e.id} className={`flex gap-3 py-3 ${i < filtered.length - 1 ? 'border-b border-black/[0.04]' : ''} ${e.internal ? 'border-l-2 border-l-purple-400 pl-3' : ''}`}>
               <div className="w-16 shrink-0 text-right"><p className="text-[11px] text-gray-400 tabular-nums">{timeAgo(e.timestamp)}</p></div>

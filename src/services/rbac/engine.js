@@ -181,12 +181,19 @@ function nextEventId() { _evSeq += 1; return `al-${_evSeq}` }
 
 /** Append one decision event to the single audit log. */
 function appendAccessEvent({ p, permission, nodeId, tenant, decision, context }) {
+  const action = decision.allow ? 'access.allowed' : 'access.denied'
   AUDIT_LOG.unshift({
     id: nextEventId(),
     timestamp: new Date().toISOString(),
     actor: p.id,
     actorType: p.type,
-    action: decision.allow ? 'access.allowed' : 'access.denied',
+    action,
+    // Unified-log aliases (rule 10)
+    actorId: p.id,
+    actorRole: decision.role?.id || null,
+    eventType: action,
+    reason: decision.reason,
+    projectId: context?.projectId || null,
     tenantId: tenant,
     scopeId: nodeId,
     targetUser: null,

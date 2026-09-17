@@ -21,6 +21,8 @@
  *   completed → cancelled → archived
  */
 
+import { AUDIT_LOG } from './rbacModel';
+
 /* ════════════════════════════════════════════════════════════════
    ENUMS
    ════════════════════════════════════════════════════════════════ */
@@ -1155,7 +1157,11 @@ export const ORG_BRAIN_UPDATES = [
    AUDIT + NOTIFICATIONS + ESCALATIONS
    ════════════════════════════════════════════════════════════════ */
 
-export const HITL_AUDIT_LOG = [];
+// ONE audit log (RBAC alignment rule 10): this is the SAME array as
+// rbacModel's AUDIT_LOG — grant changes, access decisions, denials, and
+// workflow events all share it. The HITL name survives as an alias for
+// existing consumers.
+export const HITL_AUDIT_LOG = AUDIT_LOG;
 export const HITL_NOTIFICATIONS = [];
 export const HITL_ESCALATIONS = [];
 
@@ -1487,8 +1493,15 @@ export function createRetrainingCandidate({ projectId, segmentId, originalAgentO
 }
 
 export function createAuditEvent({ actorId, actorRole, organisationId, vendorId, projectId, taskId, segmentId, eventType, beforeValue, afterValue, reason, policy, sessionMeta }) {
+  const project = projectId ? HITL_PROJECTS.find(pr => pr.id === projectId) : null;
   return {
     id: nextId('ae'),
+    // Unified-log aliases (rule 10): one schema serves every viewer.
+    actor: actorId || null,
+    action: eventType,
+    details: reason || null,
+    tenantId: organisationId || project?.clientTenantId || 'meridian',
+    scopeId: project?.clientNodeId || null,
     actorId: actorId || null,
     actorRole: actorRole || null,
     organisationId: organisationId || null,
@@ -1853,6 +1866,15 @@ export function listVendorsInPool(poolId) {
     { id: 'ae-seed-4', actorId: 'system', actorRole: 'arbitr-global-admin', organisationId: 'meridian', vendorId: 'v-nihon-linguistics', projectId: 'hp-q3-ja-earnings', taskId: null, segmentId: null, eventType: 'vendor.auto-assigned', beforeValue: null, afterValue: { assignmentId: 'va-seed-q3ja', score: 0.91 }, reason: null, policy: 'sp-quality-first', sessionMeta: null, timestamp: '2026-05-10T08:32:00Z' },
     { id: 'ae-seed-5', actorId: 'marcus', actorRole: 'project-manager', organisationId: 'meridian', vendorId: null, projectId: 'hp-de-regulatory', taskId: null, segmentId: null, eventType: 'assignment.awaiting-approval', beforeValue: null, afterValue: { assignmentId: 'va-seed-de', score: 0.88 }, reason: null, policy: 'sp-compliance-first', sessionMeta: null, timestamp: '2026-05-11T09:31:00Z' },
   );
+
+  // Unified-log aliases for the seed rows above (rule 10).
+  for (const e of HITL_AUDIT_LOG) {
+    if (e.eventType && !e.action) {
+      e.actor = e.actorId; e.action = e.eventType; e.details = e.reason || null;
+      e.tenantId = e.tenantId || e.organisationId || 'meridian';
+      if (!e.scopeId && e.projectId) e.scopeId = HITL_PROJECTS.find(pr => pr.id === e.projectId)?.clientNodeId || null;
+    }
+  }
 
   // Seed a couple of notifications for the dashboard.
   HITL_NOTIFICATIONS.push(

@@ -137,6 +137,10 @@ function appendAdminEvent({ actorId, action, tenantId, scopeId, targetUser, role
     timestamp: new Date().toISOString(),
     actor: actorId,
     action,
+    // Unified-log aliases (rule 10)
+    actorId,
+    eventType: action,
+    reason: details,
     tenantId,
     scopeId,
     targetUser: targetUser || null,
