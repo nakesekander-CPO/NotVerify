@@ -10,7 +10,7 @@
  */
 
 import { GRANTS, ROLES, ORG_NODES, USERS, TENANTS, AUDIT_LOG } from '../../data/rbacModel'
-import { bumpRbac } from './engine'
+import { bumpRbac, planAllows } from './engine'
 
 function nodeById(id) { return ORG_NODES.find(n => n.id === id) || null }
 
@@ -188,6 +188,8 @@ export function addGrant({ principal, roleId, nodeId, tenantId, conditions = {},
     const conflict = sodConflictFor({ principalId: p.id, roleId, nodeId, tenantId })
     if (conflict && !sodException) return { conflict }
     if (conflict && sodException) {
+      const plan = planAllows(tenantId, 'sod-exceptions')
+      if (!plan.allow) return { error: plan.detail, reason: 'plan' }
       conditions = { ...conditions, sodException: { ...sodException, pair: conflict.pair, at: new Date().toISOString() } }
     }
   }
@@ -255,4 +257,34 @@ export function removeAllGrantsForUser({ userId, tenantId, actorId }) {
   })
   bumpRbac()
   return { removed: mine.length }
+}
+
+/* ─── Org structure: barriers (rules 4 + 11) ───────────────────── */
+
+/**
+ * Set or clear an information barrier on a node. Enterprise-only
+ * (rule 11): on lower plans this returns { error, reason: 'plan' } so
+ * the UI can show the upsell. The granter needs manage_structure
+ * covering the node.
+ */
+export function setNodeBarrier({ nodeId, barrier, barrierReason, actorId, tenantId = 'meridian' }) {
+  const node = nodeById(nodeId)
+  if (!node) return { error: 'Unknown node' }
+  const plan = planAllows(tenantId, 'barriers')
+  if (!plan.allow) return { error: plan.detail, reason: 'plan' }
+  const held = granterPermissionsAt(actorId, tenantId, nodeId)
+  if (!held.has('*') && !held.has('manage_structure')) {
+    return { error: `Changing barriers on ${node.name} requires manage_structure there` }
+  }
+  node.barrier = !!barrier
+  node.barrierReason = barrier ? (barrierReason || 'Information barrier') : undefined
+  appendAdminEvent({
+    actorId, action: barrier ? 'structure.barrier-set' : 'structure.barrier-removed',
+    tenantId, scopeId: nodeId,
+    details: barrier
+      ? `Information barrier set on ${node.name} — inherited access now stops here`
+      : `Information barrier removed from ${node.name}`,
+  })
+  bumpRbac()
+  return { node }
 }

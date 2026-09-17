@@ -17,7 +17,7 @@
 
 import { useCallback, useState } from 'react'
 import {
-  GRANTS, ROLES, ORG_NODES, USERS, AUDIT_LOG, getNodePath, getNodeDescendants,
+  GRANTS, ROLES, ORG_NODES, USERS, TENANTS, AUDIT_LOG, getNodePath, getNodeDescendants,
 } from '../../data/rbacModel'
 
 /* ─── Store: mutable module state + re-render hook ─────────────── */
@@ -89,6 +89,38 @@ function byPrecedence(a, b) {
 
 function scopeNameOf(grant) { return nodeById(grant.scope.nodeId)?.name || grant.scope.nodeId }
 
+/* ─── Plan gating (rule 11) ────────────────────────────────────── */
+
+/** Capabilities gated to the Enterprise plan (ruled 2026-09-17). */
+export const ENTERPRISE_CAPABILITIES = new Set([
+  'barriers', 'custom-roles', 'access-reviews', 'residency', 'agent-principals', 'sod-exceptions',
+])
+
+export function tenantPlan(tenantId) {
+  return TENANTS.find(t => t.id === tenantId)?.plan || 'standard'
+}
+
+/** Demo switcher hook: the tier preview writes the tenant's real plan. */
+export function setTenantPlan(tenantId, plan) {
+  const t = TENANTS.find(x => x.id === tenantId)
+  if (t) { t.plan = plan; bumpRbac() }
+}
+
+/**
+ * Plan check for a capability. Denies with reason 'plan' — the UI shows
+ * the upsell rather than hiding the capability.
+ */
+export function planAllows(tenantId, capability) {
+  if (!ENTERPRISE_CAPABILITIES.has(capability)) return { allow: true }
+  const plan = tenantPlan(tenantId)
+  if (plan === 'enterprise') return { allow: true }
+  return {
+    allow: false,
+    reason: 'plan',
+    detail: `${capability.replace(/-/g, ' ')} is an Enterprise capability — the ${plan} plan does not include it`,
+  }
+}
+
 /* ─── The decision function ────────────────────────────────────── */
 
 /**
@@ -108,6 +140,15 @@ export function can({ principal, permission, nodeId, tenantId, at, context } = {
   const node = nodeById(nodeId)
   if (!node) throw new Error(`rbac.can(): unknown nodeId "${nodeId}"`)
   const tenant = tenantId || node.tenantId
+
+  // Rule 11: agent principals are an Enterprise capability. The deny
+  // names the plan so the UI can show the upsell, not a mystery.
+  if (p.type === 'agent') {
+    const plan = planAllows(tenant, 'agent-principals')
+    if (!plan.allow) {
+      return { allow: false, reason: plan.detail, grantId: null, decisivePolicy: 'plan' }
+    }
+  }
 
   const candidates = GRANTS.filter(g =>
     g.principal.type === p.type && g.principal.id === p.id && g.tenantId === tenant)

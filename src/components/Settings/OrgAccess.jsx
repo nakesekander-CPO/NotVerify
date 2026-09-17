@@ -533,6 +533,25 @@ export default function OrgAccess({ activeTab, tier }) {
     removeAllGrantsForUser({ userId, tenantId: activeTenant, actorId: CURRENT_ADMIN })
   }, [activeTenant])
 
+  // Rule 11: below Enterprise the capability is visible but locked —
+  // an upsell, never a silently missing menu.
+  if (tier !== 'enterprise') {
+    return (
+      <div className="rounded-xl border border-black/[0.08] bg-gray-50 p-8 text-center max-w-lg">
+        <Shield className="w-8 h-8 mx-auto mb-3 text-[#3D16FA]" />
+        <h3 className="text-[15px] font-semibold text-gray-900 mb-1.5">Organization &amp; Access is an Enterprise capability</h3>
+        <p className="text-[12.5px] text-gray-500 leading-relaxed mb-1.5">
+          Scoped roles across your org structure, information barriers, separation-of-duties exceptions,
+          agent principals, and access reviews are included in the Enterprise plan.
+        </p>
+        <p className="text-[11.5px] text-gray-400">
+          Use the tier preview above to see it in Enterprise — on the {tier === 'pro' ? 'Pro / Team' : 'Standard'} plan these
+          controls stay visible but locked, and the engine denies them with reason <span className="font-mono">plan</span>.
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div>
       <div className="flex items-center gap-3 mb-5">

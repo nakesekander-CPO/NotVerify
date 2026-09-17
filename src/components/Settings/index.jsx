@@ -5,6 +5,7 @@ import BillingEntities from './BillingEntities'
 import BudgetsAndAllocations from './BudgetsAndAllocations'
 import OrgAccess from './OrgAccess'
 import { PageHeader } from '../ui'
+import { setTenantPlan } from '../../services/rbac/engine'
 
 export default function SettingsPage({ onBack, onOpenIntegrations }) {
   const [activeSection, setActiveSection] = useState('billing-v2')
@@ -12,7 +13,11 @@ export default function SettingsPage({ onBack, onOpenIntegrations }) {
 
   const handleTierChange = (newTier) => {
     setTier(newTier)
-    if (newTier !== 'enterprise' && (activeSection === 'billing-entities' || activeSection === 'budgets' || activeSection.startsWith('org-'))) {
+    // Rule 11: the tier preview writes the tenant's real plan, so the
+    // engine's plan-gated capabilities (barriers, agent principals, SoD
+    // exceptions…) visibly change with it.
+    setTenantPlan('meridian', newTier)
+    if (newTier !== 'enterprise' && (activeSection === 'billing-entities' || activeSection === 'budgets')) {
       setActiveSection('billing-v2')
     }
   }
@@ -24,13 +29,13 @@ export default function SettingsPage({ onBack, onOpenIntegrations }) {
       { id: 'budgets', label: 'Budgets & Allocations', icon: LayoutList, active: true, indent: true },
     ] : []),
     { id: 'integrations', label: 'API & Integrations', icon: Puzzle, active: true },
-    ...(tier === 'enterprise' ? [
-      { type: 'section-header', label: 'Organization & Access' },
-      { id: 'org-structure', label: 'Structure', icon: Network, active: true, indent: true },
-      { id: 'org-members', label: 'Members', icon: Users, active: true, indent: true },
-      { id: 'org-roles', label: 'Roles', icon: Shield, active: true, indent: true },
-      { id: 'org-audit', label: 'Audit Log', icon: ScrollText, active: true, indent: true },
-    ] : []),
+    // Rule 11: Organization & Access is never hidden — lower tiers see
+    // the capability with an upsell inside, not a missing menu.
+    { type: 'section-header', label: 'Organization & Access' },
+    { id: 'org-structure', label: 'Structure', icon: Network, active: true, indent: true },
+    { id: 'org-members', label: 'Members', icon: Users, active: true, indent: true },
+    { id: 'org-roles', label: 'Roles', icon: Shield, active: true, indent: true },
+    { id: 'org-audit', label: 'Audit Log', icon: ScrollText, active: true, indent: true },
   ]
 
   return (
