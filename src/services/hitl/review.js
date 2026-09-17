@@ -16,7 +16,7 @@ import {
   REVIEW_DECISIONS,
   createReviewDecision,
 } from '../../data/hitlVendorWorkflow';
-import { requirePermission, getUserRoles, isRole } from './rbac';
+import { requirePermission, getUserRoles } from './rbac';
 import { isSecondEditor, secondEditorCanStart } from './taskAssignment';
 import { appendAuditEvent } from './auditLog';
 
@@ -70,17 +70,11 @@ export function decideSegment({ segmentId, actorId, action, newValue, reason, ch
     throw err;
   }
 
-  // Vendor-user scoping
-  if (isRole(actorId, 'vendor-user') && !canVendorUserActOnSegment(actorId, seg)) {
-    appendAuditEvent({
-      actorId, actorRole: 'vendor-user', projectId: seg.projectId, segmentId,
-      eventType: 'segment.access-denied',
-      reason: 'vendor-user not assigned to this segment',
-    });
-    const err = new Error('vendor-user not assigned to this segment');
-    err.code = 'PERMISSION_DENIED';
-    throw err;
-  }
+  // Vendor-user segment scoping now lives in the engine: vendor grants
+  // carry conditions.assignedOnly and requirePermission supplies the
+  // task's assigned users, so an unassigned vendor-user is denied above
+  // with decisivePolicy 'assigned-only' (and audited). The old local
+  // check that always returned true is gone.
 
   const before = seg.target;
   const decision = createReviewDecision({
@@ -125,22 +119,11 @@ export function decideSegment({ segmentId, actorId, action, newValue, reason, ch
   return decision;
 }
 
-function canVendorUserActOnSegment(userId, segment) {
-  // In a real DB we'd join via task → assignment → vendor → assignedUsers.
-  // The prototype keeps the assignment list short; we approximate by
-  // requiring the task to carry a vendorAssignedUserId field if present.
-  if (!segment.taskId) return false;
-  // For demo data we attach assignedUserId on the task; if absent, allow
-  // all vendor-users in the same assignment to act (their RBAC already
-  // gates them out of other vendors' projects entirely).
-  return true;
-}
-
 export function addSegmentComment({ segmentId, actorId, text }) {
   const seg = HITL_SEGMENTS.find(s => s.id === segmentId);
   if (!seg) throw new Error(`segment not found: ${segmentId}`);
   // Comments require any scope-level view + comment perm.
-  requirePermission(actorId, 'comment_assigned_segment', { projectId: seg.projectId, segmentId });
+  requirePermission(actorId, 'comment_segment', { projectId: seg.projectId, segmentId });
   const comment = {
     id: `cm-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
     actorId,

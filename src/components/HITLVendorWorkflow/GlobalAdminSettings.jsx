@@ -3,9 +3,9 @@ import { ROLES } from '../../data/rbacModel'
 import { SectionHeading, Card, MonoLabel, KeyValueRow } from './shared'
 
 const HITL_ROLE_IDS = [
-  'arbitr-global-admin', 'org-admin', 'vendor-manager', 'project-manager',
+  'arbitr-global-admin', 'org-manager', 'vendor-manager', 'project-manager',
   'internal-reviewer', 'final-validator', 'compliance-reviewer', 'legal-reviewer',
-  'vendor-admin', 'vendor-user', 'client-reviewer', 'auditor', 'read-only-observer',
+  'vendor-admin', 'vendor-user', 'client-reviewer', 'auditor',
 ]
 
 export default function GlobalAdminSettings() {

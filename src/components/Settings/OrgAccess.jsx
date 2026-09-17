@@ -177,7 +177,7 @@ function InviteModal({ tenantId, onInvite, onClose }) {
   const [roleId, setRoleId] = useState('contributor')
   const [scopeId, setScopeId] = useState('')
   const tenantNodes = ORG_NODES.filter(n => n.tenantId === tenantId)
-  const customerRoles = ROLES.filter(r => !r.internal && !r.hidden)
+  const customerRoles = ROLES.filter(r => !r.internal)
 
   const canSubmit = name.trim() && email.trim() && roleId && scopeId
 
@@ -239,7 +239,7 @@ function AddRoleForm({ tenantId, onAdd, onCancel }) {
   const [roleId, setRoleId] = useState('contributor')
   const [scopeId, setScopeId] = useState('')
   const tenantNodes = ORG_NODES.filter(n => n.tenantId === tenantId)
-  const customerRoles = ROLES.filter(r => !r.internal && !r.hidden)
+  const customerRoles = ROLES.filter(r => !r.internal)
 
   return (
     <div className="rounded-lg border border-[#3D16FA]/30 bg-[#3D16FA]/[0.04] p-3 space-y-2">
@@ -430,7 +430,7 @@ function RolesTab({ grants }) {
   const counts = useMemo(() => { const c = {}; grants.forEach(g => { c[g.roleId] = (c[g.roleId] || 0) + 1 }); return c }, [grants])
   return (
     <div className="space-y-3">
-      {ROLES.filter(r => !r.hidden).map(role => (
+      {ROLES.map(role => (
         <div key={role.id} className={`rounded-xl border p-4 ${role.internal ? 'border-purple-200 bg-purple-50/20' : 'border-black/[0.08] bg-white'}`}>
           <div className="flex items-start justify-between gap-3 mb-2">
             <div className="flex items-center gap-2.5">

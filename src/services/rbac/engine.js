@@ -98,7 +98,7 @@ function scopeNameOf(grant) { return nodeById(grant.scope.nodeId)?.name || grant
  * `nodeId` is REQUIRED: a scope-blind access check is a developer error,
  * not a deny.
  */
-export function can({ principal, permission, nodeId, tenantId, at } = {}) {
+export function can({ principal, permission, nodeId, tenantId, at, context } = {}) {
   if (!nodeId) throw new Error('rbac.can(): nodeId is required — every access check is scoped to an org node')
   if (!permission) throw new Error('rbac.can(): permission is required')
   const p = normalizePrincipal(principal)
@@ -118,12 +118,16 @@ export function can({ principal, permission, nodeId, tenantId, at } = {}) {
   const evaluated = candidates.map(g => {
     const role = roleById(g.roleId)
     const hasPerm = !!role && (role.permissions.includes('*') || role.permissions.includes(permission))
-    return { g, role, hasPerm, cov: scopeCovers(g, nodeId), expired: isExpired(g, now) }
+    // assignedOnly: the grant only works on work the principal is assigned
+    // to — callers supply context.assignedUserIds for the entity at hand.
+    const assignedBlocked = !!g.conditions?.assignedOnly
+      && !(context?.assignedUserIds || []).includes(p.id)
+    return { g, role, hasPerm, cov: scopeCovers(g, nodeId), expired: isExpired(g, now), assignedBlocked }
   })
 
   // 1. Explicit deny beats everything.
   const denies = evaluated
-    .filter(e => e.g.effect === 'deny' && e.hasPerm && e.cov.covers && !e.expired)
+    .filter(e => e.g.effect === 'deny' && e.hasPerm && e.cov.covers && !e.expired && !e.assignedBlocked)
     .sort(byPrecedence)
   if (denies.length) {
     const e = denies[0]
@@ -132,7 +136,7 @@ export function can({ principal, permission, nodeId, tenantId, at } = {}) {
 
   // 2. Nearest-scope allow, then inherited allow (same comparator).
   const allows = evaluated
-    .filter(e => (e.g.effect ?? 'allow') === 'allow' && e.hasPerm && e.cov.covers && !e.expired)
+    .filter(e => (e.g.effect ?? 'allow') === 'allow' && e.hasPerm && e.cov.covers && !e.expired && !e.assignedBlocked)
     .sort(byPrecedence)
   if (allows.length) {
     const e = allows[0]
@@ -158,6 +162,10 @@ export function can({ principal, permission, nodeId, tenantId, at } = {}) {
   if (barrierHit) {
     const wall = barrierHit.cov.blockedByBarrier
     return { allow: false, reason: `Information barrier on ${wall.name}: inherited access from ${scopeNameOf(barrierHit.g)} stops at the barrier — a direct, audited crossing grant is required`, grantId: barrierHit.g.id, decisivePolicy: 'barrier', role: barrierHit.role }
+  }
+  const assignedHit = evaluated.find(e => e.hasPerm && e.cov.covers && !e.expired && e.assignedBlocked)
+  if (assignedHit) {
+    return { allow: false, reason: `${assignedHit.role.name} at ${scopeNameOf(assignedHit.g)} is assigned-only — ${p.id} is not assigned to this work`, grantId: assignedHit.g.id, decisivePolicy: 'assigned-only', role: assignedHit.role }
   }
   const scopeMiss = evaluated.find(e => e.hasPerm && !e.expired)
   if (scopeMiss) {
@@ -201,7 +209,7 @@ export function authorize({ principal, permission, nodeId, tenantId, at, context
   const p = normalizePrincipal(principal) || { type: 'user', id: 'anonymous' }
   // Developer errors (missing nodeId etc.) propagate from can() — they are
   // bugs, not denials, and must never be swallowed into an audit event.
-  const decision = can({ principal: p, permission, nodeId, tenantId, at })
+  const decision = can({ principal: p, permission, nodeId, tenantId, at, context })
   const tenant = tenantId || nodeById(nodeId)?.tenantId
   if (decision.allow && decision.grantId) {
     const g = GRANTS.find(x => x.id === decision.grantId)

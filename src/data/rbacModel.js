@@ -67,33 +67,38 @@ export const NODE_TYPE_STYLES = {
 
 /* ─── Roles ──────────────────────────────────────────────────── */
 
+/*
+ * ONE role catalogue, all of it real (RBAC alignment, 2026-09-17).
+ * - No `hidden` flag: a role that exists is visible in the Roles tab and
+ *   enforceable by the engine — never one without the other.
+ * - No scope suffixes (:org / :scope / :own): scope belongs to the GRANT,
+ *   not the permission string.
+ * - Merged: read-only-observer → viewer; org-admin → org-manager;
+ *   *_assigned_* permissions → their plain forms, with "assigned only"
+ *   expressed as a grant condition (conditions.assignedOnly) that the
+ *   engine evaluates.
+ */
 export const ROLES = [
+  /* Customer roles */
   { id: 'tenant-admin',     name: 'Tenant Admin',     description: 'Full access across the entire tenant. Can manage all structure, members, roles, and resources.',  level: 'tenant',   permissions: ['*'],                                                                                    internal: false },
-  { id: 'org-manager',      name: 'Org Manager',      description: 'Manage structure, members, and workflows within their assigned scope and all descendants.',       level: 'org',      permissions: ['manage_members', 'manage_structure', 'view_audit', 'manage_workflows', 'view_resource', 'create_resource', 'edit_resource'], internal: false },
+  { id: 'org-manager',      name: 'Org Manager',      description: 'Manage structure, members, workflows, vendor pools, and selection policies within their scope and all descendants.', level: 'org', permissions: ['manage_members', 'manage_structure', 'view_audit', 'manage_workflows', 'manage_vendor_pool', 'manage_selection_policy', 'reassign_task', 'view_resource', 'create_resource', 'edit_resource'], internal: false },
   { id: 'contributor',      name: 'Contributor',       description: 'Create and edit resources. Can submit work for review but cannot approve.',                       level: 'org',      permissions: ['create_resource', 'edit_resource', 'view_resource', 'submit_review'],                    internal: false },
-  { id: 'viewer',           name: 'Viewer',            description: 'Read-only access to resources within scope. Cannot modify or create.',                            level: 'org',      permissions: ['view_resource'],                                                                         internal: false },
+  { id: 'viewer',           name: 'Viewer',            description: 'Read-only access to resources, projects, and dashboards within scope. Cannot modify or create.',  level: 'org',      permissions: ['view_resource'],                                                                         internal: false },
   { id: 'approver',         name: 'Approver',          description: 'Review and approve resources. Can accept, reject, or request changes.',                           level: 'org',      permissions: ['view_resource', 'approve_resource', 'reject_resource', 'request_changes'],               internal: false },
+  { id: 'vendor-manager',   name: 'Vendor Manager',    description: 'Create and edit vendor profiles within scope. Review vendor performance. Approve assignments where permitted.', level: 'org', permissions: ['manage_vendor', 'review_vendor_performance', 'approve_assignment', 'suspend_vendor', 'reassign_task', 'view_resource'], internal: false },
+  { id: 'project-manager',  name: 'Project Manager',   description: 'Create projects, review recommendations, approve or override assignments, monitor progress.',     level: 'org',      permissions: ['create_project', 'review_recommendation', 'approve_assignment', 'override_assignment', 'reassign_task', 'escalate', 'view_resource', 'edit_resource'], internal: false },
+  { id: 'internal-reviewer',name: 'Internal Reviewer', description: 'Review vendor work. Edit outputs. Verify/Not Verify segments. Request rework. Recommend sign-off.', level: 'org',    permissions: ['review_vendor_work', 'edit_segment', 'verify_segment', 'request_rework', 'recommend_signoff', 'view_resource'], internal: false },
+  { id: 'final-validator',  name: 'Final Validator',   description: 'Perform final validation and sign-off. Approve corrections for Cortex / retraining where policy permits.', level: 'org', permissions: ['final_validate', 'signoff_output', 'approve_org_brain', 'approve_retraining', 'view_resource'], internal: false },
+  { id: 'compliance-reviewer', name: 'Compliance Reviewer', description: 'Review outputs against regulatory and compliance policy.',                                   level: 'org',      permissions: ['compliance_review', 'verify_segment', 'request_rework', 'view_resource'], internal: false },
+  { id: 'legal-reviewer',   name: 'Legal Reviewer',    description: 'Review outputs against legal policy.',                                                             level: 'org',      permissions: ['legal_review', 'verify_segment', 'request_rework', 'view_resource'], internal: false },
+  { id: 'client-reviewer',  name: 'Client Reviewer',   description: 'Client-side reviewer with limited verify and sign-off authority on their organisation\'s outputs.', level: 'org',      permissions: ['verify_segment', 'client_signoff', 'view_resource'], internal: false },
+  { id: 'auditor',          name: 'Auditor',           description: 'Read-only access to audit logs and signed-off records within scope.',                              level: 'org',      permissions: ['view_audit', 'view_signoff_records', 'view_resource'], internal: false },
+  /* Vendor-plane roles (grants for these typically carry assignedOnly) */
+  { id: 'vendor-admin',     name: 'Vendor Admin',      description: 'Manage users inside their vendor organisation only. View assigned vendor projects.',               level: 'vendor',   permissions: ['manage_vendor_users', 'view_assigned_projects', 'assign_vendor_user_to_task'], internal: false },
+  { id: 'vendor-user',      name: 'Vendor User',       description: 'Work on tasks in scope — grants carry the assigned-only condition, so reach is limited to assigned work.', level: 'vendor', permissions: ['view_resource', 'edit_segment', 'comment_segment', 'verify_segment', 'submit_task'], internal: false },
+  /* Platform roles */
   { id: 'support-operator', name: 'Support Operator',  description: 'Internal platform support access. All actions are audited and time-bounded.',                     level: 'platform', permissions: ['view_resource', 'view_audit', 'impersonate'],                                            internal: true },
-
-  /* ─── HITL Vendor Workflow roles ─────────────────────────────────
-     `hidden: true` keeps a role out of the Organization & Access view
-     (Roles tab and role pickers) until the vendor workflow is part of
-     the demo (ruled 2026-09-17). The roles stay defined so the vendor
-     module and its services keep working; compliance-reviewer,
-     legal-reviewer, and auditor stay visible — they hold assignments. */
-  { id: 'arbitr-global-admin',  name: 'arbitr Global Admin',  description: 'Platform owner. Manages global vendor registry, pools, selection policies, RBAC, and retraining governance.', level: 'platform', permissions: ['*'], internal: true, hidden: true },
-  { id: 'org-admin',            name: 'Org Admin',            description: 'Manage organisation-level vendor pools, selection policies, and members.',                                    level: 'org',      permissions: ['manage_members', 'manage_structure', 'manage_workflows', 'manage_vendor_pool:org', 'manage_selection_policy:org', 'reassign_task', 'view_audit', 'view_resource', 'create_resource', 'edit_resource'], internal: false, hidden: true },
-  { id: 'vendor-manager',       name: 'Vendor Manager',       description: 'Create and edit vendor profiles within scope. Review vendor performance. Approve assignments where permitted.', level: 'org',    permissions: ['manage_vendor:scope', 'review_vendor_performance', 'approve_assignment', 'suspend_vendor:scope', 'reassign_task', 'view_resource'], internal: false, hidden: true },
-  { id: 'project-manager',      name: 'Project Manager',      description: 'Create projects, review recommendations, approve or override assignments, monitor progress.',                  level: 'org',      permissions: ['create_project', 'review_recommendation', 'approve_assignment', 'override_assignment', 'reassign_task', 'escalate', 'view_resource', 'edit_resource'], internal: false, hidden: true },
-  { id: 'internal-reviewer',    name: 'Internal Reviewer',    description: 'Review vendor work. Edit outputs. Verify/Not Verify segments. Request rework. Recommend sign-off.',            level: 'org',      permissions: ['review_vendor_work', 'edit_segment', 'verify_segment', 'request_rework', 'recommend_signoff', 'view_resource'], internal: false, hidden: true },
-  { id: 'final-validator',      name: 'Final Validator',      description: 'Perform final validation and sign-off. Approve corrections for Cortex / retraining where policy permits.',   level: 'org',      permissions: ['final_validate', 'signoff_output', 'approve_org_brain', 'approve_retraining', 'view_resource'], internal: false, hidden: true },
-  { id: 'compliance-reviewer',  name: 'Compliance Reviewer',  description: 'Review outputs against regulatory and compliance policy.',                                                     level: 'org',      permissions: ['compliance_review', 'verify_segment', 'request_rework', 'view_resource'], internal: false },
-  { id: 'legal-reviewer',       name: 'Legal Reviewer',       description: 'Review outputs against legal policy.',                                                                         level: 'org',      permissions: ['legal_review', 'verify_segment', 'request_rework', 'view_resource'], internal: false },
-  { id: 'vendor-admin',         name: 'Vendor Admin',         description: 'Manage users inside their vendor organisation only. View assigned vendor projects.',                            level: 'vendor',   permissions: ['manage_vendor_users:own', 'view_assigned_projects', 'assign_vendor_user_to_task'], internal: false, hidden: true },
-  { id: 'vendor-user',          name: 'Vendor User',          description: 'Work on assigned tasks only. Edit, comment, verify/not verify, submit work.',                                   level: 'vendor',   permissions: ['view_assigned_task', 'edit_assigned_segment', 'comment_assigned_segment', 'verify_assigned_segment', 'submit_assigned_task'], internal: false, hidden: true },
-  { id: 'client-reviewer',      name: 'Client Reviewer',      description: 'Client-side reviewer with limited verify and sign-off authority on their organisation\'s outputs.',              level: 'org',      permissions: ['verify_segment', 'client_signoff', 'view_resource'], internal: false, hidden: true },
-  { id: 'auditor',              name: 'Auditor',              description: 'Read-only access to audit logs and signed-off records within scope.',                                          level: 'org',      permissions: ['view_audit', 'view_signoff_records', 'view_resource'], internal: false },
-  { id: 'read-only-observer',   name: 'Read-Only Observer',   description: 'Read-only access to projects, dashboards, and analytics within scope.',                                        level: 'org',      permissions: ['view_resource'], internal: false, hidden: true },
+  { id: 'arbitr-global-admin', name: 'arbitr Global Admin', description: 'Platform owner. Manages global vendor registry, pools, selection policies, RBAC, and retraining governance.', level: 'platform', permissions: ['*'], internal: true },
 ];
 
 /* ─── Users ──────────────────────────────────────────────────── */

@@ -40,7 +40,7 @@ export default function ConfidenceThresholdEditor({ policy, currentUserId, onSav
       const before = JSON.parse(JSON.stringify(policy.confidenceThresholds))
       policy.confidenceThresholds = JSON.parse(JSON.stringify(draft))
       appendAuditEvent({
-        actorId: currentUserId, actorRole: 'org-admin',
+        actorId: currentUserId, actorRole: 'org-manager',
         eventType: 'policy.threshold.changed',
         beforeValue: before, afterValue: policy.confidenceThresholds,
         reason: `Policy "${policy.id}" thresholds tuned`,
