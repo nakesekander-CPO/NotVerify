@@ -52,6 +52,14 @@ function ancestryOf(nodeId) {
   return out
 }
 
+/** Nearest ancestor-or-self residency jurisdiction of a node, if any. */
+function residencyOf(nodeId) {
+  for (const n of ancestryOf(nodeId)) {
+    if (n.residency) return n.residency
+  }
+  return null
+}
+
 /** Accept a bare userId string or a {type,id} principal. */
 export function normalizePrincipal(p) {
   if (!p) return null
@@ -156,6 +164,12 @@ export function can({ principal, permission, nodeId, tenantId, at, context } = {
     return { allow: false, reason: `No grant exists for ${p.type} "${p.id}" in this tenant`, grantId: null, decisivePolicy: 'no-grant' }
   }
 
+  // Rule 12 (Enterprise): a grant crosses into a residency-classified
+  // jurisdiction only if its own scope lives there or it names it in
+  // conditions.residency. Hard deny — the exception IS the condition.
+  const residencyEnforced = planAllows(tenant, 'residency').allow === true && tenantPlan(tenant) === 'enterprise'
+  const targetResidency = residencyEnforced ? residencyOf(nodeId) : null
+
   const evaluated = candidates.map(g => {
     const role = roleById(g.roleId)
     const hasPerm = !!role && (role.permissions.includes('*') || role.permissions.includes(permission))
@@ -163,12 +177,16 @@ export function can({ principal, permission, nodeId, tenantId, at, context } = {
     // to — callers supply context.assignedUserIds for the entity at hand.
     const assignedBlocked = !!g.conditions?.assignedOnly
       && !(context?.assignedUserIds || []).includes(p.id)
-    return { g, role, hasPerm, cov: scopeCovers(g, nodeId), expired: isExpired(g, now), assignedBlocked }
+    const grantResidency = residencyOf(g.scope.nodeId)
+    const residencyBlocked = !!targetResidency
+      && grantResidency !== targetResidency
+      && !(g.conditions?.residency || []).includes(targetResidency)
+    return { g, role, hasPerm, cov: scopeCovers(g, nodeId), expired: isExpired(g, now), assignedBlocked, residencyBlocked }
   })
 
   // 1. Explicit deny beats everything.
   const denies = evaluated
-    .filter(e => e.g.effect === 'deny' && e.hasPerm && e.cov.covers && !e.expired && !e.assignedBlocked)
+    .filter(e => e.g.effect === 'deny' && e.hasPerm && e.cov.covers && !e.expired && !e.assignedBlocked && !e.residencyBlocked)
     .sort(byPrecedence)
   if (denies.length) {
     const e = denies[0]
@@ -177,7 +195,7 @@ export function can({ principal, permission, nodeId, tenantId, at, context } = {
 
   // 2. Nearest-scope allow, then inherited allow (same comparator).
   const allows = evaluated
-    .filter(e => (e.g.effect ?? 'allow') === 'allow' && e.hasPerm && e.cov.covers && !e.expired && !e.assignedBlocked)
+    .filter(e => (e.g.effect ?? 'allow') === 'allow' && e.hasPerm && e.cov.covers && !e.expired && !e.assignedBlocked && !e.residencyBlocked)
     .sort(byPrecedence)
   if (allows.length) {
     const e = allows[0]
@@ -203,6 +221,10 @@ export function can({ principal, permission, nodeId, tenantId, at, context } = {
   if (barrierHit) {
     const wall = barrierHit.cov.blockedByBarrier
     return { allow: false, reason: `Information barrier on ${wall.name}: inherited access from ${scopeNameOf(barrierHit.g)} stops at the barrier — a direct, audited crossing grant is required`, grantId: barrierHit.g.id, decisivePolicy: 'barrier', role: barrierHit.role }
+  }
+  const residencyHit = evaluated.find(e => e.hasPerm && e.cov.covers && !e.expired && e.residencyBlocked)
+  if (residencyHit) {
+    return { allow: false, reason: `Data residency: ${scopeNameOf(residencyHit.g)}-scoped access does not extend into the ${residencyOf(nodeId)} jurisdiction — the grant would need an explicit residency exception naming ${residencyOf(nodeId)}`, grantId: residencyHit.g.id, decisivePolicy: 'residency', role: residencyHit.role }
   }
   const assignedHit = evaluated.find(e => e.hasPerm && e.cov.covers && !e.expired && e.assignedBlocked)
   if (assignedHit) {
@@ -281,12 +303,15 @@ export function effectiveMembers(nodeId, { at } = {}) {
   const node = nodeById(nodeId)
   if (!node) return []
   const byPerson = new Map()
+  const targetResidency = tenantPlan(node.tenantId) === 'enterprise' ? residencyOf(nodeId) : null
   for (const g of GRANTS) {
     if (g.tenantId !== node.tenantId) continue
     if ((g.effect ?? 'allow') !== 'allow') continue
     if (isExpired(g, now)) continue
     const cov = scopeCovers(g, nodeId)
     if (!cov.covers) continue
+    if (targetResidency && residencyOf(g.scope.nodeId) !== targetResidency
+      && !(g.conditions?.residency || []).includes(targetResidency)) continue
     const role = roleById(g.roleId)
     const user = g.principal.type === 'user' ? USERS.find(u => u.id === g.principal.id) : null
     if (!role || !user) continue

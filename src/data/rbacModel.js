@@ -24,7 +24,7 @@ export const ORG_NODES = [
   // Meridian Capital — primary tenant (Global Company)
   { id: 'mc-root',            tenantId: 'meridian', parentId: null,              name: 'Meridian Capital Group', type: 'tenant' },
   // Japan (Country Business)
-  { id: 'mc-japan',           tenantId: 'meridian', parentId: 'mc-root',         name: 'Meridian Japan',        type: 'country' },
+  { id: 'mc-japan',           tenantId: 'meridian', parentId: 'mc-root',         name: 'Meridian Japan',        type: 'country', residency: 'JP', classification: 'regulated-financial' },
   { id: 'mc-japan-securities',tenantId: 'meridian', parentId: 'mc-japan',        name: 'Securities',            type: 'business-unit' },
   { id: 'mc-japan-finance',   tenantId: 'meridian', parentId: 'mc-japan-securities', name: 'Financial Reporting', type: 'department' },
   { id: 'mc-japan-compliance',tenantId: 'meridian', parentId: 'mc-japan-securities', name: 'Compliance & Regulatory', type: 'department' },
@@ -35,12 +35,12 @@ export const ORG_NODES = [
   // expiring, audited grant.
   { id: 'mc-japan-ma',        tenantId: 'meridian', parentId: 'mc-japan-ib',     name: 'M&A Advisory',          type: 'team', barrier: true, barrierReason: 'M&A information barrier — deal-sensitive information (MNPI). Inherited access stops here.' },
   // Germany (Country Business)
-  { id: 'mc-germany',         tenantId: 'meridian', parentId: 'mc-root',         name: 'Meridian Germany',      type: 'country' },
+  { id: 'mc-germany',         tenantId: 'meridian', parentId: 'mc-root',         name: 'Meridian Germany',      type: 'country', residency: 'EU', classification: 'regulated-financial' },
   { id: 'mc-germany-pb',      tenantId: 'meridian', parentId: 'mc-germany',      name: 'Private Banking',       type: 'business-unit' },
   { id: 'mc-germany-tax',     tenantId: 'meridian', parentId: 'mc-germany-pb',   name: 'Tax & Audit',           type: 'department' },
   { id: 'mc-germany-wealth',  tenantId: 'meridian', parentId: 'mc-germany-pb',   name: 'Wealth Management',     type: 'department' },
   // New Zealand (Country Business)
-  { id: 'mc-nz',              tenantId: 'meridian', parentId: 'mc-root',         name: 'Meridian New Zealand',  type: 'country' },
+  { id: 'mc-nz',              tenantId: 'meridian', parentId: 'mc-root',         name: 'Meridian New Zealand',  type: 'country', residency: 'NZ', classification: 'internal' },
   { id: 'mc-nz-operations',   tenantId: 'meridian', parentId: 'mc-nz',           name: 'Operations',            type: 'business-unit' },
   { id: 'mc-nz-ops',          tenantId: 'meridian', parentId: 'mc-nz-operations', name: 'Client Operations',    type: 'department' },
   { id: 'mc-nz-legal',        tenantId: 'meridian', parentId: 'mc-nz-operations', name: 'Legal',                type: 'department' },
@@ -136,7 +136,9 @@ export const USERS = [
 
 export const GRANTS = [
   // Alex — Tenant Admin (full access to all of Meridian)
-  { id: 'ra-1',  principal: { type: 'user', id: 'alex' },   tenantId: 'meridian', roleId: 'tenant-admin', scope: { nodeId: 'mc-root', type: 'tenant' },                 conditions: {}, assignedBy: 'system', assignedAt: '2025-06-01T00:00:00Z', lastUsedAt: '2026-09-16T17:40:00Z' },
+  // Even the tenant admin's cross-border reach is explicit: a global
+  // grant only enters a residency-classified country it names (rule 12).
+  { id: 'ra-1',  principal: { type: 'user', id: 'alex' },   tenantId: 'meridian', roleId: 'tenant-admin', scope: { nodeId: 'mc-root', type: 'tenant' },                 conditions: { residency: ['JP', 'EU', 'NZ'] }, assignedBy: 'system', assignedAt: '2025-06-01T00:00:00Z', lastUsedAt: '2026-09-16T17:40:00Z' },
   // Kenji — Org Manager for Meridian Japan
   { id: 'ra-3',  principal: { type: 'user', id: 'kenji' },  tenantId: 'meridian', roleId: 'org-manager', scope: { nodeId: 'mc-japan', type: 'country' },                conditions: {}, assignedBy: 'alex', assignedAt: '2025-03-01T00:00:00Z', lastUsedAt: '2026-09-15T08:42:00Z' },
   // Sarah — Approver for the Japan Securities BU (sign-off authority lives
@@ -161,7 +163,9 @@ export const GRANTS = [
   // Lena — Legal Reviewer at New Zealand Legal (second grant)
   { id: 'ra-12', principal: { type: 'user', id: 'lena' },   tenantId: 'meridian', roleId: 'legal-reviewer', scope: { nodeId: 'mc-nz-legal', type: 'department' },       conditions: {}, assignedBy: 'alex', assignedAt: '2026-02-03T00:00:00Z', lastUsedAt: '2026-08-28T10:10:00Z' },
   // James — Auditor across the whole group (read-only oversight from the top)
-  { id: 'ra-13', principal: { type: 'user', id: 'james' },  tenantId: 'meridian', roleId: 'auditor', scope: { nodeId: 'mc-root', type: 'tenant' },                      conditions: {}, assignedBy: 'alex', assignedAt: '2026-02-03T00:00:00Z', lastUsedAt: '2026-09-15T08:55:00Z' },
+  // James's group audit reach deliberately EXCLUDES the EU: German audit
+  // stays in-country — a live residency denial for the Access Explorer.
+  { id: 'ra-13', principal: { type: 'user', id: 'james' },  tenantId: 'meridian', roleId: 'auditor', scope: { nodeId: 'mc-root', type: 'tenant' },                      conditions: { residency: ['JP', 'NZ'] }, assignedBy: 'alex', assignedAt: '2026-02-03T00:00:00Z', lastUsedAt: '2026-09-15T08:55:00Z' },
   // Sarah — Final Validator for the Securities BU: sign-off authority.
   // Rule 9 makes this load-bearing — the person who edited a segment can
   // never be the person who signs the project off.
@@ -176,7 +180,7 @@ export const GRANTS = [
   { id: 'ra-14', principal: { type: 'user', id: 'james' },  tenantId: 'meridian', roleId: 'auditor', scope: { nodeId: 'mc-japan-ma', type: 'team' },               conditions: { expiresAt: '2026-10-15T00:00:00Z', justification: 'Quarterly conflicts audit — Project Keystone', ticketRef: 'AUD-2026-114' }, assignedBy: 'alex', assignedAt: '2026-09-10T00:00:00Z', lastUsedAt: '2026-09-15T08:55:00Z' },
   // Internal support — scoped to entire tenant, time-bounded. EXPIRED
   // 2026-04-25: the engine denies it and drops it from member lists.
-  { id: 'ra-10', principal: { type: 'user', id: 'support-bot' }, tenantId: 'meridian', roleId: 'support-operator', scope: { nodeId: 'mc-root', type: 'tenant' },        conditions: { expiresAt: '2026-04-25T10:00:00Z', justification: 'Support session for ticket #4821', ticketRef: 'TCK-4821' }, assignedBy: 'platform', assignedAt: '2026-03-25T10:00:00Z', lastUsedAt: '2026-04-20T15:00:00Z', internal: true },
+  { id: 'ra-10', principal: { type: 'user', id: 'support-bot' }, tenantId: 'meridian', roleId: 'support-operator', scope: { nodeId: 'mc-root', type: 'tenant' },        conditions: { expiresAt: '2026-04-25T10:00:00Z', justification: 'Support session for ticket #4821', ticketRef: 'TCK-4821', residency: ['JP', 'EU', 'NZ'] }, assignedBy: 'platform', assignedAt: '2026-03-25T10:00:00Z', lastUsedAt: '2026-04-20T15:00:00Z', internal: true },
 ];
 
 /* ─── Audit Log ──────────────────────────────────────────────── */
