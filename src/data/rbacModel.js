@@ -162,6 +162,10 @@ export const GRANTS = [
   { id: 'ra-12', principal: { type: 'user', id: 'lena' },   tenantId: 'meridian', roleId: 'legal-reviewer', scope: { nodeId: 'mc-nz-legal', type: 'department' },       conditions: {}, assignedBy: 'alex', assignedAt: '2026-02-03T00:00:00Z', lastUsedAt: '2026-08-28T10:10:00Z' },
   // James — Auditor across the whole group (read-only oversight from the top)
   { id: 'ra-13', principal: { type: 'user', id: 'james' },  tenantId: 'meridian', roleId: 'auditor', scope: { nodeId: 'mc-root', type: 'tenant' },                      conditions: {}, assignedBy: 'alex', assignedAt: '2026-02-03T00:00:00Z', lastUsedAt: '2026-09-15T08:55:00Z' },
+  // Sarah — Final Validator for the Securities BU: sign-off authority.
+  // Rule 9 makes this load-bearing — the person who edited a segment can
+  // never be the person who signs the project off.
+  { id: 'ra-16', principal: { type: 'user', id: 'sarah' },  tenantId: 'meridian', roleId: 'final-validator', scope: { nodeId: 'mc-japan-securities', type: 'business-unit' }, conditions: {}, assignedBy: 'alex', assignedAt: '2026-03-05T00:00:00Z', lastUsedAt: '2026-09-08T11:00:00Z' },
   // Yuki — deal-team approver DIRECTLY at M&A Advisory. The barrier means
   // even her Investment Banking BU grant (one level up) stops at the wall;
   // deal-team membership is always an explicit grant.

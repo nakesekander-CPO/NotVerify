@@ -64,10 +64,13 @@ describe('HITL Vendor Workflow — happy path', () => {
     // Removed reviewer actions must be refused at the write path.
     expect(() => decideSegment({ segmentId: segs[3].id, actorId: 'alex', action: 'escalated' })).toThrow(/unknown action/)
 
-    // 3. Sign off (Alex is tenant-admin → permitted as admin).
+    // 3. Sign off. Alex edited segments above, so rule 9 rejects him —
+    //    Sarah (final-validator at the Securities BU) signs instead.
+    expect(() => signOff({ projectId: PROJECT_ID, actorId: 'alex', statement: 'x' }))
+      .toThrow(/Separation of duties/)
     const so = signOff({
       projectId: PROJECT_ID,
-      actorId: 'alex',
+      actorId: 'sarah',
       statement: 'Integration test sign-off',
       canPublish: true,
       feedTM: true,
