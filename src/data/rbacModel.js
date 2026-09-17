@@ -14,24 +14,34 @@ export const TENANTS = [
 
 /* ─── Org Nodes (tree) ───────────────────────────────────────── */
 
+/*
+ * Four-level structure (ruled 2026-09-17):
+ *   Global Company → Country Business → Business Unit → Department/Team.
+ * Global Risk & Compliance deliberately hangs off the root — group
+ * functions sit at company level, and the tree must tolerate mixed depth.
+ */
 export const ORG_NODES = [
-  // Meridian Capital — primary tenant
-  { id: 'mc-root',            tenantId: 'meridian', parentId: null,              name: 'Meridian Capital',       type: 'tenant' },
-  // Japan
-  { id: 'mc-japan',           tenantId: 'meridian', parentId: 'mc-root',         name: 'Japan',                 type: 'country' },
-  { id: 'mc-japan-finance',   tenantId: 'meridian', parentId: 'mc-japan',        name: 'Financial Reporting',   type: 'department' },
-  { id: 'mc-japan-compliance',tenantId: 'meridian', parentId: 'mc-japan',        name: 'Compliance & Regulatory', type: 'department' },
-  { id: 'mc-japan-ma',        tenantId: 'meridian', parentId: 'mc-japan',        name: 'M&A Advisory',          type: 'team' },
-  // Germany
-  { id: 'mc-germany',         tenantId: 'meridian', parentId: 'mc-root',         name: 'Germany',               type: 'country' },
-  { id: 'mc-germany-tax',     tenantId: 'meridian', parentId: 'mc-germany',      name: 'Tax & Audit',           type: 'department' },
-  { id: 'mc-germany-wealth',  tenantId: 'meridian', parentId: 'mc-germany',      name: 'Wealth Management',     type: 'department' },
-  // New Zealand
-  { id: 'mc-nz',              tenantId: 'meridian', parentId: 'mc-root',         name: 'New Zealand',           type: 'country' },
-  { id: 'mc-nz-ops',          tenantId: 'meridian', parentId: 'mc-nz',           name: 'Operations',            type: 'department' },
-  { id: 'mc-nz-legal',        tenantId: 'meridian', parentId: 'mc-nz',           name: 'Legal',                 type: 'department' },
-  // Global shared
-  { id: 'mc-global-risk',     tenantId: 'meridian', parentId: 'mc-root',         name: 'Global Risk',           type: 'department' },
+  // Meridian Capital — primary tenant (Global Company)
+  { id: 'mc-root',            tenantId: 'meridian', parentId: null,              name: 'Meridian Capital Group', type: 'tenant' },
+  // Japan (Country Business)
+  { id: 'mc-japan',           tenantId: 'meridian', parentId: 'mc-root',         name: 'Meridian Japan',        type: 'country' },
+  { id: 'mc-japan-securities',tenantId: 'meridian', parentId: 'mc-japan',        name: 'Securities',            type: 'business-unit' },
+  { id: 'mc-japan-finance',   tenantId: 'meridian', parentId: 'mc-japan-securities', name: 'Financial Reporting', type: 'department' },
+  { id: 'mc-japan-compliance',tenantId: 'meridian', parentId: 'mc-japan-securities', name: 'Compliance & Regulatory', type: 'department' },
+  { id: 'mc-japan-ib',        tenantId: 'meridian', parentId: 'mc-japan',        name: 'Investment Banking',    type: 'business-unit' },
+  { id: 'mc-japan-ma',        tenantId: 'meridian', parentId: 'mc-japan-ib',     name: 'M&A Advisory',          type: 'team' },
+  // Germany (Country Business)
+  { id: 'mc-germany',         tenantId: 'meridian', parentId: 'mc-root',         name: 'Meridian Germany',      type: 'country' },
+  { id: 'mc-germany-pb',      tenantId: 'meridian', parentId: 'mc-germany',      name: 'Private Banking',       type: 'business-unit' },
+  { id: 'mc-germany-tax',     tenantId: 'meridian', parentId: 'mc-germany-pb',   name: 'Tax & Audit',           type: 'department' },
+  { id: 'mc-germany-wealth',  tenantId: 'meridian', parentId: 'mc-germany-pb',   name: 'Wealth Management',     type: 'department' },
+  // New Zealand (Country Business)
+  { id: 'mc-nz',              tenantId: 'meridian', parentId: 'mc-root',         name: 'Meridian New Zealand',  type: 'country' },
+  { id: 'mc-nz-operations',   tenantId: 'meridian', parentId: 'mc-nz',           name: 'Operations',            type: 'business-unit' },
+  { id: 'mc-nz-ops',          tenantId: 'meridian', parentId: 'mc-nz-operations', name: 'Client Operations',    type: 'department' },
+  { id: 'mc-nz-legal',        tenantId: 'meridian', parentId: 'mc-nz-operations', name: 'Legal',                type: 'department' },
+  // Global shared — group function at company level (deliberate exception)
+  { id: 'mc-global-risk',     tenantId: 'meridian', parentId: 'mc-root',         name: 'Global Risk & Compliance', type: 'department' },
   // arbitr — secondary tenant (minimal)
   { id: 'straker-root',       tenantId: 'straker', parentId: null,               name: 'arbitr',  type: 'tenant' },
   { id: 'straker-apac',       tenantId: 'straker', parentId: 'straker-root',     name: 'APAC',                  type: 'region' },
@@ -43,7 +53,8 @@ export const ORG_NODES = [
 export const NODE_TYPE_STYLES = {
   tenant:      { bg: 'bg-gray-100',    text: 'text-gray-700',    border: 'border-gray-200',    label: 'Tenant' },
   region:      { bg: 'bg-purple-50',   text: 'text-purple-600',  border: 'border-purple-200',  label: 'Region' },
-  country:     { bg: 'bg-blue-50',     text: 'text-blue-600',    border: 'border-blue-200',    label: 'Country' },
+  country:     { bg: 'bg-blue-50',     text: 'text-blue-600',    border: 'border-blue-200',    label: 'Country Business' },
+  'business-unit': { bg: 'bg-sky-50',  text: 'text-sky-700',     border: 'border-sky-200',     label: 'Business Unit' },
   department:  { bg: 'bg-amber-50',    text: 'text-amber-600',   border: 'border-amber-200',   label: 'Department' },
   team:        { bg: 'bg-emerald-50',  text: 'text-emerald-600', border: 'border-emerald-200', label: 'Team' },
   'legal-entity': { bg: 'bg-cyan-50',  text: 'text-cyan-600',    border: 'border-cyan-200',    label: 'Legal Entity' },
@@ -120,20 +131,29 @@ export const ROLE_ASSIGNMENTS = [
   { id: 'ra-1',  userId: 'alex',        tenantId: 'meridian', roleId: 'tenant-admin',     scopeType: 'tenant',     scopeId: 'mc-root',            assignedAt: '2025-06-01T00:00:00Z', assignedBy: 'system' },
   // Kenji — Org Manager for Japan (inherits to Financial Reporting, Compliance, M&A)
   { id: 'ra-3',  userId: 'kenji',       tenantId: 'meridian', roleId: 'org-manager',      scopeType: 'country',    scopeId: 'mc-japan',           assignedAt: '2025-03-01T00:00:00Z', assignedBy: 'alex' },
-  // Sarah — Approver for Japan Financial Reporting (narrow scope)
-  { id: 'ra-4',  userId: 'sarah',       tenantId: 'meridian', roleId: 'approver',         scopeType: 'department', scopeId: 'mc-japan-finance',   assignedAt: '2025-04-10T00:00:00Z', assignedBy: 'kenji' },
+  // Sarah — Approver for the Japan Securities BU (sign-off authority lives
+  // at business-unit altitude; inherits to Financial Reporting + Compliance)
+  { id: 'ra-4',  userId: 'sarah',       tenantId: 'meridian', roleId: 'approver',         scopeType: 'business-unit', scopeId: 'mc-japan-securities', assignedAt: '2025-04-10T00:00:00Z', assignedBy: 'kenji' },
   // Marcus — Org Manager for Germany (inherits to Tax & Audit, Wealth Management)
   { id: 'ra-5',  userId: 'marcus',      tenantId: 'meridian', roleId: 'org-manager',      scopeType: 'country',    scopeId: 'mc-germany',         assignedAt: '2025-05-20T00:00:00Z', assignedBy: 'alex' },
   // Thomas — Viewer at Germany Tax & Audit (narrowest scope)
   { id: 'ra-6',  userId: 'thomas',      tenantId: 'meridian', roleId: 'viewer',           scopeType: 'department', scopeId: 'mc-germany-tax',     assignedAt: '2025-07-01T00:00:00Z', assignedBy: 'marcus' },
   // Priya — Contributor for Germany Wealth Management
   { id: 'ra-7',  userId: 'priya',       tenantId: 'meridian', roleId: 'contributor',      scopeType: 'department', scopeId: 'mc-germany-wealth',  assignedAt: '2025-08-12T00:00:00Z', assignedBy: 'marcus' },
-  // Yuki — Approver for Japan Compliance & Regulatory
-  { id: 'ra-8',  userId: 'yuki',        tenantId: 'meridian', roleId: 'approver',         scopeType: 'department', scopeId: 'mc-japan-compliance', assignedAt: '2025-09-01T00:00:00Z', assignedBy: 'kenji' },
+  // Yuki — Approver for the Japan Investment Banking BU (covers M&A Advisory;
+  // one BU's approver has no reach into the sibling Securities BU)
+  { id: 'ra-8',  userId: 'yuki',        tenantId: 'meridian', roleId: 'approver',         scopeType: 'business-unit', scopeId: 'mc-japan-ib',        assignedAt: '2025-09-01T00:00:00Z', assignedBy: 'kenji' },
   // Lena — Org Manager for New Zealand (inherits to Operations, Legal)
   { id: 'ra-9',  userId: 'lena',        tenantId: 'meridian', roleId: 'org-manager',      scopeType: 'country',    scopeId: 'mc-nz',              assignedAt: '2025-10-15T00:00:00Z', assignedBy: 'alex' },
   // James — Contributor for Global Risk
   { id: 'ra-2',  userId: 'james',       tenantId: 'meridian', roleId: 'contributor',      scopeType: 'department', scopeId: 'mc-global-risk',     assignedAt: '2025-09-15T00:00:00Z', assignedBy: 'alex' },
+  // Yuki — Compliance Reviewer at Japan Compliance & Regulatory (second role:
+  // department-level review duty alongside the BU approver seat)
+  { id: 'ra-11', userId: 'yuki',        tenantId: 'meridian', roleId: 'compliance-reviewer', scopeType: 'department', scopeId: 'mc-japan-compliance', assignedAt: '2026-01-12T00:00:00Z', assignedBy: 'kenji' },
+  // Lena — Legal Reviewer at New Zealand Legal (second role)
+  { id: 'ra-12', userId: 'lena',        tenantId: 'meridian', roleId: 'legal-reviewer',   scopeType: 'department', scopeId: 'mc-nz-legal',        assignedAt: '2026-02-03T00:00:00Z', assignedBy: 'alex' },
+  // James — Auditor across the whole group (read-only oversight from the top)
+  { id: 'ra-13', userId: 'james',       tenantId: 'meridian', roleId: 'auditor',          scopeType: 'tenant',     scopeId: 'mc-root',            assignedAt: '2026-02-03T00:00:00Z', assignedBy: 'alex' },
   // Internal support — scoped to entire tenant, time-bounded
   { id: 'ra-10', userId: 'support-bot', tenantId: 'meridian', roleId: 'support-operator', scopeType: 'tenant',     scopeId: 'mc-root',            assignedAt: '2026-03-25T10:00:00Z', assignedBy: 'platform', internal: true, expiresAt: '2026-04-25T10:00:00Z' },
 ];
@@ -145,17 +165,20 @@ export const AUDIT_LOG = [
   { id: 'al-2',  timestamp: '2026-03-31T08:15:00Z', actor: 'kenji',       action: 'resource.accessed', tenantId: 'meridian', scopeId: 'mc-japan-finance',   targetUser: null,          roleId: null,               details: 'Accessed Q3 Earnings Report (JA locale)' },
   { id: 'al-3',  timestamp: '2026-03-30T16:42:00Z', actor: 'alex',        action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-germany',         targetUser: 'marcus',      roleId: 'org-manager',      details: 'Assigned Org Manager role at Germany scope' },
   { id: 'al-4',  timestamp: '2026-03-30T14:30:00Z', actor: 'marcus',      action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-germany-tax',     targetUser: 'thomas',      roleId: 'viewer',           details: 'Assigned Viewer role at Tax & Audit' },
-  { id: 'al-5',  timestamp: '2026-03-29T11:05:00Z', actor: 'kenji',       action: 'member.added',      tenantId: 'meridian', scopeId: 'mc-japan',           targetUser: 'yuki',        roleId: null,               details: 'Added Yuki Tanaka to Japan region' },
+  { id: 'al-5',  timestamp: '2026-03-29T11:05:00Z', actor: 'kenji',       action: 'member.added',      tenantId: 'meridian', scopeId: 'mc-japan',           targetUser: 'yuki',        roleId: null,               details: 'Added Yuki Tanaka to Meridian Japan' },
   { id: 'al-6',  timestamp: '2026-03-28T09:30:00Z', actor: 'sarah',       action: 'resource.accessed', tenantId: 'meridian', scopeId: 'mc-japan-finance',   targetUser: null,          roleId: null,               details: 'Approved Q3 Investor Presentation (JA)' },
-  { id: 'al-7',  timestamp: '2026-03-27T15:20:00Z', actor: 'kenji',       action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-japan-finance',   targetUser: 'sarah',       roleId: 'approver',         details: 'Assigned Approver role at Financial Reporting' },
+  { id: 'al-7',  timestamp: '2026-03-27T15:20:00Z', actor: 'kenji',       action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-japan-securities', targetUser: 'sarah',      roleId: 'approver',         details: 'Assigned Approver role at Securities business unit' },
   { id: 'al-8',  timestamp: '2026-03-26T10:00:00Z', actor: 'platform',    action: 'support.access',    tenantId: 'meridian', scopeId: 'mc-root',            targetUser: 'support-bot', roleId: 'support-operator', details: 'Support access granted (expires 2026-04-25)', internal: true },
   { id: 'al-9',  timestamp: '2026-03-25T09:15:00Z', actor: 'lena',        action: 'resource.accessed', tenantId: 'meridian', scopeId: 'mc-nz',              targetUser: null,          roleId: null,               details: 'Created new translation campaign for New Zealand' },
   { id: 'al-10', timestamp: '2026-03-24T14:00:00Z', actor: 'marcus',      action: 'resource.accessed', tenantId: 'meridian', scopeId: 'mc-germany-wealth',  targetUser: null,          roleId: null,               details: 'Submitted DE regulatory filing for review' },
   { id: 'al-11', timestamp: '2026-03-23T11:30:00Z', actor: 'alex',        action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-nz',              targetUser: 'lena',        roleId: 'org-manager',      details: 'Assigned Org Manager role at New Zealand' },
-  { id: 'al-12', timestamp: '2026-03-22T16:45:00Z', actor: 'alex',        action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-global-risk',     targetUser: 'james',       roleId: 'contributor',      details: 'Assigned Contributor role at Global Risk' },
+  { id: 'al-12', timestamp: '2026-03-22T16:45:00Z', actor: 'alex',        action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-global-risk',     targetUser: 'james',       roleId: 'contributor',      details: 'Assigned Contributor role at Global Risk & Compliance' },
   { id: 'al-13', timestamp: '2026-03-20T08:00:00Z', actor: 'marcus',      action: 'member.added',      tenantId: 'meridian', scopeId: 'mc-germany',         targetUser: 'priya',       roleId: null,               details: 'Added Priya Patel to Germany Wealth Management' },
-  { id: 'al-14', timestamp: '2026-03-18T13:00:00Z', actor: 'system',      action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-japan-compliance', targetUser: 'yuki',       roleId: 'approver',         details: 'Auto-assigned Approver via onboarding flow' },
+  { id: 'al-14', timestamp: '2026-03-18T13:00:00Z', actor: 'kenji',       action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-japan-ib',        targetUser: 'yuki',        roleId: 'approver',         details: 'Assigned Approver role at Investment Banking business unit' },
   { id: 'al-15', timestamp: '2026-03-15T10:30:00Z', actor: 'support-bot', action: 'resource.accessed', tenantId: 'meridian', scopeId: 'mc-germany-tax',     targetUser: null,          roleId: null,               details: 'Diagnostic access for support ticket #4790', internal: true },
+  { id: 'al-16', timestamp: '2026-02-03T09:40:00Z', actor: 'alex',        action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-root',            targetUser: 'james',       roleId: 'auditor',          details: 'Assigned Auditor role across Meridian Capital Group' },
+  { id: 'al-17', timestamp: '2026-02-03T09:35:00Z', actor: 'alex',        action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-nz-legal',        targetUser: 'lena',        roleId: 'legal-reviewer',   details: 'Assigned Legal Reviewer role at New Zealand Legal' },
+  { id: 'al-18', timestamp: '2026-01-12T14:10:00Z', actor: 'kenji',       action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-japan-compliance', targetUser: 'yuki',       roleId: 'compliance-reviewer', details: 'Assigned Compliance Reviewer role at Compliance & Regulatory' },
 ];
 
 /* ─── Action type styling ────────────────────────────────────── */

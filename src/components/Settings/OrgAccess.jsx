@@ -132,7 +132,10 @@ function TreeNode({ nodeId, depth, expanded, onToggle, selected, onSelect, assig
 function StructureTab({ tenantId, assignments, users }) {
   const rootNodes = ORG_NODES.filter(n => n.tenantId === tenantId && !n.parentId)
   const regionIds = rootNodes.flatMap(r => getNodeChildren(r.id).map(c => c.id))
-  const [expanded, setExpanded] = useState(() => new Set([...rootNodes.map(r => r.id), ...regionIds]))
+  // Pre-expand through the business-unit level so the four-level structure
+  // (group → country → BU → department) is visible on first open.
+  const buIds = regionIds.flatMap(id => getNodeChildren(id).map(c => c.id))
+  const [expanded, setExpanded] = useState(() => new Set([...rootNodes.map(r => r.id), ...regionIds, ...buIds]))
   const [sel, setSel] = useState(null)
   const toggle = id => setExpanded(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n })
 
