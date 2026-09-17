@@ -35,8 +35,10 @@ import { generateOrgIntelligence } from './data/orgIntelligence'
 import { generateDiscoveryStream } from './data/discoveryFindings'
 import { generateQualityNarrative } from './data/qualityNarrative'
 import { useToast } from './components/ToastProvider'
+import { useViewAs } from './services/rbac/viewAs'
 
 export default function App() {
+  const [viewAsUserId] = useViewAs()
   const { addToast } = useToast()
   const isMobile = useMediaQuery('(max-width: 767px), (max-width: 1024px) and (max-height: 500px)')
 
@@ -516,7 +518,7 @@ export default function App() {
           {phase === 'agent-studio' && (
             <AgentStudio
               onBack={() => goBack()}
-              currentUserId="alex"
+              currentUserId={viewAsUserId}
             />
           )}
 
@@ -532,7 +534,7 @@ export default function App() {
           {phase === 'swiftbridge' && (
             <div className="w-full max-w-[1280px] xl:max-w-[1440px] 2xl:max-w-[1600px] mx-auto px-6 lg:px-8 xl:px-12 2xl:px-16 py-6">
               <SwiftBridge
-                currentUserId="alex"
+                currentUserId={viewAsUserId}
                 navigate={() => setShowHitlWorkflow(true)}
                 onBack={() => goBack()}
               />
@@ -689,7 +691,7 @@ export default function App() {
       {/* HITL Vendor Workflow — governed human-in-the-loop module */}
       {showHitlWorkflow && (
         <HITLVendorWorkflow
-          currentUserId="alex"
+          currentUserId={viewAsUserId}
           onClose={() => setShowHitlWorkflow(false)}
         />
       )}

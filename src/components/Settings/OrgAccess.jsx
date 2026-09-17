@@ -2,15 +2,17 @@ import { useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ChevronRight, Shield, Users, Search, Clock, X, UserPlus,
-  UserMinus, KeyRound, AlertCircle, Plus, Trash2, CheckCircle2,
+  UserMinus, KeyRound, AlertCircle, Plus, Trash2, CheckCircle2, Lock,
 } from 'lucide-react'
 import {
   TENANTS, ORG_NODES, ROLES,
   NODE_TYPE_STYLES, ACTION_STYLES,
   getNodePath, getNodeChildren,
 } from '../../data/rbacModel'
-import { useRbacStore, effectiveMembers, grantsForUser, grantsAtNode } from '../../services/rbac/engine'
-import { addUser, addGrant, removeGrant, removeAllGrantsForUser } from '../../services/rbac/grants'
+import { useRbacStore, effectiveMembers, grantsForUser, grantsAtNode, staleGrants } from '../../services/rbac/engine'
+import { addUser, addGrant, removeGrant, removeAllGrantsForUser, approveGrant } from '../../services/rbac/grants'
+import { useViewAs } from '../../services/rbac/viewAs'
+import { PRINCIPAL_DIRECTORY } from '../../data/rbacModel'
 
 /* ─── Shared sub-components ──────────────────────────────────── */
 
@@ -102,6 +104,11 @@ function TreeNode({ nodeId, depth, expanded, onToggle, selected, onSelect }) {
         ) : <span className="w-4.5" />}
         <NodeTypeBadge type={node.type} />
         <span className="text-[13px] font-medium text-gray-800 truncate flex-1">{node.name}</span>
+        {node.barrier && (
+          <span className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium border bg-[#FFF7E6] text-[#996800] border-[#FFB000]/40 shrink-0" title={node.barrierReason}>
+            <Lock className="w-2.5 h-2.5" /> Barrier
+          </span>
+        )}
         <span className="text-[10px] text-gray-400 shrink-0 tabular-nums">
           {mc > 0 && <span className="mr-2">{mc} <Users className="w-2.5 h-2.5 inline -mt-0.5" /></span>}
           {ac > 0 && <span>{ac} <KeyRound className="w-2.5 h-2.5 inline -mt-0.5" /></span>}
@@ -137,7 +144,17 @@ function StructureTab({ tenantId }) {
             <div className="p-4 border-b border-black/[0.06]">
               <ScopeBreadcrumb nodeId={sel} />
               <div className="flex items-center gap-2 mt-2"><NodeTypeBadge type={selNode.type} /><h3 className="text-[15px] font-semibold text-gray-900">{selNode.name}</h3></div>
+              {selNode.residency && (
+                <p className="text-[10px] text-gray-400 mt-1.5">Residency <span className="font-mono text-gray-600">{selNode.residency}</span>{selNode.classification ? <> · <span className="font-mono text-gray-600">{selNode.classification}</span></> : null}</p>
+              )}
             </div>
+            {selNode.barrier && (
+              <div className="p-4 border-b border-black/[0.06] bg-[#FFF7E6]/50">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-[#996800] mb-1 flex items-center gap-1"><Lock className="w-2.5 h-2.5" /> Information barrier</p>
+                <p className="text-[11px] text-gray-600 leading-relaxed">{selNode.barrierReason}</p>
+                <p className="text-[10px] text-gray-400 mt-1.5">Nobody inherits through this wall — the member list below is only the deal team and audited crossings, and is shorter than the parent's on purpose.</p>
+              </div>
+            )}
             <div className="p-4 border-b border-black/[0.06]">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-3">Direct ({selMembers.filter(m => m.isDirect).length})</p>
               {selMembers.filter(m => m.isDirect).length > 0 ? selMembers.filter(m => m.isDirect).map((m, i) => (
@@ -176,6 +193,7 @@ function InviteModal({ tenantId, onInvite, onClose }) {
   const [email, setEmail] = useState('')
   const [roleId, setRoleId] = useState('contributor')
   const [scopeId, setScopeId] = useState('')
+  const [refusal, setRefusal] = useState(null)
   const tenantNodes = ORG_NODES.filter(n => n.tenantId === tenantId)
   const customerRoles = ROLES.filter(r => !r.internal)
 
@@ -219,9 +237,17 @@ function InviteModal({ tenantId, onInvite, onClose }) {
             </select>
           </div>
         </div>
+        {refusal && (
+          <p className="px-5 pb-3 text-[11px] text-red-600 flex items-start gap-1.5"><AlertCircle className="w-3 h-3 mt-0.5 shrink-0" /> {refusal}</p>
+        )}
         <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-black/[0.06] bg-gray-50">
           <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg border border-black/[0.10] text-gray-600 text-[13px] font-medium hover:bg-white cursor-pointer transition-colors">Cancel</button>
-          <button type="button" onClick={() => { if (canSubmit) onInvite({ name: name.trim(), email: email.trim(), roleId, scopeId }) }} disabled={!canSubmit}
+          <button type="button" onClick={() => {
+            if (!canSubmit) return
+            const result = onInvite({ name: name.trim(), email: email.trim(), roleId, scopeId })
+            if (result?.error || result?.conflict) { setRefusal(result.error || result.conflict.message); return }
+            onClose()
+          }} disabled={!canSubmit}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#3D16FA] text-white text-[13px] font-semibold hover:bg-[#2E10C4] cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             <UserPlus className="w-3.5 h-3.5" /> Invite
           </button>
@@ -238,26 +264,63 @@ function InviteModal({ tenantId, onInvite, onClose }) {
 function AddRoleForm({ tenantId, onAdd, onCancel }) {
   const [roleId, setRoleId] = useState('contributor')
   const [scopeId, setScopeId] = useState('')
+  const [refusal, setRefusal] = useState(null)
+  const [conflict, setConflict] = useState(null)
+  const [exApprover, setExApprover] = useState('alex')
+  const [exReason, setExReason] = useState('')
   const tenantNodes = ORG_NODES.filter(n => n.tenantId === tenantId)
   const customerRoles = ROLES.filter(r => !r.internal)
+  const barrierTarget = ORG_NODES.find(n => n.id === scopeId)?.barrier
+
+  const submit = (sodException) => {
+    if (!scopeId) return
+    const result = onAdd({ roleId, scopeId, sodException })
+    if (result?.conflict) { setConflict(result.conflict); setRefusal(null); return }
+    if (result?.error) { setRefusal(result.error); setConflict(null); return }
+    // success — parent closes the form
+  }
 
   return (
     <div className="rounded-lg border border-[#3D16FA]/30 bg-[#3D16FA]/[0.04] p-3 space-y-2">
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#3D16FA]">Add role assignment</p>
-      <select value={roleId} onChange={e => setRoleId(e.target.value)}
+      <select value={roleId} onChange={e => { setRoleId(e.target.value); setConflict(null); setRefusal(null) }}
         className="w-full rounded-lg border border-black/[0.08] bg-white px-2.5 py-1.5 text-[12px] outline-none focus:border-[#3D16FA] transition">
         {customerRoles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
       </select>
-      <select value={scopeId} onChange={e => setScopeId(e.target.value)}
+      <select value={scopeId} onChange={e => { setScopeId(e.target.value); setConflict(null); setRefusal(null) }}
         className="w-full rounded-lg border border-black/[0.08] bg-white px-2.5 py-1.5 text-[12px] outline-none focus:border-[#3D16FA] transition">
         <option value="">Select scope...</option>
         {tenantNodes.map(n => {
           const depth = getNodePath(n.id).length - 1
-          return <option key={n.id} value={n.id}>{'\u00A0\u00A0'.repeat(depth)}{n.name}</option>
+          return <option key={n.id} value={n.id}>{'\u00A0\u00A0'.repeat(depth)}{n.name}{n.barrier ? ' (barrier)' : ''}</option>
         })}
       </select>
+      {barrierTarget && (
+        <p className="text-[10px] text-[#996800] flex items-center gap-1"><Lock className="w-2.5 h-2.5" /> This scope is behind an information barrier — the assignment is an explicit, audited crossing.</p>
+      )}
+      {refusal && (
+        <p className="text-[11px] text-red-600 flex items-start gap-1.5"><AlertCircle className="w-3 h-3 mt-0.5 shrink-0" /> {refusal}</p>
+      )}
+      {conflict && (
+        <div className="rounded-lg border border-[#FFB000]/40 bg-[#FFF7E6] p-2.5 space-y-1.5">
+          <p className="text-[11px] text-[#996800] flex items-start gap-1.5"><AlertCircle className="w-3 h-3 mt-0.5 shrink-0" /> {conflict.message}</p>
+          <div className="flex items-center gap-2">
+            <select value={exApprover} onChange={e => setExApprover(e.target.value)}
+              className="flex-1 rounded-lg border border-black/[0.08] bg-white px-2 py-1 text-[11px] outline-none">
+              <option value="alex">Approver: Alex Chen (Tenant Admin)</option>
+            </select>
+            <input value={exReason} onChange={e => setExReason(e.target.value)} placeholder="Exception reason (required)"
+              className="flex-1 rounded-lg border border-black/[0.08] bg-white px-2 py-1 text-[11px] outline-none" />
+          </div>
+          <button type="button" disabled={!exReason.trim()}
+            onClick={() => submit({ approvedBy: exApprover, reason: exReason.trim() })}
+            className="px-2.5 py-1 rounded-lg bg-[#996800] text-white text-[10.5px] font-semibold cursor-pointer hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed">
+            Assign with named exception
+          </button>
+        </div>
+      )}
       <div className="flex items-center gap-2">
-        <button type="button" onClick={() => { if (scopeId) onAdd({ roleId, scopeId }) }}
+        <button type="button" onClick={() => submit(undefined)}
           disabled={!scopeId} className="px-3 py-1.5 rounded-lg bg-[#3D16FA] text-white text-[11px] font-semibold cursor-pointer hover:bg-[#2E10C4] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
           Assign
         </button>
@@ -271,11 +334,16 @@ function AddRoleForm({ tenantId, onAdd, onCancel }) {
    MEMBERS TAB
    ═══════════════════════════════════════════════════════════════ */
 
-function MembersTab({ tenantId, users, grants, onInvite, onAddRole, onRemoveRole, onRemoveMember }) {
+function MembersTab({ tenantId, users, grants, actingUserId, onInvite, onAddRole, onRemoveRole, onRemoveMember }) {
   const [sel, setSel] = useState(null)
   const [search, setSearch] = useState('')
   const [showInvite, setShowInvite] = useState(false)
   const [showAddRole, setShowAddRole] = useState(false)
+  const [showReview, setShowReview] = useState(false)
+  const [approvalNote, setApprovalNote] = useState(null)
+
+  const pending = grants.filter(g => g.tenantId === tenantId && g.conditions?.requiresApproval && !g.conditions?.approval)
+  const stale = staleGrants(tenantId)
 
   const tenantUsers = useMemo(() => {
     const ids = new Set(grants.filter(g => g.tenantId === tenantId && g.principal.type === 'user').map(g => g.principal.id))
@@ -288,6 +356,52 @@ function MembersTab({ tenantId, users, grants, onInvite, onAddRole, onRemoveRole
 
   return (
     <>
+      {/* JIT approvals — support access activates only when the CUSTOMER approves */}
+      {pending.length > 0 && (
+        <div className="mb-4 rounded-lg border border-purple-200 bg-purple-50/40 px-4 py-3">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-purple-600 mb-2">Pending access approvals ({pending.length})</p>
+          {pending.map(g => {
+            const d = PRINCIPAL_DIRECTORY.find(x => x.id === g.principal.id)
+            return (
+              <div key={g.id} className="flex items-center gap-3 py-1">
+                <AlertCircle className="w-3.5 h-3.5 text-purple-500 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[12px] text-gray-800">{d?.name || `${g.principal.type} ${g.principal.id}`} — {ROLES.find(r => r.id === g.roleId)?.name}</p>
+                  <p className="text-[10px] text-gray-400">{g.conditions.justification}{g.conditions.expiresAt ? ` · time-boxed until ${g.conditions.expiresAt.slice(0, 10)}` : ''} · inert until approved</p>
+                </div>
+                <button type="button" onClick={() => { const r = approveGrant({ grantId: g.id, actorId: actingUserId }); setApprovalNote(r.error || `Approved — active until ${g.conditions.expiresAt?.slice(0, 10)}`) }}
+                  className="px-3 py-1.5 rounded-lg bg-purple-600 text-white text-[11px] font-semibold cursor-pointer hover:bg-purple-700 shrink-0">
+                  Approve
+                </button>
+              </div>
+            )
+          })}
+          {approvalNote && <p className="text-[11px] text-purple-700 mt-1.5">{approvalNote}</p>}
+        </div>
+      )}
+
+      {/* Access review — live grants nobody is using */}
+      {stale.length > 0 && (
+        <div className="mb-4 rounded-lg border border-black/[0.08] bg-gray-50 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Clock className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+            <p className="text-[12px] text-gray-700 flex-1"><span className="font-semibold">{stale.length} grant{stale.length === 1 ? '' : 's'}</span> unused for 90+ days — live access nobody is exercising.</p>
+            <button type="button" onClick={() => setShowReview(v => !v)} className="text-[11px] text-[#3D16FA] hover:text-[#2E10C4] font-medium cursor-pointer">{showReview ? 'Hide' : 'Review'}</button>
+          </div>
+          {showReview && stale.map(g => {
+            const role = ROLES.find(r => r.id === g.roleId)
+            const scope = ORG_NODES.find(n => n.id === g.scope.nodeId)
+            const who = g.principal.type === 'user' ? users.find(u => u.id === g.principal.id)?.name : `${g.principal.type} ${g.principal.id}`
+            return (
+              <div key={g.id} className="flex items-center gap-3 mt-2 pl-5">
+                <p className="text-[12px] text-gray-600 flex-1">{who} — {role?.name} @ {scope?.name} <span className="text-[10px] text-gray-400 font-mono">{g.lastUsedAt ? `last used ${new Date(g.lastUsedAt).toLocaleDateString()}` : 'never used'}</span></p>
+                <button type="button" onClick={() => onRemoveRole(g.id)} className="flex items-center gap-1 text-[11px] text-red-500 hover:text-red-700 font-medium cursor-pointer"><Trash2 className="w-3 h-3" /> Revoke</button>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
       <div className="flex gap-0 min-h-[400px]">
         <div className="flex-1 min-w-0">
           {/* Header row */}
@@ -367,7 +481,11 @@ function MembersTab({ tenantId, users, grants, onInvite, onAddRole, onRemoveRole
                 {showAddRole && (
                   <div className="mb-3">
                     <AddRoleForm tenantId={tenantId} onCancel={() => setShowAddRole(false)}
-                      onAdd={({ roleId, scopeId }) => { onAddRole(sel, roleId, scopeId); setShowAddRole(false) }} />
+                      onAdd={({ roleId, scopeId, sodException }) => {
+                        const result = onAddRole(sel, roleId, scopeId, sodException)
+                        if (result?.grant) setShowAddRole(false)
+                        return result
+                      }} />
                   </div>
                 )}
 
@@ -394,6 +512,10 @@ function MembersTab({ tenantId, users, grants, onInvite, onAddRole, onRemoveRole
                           <Clock className="w-2.5 h-2.5" /> {a.expired ? 'Expired' : 'Expires'} {new Date(a.grant.conditions.expiresAt).toLocaleDateString()}{a.expired ? ' — no longer grants access' : ''}
                         </p>
                       )}
+                      {a.grant.conditions?.sodException && (
+                        <p className="text-[10px] text-[#996800] mt-1">SoD exception — approved by {a.grant.conditions.sodException.approvedBy}: {a.grant.conditions.sodException.reason}</p>
+                      )}
+                      <p className="text-[10px] text-gray-400 mt-1">{a.grant.lastUsedAt ? `Last used ${new Date(a.grant.lastUsedAt).toLocaleDateString()}` : 'Never used'}</p>
                     </div>
                   ))}
                 </div>
@@ -415,7 +537,7 @@ function MembersTab({ tenantId, users, grants, onInvite, onAddRole, onRemoveRole
       <AnimatePresence>
         {showInvite && (
           <InviteModal tenantId={tenantId} onClose={() => setShowInvite(false)}
-            onInvite={(data) => { onInvite(data); setShowInvite(false) }} />
+            onInvite={(data) => onInvite(data)} />
         )}
       </AnimatePresence>
     </>
@@ -513,25 +635,33 @@ export default function OrgAccess({ activeTab, tier }) {
   // logged, member invited). No React-local copies of the grant table.
   const { grants, users, audit } = useRbacStore()
   const [activeTenant, setActiveTenant] = useState('meridian')
-  // Until the View-as switcher lands, the acting admin is the demo user.
-  const CURRENT_ADMIN = 'alex'
+  // The acting admin is whoever the View-as switcher says — refusals
+  // for a less-privileged viewer are the point, not a bug.
+  const [actingUserId] = useViewAs()
+  const [actionError, setActionError] = useState(null)
 
+  // Handlers RETURN the mutation result so forms can show refusals and
+  // SoD conflicts inline (rule 7/8: every refusal visible and explained).
   const handleInvite = useCallback(({ name, email, roleId, scopeId }) => {
-    const user = addUser({ name, email, actorId: CURRENT_ADMIN, tenantId: activeTenant })
-    addGrant({ principal: user.id, roleId, nodeId: scopeId, tenantId: activeTenant, actorId: CURRENT_ADMIN })
-  }, [activeTenant])
+    const user = addUser({ name, email, actorId: actingUserId, tenantId: activeTenant })
+    return addGrant({ principal: user.id, roleId, nodeId: scopeId, tenantId: activeTenant, actorId: actingUserId })
+  }, [activeTenant, actingUserId])
 
-  const handleAddRole = useCallback((userId, roleId, scopeId) => {
-    addGrant({ principal: userId, roleId, nodeId: scopeId, tenantId: activeTenant, actorId: CURRENT_ADMIN })
-  }, [activeTenant])
+  const handleAddRole = useCallback((userId, roleId, scopeId, sodException) => {
+    return addGrant({ principal: userId, roleId, nodeId: scopeId, tenantId: activeTenant, actorId: actingUserId, sodException })
+  }, [activeTenant, actingUserId])
 
   const handleRemoveRole = useCallback((grantId) => {
-    removeGrant({ grantId, actorId: CURRENT_ADMIN })
-  }, [])
+    const r = removeGrant({ grantId, actorId: actingUserId })
+    setActionError(r.error || null)
+    return r
+  }, [actingUserId])
 
   const handleRemoveMember = useCallback((userId) => {
-    removeAllGrantsForUser({ userId, tenantId: activeTenant, actorId: CURRENT_ADMIN })
-  }, [activeTenant])
+    const r = removeAllGrantsForUser({ userId, tenantId: activeTenant, actorId: actingUserId })
+    setActionError(r.error || null)
+    return r
+  }, [activeTenant, actingUserId])
 
   // Rule 11: below Enterprise the capability is visible but locked —
   // an upsell, never a silently missing menu.
@@ -563,8 +693,14 @@ export default function OrgAccess({ activeTab, tier }) {
           ))}
         </div>
       </div>
+      {actionError && (
+        <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-[12px] text-red-700">
+          <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {actionError}
+          <button type="button" onClick={() => setActionError(null)} className="ml-auto p-0.5 text-red-400 hover:text-red-600 cursor-pointer"><X className="w-3 h-3" /></button>
+        </div>
+      )}
       {activeTab === 'structure' && <StructureTab tenantId={activeTenant} />}
-      {activeTab === 'members' && <MembersTab tenantId={activeTenant} users={users} grants={grants} onInvite={handleInvite} onAddRole={handleAddRole} onRemoveRole={handleRemoveRole} onRemoveMember={handleRemoveMember} />}
+      {activeTab === 'members' && <MembersTab tenantId={activeTenant} users={users} grants={grants} actingUserId={actingUserId} onInvite={handleInvite} onAddRole={handleAddRole} onRemoveRole={handleRemoveRole} onRemoveMember={handleRemoveMember} />}
       {activeTab === 'roles' && <RolesTab grants={grants} />}
       {activeTab === 'audit' && <AuditTab tenantId={activeTenant} auditLog={audit} users={users} />}
     </div>

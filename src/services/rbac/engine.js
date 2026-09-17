@@ -381,6 +381,21 @@ export function grantsAtNode(nodeId, { at } = {}) {
   return GRANTS.filter(g => g.scope.nodeId === nodeId && !isExpired(g, now))
 }
 
+/**
+ * Access review: active grants unused for `days`+ (or never used).
+ * Pending-approval and expired grants are excluded — they are already
+ * inert; this finds LIVE access nobody is exercising.
+ */
+export function staleGrants(tenantId = 'meridian', { days = 90, at } = {}) {
+  const now = at ? new Date(at).getTime() : Date.now()
+  const cutoff = now - days * 24 * 60 * 60 * 1000
+  return GRANTS.filter(g =>
+    g.tenantId === tenantId
+    && !isExpired(g, now)
+    && !(g.conditions?.requiresApproval && !g.conditions?.approval)
+    && (!g.lastUsedAt || new Date(g.lastUsedAt).getTime() < cutoff))
+}
+
 /** Display: a user's most senior grant (tenant scope first, then oldest). */
 export function primaryRoleOf(userId, tenantId = 'meridian') {
   const mine = GRANTS.filter(g => g.principal.type === 'user' && g.principal.id === userId && g.tenantId === tenantId)
