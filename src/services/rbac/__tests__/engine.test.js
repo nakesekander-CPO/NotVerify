@@ -42,20 +42,29 @@ describe('scope is enforced (behaviours 3, 4)', () => {
 })
 
 describe('expiry bites (behaviour 5)', () => {
+  // Spec note: the spec probed expiry at mc-japan-ma, but once that node
+  // is barriered (behaviour 6) the barrier is the decisive denial there —
+  // a FRESH root grant would not cross either. Expiry semantics are
+  // asserted on a non-barriered node; absence from the walled member
+  // list is asserted below and in the barrier suite.
   it('denies the expired support grant with a reason naming the expiry', () => {
-    const d = can({ principal: 'support-bot', permission: 'impersonate', nodeId: 'mc-japan-ma' })
+    const d = can({ principal: 'support-bot', permission: 'impersonate', nodeId: 'mc-japan-finance' })
     expect(d.allow).toBe(false)
     expect(d.decisivePolicy).toBe('expired')
     expect(d.reason).toMatch(/expired 2026-04-25/)
     expect(d.grantId).toBe('ra-10')
   })
+  it('at the barriered node, the barrier is the decisive denial for the same grant', () => {
+    const d = can({ principal: 'support-bot', permission: 'impersonate', nodeId: 'mc-japan-ma' })
+    expect(d.allow).toBe(false)
+    expect(d.decisivePolicy).toBe('barrier')
+  })
   it('drops the expired grant from effective members everywhere', () => {
-    const ids = effectiveMembers('mc-japan-ma').map(m => m.user.id)
-    expect(ids).not.toContain('support-bot')
+    expect(effectiveMembers('mc-japan-ma').map(m => m.user.id)).not.toContain('support-bot')
     expect(effectiveMembers('mc-root').map(m => m.user.id)).not.toContain('support-bot')
   })
   it('would have allowed the same grant before it expired', () => {
-    const d = can({ principal: 'support-bot', permission: 'impersonate', nodeId: 'mc-japan-ma', at: '2026-04-01T00:00:00Z' })
+    const d = can({ principal: 'support-bot', permission: 'impersonate', nodeId: 'mc-japan-finance', at: '2026-04-01T00:00:00Z' })
     expect(d.allow).toBe(true)
   })
 })

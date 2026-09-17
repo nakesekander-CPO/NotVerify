@@ -29,7 +29,11 @@ export const ORG_NODES = [
   { id: 'mc-japan-finance',   tenantId: 'meridian', parentId: 'mc-japan-securities', name: 'Financial Reporting', type: 'department' },
   { id: 'mc-japan-compliance',tenantId: 'meridian', parentId: 'mc-japan-securities', name: 'Compliance & Regulatory', type: 'department' },
   { id: 'mc-japan-ib',        tenantId: 'meridian', parentId: 'mc-japan',        name: 'Investment Banking',    type: 'business-unit' },
-  { id: 'mc-japan-ma',        tenantId: 'meridian', parentId: 'mc-japan-ib',     name: 'M&A Advisory',          type: 'team' },
+  // Information barrier (ruled 2026-09-17): NOBODY inherits through it —
+  // not the tenant admin, not the group auditor. Access below requires a
+  // direct grant at or under this node; a crossing is an explicit,
+  // expiring, audited grant.
+  { id: 'mc-japan-ma',        tenantId: 'meridian', parentId: 'mc-japan-ib',     name: 'M&A Advisory',          type: 'team', barrier: true, barrierReason: 'M&A information barrier — deal-sensitive information (MNPI). Inherited access stops here.' },
   // Germany (Country Business)
   { id: 'mc-germany',         tenantId: 'meridian', parentId: 'mc-root',         name: 'Meridian Germany',      type: 'country' },
   { id: 'mc-germany-pb',      tenantId: 'meridian', parentId: 'mc-germany',      name: 'Private Banking',       type: 'business-unit' },
@@ -153,6 +157,14 @@ export const GRANTS = [
   { id: 'ra-12', principal: { type: 'user', id: 'lena' },   tenantId: 'meridian', roleId: 'legal-reviewer', scope: { nodeId: 'mc-nz-legal', type: 'department' },       conditions: {}, assignedBy: 'alex', assignedAt: '2026-02-03T00:00:00Z', lastUsedAt: '2026-08-28T10:10:00Z' },
   // James — Auditor across the whole group (read-only oversight from the top)
   { id: 'ra-13', principal: { type: 'user', id: 'james' },  tenantId: 'meridian', roleId: 'auditor', scope: { nodeId: 'mc-root', type: 'tenant' },                      conditions: {}, assignedBy: 'alex', assignedAt: '2026-02-03T00:00:00Z', lastUsedAt: '2026-09-15T08:55:00Z' },
+  // Yuki — deal-team approver DIRECTLY at M&A Advisory. The barrier means
+  // even her Investment Banking BU grant (one level up) stops at the wall;
+  // deal-team membership is always an explicit grant.
+  { id: 'ra-15', principal: { type: 'user', id: 'yuki' },   tenantId: 'meridian', roleId: 'approver', scope: { nodeId: 'mc-japan-ma', type: 'team' },              conditions: { justification: 'Deal team — Project Keystone' }, assignedBy: 'kenji', assignedAt: '2026-08-20T00:00:00Z', lastUsedAt: '2026-09-11T09:20:00Z' },
+  // James — auditor CROSSING into M&A Advisory: explicit, expiring,
+  // justified. His group-wide auditor grant (ra-13) does not cross the
+  // barrier; this direct grant is the deliberate, audited exception.
+  { id: 'ra-14', principal: { type: 'user', id: 'james' },  tenantId: 'meridian', roleId: 'auditor', scope: { nodeId: 'mc-japan-ma', type: 'team' },               conditions: { expiresAt: '2026-10-15T00:00:00Z', justification: 'Quarterly conflicts audit — Project Keystone', ticketRef: 'AUD-2026-114' }, assignedBy: 'alex', assignedAt: '2026-09-10T00:00:00Z', lastUsedAt: '2026-09-15T08:55:00Z' },
   // Internal support — scoped to entire tenant, time-bounded. EXPIRED
   // 2026-04-25: the engine denies it and drops it from member lists.
   { id: 'ra-10', principal: { type: 'user', id: 'support-bot' }, tenantId: 'meridian', roleId: 'support-operator', scope: { nodeId: 'mc-root', type: 'tenant' },        conditions: { expiresAt: '2026-04-25T10:00:00Z', justification: 'Support session for ticket #4821', ticketRef: 'TCK-4821' }, assignedBy: 'platform', assignedAt: '2026-03-25T10:00:00Z', lastUsedAt: '2026-04-20T15:00:00Z', internal: true },
@@ -176,6 +188,8 @@ export const AUDIT_LOG = [
   { id: 'al-13', timestamp: '2026-03-20T08:00:00Z', actor: 'marcus',      action: 'member.added',      tenantId: 'meridian', scopeId: 'mc-germany',         targetUser: 'priya',       roleId: null,               details: 'Added Priya Patel to Germany Wealth Management' },
   { id: 'al-14', timestamp: '2026-03-18T13:00:00Z', actor: 'kenji',       action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-japan-ib',        targetUser: 'yuki',        roleId: 'approver',         details: 'Assigned Approver role at Investment Banking business unit' },
   { id: 'al-15', timestamp: '2026-03-15T10:30:00Z', actor: 'support-bot', action: 'resource.accessed', tenantId: 'meridian', scopeId: 'mc-germany-tax',     targetUser: null,          roleId: null,               details: 'Diagnostic access for support ticket #4790', internal: true },
+  { id: 'al-19', timestamp: '2026-09-10T10:00:00Z', actor: 'alex',        action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-japan-ma',        targetUser: 'james',       roleId: 'auditor',          details: 'Barrier crossing into M&A Advisory — quarterly conflicts audit, expires 2026-10-15 (AUD-2026-114)' },
+  { id: 'al-20', timestamp: '2026-08-20T09:00:00Z', actor: 'kenji',       action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-japan-ma',        targetUser: 'yuki',        roleId: 'approver',         details: 'Deal-team grant at M&A Advisory — Project Keystone (direct; inherited access stops at the barrier)' },
   { id: 'al-16', timestamp: '2026-02-03T09:40:00Z', actor: 'alex',        action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-root',            targetUser: 'james',       roleId: 'auditor',          details: 'Assigned Auditor role across Meridian Capital Group' },
   { id: 'al-17', timestamp: '2026-02-03T09:35:00Z', actor: 'alex',        action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-nz-legal',        targetUser: 'lena',        roleId: 'legal-reviewer',   details: 'Assigned Legal Reviewer role at New Zealand Legal' },
   { id: 'al-18', timestamp: '2026-01-12T14:10:00Z', actor: 'kenji',       action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-japan-compliance', targetUser: 'yuki',       roleId: 'compliance-reviewer', details: 'Assigned Compliance Reviewer role at Compliance & Regulatory' },

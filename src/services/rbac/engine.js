@@ -152,7 +152,9 @@ export function can({ principal, permission, nodeId, tenantId, at } = {}) {
     const when = new Date(expiredHit.g.conditions.expiresAt).toISOString().slice(0, 10)
     return { allow: false, reason: `Grant ${expiredHit.g.id} (${expiredHit.role.name} at ${scopeNameOf(expiredHit.g)}) expired ${when}`, grantId: expiredHit.g.id, decisivePolicy: 'expired', role: expiredHit.role }
   }
-  const barrierHit = evaluated.find(e => e.hasPerm && !e.expired && e.cov.blockedByBarrier)
+  // Barrier explains the denial even for an expired grant — a fresh one
+  // would not have crossed the wall either.
+  const barrierHit = evaluated.find(e => e.hasPerm && e.cov.blockedByBarrier)
   if (barrierHit) {
     const wall = barrierHit.cov.blockedByBarrier
     return { allow: false, reason: `Information barrier on ${wall.name}: inherited access from ${scopeNameOf(barrierHit.g)} stops at the barrier — a direct, audited crossing grant is required`, grantId: barrierHit.g.id, decisivePolicy: 'barrier', role: barrierHit.role }
