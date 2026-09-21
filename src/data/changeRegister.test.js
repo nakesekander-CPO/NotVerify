@@ -16,6 +16,7 @@ import {
 } from './changeRegister'
 import { FACTS } from './cortex'
 import { getModelById } from './modelRegistry'
+import { getAgentById } from './agentStudio'
 import { AUDIT_LOG } from './rbacModel'
 
 beforeAll(() => {
@@ -31,14 +32,14 @@ const BILLING = 'CHG-2026-031'
 
 describe('seeds', () => {
   it('cover all four governed kinds', () => {
-    expect(new Set(CLAIMS.map(c => c.kind))).toEqual(new Set(['fact', 'model', 'billing']))
-    // agent kind is in the catalogue even though no agent claim is seeded
+    expect(new Set(CLAIMS.map(c => c.kind))).toEqual(new Set(['fact', 'model', 'agent', 'billing']))
     expect(Object.keys(CLAIM_KIND_META).sort()).toEqual(['agent', 'billing', 'fact', 'model'])
   })
   it('every claim references a real subject and a real owner-shaped id', () => {
     for (const c of CLAIMS) {
       if (c.kind === 'fact') expect(FACTS[c.refId]).toBeTruthy()
       if (c.kind === 'model') expect(getModelById(c.refId)).toBeTruthy()
+      if (c.kind === 'agent') expect(getAgentById(c.refId)).toBeTruthy()
       expect(c.version.from).toBeTruthy()
       expect(c.version.to).toBeTruthy()
       expect(c.evidence.length).toBeGreaterThan(0)
@@ -99,6 +100,19 @@ describe('impact map scales with altitude', () => {
   it('the model claim lists the registry card among its uses', () => {
     const impact = impactOf(getClaimById(MODEL))
     expect(impact.uses.some(u => u.label === 'Meridian JA Disclosure')).toBe(true)
+  })
+  it('the agent claim (guardrail change) lists the agent and its deployment surfaces', () => {
+    const impact = impactOf(getClaimById('CHG-2026-044'))
+    expect(impact.uses.some(u => u.label === 'Brand QA')).toBe(true)
+    expect(impact.uses.some(u => u.detail === 'deployment surface')).toBe(true)
+    expect(impact.byAltitude.map(a => a.key)).toEqual(['business-unit', 'department'])
+  })
+  it('the colour claim sits at country altitude with a single Germany slot', () => {
+    const claim = getClaimById('CHG-2026-043')
+    expect(approvalUnits(claim).map(n => n.id)).toEqual(['mc-germany'])
+    const impact = impactOf(claim)
+    expect(impact.byAltitude[0].key).toBe('country')
+    expect(impact.uses.some(u => u.label === 'Brand QA')).toBe(true)
   })
 })
 
@@ -188,7 +202,7 @@ describe('re-affirmation', () => {
 })
 
 describe('pending list', () => {
-  it('after the beat only nothing pending remains from the seeds that were signed', () => {
-    expect(pendingClaims().map(c => c.id)).toEqual([])
+  it('after the beat, only the untouched non-language claims remain pending', () => {
+    expect(pendingClaims().map(c => c.id).sort()).toEqual(['CHG-2026-043', 'CHG-2026-044'])
   })
 })

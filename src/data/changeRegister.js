@@ -34,11 +34,12 @@ import {
 import { authorize, effectiveMembers, BUSINESS_DECISION_PERMISSIONS } from '../services/rbac/engine'
 import { FACTS, MEMORY_AT_WORK } from './cortex'
 import { getModelById, agentsUsingModel, recordModelVersion } from './modelRegistry'
+import { getAgentById, activeVersion, DEPLOYMENT_SURFACES } from './agentStudio'
 
 /* ─── Kind catalogue ───────────────────────────────────────────── */
 
 export const CLAIM_KIND_META = {
-  fact:    { label: 'Terminology & policy', permission: 'approve_org_brain' },
+  fact:    { label: 'Rules & terminology', permission: 'approve_org_brain' },
   model:   { label: 'Model',                permission: 'approve_resource' },
   agent:   { label: 'Agent',                permission: 'approve_resource' },
   billing: { label: 'Billing term',         permission: 'manage_billing' },
@@ -98,6 +99,51 @@ export const CLAIMS = [
     ],
     status: 'pending',
     proposedAt: '2026-09-14T08:00:00Z',
+    decidedAt: null,
+  },
+  // A COLOUR claim at country altitude — governed change is not only
+  // language: brand and design rules version and ratify the same way.
+  // Single slot at Meridian Germany (Priya's country sign-off seat).
+  {
+    id: 'CHG-2026-043',
+    kind: 'fact',
+    refId: 'brand',
+    title: 'Chart palette — positive values in Meridian Teal',
+    summary: 'Client-facing charts in German statements render positive deltas in Meridian Teal (replaces the legacy green), with amber reserved for held or flagged states. Colour only — no copy changes.',
+    scopeNodeId: 'mc-germany',
+    ownerId: 'marcus',
+    version: { from: 'v2.0', to: 'v2.1' },
+    evidence: [
+      { label: 'Brand guide addendum — data-visualisation palette', src: 'brand-guide-2026-addendum-3.pdf', date: '2026-09-16' },
+      { label: 'Accessibility contrast report (WCAG AA, both themes)', src: 'de-chart-palette-contrast-report.html', date: '2026-09-17' },
+    ],
+    approvals: [
+      { unitNodeId: 'mc-germany', status: 'pending', by: null, at: null, note: null },
+    ],
+    status: 'pending',
+    proposedAt: '2026-09-17T09:00:00Z',
+    decidedAt: null,
+  },
+  // An AGENT claim — a guardrail change on Brand QA, reviewed with the
+  // same scope/evidence/impact discipline as a terminology change.
+  {
+    id: 'CHG-2026-044',
+    kind: 'agent',
+    refId: 'AG-1004',
+    title: 'Brand QA — guardrail v1.2 → v1.3: auto-hold imagery claims',
+    summary: 'Adds an auto-hold guardrail: campaign content making product-imagery claims without an approved asset reference is held for review instead of published with a warning. No model or knowledge-scope changes.',
+    scopeNodeId: 'mc-japan-securities',
+    ownerId: 'kenji',
+    version: { from: 'v1.2', to: 'v1.3' },
+    evidence: [
+      { label: 'Guardrail change note — auto-hold rule', src: 'brand-qa-guardrail-v1-3.pdf', date: '2026-09-15' },
+      { label: 'Dry-run report — 14 days of campaign content replayed', src: 'brand-qa-dryrun-2026-09.html', date: '2026-09-16' },
+    ],
+    approvals: [
+      { unitNodeId: 'mc-japan-securities', status: 'pending', by: null, at: null, note: null },
+    ],
+    status: 'pending',
+    proposedAt: '2026-09-16T08:00:00Z',
     decidedAt: null,
   },
   // The department-altitude contrast: one node, a handful of people,
@@ -247,6 +293,20 @@ export function impactOf(claim) {
     const model = getModelById(claim.refId)
     uses = agentsUsingModel(model?.modelKey).map(a => ({ label: a.name, detail: 'agent running on this model' }))
     if (model) uses.unshift({ label: model.name, detail: `Model Registry · ${model.status}` })
+  } else if (claim.kind === 'agent') {
+    const agent = getAgentById(claim.refId)
+    // Seeded agents carry surfaces on _deployedSurfaces; built ones on
+    // the active version's deployment settings.
+    const surfaces = agent?._deployedSurfaces?.length
+      ? agent._deployedSurfaces
+      : (activeVersion(agent)?.deploymentSettings?.surfaces || [])
+    uses = [
+      ...(agent ? [{ label: agent.name, detail: `Agent Studio · ${agent.status}` }] : []),
+      ...surfaces.map(s => ({
+        label: DEPLOYMENT_SURFACES.find(d => d.id === s)?.label || s,
+        detail: 'deployment surface',
+      })),
+    ]
   } else if (claim.kind === 'billing') {
     uses = [{ label: 'Invoice / PO rail', detail: 'purchase requests, invoices and remittance terms' }]
   }
