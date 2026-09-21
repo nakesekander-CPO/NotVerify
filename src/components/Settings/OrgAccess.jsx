@@ -747,9 +747,16 @@ export default function OrgAccess({ activeTab, tier }) {
     return r
   }, [activeTenant, actingUserId])
 
-  // Rule 11: below Enterprise the capability is visible but locked —
-  // an upsell, never a silently missing menu. The Access Explorer is
-  // the exception: ruled available on every tier.
+  // Point 9 (ruled 2026-09-21): Pro/Team gets FLAT roles — Admin,
+  // Member, Viewer at the tenant root, same engine underneath. The org
+  // tree, scoped roles, and barriers stay Enterprise.
+  if (tier === 'pro' && activeTab === 'members') {
+    return <FlatMembersPanel users={users} grants={grants} onAddRole={handleAddRole} onRemoveRole={handleRemoveRole} />
+  }
+
+  // Rule 11: below Enterprise the rest of the capability is visible but
+  // locked — an upsell, never a silently missing menu. The Access
+  // Explorer is the exception: ruled available on every tier.
   if (tier !== 'enterprise' && activeTab !== 'explorer') {
     return (
       <div className="rounded-xl border border-black/[0.08] bg-gray-50 p-8 text-center max-w-lg">
@@ -789,6 +796,85 @@ export default function OrgAccess({ activeTab, tier }) {
       {activeTab === 'roles' && <RolesTab grants={grants} users={users} />}
       {activeTab === 'audit' && <AuditTab tenantId={activeTenant} auditLog={audit} users={users} actingUserId={actingUserId} />}
       {activeTab === 'explorer' && <AccessExplorer />}
+    </div>
+  )
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   PRO / TEAM — FLAT ROLES (point 9, ruled 2026-09-21)
+   Admin · Member · Viewer at the tenant root. Same engine, same
+   audit log, no hierarchy — that is what Enterprise adds.
+   ═══════════════════════════════════════════════════════════════ */
+
+const FLAT_ROLES = [
+  { id: 'tenant-admin', label: 'Admin', blurb: 'Manages members, billing, and settings' },
+  { id: 'contributor', label: 'Member', blurb: 'Creates and edits content' },
+  { id: 'viewer', label: 'Viewer', blurb: 'Read-only' },
+]
+
+function flatRoleOf(userId, grants) {
+  const mine = grants.filter(g => g.principal.type === 'user' && g.principal.id === userId)
+  if (mine.some(g => g.roleId === 'tenant-admin')) return 'Admin'
+  const perms = new Set(mine.flatMap(g => (ROLES.find(r => r.id === g.roleId)?.permissions) || []))
+  if (perms.has('create_resource') || perms.has('edit_resource') || perms.has('edit_segment')) return 'Member'
+  if (mine.length > 0) return 'Viewer'
+  return null
+}
+
+function FlatMembersPanel({ users, grants, onAddRole, onRemoveRole }) {
+  const [note, setNote] = useState(null)
+  const members = users.filter(u => !u.internal && flatRoleOf(u.id, grants))
+
+  const setFlat = (userId, flatId) => {
+    // Grant the flat role at the tenant root; remove previous flat-root
+    // grants so one chip means one role. Engine rules still apply —
+    // four-eyes blocks changing your own role.
+    const prevFlat = grants.filter(g => g.principal.type === 'user' && g.principal.id === userId
+      && g.scope.nodeId === 'mc-root' && FLAT_ROLES.some(f => f.id === g.roleId))
+    const r = onAddRole(userId, flatId, 'mc-root')
+    if (r?.error) { setNote(r.error); return }
+    if (r?.conflict) { setNote(r.conflict.message); return }
+    prevFlat.forEach(g => onRemoveRole(g.id))
+    setNote(null)
+  }
+
+  return (
+    <div className="max-w-2xl">
+      <div className="flex items-center justify-between mb-1">
+        <h3 className="text-[15px] font-semibold text-gray-900">Team members</h3>
+        <span className="text-[11px] text-gray-400">{members.length} members</span>
+      </div>
+      <p className="text-[12px] text-gray-500 mb-4">
+        Three flat roles on the Team plan — Admin, Member, Viewer. Departments, scoped roles,
+        information barriers, and the org structure are Enterprise capabilities.
+      </p>
+      {note && (
+        <p className="mb-3 text-[11.5px] text-red-600 flex items-start gap-1.5"><AlertCircle className="w-3 h-3 mt-0.5 shrink-0" /> {note}</p>
+      )}
+      <div className="rounded-xl border border-black/[0.08] bg-white divide-y divide-black/[0.04]">
+        {members.map(u => {
+          const flat = flatRoleOf(u.id, grants)
+          return (
+            <div key={u.id} className="flex items-center gap-3 px-4 py-2.5">
+              <Avatar initials={u.initials} />
+              <div className="min-w-0 flex-1">
+                <p className="text-[12.5px] font-medium text-gray-800">{u.name}</p>
+                <p className="text-[10.5px] text-gray-400">{u.email}</p>
+              </div>
+              <select value={FLAT_ROLES.find(f => f.label === flat)?.id || 'viewer'}
+                onChange={e => setFlat(u.id, e.target.value)}
+                aria-label={`Role for ${u.name}`}
+                className="rounded-lg border border-black/[0.08] bg-white px-2.5 py-1.5 text-[12px] outline-none focus:border-[#3D16FA] cursor-pointer">
+                {FLAT_ROLES.map(f => <option key={f.id} value={f.id}>{f.label} — {f.blurb}</option>)}
+              </select>
+            </div>
+          )
+        })}
+      </div>
+      <p className="text-[10.5px] text-gray-400 mt-3">
+        Every change is engine-checked (you cannot change your own role) and lands in the audit log.
+      </p>
     </div>
   )
 }
