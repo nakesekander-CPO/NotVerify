@@ -252,6 +252,14 @@ export const GRANTS = [
   // PENDING — it activates only when a tenant admin approves, then
   // expires on its own. Until approval the engine denies it.
   { id: 'ra-27', principal: { type: 'support-session', id: 'support-session-4921' }, tenantId: 'meridian', roleId: 'support-operator', scope: { nodeId: 'mc-root', type: 'tenant' }, conditions: { requiresApproval: true, expiresAt: '2026-09-24T00:00:00Z', justification: 'Support ticket #4921 — billing ledger investigation', ticketRef: 'TCK-4921', residency: ['JP', 'EU', 'NZ'] }, assignedBy: 'platform', assignedAt: '2026-09-16T09:00:00Z', lastUsedAt: null, internal: true },
+  // Country content-governance sign-off (ruled 2026-09-21): a Global
+  // Company claim is ratified per Country Business — each country holds
+  // its own Final Validator seat, so nobody signs for a jurisdiction
+  // they do not govern. (Sarah's Japan seat extends her BU authority
+  // upward; Priya and Lena take Germany and New Zealand.)
+  { id: 'ra-34', principal: { type: 'user', id: 'sarah' },  tenantId: 'meridian', roleId: 'final-validator', scope: { nodeId: 'mc-japan', type: 'country' },   conditions: { justification: 'Country content-governance sign-off — Japan' },       assignedBy: 'alex', assignedAt: '2026-09-01T00:00:00Z', lastUsedAt: '2026-09-11T09:30:00Z' },
+  { id: 'ra-35', principal: { type: 'user', id: 'priya' },  tenantId: 'meridian', roleId: 'final-validator', scope: { nodeId: 'mc-germany', type: 'country' }, conditions: { justification: 'Country content-governance sign-off — Germany' },     assignedBy: 'alex', assignedAt: '2026-09-01T00:00:00Z', lastUsedAt: '2026-09-15T10:20:00Z' },
+  { id: 'ra-36', principal: { type: 'user', id: 'lena' },   tenantId: 'meridian', roleId: 'final-validator', scope: { nodeId: 'mc-nz', type: 'country' },      conditions: { justification: 'Country content-governance sign-off — New Zealand' }, assignedBy: 'alex', assignedAt: '2026-09-01T00:00:00Z', lastUsedAt: null },
   // Internal support — scoped to entire tenant, time-bounded. EXPIRED
   // 2026-04-25: the engine denies it and drops it from member lists.
   { id: 'ra-10', principal: { type: 'user', id: 'support-bot' }, tenantId: 'meridian', roleId: 'support-operator', scope: { nodeId: 'mc-root', type: 'tenant' },        conditions: { expiresAt: '2026-04-25T10:00:00Z', justification: 'Support session for ticket #4821', ticketRef: 'TCK-4821', residency: ['JP', 'EU', 'NZ'] }, assignedBy: 'platform', assignedAt: '2026-03-25T10:00:00Z', lastUsedAt: '2026-04-20T15:00:00Z', internal: true },
@@ -304,6 +312,12 @@ export const ACTION_STYLES = {
   'member.invited':    { bg: 'bg-blue-50',    text: 'text-blue-700',    label: 'Member Invited' },
   'grant.approved':    { bg: 'bg-purple-50',  text: 'text-purple-700',  label: 'Access Approved' },
   'data.exported':     { bg: 'bg-gray-50',    text: 'text-gray-600',    label: 'Data Exported' },
+  /* Governed change register (2026-09-21) */
+  'claim.signed':      { bg: 'bg-emerald-50', text: 'text-emerald-700', label: 'Claim Signed' },
+  'claim.published':   { bg: 'bg-emerald-50', text: 'text-emerald-700', label: 'Claim Published' },
+  'claim.rejected':    { bg: 'bg-red-50',     text: 'text-red-700',     label: 'Claim Rejected' },
+  'exception.reaffirm-required': { bg: 'bg-amber-50', text: 'text-amber-700', label: 'Re-affirmation Required' },
+  'exception.reaffirmed':        { bg: 'bg-emerald-50', text: 'text-emerald-700', label: 'Exception Re-affirmed' },
 };
 
 /* ═══════════════════════════════════════════════════════════════

@@ -78,8 +78,9 @@ describe('effective members count people, not grants (behaviour 14)', () => {
     // grp-risk-compliance covers NZ via its per-country grant (point 8).
     expect(members.map(m => m.user.id).sort()).toEqual(['alex', 'grp-risk-compliance', 'james', 'lena', 'svc-reporting-api'])
     const lena = members.find(m => m.user.id === 'lena')
-    expect(lena.grants).toHaveLength(2)
-    expect(lena.grants.map(g => g.grant.id).sort()).toEqual(['ra-12', 'ra-9'])
+    // ra-36 (country content-governance sign-off, 2026-09-21) is her third.
+    expect(lena.grants).toHaveLength(3)
+    expect(lena.grants.map(g => g.grant.id).sort()).toEqual(['ra-12', 'ra-36', 'ra-9'])
     expect(lena.grants.find(g => g.grant.id === 'ra-12').isDirect).toBe(true)
     expect(lena.grants.find(g => g.grant.id === 'ra-9').isDirect).toBe(false)
   })

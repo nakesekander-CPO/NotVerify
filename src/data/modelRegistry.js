@@ -433,6 +433,23 @@ export function enableModel(id, { approver } = {}) {
   return m
 }
 
+/**
+ * Record a new model version on the card — called by the governed change
+ * register when a model-kind claim publishes. History only: enable state
+ * and policy checks are untouched.
+ */
+export function recordModelVersion(id, { version, notes, date } = {}) {
+  const m = getModelById(id)
+  if (!m || !version) return null
+  m.technical.version = version
+  m.technical.versionHistory = [
+    { version, date: date || new Date().toISOString().slice(0, 10), notes: notes || 'Version recorded via governed change' },
+    ...m.technical.versionHistory,
+  ]
+  bumpStore()
+  return m
+}
+
 /** Symmetric governed disable — enabled → available, with an audit line. */
 export function disableModel(id, { approver } = {}) {
   const m = getModelById(id)
