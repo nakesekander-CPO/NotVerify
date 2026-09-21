@@ -73,17 +73,20 @@ describe('effective members count people, not grants (behaviour 14)', () => {
   // NOTE: the spec said "4 people" — that fourth person was the support
   // operator, whose grant behaviour 5 requires us to expire. At the frozen
   // clock the honest answer is 3 people; before expiry it is 4.
-  it('mc-nz-legal reports 3 people today, with both of Lena\'s grants listed under her', () => {
+  it('mc-nz-legal reports 4 principals today (incl. the risk group), with both of Lena\'s grants under her', () => {
     const members = effectiveMembers('mc-nz-legal')
-    expect(members.map(m => m.user.id).sort()).toEqual(['alex', 'james', 'lena'])
+    // grp-risk-compliance covers NZ via its per-country grant (point 8).
+    expect(members.map(m => m.user.id).sort()).toEqual(['alex', 'grp-risk-compliance', 'james', 'lena'])
     const lena = members.find(m => m.user.id === 'lena')
     expect(lena.grants).toHaveLength(2)
     expect(lena.grants.map(g => g.grant.id).sort()).toEqual(['ra-12', 'ra-9'])
     expect(lena.grants.find(g => g.grant.id === 'ra-12').isDirect).toBe(true)
     expect(lena.grants.find(g => g.grant.id === 'ra-9').isDirect).toBe(false)
   })
-  it('counted 4 people before the support grant expired', () => {
-    expect(effectiveMembers('mc-nz-legal', { at: '2026-04-01T00:00:00Z' })).toHaveLength(4)
+  it('counted one more principal before the support grant expired', () => {
+    // 2026-04-01 predates the group grants (Apr 1 exactly — included)
+    // and the support expiry: alex, lena, james, support-bot, group.
+    expect(effectiveMembers('mc-nz-legal', { at: '2026-04-01T00:00:00Z' })).toHaveLength(5)
   })
 })
 

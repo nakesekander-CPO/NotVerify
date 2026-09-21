@@ -17,7 +17,7 @@
 
 import { useCallback, useState } from 'react'
 import {
-  GRANTS, ROLES, ORG_NODES, USERS, TENANTS, AUDIT_LOG, PRINCIPAL_DIRECTORY,
+  GRANTS, ROLES, ORG_NODES, USERS, TENANTS, AUDIT_LOG, PRINCIPAL_DIRECTORY, GROUPS,
   getNodePath, getNodeDescendants,
 } from '../../data/rbacModel'
 
@@ -173,8 +173,15 @@ export function can({ principal, permission, nodeId, tenantId, at, context } = {
     }
   }
 
-  const candidates = GRANTS.filter(g =>
-    g.principal.type === p.type && g.principal.id === p.id && g.tenantId === tenant)
+  // A user's candidates include grants to the GROUPS they belong to —
+  // membership is IdP-mappable, the grant stays scoped and visible.
+  const groupIds = p.type === 'user'
+    ? GROUPS.filter(gr => gr.members.includes(p.id)).map(gr => gr.id)
+    : []
+  const candidates = GRANTS.filter(g => g.tenantId === tenant && (
+    (g.principal.type === p.type && g.principal.id === p.id)
+    || (g.principal.type === 'group' && groupIds.includes(g.principal.id))
+  ))
   if (candidates.length === 0) {
     return { allow: false, reason: `No grant exists for ${p.type} "${p.id}" in this tenant`, grantId: null, decisivePolicy: 'no-grant' }
   }
@@ -222,9 +229,12 @@ export function can({ principal, permission, nodeId, tenantId, at, context } = {
   if (allows.length) {
     const e = allows[0]
     const direct = e.cov.depth === 0
+    const viaGroup = e.g.principal.type === 'group' && p.type === 'user'
+      ? ` — via ${GROUPS.find(gr => gr.id === e.g.principal.id)?.name || e.g.principal.id}`
+      : ''
     return {
       allow: true,
-      reason: `${direct ? 'Direct' : 'Inherited'}: ${e.role.name} at ${scopeNameOf(e.g)} (grant ${e.g.id})`,
+      reason: `${direct ? 'Direct' : 'Inherited'}: ${e.role.name} at ${scopeNameOf(e.g)} (grant ${e.g.id})${viaGroup}`,
       grantId: e.g.id,
       decisivePolicy: direct ? 'nearest-allow' : 'inherited-allow',
       role: e.role,

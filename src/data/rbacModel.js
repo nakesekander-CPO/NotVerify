@@ -131,7 +131,23 @@ export const USERS = [
    like anyone else: their reach is a grant, evaluated by can(), in the
    same audit log. This directory only supplies display identity. */
 
+/* ─── Groups (point 8, ruled 2026-09-21) ─────────────────────────
+   Cross-cutting functions get GROUPS with per-scope grants instead of
+   a tenant-root grant that opens everything. Membership is designed to
+   map from the identity provider (SCIM-ready). */
+
+export const GROUPS = [
+  {
+    id: 'grp-risk-compliance',
+    name: 'Group Risk & Compliance',
+    description: 'Second-line risk function — compliance review reach across every country business, without a tenant-root grant.',
+    idpMapping: 'IdP security group: sg-grc (SCIM-ready)',
+    members: ['james', 'yuki'],
+  },
+];
+
 export const PRINCIPAL_DIRECTORY = [
+  { type: 'group',           id: 'grp-risk-compliance',  name: 'Group Risk & Compliance',      initials: 'RC', description: 'Cross-cutting risk function · 2 members · mapped from IdP' },
   { type: 'agent',           id: 'AG-1001',              name: 'Meridian JA Reviewer (agent)', initials: 'JA', description: 'Agent Studio agent — reviews EN→JA IR translations' },
   { type: 'vendor-org',      id: 'v-nihon-linguistics',  name: 'Nihon Linguistics K.K.',       initials: 'NL', description: 'Vendor organisation — JA linguistic services' },
   { type: 'support-session', id: 'support-session-4921', name: 'arbitr Support (session 4921)', initials: 'AS', description: 'Time-boxed support session — pending customer approval', internal: true },
@@ -186,6 +202,13 @@ export const GRANTS = [
   // James's group audit reach deliberately EXCLUDES the EU: German audit
   // stays in-country — a live residency denial for the Access Explorer.
   { id: 'ra-13', principal: { type: 'user', id: 'james' },  tenantId: 'meridian', roleId: 'auditor', scope: { nodeId: 'mc-root', type: 'tenant' },                      conditions: { residency: ['JP', 'NZ'], sodException: { approvedBy: 'alex', reason: 'Group audit coverage while the second auditor seat is vacant — recruiting in progress', pair: ['create_resource', 'view_audit'], at: '2026-02-03T09:40:00Z' } }, assignedBy: 'alex', assignedAt: '2026-02-03T00:00:00Z', lastUsedAt: '2026-09-15T08:55:00Z' },
+  // Group Risk & Compliance — the cross-cutting function holds
+  // per-country compliance-review grants. No tenant-root grant, no
+  // "everything" access: each country is an explicit, in-jurisdiction
+  // scope (so no residency exceptions are needed either).
+  { id: 'ra-30', principal: { type: 'group', id: 'grp-risk-compliance' }, tenantId: 'meridian', roleId: 'compliance-reviewer', scope: { nodeId: 'mc-japan', type: 'country' },   conditions: {}, assignedBy: 'alex', assignedAt: '2026-04-01T00:00:00Z', lastUsedAt: '2026-09-12T14:00:00Z' },
+  { id: 'ra-31', principal: { type: 'group', id: 'grp-risk-compliance' }, tenantId: 'meridian', roleId: 'compliance-reviewer', scope: { nodeId: 'mc-germany', type: 'country' }, conditions: {}, assignedBy: 'alex', assignedAt: '2026-04-01T00:00:00Z', lastUsedAt: '2026-08-19T09:30:00Z' },
+  { id: 'ra-32', principal: { type: 'group', id: 'grp-risk-compliance' }, tenantId: 'meridian', roleId: 'compliance-reviewer', scope: { nodeId: 'mc-nz', type: 'country' },      conditions: {}, assignedBy: 'alex', assignedAt: '2026-04-01T00:00:00Z', lastUsedAt: null },
   // Kenji — Client Reviewer for Meridian Japan: the client-side
   // sign-off seat. With the admin/business split, the tenant admin can
   // no longer sign anything — named humans hold that.
