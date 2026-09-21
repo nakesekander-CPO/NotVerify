@@ -54,3 +54,19 @@ deferred · needs-Nake.*
 - Demo-only: state is in-memory; a reload restores seeds. No backend,
   no IdP, no persistence — groups/IdP mapping from rule 9's lifecycle
   list remain **deferred** (no surface claims them).
+
+## 2026-09-21 review — the nine points
+
+| # | Point | Status | Notes |
+|---|---|---|---|
+| 1 | SoD per user, admin ≠ business | **implemented** | Wildcard refuses the full second-line set (approve/reject, sign-offs, final validation, compliance/legal review, retraining/Cortex approvals) with `admin-business-split` named; new pairs edit+compliance_review and edit+legal_review; `standingSodFindings()` + the Roles-tab panel; James and Lena carry recorded named exceptions; runtime signer≠last-editor was already live (rule 9). |
+| 2 | Grant limits | **implemented** | Four-eyes (no self-grants); second-line seats appointed only by tenant admin or the same function; pickers feed from `grantOptions(actor)` so Tenant Admin is offered at the root or not at all; the Kenji-appoints-compliance seed corrected to Alex. Roles ⊆ granter permissions and subtree bounds were already live. |
+| 3 | Barriers | **already done** (2026-09-17) | mc-japan-ma walled; nobody inherits through; crossings explicit/expiring/audited. |
+| 4 | Expiry, impersonation, JIT | **implemented** | Expiry was already enforced everywhere; NEW: support-operator and arbitr-global-admin are grantable ONLY approval-gated + time-boxed (never standing); the support role is read-only by construction (test-pinned). Impersonation TARGETING rules (read-only default, never admins) have no surface to bind to — deferred with the no-unbacked-claims rule. |
+| 5 | Surface permissions + non-human principals | **implemented (full taxonomy, as ruled)** | `access_cortex/agent_studio/analytics/governance/ai_visibility` per role; GlobalNav + AccessGate render only held surfaces (held-anywhere semantics; in-module content stays scope-checked); `view_billing`/`manage_billing` bridge the billing island; integrations connect/disconnect are `authorize()` calls; a service-account API key holds an expiring, residency-scoped grant. Deeper in-page action gating (e.g. governance triage approve via engine) is the named follow-on. |
+| 6 | Vocabulary | **implemented** | request_rework → request_changes (test-guarded); suffixes and org-admin were already gone. Review ladder documented in rbac-model.md. |
+| 7 | Audit types + visibility | **implemented** | resource.approved / resource.created / member.invited / data.exported event types; exports log before the file leaves; `visibleAuditEvents()` scopes both audit surfaces to the viewer's view_audit subtree + events about themselves, with an explicit "Showing N of M" line. |
+| 8 | Groups | **implemented** | Group Risk & Compliance: group principal, per-country compliance grants (no root grant, no residency exceptions needed), members inherit via `can()` with "via group" named in the reason; IdP/SCIM mapping recorded. Standing-SoD sweep does not yet expand group-derived holdings (noted limitation). |
+| 9 | Team-tier roles | **implemented** | Pro/Team Members tab = flat Admin/Member/Viewer at the tenant root through the same engine (four-eyes applies); hierarchy/barriers stay Enterprise. |
+
+Additional judgment calls: surface visibility is held-ANYWHERE (a Japan org manager sees the Cortex module; what's inside is scope-checked per node); barrier-agnostic audit visibility (the record of who touched what is oversight, not resource access); `assignedAt` is informational — time-travel evaluation covers expiry only.

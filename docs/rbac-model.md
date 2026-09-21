@@ -146,3 +146,46 @@ no-permission. The `reason` string always names the decisive grant.
 - **Integrations → Security & Permissions**: the agent grant table
   (grant/revoke, live allow/deny probe, plan-gate notice) and the agent
   slice of the single audit log.
+
+## Addendum — 2026-09-21 alignment
+
+**Admin ≠ business sign-off.** The wildcard covers administration only.
+`BUSINESS_DECISION_PERMISSIONS` (approve/reject resource, client
+sign-off, final validation, compliance review, legal review, retraining
+and Cortex approvals) never ride `*` — the engine refuses with
+`admin-business-split`. Alex administers; Sarah, Yuki, and Kenji decide.
+
+**The review ladder** (one vocabulary, ordered):
+1. `verify_segment` / `edit_segment` — first-line reviewer work
+2. `compliance_review` / `legal_review` — second-line, independent
+   (holders must not hold edit rights on the same scope; SoD pair)
+3. `approve_resource` / `reject_resource` / `request_changes` — business
+   approval
+4. `final_validate` → `signoff_output` / `client_signoff` — sign-off;
+   the signer is never the last editor (runtime rule)
+
+**Granting** adds: four-eyes (no self-grants), second-line seats
+appointed by the tenant admin or the same function, platform roles
+(support-operator, arbitr-global-admin) grantable only JIT
+(approval + expiry). Pickers offer exactly what the actor may grant.
+
+**Surfaces are permissions.** `access_*` per module, `view_billing` /
+`manage_billing`, `manage_integrations`. Navigation and module entry use
+held-anywhere semantics (`holdsPermissionAnywhere` — same condition
+evaluation as decisions); content inside stays node-scoped via `can()`.
+A Viewer's app is Dashboard + Governance. API keys are service-account
+principals with expiring, residency-scoped grants.
+
+**Groups.** Cross-cutting functions hold per-scope grants through a
+group principal (IdP/SCIM-mappable); members inherit via `can()` and the
+decision reason names the group. No tenant-root grants for reach.
+
+**Audit.** Approvals, creations, invites, access approvals, and exports
+have first-class event types; every export writes an event; visibility
+is the viewer's `view_audit` subtree plus events about themselves,
+always with a "Showing N of M" disclosure.
+
+**SoD findings.** `standingSodFindings()` sweeps overlapping holdings
+against the conflict pairs continuously; the Roles tab renders each
+finding with its covering named exception or a red violation. Conflicts
+are governed, never silently tolerated.
