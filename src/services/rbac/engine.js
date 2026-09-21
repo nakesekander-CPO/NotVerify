@@ -445,6 +445,34 @@ export function visibleAuditEvents(userId, tenantId = 'meridian') {
   })
 }
 
+/**
+ * Surface access (point 5): a module is visible when the principal
+ * holds its access permission ANYWHERE in the tenant — what they see
+ * inside remains scope-checked by can(). Evaluates the same conditions
+ * as decisions: expiry, pending approval, group membership, and the
+ * admin/business split.
+ */
+export function holdsPermissionAnywhere(principal, permission, tenantId = 'meridian', { at } = {}) {
+  const p = normalizePrincipal(principal)
+  if (!p) return false
+  const now = at ? new Date(at).getTime() : Date.now()
+  const businessDecision = BUSINESS_DECISION_PERMISSIONS.has(permission)
+  const groupIds = p.type === 'user'
+    ? GROUPS.filter(gr => gr.members.includes(p.id)).map(gr => gr.id)
+    : []
+  return GRANTS.some(g => {
+    if (g.tenantId !== tenantId) return false
+    const mine = (g.principal.type === p.type && g.principal.id === p.id)
+      || (g.principal.type === 'group' && groupIds.includes(g.principal.id))
+    if (!mine) return false
+    if (isExpired(g, now)) return false
+    if (g.conditions?.requiresApproval && !g.conditions?.approval) return false
+    const role = roleById(g.roleId)
+    return !!role && (role.permissions.includes(permission)
+      || (role.permissions.includes('*') && !businessDecision))
+  })
+}
+
 /** Grants scoped directly at a node (active only) — for tree badges. */
 export function grantsAtNode(nodeId, { at } = {}) {
   const now = at ? new Date(at).getTime() : Date.now()

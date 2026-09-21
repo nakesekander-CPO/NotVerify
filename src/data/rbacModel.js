@@ -73,6 +73,12 @@ export const NODE_TYPE_STYLES = {
 
 /*
  * ONE role catalogue, all of it real (RBAC alignment, 2026-09-17).
+ * Surface taxonomy (point 5, ruled 2026-09-21): access_cortex /
+ * access_agent_studio / access_analytics / access_governance /
+ * access_ai_visibility gate the product modules; view_billing /
+ * manage_billing / manage_integrations gate money and connections.
+ * The admin wildcard covers all of these (they are administration,
+ * not business decisions).
  * - No `hidden` flag: a role that exists is visible in the Roles tab and
  *   enforceable by the engine — never one without the other.
  * - No scope suffixes (:org / :scope / :own): scope belongs to the GRANT,
@@ -85,18 +91,18 @@ export const NODE_TYPE_STYLES = {
 export const ROLES = [
   /* Customer roles */
   { id: 'tenant-admin',     name: 'Tenant Admin',     description: 'Full access across the entire tenant. Can manage all structure, members, roles, and resources.',  level: 'tenant',   permissions: ['*'],                                                                                    internal: false },
-  { id: 'org-manager',      name: 'Org Manager',      description: 'Manage structure, members, workflows, vendor pools, and selection policies within their scope and all descendants.', level: 'org', permissions: ['manage_members', 'manage_structure', 'view_audit', 'manage_workflows', 'manage_vendor_pool', 'manage_selection_policy', 'reassign_task', 'view_resource', 'create_resource', 'edit_resource'], internal: false },
-  { id: 'contributor',      name: 'Contributor',       description: 'Create and edit resources. Can submit work for review but cannot approve.',                       level: 'org',      permissions: ['create_resource', 'edit_resource', 'view_resource', 'submit_review'],                    internal: false },
-  { id: 'viewer',           name: 'Viewer',            description: 'Read-only access to resources, projects, and dashboards within scope. Cannot modify or create.',  level: 'org',      permissions: ['view_resource'],                                                                         internal: false },
-  { id: 'approver',         name: 'Approver',          description: 'Review and approve resources. Can accept, reject, or request changes.',                           level: 'org',      permissions: ['view_resource', 'approve_resource', 'reject_resource', 'request_changes'],               internal: false },
-  { id: 'vendor-manager',   name: 'Vendor Manager',    description: 'Create and edit vendor profiles within scope. Review vendor performance. Approve assignments where permitted.', level: 'org', permissions: ['manage_vendor', 'review_vendor_performance', 'approve_assignment', 'suspend_vendor', 'reassign_task', 'view_resource'], internal: false },
-  { id: 'project-manager',  name: 'Project Manager',   description: 'Create projects, review recommendations, approve or override assignments, monitor progress.',     level: 'org',      permissions: ['create_project', 'review_recommendation', 'approve_assignment', 'override_assignment', 'reassign_task', 'escalate', 'view_resource', 'edit_resource'], internal: false },
-  { id: 'internal-reviewer',name: 'Internal Reviewer', description: 'Review vendor work. Edit outputs. Verify/Not Verify segments. Request changes. Recommend sign-off.', level: 'org',    permissions: ['review_vendor_work', 'edit_segment', 'verify_segment', 'request_changes', 'recommend_signoff', 'view_resource'], internal: false },
-  { id: 'final-validator',  name: 'Final Validator',   description: 'Perform final validation and sign-off. Approve corrections for Cortex / retraining where policy permits.', level: 'org', permissions: ['final_validate', 'signoff_output', 'approve_org_brain', 'approve_retraining', 'view_resource'], internal: false },
-  { id: 'compliance-reviewer', name: 'Compliance Reviewer', description: 'Review outputs against regulatory and compliance policy.',                                   level: 'org',      permissions: ['compliance_review', 'verify_segment', 'request_changes', 'view_resource'], internal: false },
-  { id: 'legal-reviewer',   name: 'Legal Reviewer',    description: 'Review outputs against legal policy.',                                                             level: 'org',      permissions: ['legal_review', 'verify_segment', 'request_changes', 'view_resource'], internal: false },
-  { id: 'client-reviewer',  name: 'Client Reviewer',   description: 'Client-side reviewer with limited verify and sign-off authority on their organisation\'s outputs.', level: 'org',      permissions: ['verify_segment', 'client_signoff', 'view_resource'], internal: false },
-  { id: 'auditor',          name: 'Auditor',           description: 'Read-only access to audit logs and signed-off records within scope.',                              level: 'org',      permissions: ['view_audit', 'view_signoff_records', 'view_resource'], internal: false },
+  { id: 'org-manager',      name: 'Org Manager',      description: 'Manage structure, members, workflows, vendor pools, and selection policies within their scope and all descendants.', level: 'org', permissions: ['manage_members', 'manage_structure', 'view_audit', 'manage_workflows', 'manage_vendor_pool', 'manage_selection_policy', 'reassign_task', 'view_resource', 'create_resource', 'edit_resource', 'access_cortex', 'access_agent_studio', 'access_analytics', 'access_governance', 'access_ai_visibility', 'view_billing', 'manage_integrations'], internal: false },
+  { id: 'contributor',      name: 'Contributor',       description: 'Create and edit resources. Can submit work for review but cannot approve.',                       level: 'org',      permissions: ['create_resource', 'edit_resource', 'view_resource', 'submit_review', 'access_cortex', 'access_governance'],                    internal: false },
+  { id: 'viewer',           name: 'Viewer',            description: 'Read-only access to resources, projects, and dashboards within scope. Cannot modify or create.',  level: 'org',      permissions: ['view_resource', 'access_governance'],                                                    internal: false },
+  { id: 'approver',         name: 'Approver',          description: 'Review and approve resources. Can accept, reject, or request changes.',                           level: 'org',      permissions: ['view_resource', 'approve_resource', 'reject_resource', 'request_changes', 'access_governance', 'access_cortex', 'access_analytics'],               internal: false },
+  { id: 'vendor-manager',   name: 'Vendor Manager',    description: 'Create and edit vendor profiles within scope. Review vendor performance. Approve assignments where permitted.', level: 'org', permissions: ['manage_vendor', 'review_vendor_performance', 'approve_assignment', 'suspend_vendor', 'reassign_task', 'view_resource', 'access_analytics', 'access_governance'], internal: false },
+  { id: 'project-manager',  name: 'Project Manager',   description: 'Create projects, review recommendations, approve or override assignments, monitor progress.',     level: 'org',      permissions: ['create_project', 'review_recommendation', 'approve_assignment', 'override_assignment', 'reassign_task', 'escalate', 'view_resource', 'edit_resource', 'access_analytics', 'access_governance'], internal: false },
+  { id: 'internal-reviewer',name: 'Internal Reviewer', description: 'Review vendor work. Edit outputs. Verify/Not Verify segments. Request changes. Recommend sign-off.', level: 'org',    permissions: ['review_vendor_work', 'edit_segment', 'verify_segment', 'request_changes', 'recommend_signoff', 'view_resource', 'access_cortex', 'access_governance'], internal: false },
+  { id: 'final-validator',  name: 'Final Validator',   description: 'Perform final validation and sign-off. Approve corrections for Cortex / retraining where policy permits.', level: 'org', permissions: ['final_validate', 'signoff_output', 'approve_org_brain', 'approve_retraining', 'view_resource', 'access_cortex', 'access_governance'], internal: false },
+  { id: 'compliance-reviewer', name: 'Compliance Reviewer', description: 'Review outputs against regulatory and compliance policy.',                                   level: 'org',      permissions: ['compliance_review', 'verify_segment', 'request_changes', 'view_resource', 'access_governance', 'access_cortex', 'access_ai_visibility'], internal: false },
+  { id: 'legal-reviewer',   name: 'Legal Reviewer',    description: 'Review outputs against legal policy.',                                                             level: 'org',      permissions: ['legal_review', 'verify_segment', 'request_changes', 'view_resource', 'access_governance', 'access_cortex'], internal: false },
+  { id: 'client-reviewer',  name: 'Client Reviewer',   description: 'Client-side reviewer with limited verify and sign-off authority on their organisation\'s outputs.', level: 'org',      permissions: ['verify_segment', 'client_signoff', 'view_resource', 'access_governance', 'access_cortex'], internal: false },
+  { id: 'auditor',          name: 'Auditor',           description: 'Read-only access to audit logs and signed-off records within scope.',                              level: 'org',      permissions: ['view_audit', 'view_signoff_records', 'view_resource', 'access_governance', 'access_analytics'], internal: false },
   /* Vendor-plane roles (grants for these typically carry assignedOnly) */
   { id: 'vendor-admin',     name: 'Vendor Admin',      description: 'Manage users inside their vendor organisation only. View assigned vendor projects.',               level: 'vendor',   permissions: ['manage_vendor_users', 'view_assigned_projects', 'assign_vendor_user_to_task'], internal: false },
   { id: 'vendor-user',      name: 'Vendor User',       description: 'Work on tasks in scope — grants carry the assigned-only condition, so reach is limited to assigned work.', level: 'vendor', permissions: ['view_resource', 'edit_segment', 'comment_segment', 'verify_segment', 'submit_task'], internal: false },
@@ -150,6 +156,7 @@ export const PRINCIPAL_DIRECTORY = [
   { type: 'group',           id: 'grp-risk-compliance',  name: 'Group Risk & Compliance',      initials: 'RC', description: 'Cross-cutting risk function · 2 members · mapped from IdP' },
   { type: 'agent',           id: 'AG-1001',              name: 'Meridian JA Reviewer (agent)', initials: 'JA', description: 'Agent Studio agent — reviews EN→JA IR translations' },
   { type: 'vendor-org',      id: 'v-nihon-linguistics',  name: 'Nihon Linguistics K.K.',       initials: 'NL', description: 'Vendor organisation — JA linguistic services' },
+  { type: 'service-account', id: 'svc-reporting-api',    name: 'Reporting API key',            initials: 'RK', description: 'Service account — read-only analytics export, rotated quarterly' },
   { type: 'support-session', id: 'support-session-4921', name: 'arbitr Support (session 4921)', initials: 'AS', description: 'Time-boxed support session — pending customer approval', internal: true },
 ];
 
@@ -238,6 +245,9 @@ export const GRANTS = [
   // An AGENT is a principal like anyone else: narrow reviewer grant,
   // same engine, same audit log (rule 5).
   { id: 'ra-26', principal: { type: 'agent', id: 'AG-1001' }, tenantId: 'meridian', roleId: 'internal-reviewer', scope: { nodeId: 'mc-japan-finance', type: 'department' }, conditions: {}, assignedBy: 'alex', assignedAt: '2026-07-01T00:00:00Z', lastUsedAt: '2026-09-16T06:40:00Z' },
+  // API keys and service accounts are principals with scoped, EXPIRING
+  // grants — a key that cannot rot forever (point 5, ruled 2026-09-21).
+  { id: 'ra-33', principal: { type: 'service-account', id: 'svc-reporting-api' }, tenantId: 'meridian', roleId: 'auditor', scope: { nodeId: 'mc-root', type: 'tenant' }, conditions: { expiresAt: '2026-12-31T00:00:00Z', residency: ['JP', 'EU', 'NZ'], justification: 'Quarterly BI export — rotate at year end' }, assignedBy: 'alex', assignedAt: '2026-07-01T00:00:00Z', lastUsedAt: '2026-09-16T02:00:00Z' },
   // JIT support session (ruled 2026-09-17): the grant exists but is
   // PENDING — it activates only when a tenant admin approves, then
   // expires on its own. Until approval the engine denies it.

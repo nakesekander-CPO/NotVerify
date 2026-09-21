@@ -36,8 +36,21 @@ import { generateDiscoveryStream } from './data/discoveryFindings'
 import { generateQualityNarrative } from './data/qualityNarrative'
 import { useToast } from './components/ToastProvider'
 import { useViewAs } from './services/rbac/viewAs'
+import { holdsPermissionAnywhere, authorize } from './services/rbac/engine'
 
-export default function App() {
+export default /* Point 5: a module a role cannot access renders a denial card with
+ * the engine's reason — navigation hides it, deep links explain it. */
+function AccessGate({ permission, viewer, children }) {
+  if (holdsPermissionAnywhere(viewer, permission)) return children
+  return (
+    <div className="w-full max-w-[640px] mx-auto px-6 py-16 text-center">
+      <p className="text-[15px] font-semibold text-ink mb-1.5">This module is not part of your role</p>
+      <p className="text-[12.5px] text-slate">None of your grants carries {permission.replace(/_/g, ' ')} — access to a module is part of a role, never a default.</p>
+    </div>
+  )
+}
+
+function App() {
   const [viewAsUserId] = useViewAs()
   const { addToast } = useToast()
   const isMobile = useMediaQuery('(max-width: 767px), (max-width: 1024px) and (max-height: 500px)')
@@ -87,15 +100,21 @@ export default function App() {
   const [connectedIntegrations, setConnectedIntegrations] = useState([])
 
   const handleConnectIntegration = useCallback((integration) => {
+    // Point 5: connections are governed — the decision is engine-made
+    // and audit-logged, and a refusal is shown, not swallowed.
+    const d = authorize({ principal: viewAsUserId, permission: 'manage_integrations', nodeId: 'mc-root', context: { integration: integration.id } })
+    if (!d.allow) { addToast(d.reason, 'error'); return }
     setConnectedIntegrations(prev => {
       if (prev.some(i => i.id === integration.id)) return prev
       return [...prev, integration]
     })
-  }, [])
+  }, [viewAsUserId, addToast])
 
   const handleDisconnectIntegration = useCallback((integrationId) => {
+    const d = authorize({ principal: viewAsUserId, permission: 'manage_integrations', nodeId: 'mc-root' })
+    if (!d.allow) { addToast(d.reason, 'error'); return }
     setConnectedIntegrations(prev => prev.filter(i => i.id !== integrationId))
-  }, [])
+  }, [viewAsUserId, addToast])
 
   // Campaign launch — store campaign and enter processing phase
   const handleCampaignLaunch = useCallback((campaign) => {
@@ -499,13 +518,13 @@ export default function App() {
           )}
 
           {/* Cortex — top-level phase accessible from dashboard or narrative */}
-          {phase === 'org-brain' && (
+          {phase === 'org-brain' && (<AccessGate permission="access_cortex" viewer={viewAsUserId}>
             <Cortex
               onClose={() => goBack()}
               onNavigateBack={() => goBack()}
               onCreateContent={handleCreateContent}
             />
-          )}
+          </AccessGate>)}
 
           {/* Create with Cortex */}
           {phase === 'create' && (
@@ -515,12 +534,12 @@ export default function App() {
           )}
 
           {/* Agent Studio — governed custom agents, nav sibling of Cortex */}
-          {phase === 'agent-studio' && (
+          {phase === 'agent-studio' && (<AccessGate permission="access_agent_studio" viewer={viewAsUserId}>
             <AgentStudio
               onBack={() => goBack()}
               currentUserId={viewAsUserId}
             />
-          )}
+          </AccessGate>)}
 
           {/* SwiftBridge — first-class page (moved out of the HITL overlay);
               its review deep-link opens the HITL Review Workspace overlay */}
@@ -542,26 +561,26 @@ export default function App() {
           )}
 
           {/* Enterprise AI Visibility — governed EAVI measurement module */}
-          {phase === 'ai-visibility' && (
+          {phase === 'ai-visibility' && (<AccessGate permission="access_ai_visibility" viewer={viewAsUserId}>
             <EnterpriseAIVisibility
               onBack={() => goBack()}
               onNavigate={(target) => { setPreviousPhase('ai-visibility'); setPhase(target) }}
             />
-          )}
+          </AccessGate>)}
 
           {/* Analytics */}
-          {phase === 'analytics' && (
+          {phase === 'analytics' && (<AccessGate permission="access_analytics" viewer={viewAsUserId}>
             <AnalyticsDashboard
               onBack={() => goBack()}
             />
-          )}
+          </AccessGate>)}
 
           {/* Governance */}
-          {phase === 'governance' && (
+          {phase === 'governance' && (<AccessGate permission="access_governance" viewer={viewAsUserId}>
             <GovernanceAudit
               onBack={() => goBack()}
             />
-          )}
+          </AccessGate>)}
 
           {/* Campaign results — full width, no sidebar */}
           {phase === 'narrative' && !triageData && activeCampaign && (

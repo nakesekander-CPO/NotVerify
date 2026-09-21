@@ -41,7 +41,7 @@ const TIER_TO_ACCOUNT = { standard: 'standard-card', pro: 'proteam-card', enterp
  * permissioned, audit-logged change-request flow only. */
 const IS_DEMO_ENV = true
 
-export default function Billing({ tier = 'pro' }) {
+export default function Billing({ tier = 'pro', canManageBilling = true }) {
   /* Enterprise can run on either rail — explicit account data, not an
    * assumption. The selector below previews both configurations. */
   const [entRail, setEntRail] = useState('invoice_or_po')
@@ -170,7 +170,7 @@ export default function Billing({ tier = 'pro' }) {
     account.tabs.usageLedger     && { id: 'usage', label: 'Usage & Ledger', icon: History },
     account.tabs.invoices        && { id: 'invoices', label: 'Invoices', icon: FileText },
     account.tabs.paymentsReceipts&& { id: 'payments', label: 'Payments & receipts', icon: Receipt },
-    account.tabs.admin           && { id: 'admin', label: 'Admin', icon: SettingsIcon },
+    account.tabs.admin && canManageBilling && { id: 'admin', label: 'Admin', icon: SettingsIcon },
   ].filter(Boolean)
   const activeTab = tabDefs.some(t => t.id === tab) ? tab : 'overview'
 

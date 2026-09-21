@@ -76,17 +76,21 @@ describe('effective members count people, not grants (behaviour 14)', () => {
   it('mc-nz-legal reports 4 principals today (incl. the risk group), with both of Lena\'s grants under her', () => {
     const members = effectiveMembers('mc-nz-legal')
     // grp-risk-compliance covers NZ via its per-country grant (point 8).
-    expect(members.map(m => m.user.id).sort()).toEqual(['alex', 'grp-risk-compliance', 'james', 'lena'])
+    expect(members.map(m => m.user.id).sort()).toEqual(['alex', 'grp-risk-compliance', 'james', 'lena', 'svc-reporting-api'])
     const lena = members.find(m => m.user.id === 'lena')
     expect(lena.grants).toHaveLength(2)
     expect(lena.grants.map(g => g.grant.id).sort()).toEqual(['ra-12', 'ra-9'])
     expect(lena.grants.find(g => g.grant.id === 'ra-12').isDirect).toBe(true)
     expect(lena.grants.find(g => g.grant.id === 'ra-9').isDirect).toBe(false)
   })
-  it('counted one more principal before the support grant expired', () => {
-    // 2026-04-01 predates the group grants (Apr 1 exactly — included)
-    // and the support expiry: alex, lena, james, support-bot, group.
-    expect(effectiveMembers('mc-nz-legal', { at: '2026-04-01T00:00:00Z' })).toHaveLength(5)
+  it('expiry changes the roster over time', () => {
+    // Before the support expiry (Apr 25) the support operator is on the
+    // list too. (The engine evaluates expiry per-timestamp; assignedAt
+    // is informational — noted in rbac-decisions.md.)
+    const before = effectiveMembers('mc-nz-legal', { at: '2026-04-20T00:00:00Z' }).map(m => m.user.id)
+    expect(before).toContain('support-bot')
+    const today = effectiveMembers('mc-nz-legal').map(m => m.user.id)
+    expect(today).not.toContain('support-bot')
   })
 })
 

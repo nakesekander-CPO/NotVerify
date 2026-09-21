@@ -5,11 +5,17 @@ import BillingEntities from './BillingEntities'
 import BudgetsAndAllocations from './BudgetsAndAllocations'
 import OrgAccess from './OrgAccess'
 import { PageHeader } from '../ui'
-import { setTenantPlan } from '../../services/rbac/engine'
+import { setTenantPlan, holdsPermissionAnywhere, useRbacStore } from '../../services/rbac/engine'
+import { useViewAs } from '../../services/rbac/viewAs'
 
 export default function SettingsPage({ onBack, onOpenIntegrations }) {
   const [activeSection, setActiveSection] = useState('billing-v2')
   const [tier, setTier] = useState('pro')
+  const [viewAs] = useViewAs()
+  useRbacStore()
+  // Point 5: billing is a governed surface like any other.
+  const billingView = holdsPermissionAnywhere(viewAs, 'view_billing')
+  const billingManage = holdsPermissionAnywhere(viewAs, 'manage_billing')
 
   const handleTierChange = (newTier) => {
     setTier(newTier)
@@ -96,12 +102,23 @@ export default function SettingsPage({ onBack, onOpenIntegrations }) {
             </div>
           </div>
 
-          {activeSection === 'billing-v2' && <Billing tier={tier} />}
-          {activeSection === 'billing-entities' && <BillingEntities />}
-          {activeSection === 'budgets' && <BudgetsAndAllocations />}
+          {activeSection === 'billing-v2' && (billingView
+            ? <Billing tier={tier} canManageBilling={billingManage} />
+            : <BillingLocked reason="None of your grants carries view billing — billing is a governed surface like any other." />)}
+          {activeSection === 'billing-entities' && (billingManage ? <BillingEntities /> : <BillingLocked reason="Managing billing entities requires manage billing." />)}
+          {activeSection === 'budgets' && (billingManage ? <BudgetsAndAllocations /> : <BillingLocked reason="Managing budgets requires manage billing." />)}
           {activeSection.startsWith('org-') && <OrgAccess activeTab={activeSection.replace('org-', '')} tier={tier} />}
         </div>
       </div>
+    </div>
+  )
+}
+
+function BillingLocked({ reason }) {
+  return (
+    <div className="rounded-xl border border-black/[0.08] bg-gray-50 p-8 text-center max-w-lg">
+      <p className="text-[14px] font-semibold text-gray-900 mb-1">Billing requires a billing role</p>
+      <p className="text-[12px] text-gray-500">{reason}</p>
     </div>
   )
 }
