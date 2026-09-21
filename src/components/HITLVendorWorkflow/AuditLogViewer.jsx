@@ -1,7 +1,10 @@
 import { useMemo, useState } from 'react'
 import { downloadCsv } from '../../utils/demoFiles'
 import { ScrollText, Filter, Download } from 'lucide-react'
-import { HITL_AUDIT_LOG, HITL_PROJECTS } from '../../data/hitlVendorWorkflow'
+import { HITL_PROJECTS } from '../../data/hitlVendorWorkflow'
+import { visibleAuditEvents, useRbacStore } from '../../services/rbac/engine'
+import { logDataExport } from '../../services/rbac/grants'
+import { useViewAs } from '../../services/rbac/viewAs'
 import { SectionHeading, Card, MonoLabel, EmptyState, SecondaryButton } from './shared'
 
 const EVENT_TYPE_TONE = {
@@ -31,21 +34,25 @@ const EVENT_TYPE_TONE = {
 
 export default function AuditLogViewer({ activeProjectId }) {
   const [filter, setFilter] = useState({ project: '', actor: '', event: '' })
+  const [viewAs] = useViewAs()
+  useRbacStore()
 
+  // One log, scoped: the viewer sees only events inside their audit
+  // scope — an org manager sees their country, not the group.
   const list = useMemo(() => {
-    let out = [...HITL_AUDIT_LOG]
+    let out = visibleAuditEvents(viewAs, 'meridian')
     if (filter.project) out = out.filter(e => e.projectId === filter.project)
     if (filter.actor) out = out.filter(e => (e.actorId || '').includes(filter.actor))
-    if (filter.event) out = out.filter(e => e.eventType.includes(filter.event))
-    return out.sort((a, b) => (a.timestamp < b.timestamp ? 1 : -1))
-  }, [filter, HITL_AUDIT_LOG.length])
+    if (filter.event) out = out.filter(e => (e.eventType || '').includes(filter.event))
+    return [...out].sort((a, b) => (a.timestamp < b.timestamp ? 1 : -1))
+  }, [filter, viewAs])
 
   return (
     <div>
       <SectionHeading
         title="Audit Log"
         subtitle="Every critical HITL action — vendor selection, assignment, override, segment decision, sign-off, retraining approval, RBAC change, restricted-action attempt — is appended here with before / after values and the policy that allowed or blocked it."
-        actions={<SecondaryButton onClick={() => downloadCsv('arbitr-hitl-audit-log.csv', list.map(e => ({ timestamp: e.timestamp, event: e.eventType, actor: e.actorId || '', role: e.actorRole || '', project: e.projectId || '', reason: e.reason || '' })))}><Download className="w-3.5 h-3.5" /> Export CSV</SecondaryButton>}
+        actions={<SecondaryButton onClick={() => { logDataExport({ actorId: viewAs, what: `audit log CSV (${list.length} events)` }); downloadCsv('arbitr-hitl-audit-log.csv', list.map(e => ({ timestamp: e.timestamp, event: e.eventType, actor: e.actorId || '', role: e.actorRole || '', project: e.projectId || '', reason: e.reason || '' }))) }}><Download className="w-3.5 h-3.5" /> Export CSV</SecondaryButton>}
       />
 
       <Card padding="p-3" className="mb-4">

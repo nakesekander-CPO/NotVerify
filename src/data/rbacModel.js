@@ -232,10 +232,10 @@ export const AUDIT_LOG = [
   { id: 'al-3',  timestamp: '2026-03-30T16:42:00Z', actor: 'alex',        action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-germany',         targetUser: 'marcus',      roleId: 'org-manager',      details: 'Assigned Org Manager role at Germany scope' },
   { id: 'al-4',  timestamp: '2026-03-30T14:30:00Z', actor: 'marcus',      action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-germany-tax',     targetUser: 'thomas',      roleId: 'viewer',           details: 'Assigned Viewer role at Tax & Audit' },
   { id: 'al-5',  timestamp: '2026-03-29T11:05:00Z', actor: 'kenji',       action: 'member.added',      tenantId: 'meridian', scopeId: 'mc-japan',           targetUser: 'yuki',        roleId: null,               details: 'Added Yuki Tanaka to Meridian Japan' },
-  { id: 'al-6',  timestamp: '2026-03-28T09:30:00Z', actor: 'sarah',       action: 'resource.accessed', tenantId: 'meridian', scopeId: 'mc-japan-finance',   targetUser: null,          roleId: null,               details: 'Approved Q3 Investor Presentation (JA)' },
+  { id: 'al-6',  timestamp: '2026-03-28T09:30:00Z', actor: 'sarah',       action: 'resource.approved', tenantId: 'meridian', scopeId: 'mc-japan-finance',   targetUser: null,          roleId: 'approver',         details: 'Approved Q3 Investor Presentation (JA)' },
   { id: 'al-7',  timestamp: '2026-03-27T15:20:00Z', actor: 'kenji',       action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-japan-securities', targetUser: 'sarah',      roleId: 'approver',         details: 'Assigned Approver role at Securities business unit' },
   { id: 'al-8',  timestamp: '2026-03-26T10:00:00Z', actor: 'platform',    action: 'support.access',    tenantId: 'meridian', scopeId: 'mc-root',            targetUser: 'support-bot', roleId: 'support-operator', details: 'Support access granted (expires 2026-04-25)', internal: true },
-  { id: 'al-9',  timestamp: '2026-03-25T09:15:00Z', actor: 'lena',        action: 'resource.accessed', tenantId: 'meridian', scopeId: 'mc-nz',              targetUser: null,          roleId: null,               details: 'Created new translation campaign for New Zealand' },
+  { id: 'al-9',  timestamp: '2026-03-25T09:15:00Z', actor: 'lena',        action: 'resource.created',  tenantId: 'meridian', scopeId: 'mc-nz',              targetUser: null,          roleId: 'org-manager',      details: 'Created new translation campaign for New Zealand' },
   { id: 'al-10', timestamp: '2026-03-24T14:00:00Z', actor: 'marcus',      action: 'resource.accessed', tenantId: 'meridian', scopeId: 'mc-germany-wealth',  targetUser: null,          roleId: null,               details: 'Submitted DE regulatory filing for review' },
   { id: 'al-11', timestamp: '2026-03-23T11:30:00Z', actor: 'alex',        action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-nz',              targetUser: 'lena',        roleId: 'org-manager',      details: 'Assigned Org Manager role at New Zealand' },
   { id: 'al-12', timestamp: '2026-03-22T16:45:00Z', actor: 'alex',        action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-global-risk',     targetUser: 'james',       roleId: 'contributor',      details: 'Assigned Contributor role at Global Risk & Compliance' },
@@ -266,6 +266,11 @@ export const ACTION_STYLES = {
   'resource.accessed': { bg: 'bg-gray-50',    text: 'text-gray-600',    label: 'Resource Accessed' },
   'access.allowed':    { bg: 'bg-emerald-50', text: 'text-emerald-700', label: 'Access Allowed' },
   'access.denied':     { bg: 'bg-red-50',     text: 'text-red-700',     label: 'Access Denied' },
+  'resource.approved': { bg: 'bg-emerald-50', text: 'text-emerald-700', label: 'Approved' },
+  'resource.created':  { bg: 'bg-blue-50',    text: 'text-blue-700',    label: 'Created' },
+  'member.invited':    { bg: 'bg-blue-50',    text: 'text-blue-700',    label: 'Member Invited' },
+  'grant.approved':    { bg: 'bg-purple-50',  text: 'text-purple-700',  label: 'Access Approved' },
+  'data.exported':     { bg: 'bg-gray-50',    text: 'text-gray-600',    label: 'Data Exported' },
 };
 
 /* ═══════════════════════════════════════════════════════════════

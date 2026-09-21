@@ -239,7 +239,7 @@ export function addUser({ name, email, actorId, tenantId }) {
   const user = { id, name, initials, email, status: 'offline', lastActive: new Date().toISOString() }
   USERS.push(user)
   appendAdminEvent({
-    actorId, action: 'member.added', tenantId,
+    actorId, action: 'member.invited', tenantId,
     scopeId: ORG_NODES.find(n => n.tenantId === tenantId && !n.parentId)?.id,
     targetUser: id,
     details: `Invited ${name} to ${TENANTS.find(t => t.id === tenantId)?.name}`,
@@ -464,4 +464,14 @@ export function moveNode({ nodeId, newParentId, actorId, tenantId = 'meridian' }
   })
   bumpRbac()
   return { node }
+}
+
+/** Exports are evidence too: every CSV that leaves the product is logged. */
+export function logDataExport({ actorId, what, tenantId = 'meridian', scopeId = null }) {
+  appendAdminEvent({
+    actorId, action: 'data.exported', tenantId,
+    scopeId: scopeId || ORG_NODES.find(n => n.tenantId === tenantId && !n.parentId)?.id,
+    details: `Exported ${what}`,
+  })
+  return true
 }

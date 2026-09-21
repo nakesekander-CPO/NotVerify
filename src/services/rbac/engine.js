@@ -396,6 +396,45 @@ export function grantsForPrincipal(principal, tenantId = 'meridian') {
   return GRANTS.filter(g => g.principal.type === principal.type && g.principal.id === principal.id && g.tenantId === tenantId)
 }
 
+/**
+ * Audit visibility (point 7, ruled 2026-09-21): a scoped holder of
+ * view_audit sees only events inside their own subtree (plus events
+ * about themselves). Audit oversight is administrative, so the walk is
+ * barrier-agnostic — barriers bind resource access, not the record of
+ * who touched what.
+ */
+export function auditScopesFor(userId, tenantId = 'meridian', { at } = {}) {
+  const now = at ? new Date(at).getTime() : Date.now()
+  return GRANTS
+    .filter(g => g.principal.type === 'user' && g.principal.id === userId && g.tenantId === tenantId && !isExpired(g, now))
+    .filter(g => {
+      const role = roleById(g.roleId)
+      return role && (role.permissions.includes('view_audit') || role.permissions.includes('*'))
+    })
+    .map(g => g.scope.nodeId)
+}
+
+function nodeWithinAny(nodeId, scopeIds) {
+  if (!nodeId) return false
+  let cur = nodeById(nodeId)
+  while (cur) {
+    if (scopeIds.includes(cur.id)) return true
+    cur = cur.parentId ? nodeById(cur.parentId) : null
+  }
+  return false
+}
+
+/** The slice of the single audit log this user may see. */
+export function visibleAuditEvents(userId, tenantId = 'meridian') {
+  const scopes = auditScopesFor(userId, tenantId)
+  return AUDIT_LOG.filter(e => {
+    if (e.tenantId && e.tenantId !== tenantId) return false
+    if (e.targetUser === userId || e.actor === userId) return true
+    if (scopes.length === 0) return false
+    return nodeWithinAny(e.scopeId, scopes)
+  })
+}
+
 /** Grants scoped directly at a node (active only) — for tree badges. */
 export function grantsAtNode(nodeId, { at } = {}) {
   const now = at ? new Date(at).getTime() : Date.now()

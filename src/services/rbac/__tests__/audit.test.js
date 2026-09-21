@@ -3,8 +3,9 @@
  * attribution. Clock frozen at 2026-09-17.
  */
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
-import { authorize } from '../engine'
+import { authorize, visibleAuditEvents } from '../engine'
 import { AUDIT_LOG } from '../../../data/rbacModel'
+import { logDataExport } from '../grants'
 import { HITL_AUDIT_LOG } from '../../../data/hitlVendorWorkflow'
 
 beforeAll(() => {
@@ -59,5 +60,31 @@ describe('attribution is the decisive grant (behaviour 11)', () => {
     authorize({ principal: 'marcus', permission: 'edit_resource', nodeId: 'mc-japan-finance' })
     expect(AUDIT_LOG[0].action).toBe('access.denied')
     expect(AUDIT_LOG[0].details).toMatch(/does not cover/)
+  })
+})
+
+describe('audit v2 (point 7, ruled 2026-09-21)', () => {
+  it('a scoped view_audit holder sees only their subtree plus events about themselves', () => {
+    // Kenji: org-manager Japan (view_audit at mc-japan).
+    const kenji = visibleAuditEvents('kenji', 'meridian')
+    expect(kenji.length).toBeGreaterThan(0)
+    for (const e of kenji) {
+      const withinJapan = e.scopeId && (e.scopeId === 'mc-japan' || e.scopeId.startsWith('mc-japan'))
+      const aboutHim = e.actor === 'kenji' || e.targetUser === 'kenji'
+      expect(withinJapan || aboutHim, `${e.id} ${e.scopeId}`).toBe(true)
+    }
+  })
+  it('a plain viewer sees only events about themselves', () => {
+    const thomas = visibleAuditEvents('thomas', 'meridian')
+    for (const e of thomas) {
+      expect(e.actor === 'thomas' || e.targetUser === 'thomas').toBe(true)
+    }
+  })
+  it('approvals and exports carry their own event types', () => {
+    expect(AUDIT_LOG.some(e => e.action === 'resource.approved')).toBe(true)
+    const before = AUDIT_LOG.length
+    logDataExport({ actorId: 'alex', what: 'test export' })
+    expect(AUDIT_LOG.length).toBe(before + 1)
+    expect(AUDIT_LOG[0].action).toBe('data.exported')
   })
 })

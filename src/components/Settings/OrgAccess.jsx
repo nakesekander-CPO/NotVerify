@@ -9,7 +9,7 @@ import {
   NODE_TYPE_STYLES, ACTION_STYLES,
   getNodePath, getNodeChildren,
 } from '../../data/rbacModel'
-import { useRbacStore, effectiveMembers, grantsForUser, grantsAtNode, staleGrants } from '../../services/rbac/engine'
+import { useRbacStore, effectiveMembers, grantsForUser, grantsAtNode, staleGrants, visibleAuditEvents } from '../../services/rbac/engine'
 import { addUser, addGrant, removeGrant, removeAllGrantsForUser, approveGrant, previewMove, moveNode, standingSodFindings, grantOptions } from '../../services/rbac/grants'
 import { useViewAs } from '../../services/rbac/viewAs'
 import AccessExplorer from './AccessExplorer'
@@ -660,14 +660,21 @@ function RolesTab({ grants, users }) {
    AUDIT TAB
    ═══════════════════════════════════════════════════════════════ */
 
-function AuditTab({ tenantId, auditLog, users }) {
+function AuditTab({ tenantId, auditLog, users, actingUserId }) {
   const [filter, setFilter] = useState('all')
-  const logs = useMemo(() => auditLog.filter(l => l.tenantId === tenantId).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)), [tenantId, auditLog])
+  // Point 7: a scoped view_audit holder sees only their own subtree
+  // (plus events about themselves). The count line says so.
+  const visible = useMemo(() => visibleAuditEvents(actingUserId, tenantId), [actingUserId, tenantId, auditLog.length]) // eslint-disable-line react-hooks/exhaustive-deps
+  const total = useMemo(() => auditLog.filter(l => l.tenantId === tenantId).length, [tenantId, auditLog])
+  const logs = useMemo(() => [...visible].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)), [visible])
   const filtered = filter === 'all' ? logs : logs.filter(l => l.action === filter)
   const types = [...new Set(logs.map(l => l.action))]
 
   return (
     <div>
+      <p className="text-[11px] text-gray-400 mb-3">
+        Showing {logs.length} of {total} events — your audit scope covers {logs.length === total ? 'the whole tenant' : 'your subtree and events about you'}.
+      </p>
       <div className="flex items-center gap-1.5 mb-4 flex-wrap">
         <button type="button" onClick={() => setFilter('all')} className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors cursor-pointer ${filter === 'all' ? 'bg-gray-900 text-white' : 'bg-white border border-black/[0.10] text-gray-500 hover:text-gray-800'}`}>All</button>
         {types.map(t => { const s = ACTION_STYLES[t] || { ...ACTION_STYLES['resource.accessed'], label: t.replace(/[._-]/g, ' ') }; return (
@@ -780,7 +787,7 @@ export default function OrgAccess({ activeTab, tier }) {
       {activeTab === 'structure' && <StructureTab tenantId={activeTenant} />}
       {activeTab === 'members' && <MembersTab tenantId={activeTenant} users={users} grants={grants} actingUserId={actingUserId} onInvite={handleInvite} onAddRole={handleAddRole} onRemoveRole={handleRemoveRole} onRemoveMember={handleRemoveMember} />}
       {activeTab === 'roles' && <RolesTab grants={grants} users={users} />}
-      {activeTab === 'audit' && <AuditTab tenantId={activeTenant} auditLog={audit} users={users} />}
+      {activeTab === 'audit' && <AuditTab tenantId={activeTenant} auditLog={audit} users={users} actingUserId={actingUserId} />}
       {activeTab === 'explorer' && <AccessExplorer />}
     </div>
   )
