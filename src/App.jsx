@@ -38,7 +38,7 @@ import { useToast } from './components/ToastProvider'
 import { useViewAs } from './services/rbac/viewAs'
 import { holdsPermissionAnywhere, authorize } from './services/rbac/engine'
 
-export default /* Point 5: a module a role cannot access renders a denial card with
+/* Point 5: a module a role cannot access renders a denial card with
  * the engine's reason — navigation hides it, deep links explain it. */
 function AccessGate({ permission, viewer, children }) {
   if (holdsPermissionAnywhere(viewer, permission)) return children
@@ -50,7 +50,7 @@ function AccessGate({ permission, viewer, children }) {
   )
 }
 
-function App() {
+export default function App() {
   const [viewAsUserId] = useViewAs()
   const { addToast } = useToast()
   const isMobile = useMediaQuery('(max-width: 767px), (max-width: 1024px) and (max-height: 500px)')
