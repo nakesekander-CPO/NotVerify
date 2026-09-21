@@ -52,14 +52,42 @@ function granterPermissionsAt(actorId, tenantId, nodeId) {
  * Rule 7: a granter may only hand out what they hold, where they hold it.
  * Returns null when allowed, or a human-readable refusal string.
  */
-export function grantRefusalReason({ actorId, roleId, nodeId, tenantId }) {
+/* Second-line functions are appointed by that function or by the
+ * tenant admin — never by a line manager (point 2c, ruled 2026-09-21). */
+const SECOND_LINE_ROLES = new Set(['compliance-reviewer', 'legal-reviewer', 'auditor'])
+
+function holdsRoleCovering(actorId, tenantId, roleId, nodeId) {
+  return activeGrantsOf(actorId, tenantId).some(g =>
+    g.roleId === roleId && isSelfOrAncestor(g.scope.nodeId, nodeId))
+}
+
+function isTenantAdmin(actorId, tenantId) {
+  return activeGrantsOf(actorId, tenantId).some(g =>
+    ['tenant-admin', 'arbitr-global-admin'].includes(g.roleId))
+}
+
+export function grantRefusalReason({ actorId, roleId, nodeId, tenantId, principalId }) {
   const role = ROLES.find(r => r.id === roleId)
   const node = nodeById(nodeId)
   if (!role || !node) return 'Unknown role or scope node'
 
+  // Four-eyes: nobody grants roles to themselves.
+  if (principalId && principalId === actorId) {
+    return 'Four-eyes rule: you cannot grant a role to yourself — another administrator must do it'
+  }
+
   // role.level must match scope.type: tenant/platform roles bind at the root.
   if ((role.level === 'tenant' || role.level === 'platform') && node.type !== 'tenant') {
     return `${role.name} is a ${role.level}-level role — it can only be granted at the ${TENANTS.find(t => t.id === tenantId)?.name || 'tenant'} root, not at a ${node.type}`
+  }
+
+  // Second-line independence: compliance, legal, and audit seats are
+  // appointed by the tenant admin or by that same function — never by
+  // a line manager.
+  if (SECOND_LINE_ROLES.has(roleId)
+    && !isTenantAdmin(actorId, tenantId)
+    && !holdsRoleCovering(actorId, tenantId, roleId, nodeId)) {
+    return `${role.name} is a second-line seat — it is appointed by the tenant admin or by the ${role.name} function, not by a line manager`
   }
 
   const held = granterPermissionsAt(actorId, tenantId, nodeId)
@@ -76,6 +104,25 @@ export function grantRefusalReason({ actorId, roleId, nodeId, tenantId }) {
     }
   }
   return null
+}
+
+/**
+ * Picker feed: the roles this actor can grant anywhere, and the valid
+ * scopes per role. The invite and add-role forms only OFFER what the
+ * engine would accept — no more Tenant Admin on an M&A team.
+ */
+export function grantOptions(actorId, tenantId = 'meridian') {
+  const nodes = ORG_NODES.filter(n => n.tenantId === tenantId)
+  const scopesByRole = {}
+  for (const role of ROLES) {
+    if (role.internal) continue
+    const ok = nodes.filter(n => !grantRefusalReason({ actorId, roleId: role.id, nodeId: n.id, tenantId }))
+    if (ok.length) scopesByRole[role.id] = ok.map(n => n.id)
+  }
+  return {
+    roles: ROLES.filter(r => scopesByRole[r.id]),
+    scopesForRole: (roleId) => scopesByRole[roleId] || [],
+  }
 }
 
 /* ─── Separation of duties (rule 8) ────────────────────────────── */
@@ -214,7 +261,7 @@ export function addGrant({ principal, roleId, nodeId, tenantId, conditions = {},
 
   // Rule 7: the granter's own permissions and subtree bound what they
   // can hand out. Refusals are returned, never thrown — the UI shows them.
-  const refusal = grantRefusalReason({ actorId, roleId, nodeId, tenantId })
+  const refusal = grantRefusalReason({ actorId, roleId, nodeId, tenantId, principalId: p.type === 'user' ? p.id : null })
   if (refusal) return { error: refusal }
 
   // Rule 8: conflicting duties are caught at assign time. A named

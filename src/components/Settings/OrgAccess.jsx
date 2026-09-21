@@ -10,7 +10,7 @@ import {
   getNodePath, getNodeChildren,
 } from '../../data/rbacModel'
 import { useRbacStore, effectiveMembers, grantsForUser, grantsAtNode, staleGrants } from '../../services/rbac/engine'
-import { addUser, addGrant, removeGrant, removeAllGrantsForUser, approveGrant, previewMove, moveNode, standingSodFindings } from '../../services/rbac/grants'
+import { addUser, addGrant, removeGrant, removeAllGrantsForUser, approveGrant, previewMove, moveNode, standingSodFindings, grantOptions } from '../../services/rbac/grants'
 import { useViewAs } from '../../services/rbac/viewAs'
 import AccessExplorer from './AccessExplorer'
 import { PRINCIPAL_DIRECTORY } from '../../data/rbacModel'
@@ -234,14 +234,17 @@ function StructureTab({ tenantId }) {
    INVITE MODAL
    ═══════════════════════════════════════════════════════════════ */
 
-function InviteModal({ tenantId, onInvite, onClose }) {
+function InviteModal({ tenantId, actingUserId, onInvite, onClose }) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [roleId, setRoleId] = useState('contributor')
   const [scopeId, setScopeId] = useState('')
   const [refusal, setRefusal] = useState(null)
-  const tenantNodes = ORG_NODES.filter(n => n.tenantId === tenantId)
-  const customerRoles = ROLES.filter(r => !r.internal)
+  // Only offer what the acting admin can actually grant, where they can
+  // grant it — the form never dangles Tenant Admin over a team node.
+  const options = useMemo(() => grantOptions(actingUserId, tenantId), [actingUserId, tenantId])
+  const customerRoles = options.roles
+  const tenantNodes = ORG_NODES.filter(n => n.tenantId === tenantId && (options.scopesForRole(roleId) || []).includes(n.id))
 
   const canSubmit = name.trim() && email.trim() && roleId && scopeId
 
@@ -307,15 +310,16 @@ function InviteModal({ tenantId, onInvite, onClose }) {
    ADD ROLE INLINE FORM
    ═══════════════════════════════════════════════════════════════ */
 
-function AddRoleForm({ tenantId, onAdd, onCancel }) {
+function AddRoleForm({ tenantId, actingUserId, onAdd, onCancel }) {
   const [roleId, setRoleId] = useState('contributor')
   const [scopeId, setScopeId] = useState('')
   const [refusal, setRefusal] = useState(null)
   const [conflict, setConflict] = useState(null)
   const [exApprover, setExApprover] = useState('alex')
   const [exReason, setExReason] = useState('')
-  const tenantNodes = ORG_NODES.filter(n => n.tenantId === tenantId)
-  const customerRoles = ROLES.filter(r => !r.internal)
+  const options = useMemo(() => grantOptions(actingUserId, tenantId), [actingUserId, tenantId])
+  const customerRoles = options.roles
+  const tenantNodes = ORG_NODES.filter(n => n.tenantId === tenantId && (options.scopesForRole(roleId) || []).includes(n.id))
   const barrierTarget = ORG_NODES.find(n => n.id === scopeId)?.barrier
 
   const submit = (sodException) => {
@@ -329,7 +333,7 @@ function AddRoleForm({ tenantId, onAdd, onCancel }) {
   return (
     <div className="rounded-lg border border-[#3D16FA]/30 bg-[#3D16FA]/[0.04] p-3 space-y-2">
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#3D16FA]">Add role assignment</p>
-      <select value={roleId} onChange={e => { setRoleId(e.target.value); setConflict(null); setRefusal(null) }}
+      <select value={roleId} onChange={e => { setRoleId(e.target.value); setScopeId(''); setConflict(null); setRefusal(null) }}
         className="w-full rounded-lg border border-black/[0.08] bg-white px-2.5 py-1.5 text-[12px] outline-none focus:border-[#3D16FA] transition">
         {customerRoles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
       </select>
@@ -526,7 +530,7 @@ function MembersTab({ tenantId, users, grants, actingUserId, onInvite, onAddRole
                 {/* Add role form */}
                 {showAddRole && (
                   <div className="mb-3">
-                    <AddRoleForm tenantId={tenantId} onCancel={() => setShowAddRole(false)}
+                    <AddRoleForm tenantId={tenantId} actingUserId={actingUserId} onCancel={() => setShowAddRole(false)}
                       onAdd={({ roleId, scopeId, sodException }) => {
                         const result = onAddRole(sel, roleId, scopeId, sodException)
                         if (result?.grant) setShowAddRole(false)
@@ -582,7 +586,7 @@ function MembersTab({ tenantId, users, grants, actingUserId, onInvite, onAddRole
       {/* Invite modal */}
       <AnimatePresence>
         {showInvite && (
-          <InviteModal tenantId={tenantId} onClose={() => setShowInvite(false)}
+          <InviteModal tenantId={tenantId} actingUserId={actingUserId} onClose={() => setShowInvite(false)}
             onInvite={(data) => onInvite(data)} />
         )}
       </AnimatePresence>

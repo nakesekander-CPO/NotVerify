@@ -5,7 +5,7 @@
  * Clock frozen at 2026-09-17.
  */
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
-import { addGrant, removeGrant, sodConflictFor } from '../grants'
+import { addGrant, removeGrant, sodConflictFor, grantOptions } from '../grants'
 import { GRANTS } from '../../../data/rbacModel'
 
 beforeAll(() => {
@@ -84,5 +84,33 @@ describe('last-admin guard (behaviour 10)', () => {
     expect(second.grant).toBeTruthy()
     const r = removeGrant({ grantId: second.grant.id, actorId: 'alex' })
     expect(r.removed).toBeTruthy()
+  })
+})
+
+describe('granter v2 (ruled 2026-09-21)', () => {
+  it('nobody grants a role to themselves — four-eyes', () => {
+    const r = addGrant({ principal: 'alex', roleId: 'approver', nodeId: 'mc-japan-securities', tenantId: 'meridian', actorId: 'alex' })
+    expect(r.error).toMatch(/Four-eyes/)
+  })
+  it('a line manager cannot appoint second-line seats', () => {
+    // Kenji manages Japan (manage_members ✓) but compliance is not his to staff.
+    const r = addGrant({ principal: 'thomas', roleId: 'compliance-reviewer', nodeId: 'mc-japan-compliance', tenantId: 'meridian', actorId: 'kenji' })
+    expect(r.error).toMatch(/second-line/)
+  })
+  it('the tenant admin appoints second-line seats', () => {
+    const r = addGrant({ principal: 'thomas', roleId: 'auditor', nodeId: 'mc-germany', tenantId: 'meridian', actorId: 'alex' })
+    expect(r.grant).toBeTruthy()
+    removeGrant({ grantId: r.grant.id, actorId: 'alex' })
+  })
+  it('the pickers only offer what the actor can grant', () => {
+    const kenji = grantOptions('kenji', 'meridian')
+    expect(kenji.roles.map(r => r.id)).not.toContain('tenant-admin')
+    expect(kenji.roles.map(r => r.id)).not.toContain('compliance-reviewer')
+    // and his scopes stay inside Japan
+    for (const nodeId of kenji.scopesForRole('viewer')) {
+      expect(nodeId.startsWith('mc-japan')).toBe(true)
+    }
+    const alex = grantOptions('alex', 'meridian')
+    expect(alex.scopesForRole('tenant-admin')).toEqual(['mc-root'])
   })
 })
