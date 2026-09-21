@@ -264,6 +264,14 @@ export function addGrant({ principal, roleId, nodeId, tenantId, conditions = {},
   const refusal = grantRefusalReason({ actorId, roleId, nodeId, tenantId, principalId: p.type === 'user' ? p.id : null })
   if (refusal) return { error: refusal }
 
+  // Platform access is never standing (point 4, ruled 2026-09-21):
+  // support-operator and arbitr-global-admin exist only as
+  // just-in-time grants — customer-approved and time-boxed.
+  if (['arbitr-global-admin', 'support-operator'].includes(roleId)
+    && !(conditions.requiresApproval && conditions.expiresAt)) {
+    return { error: `${role.name} is platform access — it can only be granted just-in-time (customer approval required, expiry required), never as standing access` }
+  }
+
   // Rule 8: conflicting duties are caught at assign time. A named
   // exception (approver + reason) records the override on the grant.
   if (p.type === 'user') {

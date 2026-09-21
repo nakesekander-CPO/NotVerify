@@ -6,8 +6,8 @@
  */
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
 import { can, effectiveMembers } from '../engine'
-import { approveGrant } from '../grants'
-import { AUDIT_LOG, GRANTS } from '../../../data/rbacModel'
+import { approveGrant, addGrant as addGrantJit, removeGrant as removeGrantJit } from '../grants'
+import { AUDIT_LOG, GRANTS, ROLES } from '../../../data/rbacModel'
 
 beforeAll(() => {
   vi.useFakeTimers()
@@ -72,5 +72,29 @@ describe('JIT support session (ruled: approval before activation)', () => {
   it('a viewer cannot approve support access', () => {
     const r = approveGrant({ grantId: 'ra-27', actorId: 'thomas' })
     expect(r.error).toMatch(/manage_members/)
+  })
+})
+
+describe('platform access is never standing (point 4, ruled 2026-09-21)', () => {
+  it('refuses a standing global-admin or support grant outright', () => {
+    for (const roleId of ['arbitr-global-admin', 'support-operator']) {
+      const r = addGrantJit({ principal: { type: 'support-session', id: 'support-session-x' }, roleId, nodeId: 'mc-root', tenantId: 'meridian', actorId: 'alex' })
+      expect(r.error).toMatch(/just-in-time/)
+    }
+  })
+  it('accepts the same grant when approval-gated and time-boxed, inert until approved', () => {
+    const r = addGrantJit({
+      principal: { type: 'support-session', id: 'support-session-x' }, roleId: 'support-operator',
+      nodeId: 'mc-root', tenantId: 'meridian', actorId: 'alex',
+      conditions: { requiresApproval: true, expiresAt: '2026-09-25T00:00:00Z', ticketRef: 'TCK-X' },
+    })
+    expect(r.grant).toBeTruthy()
+    expect(can({ principal: { type: 'support-session', id: 'support-session-x' }, permission: 'view_resource', nodeId: 'mc-root' }).decisivePolicy).toBe('pending-approval')
+    removeGrantJit({ grantId: r.grant.id, actorId: 'alex' })
+  })
+  it('the support role is read-only by construction — no write or decision permissions', () => {
+    const support = ROLES.find(r => r.id === 'support-operator')
+    const writes = ['edit_resource', 'create_resource', 'approve_resource', 'manage_members', 'manage_structure', 'signoff_output']
+    for (const w of writes) expect(support.permissions).not.toContain(w)
   })
 })

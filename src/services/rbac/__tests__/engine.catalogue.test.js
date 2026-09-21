@@ -19,6 +19,9 @@ describe('the catalogue', () => {
   it('has no hidden roles — visible and enforceable are the same set', () => {
     expect(ROLES.filter(r => r.hidden)).toHaveLength(0)
   })
+  it('one verb per meaning: request_rework merged into request_changes', () => {
+    expect(ROLES.flatMap(r => r.permissions)).not.toContain('request_rework')
+  })
   it('has no scope-suffixed permissions — scope belongs to the grant', () => {
     const suffixed = ROLES.flatMap(r => r.permissions).filter(p => p.includes(':'))
     expect(suffixed).toEqual([])
