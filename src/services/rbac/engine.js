@@ -98,6 +98,20 @@ function byPrecedence(a, b) {
 
 function scopeNameOf(grant) { return nodeById(grant.scope.nodeId)?.name || grant.scope.nodeId }
 
+/* ─── Admin ≠ business sign-off (SoD v2, ruled 2026-09-21) ─────────
+   The tenant admin's wildcard covers ADMINISTRATION — structure,
+   members, workflows, billing, audit. It does NOT cover business
+   decisions: approving content, reviewing it as compliance or legal,
+   validating, or signing it off. Those need an explicitly granted
+   role, held by a named human. */
+
+export const BUSINESS_DECISION_PERMISSIONS = new Set([
+  'approve_resource', 'reject_resource',
+  'signoff_output', 'client_signoff', 'final_validate',
+  'compliance_review', 'legal_review',
+  'approve_retraining', 'approve_org_brain',
+])
+
 /* ─── Plan gating (rule 11) ────────────────────────────────────── */
 
 /** Capabilities gated to the Enterprise plan (ruled 2026-09-17). */
@@ -171,9 +185,13 @@ export function can({ principal, permission, nodeId, tenantId, at, context } = {
   const residencyEnforced = planAllows(tenant, 'residency').allow === true && tenantPlan(tenant) === 'enterprise'
   const targetResidency = residencyEnforced ? residencyOf(nodeId) : null
 
+  const businessDecision = BUSINESS_DECISION_PERMISSIONS.has(permission)
   const evaluated = candidates.map(g => {
     const role = roleById(g.roleId)
-    const hasPerm = !!role && (role.permissions.includes('*') || role.permissions.includes(permission))
+    // The wildcard never satisfies a business decision (admin/sign-off
+    // split): only an explicit permission does.
+    const hasPerm = !!role && (role.permissions.includes(permission)
+      || (role.permissions.includes('*') && !businessDecision))
     // assignedOnly: the grant only works on work the principal is assigned
     // to — callers supply context.assignedUserIds for the entity at hand.
     const assignedBlocked = !!g.conditions?.assignedOnly
@@ -241,6 +259,9 @@ export function can({ principal, permission, nodeId, tenantId, at, context } = {
   const scopeMiss = evaluated.find(e => e.hasPerm && !e.expired)
   if (scopeMiss) {
     return { allow: false, reason: `${scopeMiss.role.name} at ${scopeNameOf(scopeMiss.g)} does not cover ${node.name}`, grantId: null, decisivePolicy: 'out-of-scope', role: scopeMiss.role }
+  }
+  if (businessDecision && evaluated.some(e => e.role?.permissions.includes('*') && e.cov.covers && !e.expired)) {
+    return { allow: false, reason: `Full Access covers administration, not business decisions — "${permission}" requires an explicitly granted role`, grantId: null, decisivePolicy: 'admin-business-split' }
   }
   return { allow: false, reason: `No held role grants "${permission}"`, grantId: null, decisivePolicy: 'no-permission' }
 }

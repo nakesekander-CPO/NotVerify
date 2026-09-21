@@ -174,13 +174,22 @@ export const GRANTS = [
   { id: 'ra-2',  principal: { type: 'user', id: 'james' },  tenantId: 'meridian', roleId: 'contributor', scope: { nodeId: 'mc-global-risk', type: 'department' },       conditions: {}, assignedBy: 'alex', assignedAt: '2025-09-15T00:00:00Z', lastUsedAt: '2026-06-01T11:30:00Z' },
   // Yuki — Compliance Reviewer at Japan Compliance & Regulatory (second grant:
   // department-level review duty alongside the BU approver seat)
-  { id: 'ra-11', principal: { type: 'user', id: 'yuki' },   tenantId: 'meridian', roleId: 'compliance-reviewer', scope: { nodeId: 'mc-japan-compliance', type: 'department' }, conditions: {}, assignedBy: 'kenji', assignedAt: '2026-01-12T00:00:00Z', lastUsedAt: '2026-09-12T14:00:00Z' },
-  // Lena — Legal Reviewer at New Zealand Legal (second grant)
-  { id: 'ra-12', principal: { type: 'user', id: 'lena' },   tenantId: 'meridian', roleId: 'legal-reviewer', scope: { nodeId: 'mc-nz-legal', type: 'department' },       conditions: {}, assignedBy: 'alex', assignedAt: '2026-02-03T00:00:00Z', lastUsedAt: '2026-08-28T10:10:00Z' },
-  // James — Auditor across the whole group (read-only oversight from the top)
+  { id: 'ra-11', principal: { type: 'user', id: 'yuki' },   tenantId: 'meridian', roleId: 'compliance-reviewer', scope: { nodeId: 'mc-japan-compliance', type: 'department' }, conditions: {}, assignedBy: 'alex', assignedAt: '2026-01-12T00:00:00Z', lastUsedAt: '2026-09-12T14:00:00Z' },
+  // Lena — Legal Reviewer at NZ Legal. Conflicts with her Org Manager
+  // edit rights over the same subtree — named exception on record until
+  // the dedicated NZ legal reviewer is hired.
+  { id: 'ra-12', principal: { type: 'user', id: 'lena' },   tenantId: 'meridian', roleId: 'legal-reviewer', scope: { nodeId: 'mc-nz-legal', type: 'department' },       conditions: { sodException: { approvedBy: 'alex', reason: 'Interim NZ legal review — dedicated reviewer being hired', pair: ['edit_resource', 'legal_review'], at: '2026-02-03T09:35:00Z' } }, assignedBy: 'alex', assignedAt: '2026-02-03T00:00:00Z', lastUsedAt: '2026-08-28T10:10:00Z' },
+  // James — Auditor across the whole group. His Contributor seat at
+  // Global Risk makes this a standing SoD conflict (contribute + audit
+  // on overlapping scope) — held under a NAMED exception, visible in
+  // the SoD findings panel, until the second auditor seat is filled.
   // James's group audit reach deliberately EXCLUDES the EU: German audit
   // stays in-country — a live residency denial for the Access Explorer.
-  { id: 'ra-13', principal: { type: 'user', id: 'james' },  tenantId: 'meridian', roleId: 'auditor', scope: { nodeId: 'mc-root', type: 'tenant' },                      conditions: { residency: ['JP', 'NZ'] }, assignedBy: 'alex', assignedAt: '2026-02-03T00:00:00Z', lastUsedAt: '2026-09-15T08:55:00Z' },
+  { id: 'ra-13', principal: { type: 'user', id: 'james' },  tenantId: 'meridian', roleId: 'auditor', scope: { nodeId: 'mc-root', type: 'tenant' },                      conditions: { residency: ['JP', 'NZ'], sodException: { approvedBy: 'alex', reason: 'Group audit coverage while the second auditor seat is vacant — recruiting in progress', pair: ['create_resource', 'view_audit'], at: '2026-02-03T09:40:00Z' } }, assignedBy: 'alex', assignedAt: '2026-02-03T00:00:00Z', lastUsedAt: '2026-09-15T08:55:00Z' },
+  // Kenji — Client Reviewer for Meridian Japan: the client-side
+  // sign-off seat. With the admin/business split, the tenant admin can
+  // no longer sign anything — named humans hold that.
+  { id: 'ra-17', principal: { type: 'user', id: 'kenji' },  tenantId: 'meridian', roleId: 'client-reviewer', scope: { nodeId: 'mc-japan', type: 'country' }, conditions: {}, assignedBy: 'alex', assignedAt: '2026-03-05T00:00:00Z', lastUsedAt: '2026-09-02T10:30:00Z' },
   // Sarah — Final Validator for the Securities BU: sign-off authority.
   // Rule 9 makes this load-bearing — the person who edited a segment can
   // never be the person who signs the project off.
@@ -237,7 +246,7 @@ export const AUDIT_LOG = [
   { id: 'al-20', timestamp: '2026-08-20T09:00:00Z', actor: 'kenji',       action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-japan-ma',        targetUser: 'yuki',        roleId: 'approver',         details: 'Deal-team grant at M&A Advisory — Project Keystone (direct; inherited access stops at the barrier)' },
   { id: 'al-16', timestamp: '2026-02-03T09:40:00Z', actor: 'alex',        action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-root',            targetUser: 'james',       roleId: 'auditor',          details: 'Assigned Auditor role across Meridian Capital Group' },
   { id: 'al-17', timestamp: '2026-02-03T09:35:00Z', actor: 'alex',        action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-nz-legal',        targetUser: 'lena',        roleId: 'legal-reviewer',   details: 'Assigned Legal Reviewer role at New Zealand Legal' },
-  { id: 'al-18', timestamp: '2026-01-12T14:10:00Z', actor: 'kenji',       action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-japan-compliance', targetUser: 'yuki',       roleId: 'compliance-reviewer', details: 'Assigned Compliance Reviewer role at Compliance & Regulatory' },
+  { id: 'al-18', timestamp: '2026-01-12T14:10:00Z', actor: 'alex',        action: 'role.assigned',     tenantId: 'meridian', scopeId: 'mc-japan-compliance', targetUser: 'yuki',       roleId: 'compliance-reviewer', details: 'Assigned Compliance Reviewer role at Compliance & Regulatory — second-line appointment by tenant admin' },
 ];
 
 // Unified-log aliases (rule 10): admin/access seed rows also answer to

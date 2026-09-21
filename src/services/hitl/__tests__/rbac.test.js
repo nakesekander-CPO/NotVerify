@@ -22,10 +22,22 @@ describe('HITL RBAC adapter — scoped enforcement', () => {
     expect(() => requirePermission('alex', 'view_resource', {})).toThrow(/cannot resolve an org node/)
   })
 
-  it('grants tenant-admin via the wildcard, inside a real project scope', () => {
-    const d = requirePermission('alex', 'approve_retraining', { projectId: japanProject.id })
-    expect(d.allow).toBe(true)
-    expect(d.role.id).toBe('tenant-admin')
+  it('the wildcard covers administration, never business decisions', () => {
+    // Admin action: fine via wildcard.
+    const admin = requirePermission('alex', 'reassign_task', { projectId: japanProject.id })
+    expect(admin.allow).toBe(true)
+    expect(admin.role.id).toBe('tenant-admin')
+    // Business decision: the admin is refused; the named holder passes.
+    try {
+      requirePermission('alex', 'approve_retraining', { projectId: japanProject.id })
+      throw new Error('expected PERMISSION_DENIED')
+    } catch (e) {
+      expect(e.code).toBe('PERMISSION_DENIED')
+      expect(e.decision.decisivePolicy).toBe('admin-business-split')
+    }
+    const named = requirePermission('sarah', 'approve_retraining', { projectId: japanProject.id })
+    expect(named.allow).toBe(true)
+    expect(named.role.id).toBe('final-validator')
   })
 
   it('denies Marcus edit_resource on a Japan project — Germany org-manager does not cross countries', () => {

@@ -22,19 +22,25 @@ afterAll(() => vi.useRealTimers())
 const PROJECT_ID = 'hp-q3-mda-internal-single'
 
 describe('sign-off separation of duties (behaviour 12)', () => {
-  it('rejects the actor who last edited any segment in the project', () => {
+  it('the tenant admin cannot sign at all — admin/business split fires first', () => {
+    expect(() => signOff({ projectId: PROJECT_ID, actorId: 'alex', statement: 'admin sign' }))
+      .toThrow(/administration, not business decisions/)
+  })
+
+  it('rejects an authorised signer who last touched a segment in the project', () => {
     const seg = HITL_SEGMENTS.find(s => s.projectId === PROJECT_ID && !s.locked && s.decision === 'pending')
     expect(seg).toBeTruthy()
-    decideSegment({ segmentId: seg.id, actorId: 'alex', action: 'edited', newValue: 'edited by the would-be signer', rationaleTags: ['register'] })
-    expect(lastEditorsOf(PROJECT_ID).has('alex')).toBe(true)
-
-    expect(() => signOff({ projectId: PROJECT_ID, actorId: 'alex', statement: 'self sign' }))
+    // Kenji HOLDS client sign-off — but he decides a segment first.
+    // (Deciding counts as touching: verify or edit, the signer must be
+    // someone else. No role both edits and signs by design.)
+    decideSegment({ segmentId: seg.id, actorId: 'kenji', action: 'confirmed', rationaleTags: ['register'] })
+    expect(lastEditorsOf(PROJECT_ID).has('kenji')).toBe(true)
+    expect(() => signOff({ projectId: PROJECT_ID, actorId: 'kenji', statement: 'self sign' }))
       .toThrow(/Separation of duties/)
   })
 
   it('accepts a different signer who holds sign-off authority at the node', () => {
-    // Sarah: final-validator at the Securities BU (covers mc-japan-finance),
-    // and she edited nothing here.
+    // Sarah: final-validator at the Securities BU, touched nothing here.
     const rec = signOff({ projectId: PROJECT_ID, actorId: 'sarah', statement: 'Signed after review' })
     expect(rec.actorRole).toBe('final-validator')
   })

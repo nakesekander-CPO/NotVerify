@@ -89,6 +89,10 @@ export const SOD_CONFLICT_PAIRS = [
   ['create_resource', 'approve_resource'],
   ['edit_resource', 'approve_resource'],
   ['create_resource', 'view_audit'],
+  // Second-line independence: whoever reviews for compliance or legal
+  // must not hold edit rights over the same scope.
+  ['edit_resource', 'compliance_review'],
+  ['edit_resource', 'legal_review'],
 ]
 
 function scopesOverlap(nodeA, nodeB) {
@@ -120,6 +124,37 @@ export function sodConflictFor({ principalId, roleId, nodeId, tenantId }) {
     }
   }
   return null
+}
+
+/**
+ * Standing SoD findings: every user currently holding a conflicting
+ * permission pair on overlapping scopes, with the covering named
+ * exception when one is recorded. The panel that renders this is the
+ * difference between "the product tolerates conflicts" and "conflicts
+ * are detected and governed".
+ */
+export function standingSodFindings(tenantId = 'meridian', now = Date.now()) {
+  const findings = []
+  const userIds = [...new Set(GRANTS.filter(g => g.principal.type === 'user' && g.tenantId === tenantId).map(g => g.principal.id))]
+  for (const userId of userIds) {
+    const mine = activeGrantsOf(userId, tenantId, now)
+    for (let i = 0; i < mine.length; i++) {
+      for (let j = i + 1; j < mine.length; j++) {
+        const a = mine[i], b = mine[j]
+        if (!scopesOverlap(a.scope.nodeId, b.scope.nodeId)) continue
+        const pa = new Set(ROLES.find(r => r.id === a.roleId)?.permissions || [])
+        const pb = new Set(ROLES.find(r => r.id === b.roleId)?.permissions || [])
+        for (const [x, y] of SOD_CONFLICT_PAIRS) {
+          const clash = (pa.has(x) && pb.has(y)) || (pa.has(y) && pb.has(x))
+          if (!clash) continue
+          const exception = [a, b].map(g => g.conditions?.sodException)
+            .find(e => e && e.pair && ((e.pair[0] === x && e.pair[1] === y) || (e.pair[0] === y && e.pair[1] === x)))
+          findings.push({ userId, pair: [x, y], grants: [a, b], exception: exception || null })
+        }
+      }
+    }
+  }
+  return findings
 }
 
 /** Non-expired tenant-admin grants in a tenant (rule 7 last-admin guard). */

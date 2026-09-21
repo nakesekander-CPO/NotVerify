@@ -10,7 +10,7 @@ import {
   getNodePath, getNodeChildren,
 } from '../../data/rbacModel'
 import { useRbacStore, effectiveMembers, grantsForUser, grantsAtNode, staleGrants } from '../../services/rbac/engine'
-import { addUser, addGrant, removeGrant, removeAllGrantsForUser, approveGrant, previewMove, moveNode } from '../../services/rbac/grants'
+import { addUser, addGrant, removeGrant, removeAllGrantsForUser, approveGrant, previewMove, moveNode, standingSodFindings } from '../../services/rbac/grants'
 import { useViewAs } from '../../services/rbac/viewAs'
 import AccessExplorer from './AccessExplorer'
 import { PRINCIPAL_DIRECTORY } from '../../data/rbacModel'
@@ -594,10 +594,37 @@ function MembersTab({ tenantId, users, grants, actingUserId, onInvite, onAddRole
    ROLES TAB
    ═══════════════════════════════════════════════════════════════ */
 
-function RolesTab({ grants }) {
+function RolesTab({ grants, users }) {
   const counts = useMemo(() => { const c = {}; grants.forEach(g => { c[g.roleId] = (c[g.roleId] || 0) + 1 }); return c }, [grants])
+  const findings = useMemo(() => standingSodFindings('meridian'), [grants]) // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <div className="space-y-3">
+      {/* Separation of duties — conflicts are DETECTED and governed,
+          never silently tolerated. */}
+      <div className={`rounded-xl border p-4 ${findings.some(f => !f.exception) ? 'border-red-200 bg-red-50/40' : 'border-black/[0.08] bg-white'}`}>
+        <div className="flex items-center gap-2 mb-2">
+          <AlertCircle className={`w-4 h-4 ${findings.some(f => !f.exception) ? 'text-red-500' : 'text-gray-400'}`} />
+          <h3 className="text-[14px] font-semibold text-gray-900">Separation of duties</h3>
+          <span className="text-[11px] text-gray-400 ml-auto tabular-nums">{findings.length} finding{findings.length === 1 ? '' : 's'}</span>
+        </div>
+        {findings.length === 0 ? (
+          <p className="text-[12px] text-gray-500">No conflicting holdings across overlapping scopes.</p>
+        ) : findings.map((f, i) => {
+          const who = users.find(u => u.id === f.userId)
+          const scopes = f.grants.map(g => `${ROLES.find(r => r.id === g.roleId)?.name} @ ${ORG_NODES.find(n => n.id === g.scope.nodeId)?.name}`).join(' + ')
+          return (
+            <div key={i} className={`py-2 text-[12px] ${i > 0 ? 'border-t border-black/[0.04]' : ''}`}>
+              <p className="text-gray-800"><span className="font-medium">{who?.name || f.userId}</span> — {scopes}</p>
+              <p className="text-[10.5px] text-gray-400 font-mono mt-0.5">{f.pair.join(' + ')}</p>
+              {f.exception ? (
+                <p className="text-[11px] text-[#996800] mt-1">Named exception — approved by {f.exception.approvedBy}: {f.exception.reason}</p>
+              ) : (
+                <p className="text-[11px] text-red-600 font-medium mt-1">Violation — no exception on record. Remove one grant or record a named exception.</p>
+              )}
+            </div>
+          )
+        })}
+      </div>
       {ROLES.map(role => (
         <div key={role.id} className={`rounded-xl border p-4 ${role.internal ? 'border-purple-200 bg-purple-50/20' : 'border-black/[0.08] bg-white'}`}>
           <div className="flex items-start justify-between gap-3 mb-2">
@@ -748,7 +775,7 @@ export default function OrgAccess({ activeTab, tier }) {
       )}
       {activeTab === 'structure' && <StructureTab tenantId={activeTenant} />}
       {activeTab === 'members' && <MembersTab tenantId={activeTenant} users={users} grants={grants} actingUserId={actingUserId} onInvite={handleInvite} onAddRole={handleAddRole} onRemoveRole={handleRemoveRole} onRemoveMember={handleRemoveMember} />}
-      {activeTab === 'roles' && <RolesTab grants={grants} />}
+      {activeTab === 'roles' && <RolesTab grants={grants} users={users} />}
       {activeTab === 'audit' && <AuditTab tenantId={activeTenant} auditLog={audit} users={users} />}
       {activeTab === 'explorer' && <AccessExplorer />}
     </div>
