@@ -70,3 +70,39 @@ deferred · needs-Nake.*
 | 9 | Team-tier roles | **implemented** | Pro/Team Members tab = flat Admin/Member/Viewer at the tenant root through the same engine (four-eyes applies); hierarchy/barriers stay Enterprise. |
 
 Additional judgment calls: surface visibility is held-ANYWHERE (a Japan org manager sees the Cortex module; what's inside is scope-checked per node); barrier-agnostic audit visibility (the record of who touched what is oversight, not resource access); `assignedAt` is informational — time-travel evaluation covers expiry only.
+
+## 2026-09-21 — the governed change register (versioned claims)
+
+Rulings (interview): claims wrap **everything governed** (Cortex facts,
+agents, models, billing terms) by reference; review lives in **Cortex
+with a dashboard hold row** deep-linking in; downstream exceptions
+**survive a publish but flip to re-affirmation required** with a named
+owner; one live beat + seeded history; and **each country approves** —
+a Global-scope business claim fans out into one sign-off per Country
+Business and publishes only when all have signed.
+
+Consequences and judgment calls:
+- **Federated ratification is for business decisions only.** An
+  administrative claim (billing terms, `manage_billing`) keeps a single
+  slot at its scope: admin authority is genuinely hierarchical, business
+  sign-off is federated. `approvalUnits()` encodes exactly this.
+- **Country sign-off seats seeded** (ra-34/35/36): Sarah (Japan), Priya
+  (Germany), Lena (NZ) as Final Validators at country altitude — before
+  this, no business-decision permission existed above BU altitude, so a
+  Global claim was unapprovable by design. SoD-checked: final-validator
+  permissions hit none of the conflict pairs.
+- **Every decision is an `authorize()` call** at the ratifying node —
+  the admin/business split refuses the tenant admin verbatim in the UI,
+  and out-of-scope signers get the engine's own reason.
+- **Impact is computed, not asserted**: subtree by the four altitudes,
+  per-node principal counts via `effectiveMembers`, kind-specific uses
+  (fact → consuming agents + live receipts, model → agents on the model).
+- Engine roster test updated deliberately for ra-36 (Lena's third grant
+  at mc-nz-legal); dashboard stats rebalanced (12,848 = 12,633 + 215)
+  with the claim hold row counted in heldForReview.
+- View-as cast extended with Sarah and Lena so the live beat's signers
+  are actable identities.
+- Known v1 gaps (named, not claimed): approved claims leave the pending
+  strip, so a re-affirmation without an open claim drawer has no surface
+  yet (the "re-affirmations due" chip is informational); agent/billing
+  kinds review + impact-map but do not mutate their subjects on publish.

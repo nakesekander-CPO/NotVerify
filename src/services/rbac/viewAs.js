@@ -12,8 +12,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { USERS } from '../../data/rbacModel'
 
-/** The switchable cast (ruled in the alignment spec, Part 3.1). */
-export const VIEW_AS_IDS = ['alex', 'kenji', 'thomas', 'yuki', 'support-bot']
+/** The switchable cast (ruled in the alignment spec, Part 3.1; sarah and
+ *  lena added 2026-09-21 — the governed change register's live beat needs
+ *  the Japan and NZ country sign-off seats as acting identities). */
+export const VIEW_AS_IDS = ['alex', 'kenji', 'sarah', 'yuki', 'lena', 'thomas', 'support-bot']
 
 let _current = 'alex'
 const _subs = new Set()

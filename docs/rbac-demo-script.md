@@ -59,3 +59,31 @@ Chen. Everything below is live engine behavior — no staged screenshots.*
 and try to sign off a project — the tenant admin is refused: "Full
 Access covers administration, not business decisions." Switch to Sarah
 (who edited nothing) to sign. Admins administer; named humans decide.*
+
+## The governed change beat (2026-09-21) — versioned claims
+
+1. **Dashboard, as Alex** — the queue holds `GOV-CHG-041 · Group
+   glossary update · Goodwill v3.0`. Open it: "sign-off happens in
+   Cortex" → **Review in Cortex**.
+2. **The claim** — scope Global Company, v2.0 → v3.0, three evidence
+   items, and the impact map: every country, BU and department with
+   per-node people counts. Germany has already signed (Priya).
+3. **Try to sign Japan as Alex** — refused inline: "Full Access covers
+   administration, not business decisions." The admin/business split,
+   on screen.
+4. **View-as Sarah → Sign for Japan.** One country down, claim still
+   pending — federation means no single signer publishes a Global change.
+5. **View-as Lena → Sign for New Zealand** — the publish moment: the
+   term's version chain advances to v3.0 Current, and BOTH local
+   exceptions (Japan Securities, Germany Private Banking) flip to
+   "Re-affirmation required — approval predates v3.0", owners named.
+   Nothing silently broke.
+6. **Re-affirm as Lena** on the Japan exception — refused: her NZ seat
+   "does not cover Securities". **View-as Sarah → Re-affirm** — recorded.
+7. **Back on the dashboard** — the hold resolved itself: "Published as
+   v3.0 via governed change", and the stat chips moved one-for-one.
+8. *Contrast:* open the pending **Model change** chip (Meridian JA
+   Disclosure v1.0 → v1.1) — BU scope, one sign-off slot, a three-node
+   impact map. Altitude is the blast radius.
+
+Reload restores the seeds — the beat is repeatable.
