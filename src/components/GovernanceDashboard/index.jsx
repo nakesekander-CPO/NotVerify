@@ -18,6 +18,8 @@ import {
   Bot, Radar, Pen, Layers, Brain, Languages, Clapperboard,
 } from 'lucide-react'
 import { applyDecision, getDashboardState, isOpen, triageOrder, PRELOADED_ENTRIES } from '../../data/governanceDashboard'
+import { useChangeRegister, getClaimById } from '../../data/changeRegister'
+import { USERS } from '../../data/rbacModel'
 import { METRICS } from '../../data/cortex'
 import { EAVI, ALERTS } from '../../data/eav'
 import { AGENTS } from '../../data/agentStudio'
@@ -48,7 +50,46 @@ export default function GovernanceDashboard({
   const [filter, setFilter] = useState(null)
   const [selectedHoldId, setSelectedHoldId] = useState(() => triageOrder(getDashboardState(1).heldChanges)[0]?.id ?? null)
 
-  const { mode, stats, heldChanges } = liveState
+  const { mode, stats: baseStats, heldChanges: baseHeldChanges } = liveState
+
+  /* Governed change register (2026-09-21): a hold row with a `claimId`
+     mirrors a versioned claim whose sign-off happens in Cortex. Its live
+     status is derived from the register at render — publish/reject in
+     Cortex resolves the row here, and the stat chips move one-for-one so
+     the reconciliation stays honest. */
+  useChangeRegister()
+  // Computed inline (not memoized) so register bumps re-derive the rows.
+  const { heldChanges, stats } = (() => {
+    let resolved = 0
+    const rows = baseHeldChanges.map(row => {
+      if (!row.claimId) return row
+      const claim = getClaimById(row.claimId)
+      if (!claim || claim.status === 'pending') return row
+      resolved += 1
+      const lastSigner = [...claim.approvals].reverse().find(a => a.by)?.by
+      const byName = USERS.find(u => u.id === lastSigner)?.name || lastSigner || '—'
+      return {
+        ...row,
+        status: claim.status === 'approved' ? 'cleared' : 'rejected',
+        decision: {
+          type: claim.status,
+          label: claim.status === 'approved' ? `Published as ${claim.version.to} via governed change` : 'Declined in country sign-off',
+          by: byName,
+          at: claim.decidedAt?.slice(0, 10) || '',
+          reason: null,
+        },
+      }
+    })
+    if (resolved === 0) return { heldChanges: rows, stats: baseStats }
+    return {
+      heldChanges: rows,
+      stats: {
+        ...baseStats,
+        heldForReview: baseStats.heldForReview - resolved,
+        resolvedByReview: baseStats.resolvedByReview + resolved,
+      },
+    }
+  })()
 
   /* Decisions are computed off the current state, never inside a state
      updater — an updater can run twice, which would double-toast. */
@@ -211,6 +252,7 @@ export default function GovernanceDashboard({
           selectedId={selectedHoldId}
           onSelect={setSelectedHoldId}
           onDecide={handleDecide}
+          onOpenClaim={(claimId) => onOpenCortex?.(claimId)}
         />
       </div>
 

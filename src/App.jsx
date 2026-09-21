@@ -90,6 +90,9 @@ export default function App() {
   const [humanReviewMode, setHumanReviewMode] = useState(null) // null | 'assign' | 'review'
   if (typeof window !== 'undefined') { window.__setHumanReviewMode = setHumanReviewMode }
   const [previousPhase, setPreviousPhase] = useState(null) // to return after review
+  // Governed change register (2026-09-21): a dashboard hold row can
+  // deep-link Cortex straight into a claim's Change Review drawer.
+  const [cortexFocusClaimId, setCortexFocusClaimId] = useState(null)
   // Single Back rule: a stale/self-referencing previousPhase always falls
   // back to the dashboard — no more Settings↔Integrations Back loops.
   const goBack = useCallback((fallback = 'dashboard') => {
@@ -468,7 +471,10 @@ export default function App() {
               onFileAccepted={handleFileAccepted}
               onStartCampaign={() => setPhase('campaign-hub')}
               onCreateContent={handleCreateContent}
-              onOpenCortex={() => { setPreviousPhase('dashboard'); setPhase('org-brain') }}
+              onOpenCortex={(claimId) => {
+                setCortexFocusClaimId(typeof claimId === 'string' ? claimId : null)
+                setPreviousPhase('dashboard'); setPhase('org-brain')
+              }}
               onOpenAgentStudio={() => { setPreviousPhase('dashboard'); setPhase('agent-studio') }}
               onOpenAIVisibility={() => { setPreviousPhase('dashboard'); setPhase('ai-visibility') }}
               onOpenSwiftBridge={() => { setPreviousPhase('dashboard'); setPhase('swiftbridge') }}
@@ -520,9 +526,10 @@ export default function App() {
           {/* Cortex — top-level phase accessible from dashboard or narrative */}
           {phase === 'org-brain' && (<AccessGate permission="access_cortex" viewer={viewAsUserId}>
             <Cortex
-              onClose={() => goBack()}
-              onNavigateBack={() => goBack()}
+              onClose={() => { setCortexFocusClaimId(null); goBack() }}
+              onNavigateBack={() => { setCortexFocusClaimId(null); goBack() }}
               onCreateContent={handleCreateContent}
+              focusClaimId={cortexFocusClaimId}
             />
           </AccessGate>)}
 

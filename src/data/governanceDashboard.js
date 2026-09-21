@@ -29,9 +29,9 @@ export const REVIEWERS = {
    still awaiting a reviewer (held ≤ flags). */
 
 export const LIVE_STATS = {
-  checksThisWeek: 12847,
-  flagsRaised: 214,
-  heldForReview: 10,
+  checksThisWeek: 12848,
+  flagsRaised: 215,
+  heldForReview: 11,
   publishedSafely: 12633,
   resolvedByReview: 4,
 }
@@ -55,6 +55,25 @@ export function triageOrder(changes) {
 }
 
 export const HELD_CHANGES = [
+  // Governed change register (2026-09-21): a pending versioned claim
+  // surfaces here as a hold and deep-links into Cortex for review —
+  // `claimId` carries the link. The row's live status is derived from
+  // the register at render time; this seed stays 'held'.
+  {
+    id: 'hold-chg-041',
+    ruleId: 'GOV-CHG-041',
+    claimId: 'CHG-2026-041',
+    title: 'Group glossary update · Goodwill v3.0',
+    status: 'held',
+    reason: {
+      label: 'Versioned claim awaiting country sign-off',
+      before: 'のれん gloss v2.0 in force group-wide',
+      after: 'v3.0 publishes when Japan, Germany and New Zealand have signed',
+      source: 'Governed change CHG-2026-041',
+    },
+    reviewer: REVIEWERS.sarah,
+    heldFor: '5 days',
+  },
   {
     id: 'hold-01',
     ruleId: 'FIN-REV-014',

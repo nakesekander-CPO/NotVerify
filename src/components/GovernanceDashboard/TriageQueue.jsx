@@ -11,7 +11,7 @@
  */
 
 import { useCallback, useState } from 'react'
-import { ShieldCheck, Check, Undo2, FileText, AlertTriangle } from 'lucide-react'
+import { ShieldCheck, Check, Undo2, FileText, AlertTriangle, ArrowRight, Brain } from 'lucide-react'
 import {
   Card, MonoLabel, SectionHeading, StatusBadge, EmptyState, KeyValueRow,
   PrimaryButton, DangerButton,
@@ -54,7 +54,7 @@ function TriageRow({ change, selected, onSelect }) {
 
 /* The decision panel — the HoldDetailDrawer record, docked. Keyed by
    hold id from the parent so the send-back form resets per selection. */
-function HoldDetail({ change, onDecide }) {
+function HoldDetail({ change, onDecide, onOpenClaim }) {
   const [rejecting, setRejecting] = useState(false)
   const [reason, setReason] = useState('')
 
@@ -107,7 +107,22 @@ function HoldDetail({ change, onDecide }) {
         </div>
       )}
 
-      {open && !rejecting && (
+      {/* A governed change (claim) is decided in Cortex — the review
+          carries the impact map and the federated country sign-offs,
+          so this panel hands off instead of approving in place. */}
+      {open && change.claimId && (
+        <div className="pt-1 space-y-2.5">
+          <p className="text-[11.5px] text-slate flex items-start gap-1.5">
+            <Brain className="w-3.5 h-3.5 mt-0.5 shrink-0 text-ocean" />
+            This hold is a versioned claim — sign-off happens in Cortex, with the scope, evidence and impact map on one screen.
+          </p>
+          <PrimaryButton onClick={() => onOpenClaim?.(change.claimId)}>
+            Review in Cortex <ArrowRight className="w-4 h-4" />
+          </PrimaryButton>
+        </div>
+      )}
+
+      {open && !change.claimId && !rejecting && (
         <div className="flex items-center gap-2.5 pt-1">
           <PrimaryButton onClick={() => onDecide(change.id, 'approved')}>
             <Check className="w-4 h-4" /> Approve &amp; publish
@@ -118,7 +133,7 @@ function HoldDetail({ change, onDecide }) {
         </div>
       )}
 
-      {open && rejecting && (
+      {open && !change.claimId && rejecting && (
         <div className="rounded-lg border border-rule bg-pale/50 p-3.5 space-y-2.5">
           <label htmlFor="triage-reject-reason" className="block text-[12.5px] font-semibold text-ink">
             Why is this going back?
@@ -160,7 +175,7 @@ const FILTER_OPTIONS = [
 ]
 
 export default function TriageQueue({
-  heldChanges, mode, filter, onFilterChange, selectedId, onSelect, onDecide,
+  heldChanges, mode, filter, onFilterChange, selectedId, onSelect, onDecide, onOpenClaim,
 }) {
   const visible = triageOrder(heldChanges.filter((c) => {
     if (filter === 'held') return isOpen(c)
@@ -247,7 +262,7 @@ export default function TriageQueue({
                 </p>
               )}
               <div className="flex-1 min-h-0">
-                <HoldDetail key={selected?.id || 'none'} change={selected} onDecide={onDecide} />
+                <HoldDetail key={selected?.id || 'none'} change={selected} onDecide={onDecide} onOpenClaim={onOpenClaim} />
               </div>
             </div>
           </div>

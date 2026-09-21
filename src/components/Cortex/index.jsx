@@ -22,8 +22,10 @@ import { PageHeader } from '../ui'
 import { Card } from '../HITLVendorWorkflow/shared'
 import { METRICS, WORKSPACE_LINE, MEMORY_AT_WORK, FACTS } from '../../data/cortex'
 import { CORTEX_FLAGS } from '../../data/eavScan'
+import { useChangeRegister, pendingClaims, reaffirmQueue, getClaimById, CLAIM_KIND_META } from '../../data/changeRegister'
 import GraphView from './GraphView'
 import NodeInspector from './NodeInspector'
+import ChangeReview from './ChangeReview'
 
 // Matches Cortex/GraphView.jsx's KIND ring colors — a 3-hue categorical
 // palette (validated with the dataviz skill's checker) plus the amber
@@ -35,22 +37,33 @@ const LEGEND_NODES = [
   { label: 'flagged', color: '#996800' },
 ]
 
-export default function Cortex({ onClose, onNavigateBack, onCreateContent }) {
+export default function Cortex({ onClose, onNavigateBack, onCreateContent, focusClaimId }) {
   const [lens, setLens] = useState('')
   const [fact, setFact] = useState(null)
+  // Governed change register (2026-09-21): claims are reviewed in a
+  // second drawer on the same stage — one drawer at a time.
+  const [claim, setClaim] = useState(() => (focusClaimId ? getClaimById(focusClaimId) : null))
   const onDrawerCloseRef = useRef(null)
+  useChangeRegister()
 
   const openInspector = (f, onDrawerClose) => {
     setFact(f)
+    setClaim(null)
     onDrawerCloseRef.current = onDrawerClose || null
   }
   const closeInspector = () => {
     setFact(null)
     if (onDrawerCloseRef.current) { onDrawerCloseRef.current(); onDrawerCloseRef.current = null }
   }
+  const openClaim = (c) => { closeInspector(); setClaim(c) }
 
   useEffect(() => {
-    const handler = (e) => { if (e.key === 'Escape') closeInspector() }
+    const handler = (e) => {
+      if (e.key !== 'Escape') return
+      setFact(null)
+      setClaim(null)
+      if (onDrawerCloseRef.current) { onDrawerCloseRef.current(); onDrawerCloseRef.current = null }
+    }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
   }, [])
@@ -120,6 +133,20 @@ export default function Cortex({ onClose, onNavigateBack, onCreateContent }) {
             Recently flagged: {f.t}
           </button>
         ))}
+        {/* Governed changes awaiting sign-off (change register, 2026-09-21) */}
+        {pendingClaims().map(c => (
+          <button key={c.id} onClick={() => openClaim(c)}
+            className="inline-flex items-center gap-1.5 text-[11px] text-ocean bg-ocean/[0.06] border border-ocean/25 rounded-full px-2.5 py-1 cursor-pointer hover:bg-ocean/[0.12]">
+            <span className="w-1.5 h-1.5 rounded-full bg-ocean" aria-hidden />
+            {CLAIM_KIND_META[c.kind].label} change: {c.title}
+          </button>
+        ))}
+        {reaffirmQueue().length > 0 && (
+          <span className="inline-flex items-center gap-1.5 text-[11px] text-[#996800]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#FFB000]" aria-hidden />
+            {reaffirmQueue().length} exception re-affirmation{reaffirmQueue().length === 1 ? '' : 's'} due
+          </span>
+        )}
       </div>
 
       {/* ── Graph legend ── */}
@@ -144,10 +171,11 @@ export default function Cortex({ onClose, onNavigateBack, onCreateContent }) {
       {/* ── Stage ── */}
       <div className="px-6 pt-3 pb-4">
         <div className="relative h-[560px] rounded-xl border border-rule overflow-hidden">
-          <div className={`absolute inset-0 transition-[filter,opacity] duration-300 ${fact ? 'blur-[2px] opacity-60' : ''}`}>
+          <div className={`absolute inset-0 transition-[filter,opacity] duration-300 ${(fact || claim) ? 'blur-[2px] opacity-60' : ''}`}>
             <GraphView lens={lens} onInspect={openInspector} onDeselect={closeInspector} />
           </div>
           <NodeInspector fact={fact} onClose={closeInspector} />
+          {claim && <ChangeReview claim={claim} onClose={() => setClaim(null)} />}
         </div>
       </div>
 
