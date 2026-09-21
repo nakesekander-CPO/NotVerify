@@ -71,7 +71,7 @@ export default function FinalSignOff({ activeProjectId, currentUserId, navigate,
     <div>
       <SectionHeading
         title="Final Sign-Off"
-        subtitle="Sign-off is a client-side action (the client reviewer, or the last-touch vendor if delegated). It produces an immutable record, locks the job's segments, and — only where the client allowed it — queues approved corrections into the three reuse pipelines: Translation Memory, terminology dataset, and model improvement (RLHF)."
+        subtitle="Sign-off requires sign-off authority at this project's scope (client reviewer or final validator — delegation is an explicit, expiring grant), and the signer can never be the person who edited the segments. It produces an immutable record, locks the job's segments, and — only where the client allowed it — queues approved corrections into the three reuse pipelines: Translation Memory, terminology dataset, and model improvement (RLHF)."
       />
 
       {/* Document-level Pedigree Card — the wax seal */}

@@ -2,16 +2,18 @@ import { useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ChevronRight, Shield, Users, Search, Clock, X, UserPlus,
-  UserMinus, KeyRound, AlertCircle, Plus, Trash2, CheckCircle2,
+  UserMinus, KeyRound, AlertCircle, Plus, Trash2, CheckCircle2, Lock,
 } from 'lucide-react'
 import {
   TENANTS, ORG_NODES, ROLES,
-  USERS as INITIAL_USERS,
-  ROLE_ASSIGNMENTS as INITIAL_ASSIGNMENTS,
-  AUDIT_LOG as INITIAL_AUDIT,
   NODE_TYPE_STYLES, ACTION_STYLES,
-  getNodePath, getNodeChildren, getNodeDescendants,
+  getNodePath, getNodeChildren,
 } from '../../data/rbacModel'
+import { useRbacStore, effectiveMembers, grantsForUser, grantsAtNode, staleGrants, visibleAuditEvents } from '../../services/rbac/engine'
+import { addUser, addGrant, removeGrant, removeAllGrantsForUser, approveGrant, previewMove, moveNode, standingSodFindings, grantOptions } from '../../services/rbac/grants'
+import { useViewAs } from '../../services/rbac/viewAs'
+import AccessExplorer from './AccessExplorer'
+import { PRINCIPAL_DIRECTORY } from '../../data/rbacModel'
 
 /* ─── Shared sub-components ──────────────────────────────────── */
 
@@ -65,47 +67,31 @@ function ScopeBreadcrumb({ nodeId }) {
   )
 }
 
-/* ─── Local data helpers (operate on passed-in arrays) ───────── */
+/* ─── Data access ──────────────────────────────────────────────
+   All member lists, counts, and coverage come from the RBAC engine —
+   the same conditions (expiry, barriers) that gate actions also shape
+   what this admin surface displays. No local re-implementations. */
 
-function getEffectiveRoles(userId, tenantId, assignments) {
-  return assignments.filter(a => a.userId === userId && a.tenantId === tenantId).map(a => {
-    const role = ROLES.find(r => r.id === a.roleId)
-    const scopeNode = ORG_NODES.find(n => n.id === a.scopeId)
-    const descendants = getNodeDescendants(a.scopeId)
-    return { ...a, role, scopeNode, coveredNodes: scopeNode ? [scopeNode, ...descendants] : descendants, path: getNodePath(a.scopeId) }
-  })
-}
-
-function getEffectiveMembers(nodeId, assignments, users) {
-  const node = ORG_NODES.find(n => n.id === nodeId)
-  if (!node) return []
-  const ta = assignments.filter(a => a.tenantId === node.tenantId)
-  const members = []
-  for (const a of ta) {
-    const covers = a.scopeId === nodeId || (() => { let cur = ORG_NODES.find(n => n.id === nodeId); while (cur) { if (cur.id === a.scopeId) return true; cur = cur.parentId ? ORG_NODES.find(n => n.id === cur.parentId) : null } return false })()
-    if (covers) {
-      const user = users.find(u => u.id === a.userId)
-      const role = ROLES.find(r => r.id === a.roleId)
-      const scopeNode = ORG_NODES.find(n => n.id === a.scopeId)
-      if (user && role) members.push({ user, role, assignment: a, scopeNode, isDirect: a.scopeId === nodeId, inheritancePath: a.scopeId !== nodeId ? getNodePath(a.scopeId).map(n => n.name).join(' > ') : null })
-    }
-  }
-  return members
+/** Flatten engine person-entries into per-grant display rows. */
+function memberRows(nodeId) {
+  return effectiveMembers(nodeId).flatMap(m =>
+    m.grants.map(g => ({ user: m.user, role: g.role, grant: g.grant, scopeNode: g.scopeNode, isDirect: g.isDirect, inheritancePath: g.inheritancePath })))
 }
 
 /* ═══════════════════════════════════════════════════════════════
    STRUCTURE TAB
    ═══════════════════════════════════════════════════════════════ */
 
-function TreeNode({ nodeId, depth, expanded, onToggle, selected, onSelect, assignments, users }) {
+function TreeNode({ nodeId, depth, expanded, onToggle, selected, onSelect }) {
   const node = ORG_NODES.find(n => n.id === nodeId)
   if (!node) return null
   const children = getNodeChildren(nodeId)
   const hasChildren = children.length > 0
   const isExp = expanded.has(nodeId)
   const isSel = selected === nodeId
-  const ac = assignments.filter(a => a.scopeId === nodeId).length
-  const mc = getEffectiveMembers(nodeId, assignments, users).length
+  const ac = grantsAtNode(nodeId).length
+  // People, not grants: one person with two covering grants counts once.
+  const mc = effectiveMembers(nodeId).length
 
   return (
     <>
@@ -119,17 +105,26 @@ function TreeNode({ nodeId, depth, expanded, onToggle, selected, onSelect, assig
         ) : <span className="w-4.5" />}
         <NodeTypeBadge type={node.type} />
         <span className="text-[13px] font-medium text-gray-800 truncate flex-1">{node.name}</span>
+        {node.barrier && (
+          <span className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium border bg-[#FFF7E6] text-[#996800] border-[#FFB000]/40 shrink-0" title={node.barrierReason}>
+            <Lock className="w-2.5 h-2.5" /> Barrier
+          </span>
+        )}
         <span className="text-[10px] text-gray-400 shrink-0 tabular-nums">
           {mc > 0 && <span className="mr-2">{mc} <Users className="w-2.5 h-2.5 inline -mt-0.5" /></span>}
           {ac > 0 && <span>{ac} <KeyRound className="w-2.5 h-2.5 inline -mt-0.5" /></span>}
         </span>
       </button>
-      {hasChildren && isExp && children.map(c => <TreeNode key={c.id} nodeId={c.id} depth={depth + 1} expanded={expanded} onToggle={onToggle} selected={selected} onSelect={onSelect} assignments={assignments} users={users} />)}
+      {hasChildren && isExp && children.map(c => <TreeNode key={c.id} nodeId={c.id} depth={depth + 1} expanded={expanded} onToggle={onToggle} selected={selected} onSelect={onSelect} />)}
     </>
   )
 }
 
-function StructureTab({ tenantId, assignments, users }) {
+function StructureTab({ tenantId }) {
+  const [actingUserId] = useViewAs()
+  const [moveTarget, setMoveTarget] = useState('')
+  const [movePreview, setMovePreview] = useState(null)
+  const [moveError, setMoveError] = useState(null)
   const rootNodes = ORG_NODES.filter(n => n.tenantId === tenantId && !n.parentId)
   const regionIds = rootNodes.flatMap(r => getNodeChildren(r.id).map(c => c.id))
   // Pre-expand through the business-unit level so the four-level structure
@@ -140,12 +135,16 @@ function StructureTab({ tenantId, assignments, users }) {
   const toggle = id => setExpanded(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n })
 
   const selNode = sel ? ORG_NODES.find(n => n.id === sel) : null
-  const selMembers = sel ? getEffectiveMembers(sel, assignments, users) : []
+  const selMembers = sel ? memberRows(sel) : []
+  const moveCandidates = selNode
+    ? ORG_NODES.filter(n => n.tenantId === tenantId && n.id !== sel && n.id !== selNode.parentId && n.type !== 'vendor-org')
+        .filter(n => !getNodePath(n.id).some(a => a.id === sel))
+    : []
 
   return (
     <div className="flex gap-0 min-h-[400px]">
       <div className="flex-1 min-w-0">
-        {rootNodes.map(r => <TreeNode key={r.id} nodeId={r.id} depth={0} expanded={expanded} onToggle={toggle} selected={sel} onSelect={setSel} assignments={assignments} users={users} />)}
+        {rootNodes.map(r => <TreeNode key={r.id} nodeId={r.id} depth={0} expanded={expanded} onToggle={toggle} selected={sel} onSelect={setSel} />)}
       </div>
       <AnimatePresence>
         {selNode && (
@@ -154,7 +153,17 @@ function StructureTab({ tenantId, assignments, users }) {
             <div className="p-4 border-b border-black/[0.06]">
               <ScopeBreadcrumb nodeId={sel} />
               <div className="flex items-center gap-2 mt-2"><NodeTypeBadge type={selNode.type} /><h3 className="text-[15px] font-semibold text-gray-900">{selNode.name}</h3></div>
+              {selNode.residency && (
+                <p className="text-[10px] text-gray-400 mt-1.5">Residency <span className="font-mono text-gray-600">{selNode.residency}</span>{selNode.classification ? <> · <span className="font-mono text-gray-600">{selNode.classification}</span></> : null}</p>
+              )}
             </div>
+            {selNode.barrier && (
+              <div className="p-4 border-b border-black/[0.06] bg-[#FFF7E6]/50">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-[#996800] mb-1 flex items-center gap-1"><Lock className="w-2.5 h-2.5" /> Information barrier</p>
+                <p className="text-[11px] text-gray-600 leading-relaxed">{selNode.barrierReason}</p>
+                <p className="text-[10px] text-gray-400 mt-1.5">Nobody inherits through this wall — the member list below is only the deal team and audited crossings, and is shorter than the parent's on purpose.</p>
+              </div>
+            )}
             <div className="p-4 border-b border-black/[0.06]">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-3">Direct ({selMembers.filter(m => m.isDirect).length})</p>
               {selMembers.filter(m => m.isDirect).length > 0 ? selMembers.filter(m => m.isDirect).map((m, i) => (
@@ -177,6 +186,43 @@ function StructureTab({ tenantId, assignments, users }) {
               ))}
               {selMembers.filter(m => !m.isDirect).length === 0 && <p className="text-[11px] text-gray-400">No inherited access.</p>}
             </div>
+
+            {/* Move node — with an inheritance preview and confirmation */}
+            {selNode.parentId && (
+              <div className="p-4 border-t border-black/[0.06]">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-2">Move node</p>
+                <select value={moveTarget}
+                  onChange={e => {
+                    const target = e.target.value
+                    setMoveTarget(target)
+                    setMoveError(null)
+                    setMovePreview(target ? previewMove({ nodeId: sel, newParentId: target }) : null)
+                  }}
+                  className="w-full rounded-lg border border-black/[0.08] bg-white px-2.5 py-1.5 text-[12px] outline-none focus:border-[#3D16FA]">
+                  <option value="">Move under…</option>
+                  {moveCandidates.map(n => <option key={n.id} value={n.id}>{'\u00A0\u00A0'.repeat(getNodePath(n.id).length - 1)}{n.name}</option>)}
+                </select>
+                {movePreview && !movePreview.error && (
+                  <div className="mt-2 rounded-lg border border-[#FFB000]/40 bg-[#FFF7E6] p-2.5">
+                    <p className="text-[11px] text-[#996800]">
+                      Moving {selNode.name} here: <span className="font-semibold">{movePreview.gained.length}</span> access gain{movePreview.gained.length === 1 ? '' : 's'}, <span className="font-semibold">{movePreview.lost.length}</span> loss{movePreview.lost.length === 1 ? '' : 'es'} across the subtree.
+                    </p>
+                    {movePreview.barrierNote && <p className="text-[10px] text-[#996800] mt-1 flex items-start gap-1"><Lock className="w-2.5 h-2.5 mt-0.5 shrink-0" /> {movePreview.barrierNote}</p>}
+                    <button type="button"
+                      onClick={() => {
+                        const r = moveNode({ nodeId: sel, newParentId: moveTarget, actorId: actingUserId })
+                        if (r.error) { setMoveError(r.error); return }
+                        setMoveTarget(''); setMovePreview(null)
+                      }}
+                      className="mt-2 px-2.5 py-1 rounded-lg bg-[#996800] text-white text-[10.5px] font-semibold cursor-pointer hover:opacity-90">
+                      Confirm move
+                    </button>
+                  </div>
+                )}
+                {movePreview?.error && <p className="text-[11px] text-red-600 mt-1.5">{movePreview.error}</p>}
+                {moveError && <p className="text-[11px] text-red-600 mt-1.5">{moveError}</p>}
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -188,13 +234,17 @@ function StructureTab({ tenantId, assignments, users }) {
    INVITE MODAL
    ═══════════════════════════════════════════════════════════════ */
 
-function InviteModal({ tenantId, onInvite, onClose }) {
+function InviteModal({ tenantId, actingUserId, onInvite, onClose }) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [roleId, setRoleId] = useState('contributor')
   const [scopeId, setScopeId] = useState('')
-  const tenantNodes = ORG_NODES.filter(n => n.tenantId === tenantId)
-  const customerRoles = ROLES.filter(r => !r.internal && !r.hidden)
+  const [refusal, setRefusal] = useState(null)
+  // Only offer what the acting admin can actually grant, where they can
+  // grant it — the form never dangles Tenant Admin over a team node.
+  const options = useMemo(() => grantOptions(actingUserId, tenantId), [actingUserId, tenantId])
+  const customerRoles = options.roles
+  const tenantNodes = ORG_NODES.filter(n => n.tenantId === tenantId && (options.scopesForRole(roleId) || []).includes(n.id))
 
   const canSubmit = name.trim() && email.trim() && roleId && scopeId
 
@@ -236,9 +286,17 @@ function InviteModal({ tenantId, onInvite, onClose }) {
             </select>
           </div>
         </div>
+        {refusal && (
+          <p className="px-5 pb-3 text-[11px] text-red-600 flex items-start gap-1.5"><AlertCircle className="w-3 h-3 mt-0.5 shrink-0" /> {refusal}</p>
+        )}
         <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-black/[0.06] bg-gray-50">
           <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg border border-black/[0.10] text-gray-600 text-[13px] font-medium hover:bg-white cursor-pointer transition-colors">Cancel</button>
-          <button type="button" onClick={() => { if (canSubmit) onInvite({ name: name.trim(), email: email.trim(), roleId, scopeId }) }} disabled={!canSubmit}
+          <button type="button" onClick={() => {
+            if (!canSubmit) return
+            const result = onInvite({ name: name.trim(), email: email.trim(), roleId, scopeId })
+            if (result?.error || result?.conflict) { setRefusal(result.error || result.conflict.message); return }
+            onClose()
+          }} disabled={!canSubmit}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#3D16FA] text-white text-[13px] font-semibold hover:bg-[#2E10C4] cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             <UserPlus className="w-3.5 h-3.5" /> Invite
           </button>
@@ -252,29 +310,67 @@ function InviteModal({ tenantId, onInvite, onClose }) {
    ADD ROLE INLINE FORM
    ═══════════════════════════════════════════════════════════════ */
 
-function AddRoleForm({ tenantId, onAdd, onCancel }) {
+function AddRoleForm({ tenantId, actingUserId, onAdd, onCancel }) {
   const [roleId, setRoleId] = useState('contributor')
   const [scopeId, setScopeId] = useState('')
-  const tenantNodes = ORG_NODES.filter(n => n.tenantId === tenantId)
-  const customerRoles = ROLES.filter(r => !r.internal && !r.hidden)
+  const [refusal, setRefusal] = useState(null)
+  const [conflict, setConflict] = useState(null)
+  const [exApprover, setExApprover] = useState('alex')
+  const [exReason, setExReason] = useState('')
+  const options = useMemo(() => grantOptions(actingUserId, tenantId), [actingUserId, tenantId])
+  const customerRoles = options.roles
+  const tenantNodes = ORG_NODES.filter(n => n.tenantId === tenantId && (options.scopesForRole(roleId) || []).includes(n.id))
+  const barrierTarget = ORG_NODES.find(n => n.id === scopeId)?.barrier
+
+  const submit = (sodException) => {
+    if (!scopeId) return
+    const result = onAdd({ roleId, scopeId, sodException })
+    if (result?.conflict) { setConflict(result.conflict); setRefusal(null); return }
+    if (result?.error) { setRefusal(result.error); setConflict(null); return }
+    // success — parent closes the form
+  }
 
   return (
     <div className="rounded-lg border border-[#3D16FA]/30 bg-[#3D16FA]/[0.04] p-3 space-y-2">
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#3D16FA]">Add role assignment</p>
-      <select value={roleId} onChange={e => setRoleId(e.target.value)}
+      <select value={roleId} onChange={e => { setRoleId(e.target.value); setScopeId(''); setConflict(null); setRefusal(null) }}
         className="w-full rounded-lg border border-black/[0.08] bg-white px-2.5 py-1.5 text-[12px] outline-none focus:border-[#3D16FA] transition">
         {customerRoles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
       </select>
-      <select value={scopeId} onChange={e => setScopeId(e.target.value)}
+      <select value={scopeId} onChange={e => { setScopeId(e.target.value); setConflict(null); setRefusal(null) }}
         className="w-full rounded-lg border border-black/[0.08] bg-white px-2.5 py-1.5 text-[12px] outline-none focus:border-[#3D16FA] transition">
         <option value="">Select scope...</option>
         {tenantNodes.map(n => {
           const depth = getNodePath(n.id).length - 1
-          return <option key={n.id} value={n.id}>{'\u00A0\u00A0'.repeat(depth)}{n.name}</option>
+          return <option key={n.id} value={n.id}>{'\u00A0\u00A0'.repeat(depth)}{n.name}{n.barrier ? ' (barrier)' : ''}</option>
         })}
       </select>
+      {barrierTarget && (
+        <p className="text-[10px] text-[#996800] flex items-center gap-1"><Lock className="w-2.5 h-2.5" /> This scope is behind an information barrier — the assignment is an explicit, audited crossing.</p>
+      )}
+      {refusal && (
+        <p className="text-[11px] text-red-600 flex items-start gap-1.5"><AlertCircle className="w-3 h-3 mt-0.5 shrink-0" /> {refusal}</p>
+      )}
+      {conflict && (
+        <div className="rounded-lg border border-[#FFB000]/40 bg-[#FFF7E6] p-2.5 space-y-1.5">
+          <p className="text-[11px] text-[#996800] flex items-start gap-1.5"><AlertCircle className="w-3 h-3 mt-0.5 shrink-0" /> {conflict.message}</p>
+          <div className="flex items-center gap-2">
+            <select value={exApprover} onChange={e => setExApprover(e.target.value)}
+              className="flex-1 rounded-lg border border-black/[0.08] bg-white px-2 py-1 text-[11px] outline-none">
+              <option value="alex">Approver: Alex Chen (Tenant Admin)</option>
+            </select>
+            <input value={exReason} onChange={e => setExReason(e.target.value)} placeholder="Exception reason (required)"
+              className="flex-1 rounded-lg border border-black/[0.08] bg-white px-2 py-1 text-[11px] outline-none" />
+          </div>
+          <button type="button" disabled={!exReason.trim()}
+            onClick={() => submit({ approvedBy: exApprover, reason: exReason.trim() })}
+            className="px-2.5 py-1 rounded-lg bg-[#996800] text-white text-[10.5px] font-semibold cursor-pointer hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed">
+            Assign with named exception
+          </button>
+        </div>
+      )}
       <div className="flex items-center gap-2">
-        <button type="button" onClick={() => { if (scopeId) onAdd({ roleId, scopeId }) }}
+        <button type="button" onClick={() => submit(undefined)}
           disabled={!scopeId} className="px-3 py-1.5 rounded-lg bg-[#3D16FA] text-white text-[11px] font-semibold cursor-pointer hover:bg-[#2E10C4] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
           Assign
         </button>
@@ -288,23 +384,74 @@ function AddRoleForm({ tenantId, onAdd, onCancel }) {
    MEMBERS TAB
    ═══════════════════════════════════════════════════════════════ */
 
-function MembersTab({ tenantId, users, assignments, onInvite, onAddRole, onRemoveRole, onRemoveMember }) {
+function MembersTab({ tenantId, users, grants, actingUserId, onInvite, onAddRole, onRemoveRole, onRemoveMember }) {
   const [sel, setSel] = useState(null)
   const [search, setSearch] = useState('')
   const [showInvite, setShowInvite] = useState(false)
   const [showAddRole, setShowAddRole] = useState(false)
+  const [showReview, setShowReview] = useState(false)
+  const [approvalNote, setApprovalNote] = useState(null)
+
+  const pending = grants.filter(g => g.tenantId === tenantId && g.conditions?.requiresApproval && !g.conditions?.approval)
+  const stale = staleGrants(tenantId)
 
   const tenantUsers = useMemo(() => {
-    const ids = new Set(assignments.filter(a => a.tenantId === tenantId).map(a => a.userId))
+    const ids = new Set(grants.filter(g => g.tenantId === tenantId && g.principal.type === 'user').map(g => g.principal.id))
     return users.filter(u => ids.has(u.id))
-  }, [tenantId, assignments, users])
+  }, [tenantId, grants, users])
 
   const filtered = search ? tenantUsers.filter(u => u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase())) : tenantUsers
   const selUser = sel ? users.find(u => u.id === sel) : null
-  const selRoles = sel ? getEffectiveRoles(sel, tenantId, assignments) : []
+  const selRoles = sel ? grantsForUser(sel, tenantId) : []
 
   return (
     <>
+      {/* JIT approvals — support access activates only when the CUSTOMER approves */}
+      {pending.length > 0 && (
+        <div className="mb-4 rounded-lg border border-purple-200 bg-purple-50/40 px-4 py-3">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-purple-600 mb-2">Pending access approvals ({pending.length})</p>
+          {pending.map(g => {
+            const d = PRINCIPAL_DIRECTORY.find(x => x.id === g.principal.id)
+            return (
+              <div key={g.id} className="flex items-center gap-3 py-1">
+                <AlertCircle className="w-3.5 h-3.5 text-purple-500 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[12px] text-gray-800">{d?.name || `${g.principal.type} ${g.principal.id}`} — {ROLES.find(r => r.id === g.roleId)?.name}</p>
+                  <p className="text-[10px] text-gray-400">{g.conditions.justification}{g.conditions.expiresAt ? ` · time-boxed until ${g.conditions.expiresAt.slice(0, 10)}` : ''} · inert until approved</p>
+                </div>
+                <button type="button" onClick={() => { const r = approveGrant({ grantId: g.id, actorId: actingUserId }); setApprovalNote(r.error || `Approved — active until ${g.conditions.expiresAt?.slice(0, 10)}`) }}
+                  className="px-3 py-1.5 rounded-lg bg-purple-600 text-white text-[11px] font-semibold cursor-pointer hover:bg-purple-700 shrink-0">
+                  Approve
+                </button>
+              </div>
+            )
+          })}
+          {approvalNote && <p className="text-[11px] text-purple-700 mt-1.5">{approvalNote}</p>}
+        </div>
+      )}
+
+      {/* Access review — live grants nobody is using */}
+      {stale.length > 0 && (
+        <div className="mb-4 rounded-lg border border-black/[0.08] bg-gray-50 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Clock className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+            <p className="text-[12px] text-gray-700 flex-1"><span className="font-semibold">{stale.length} grant{stale.length === 1 ? '' : 's'}</span> unused for 90+ days — live access nobody is exercising.</p>
+            <button type="button" onClick={() => setShowReview(v => !v)} className="text-[11px] text-[#3D16FA] hover:text-[#2E10C4] font-medium cursor-pointer">{showReview ? 'Hide' : 'Review'}</button>
+          </div>
+          {showReview && stale.map(g => {
+            const role = ROLES.find(r => r.id === g.roleId)
+            const scope = ORG_NODES.find(n => n.id === g.scope.nodeId)
+            const who = g.principal.type === 'user' ? users.find(u => u.id === g.principal.id)?.name : `${g.principal.type} ${g.principal.id}`
+            return (
+              <div key={g.id} className="flex items-center gap-3 mt-2 pl-5">
+                <p className="text-[12px] text-gray-600 flex-1">{who} — {role?.name} @ {scope?.name} <span className="text-[10px] text-gray-400 font-mono">{g.lastUsedAt ? `last used ${new Date(g.lastUsedAt).toLocaleDateString()}` : 'never used'}</span></p>
+                <button type="button" onClick={() => onRemoveRole(g.id)} className="flex items-center gap-1 text-[11px] text-red-500 hover:text-red-700 font-medium cursor-pointer"><Trash2 className="w-3 h-3" /> Revoke</button>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
       <div className="flex gap-0 min-h-[400px]">
         <div className="flex-1 min-w-0">
           {/* Header row */}
@@ -332,7 +479,7 @@ function MembersTab({ tenantId, users, assignments, onInvite, onAddRole, onRemov
             </thead>
             <tbody>
               {filtered.map(user => {
-                const roles = getEffectiveRoles(user.id, tenantId, assignments)
+                const roles = grantsForUser(user.id, tenantId)
                 return (
                   <tr key={user.id} onClick={() => { setSel(user.id); setShowAddRole(false) }}
                     className={`border-b border-black/[0.04] cursor-pointer transition-colors ${sel === user.id ? 'bg-[#3D16FA]/[0.06]' : 'hover:bg-gray-50'}`}>
@@ -342,7 +489,7 @@ function MembersTab({ tenantId, users, assignments, onInvite, onAddRole, onRemov
                         <div><p className="text-[12px] font-medium text-gray-800">{user.name}</p><p className="text-[10px] text-gray-400">{user.email}</p></div>
                       </div>
                     </td>
-                    <td className="py-2.5 pr-3"><div className="flex flex-wrap gap-1">{roles.map(r => <RoleBadge key={r.id} role={r.role} scopeNode={r.scopeNode} />)}</div></td>
+                    <td className="py-2.5 pr-3"><div className="flex flex-wrap gap-1">{roles.map(r => <RoleBadge key={r.grant.id} role={r.role} scopeNode={r.scopeNode} />)}</div></td>
                     <td className="py-2.5 pr-3"><div className="flex items-center gap-1.5"><StatusDot status={user.status} /><span className="text-[11px] text-gray-500 capitalize">{user.status}</span></div></td>
                     <td className="py-2.5 text-right text-[11px] text-gray-400">{timeAgo(user.lastActive)}</td>
                   </tr>
@@ -383,30 +530,42 @@ function MembersTab({ tenantId, users, assignments, onInvite, onAddRole, onRemov
                 {/* Add role form */}
                 {showAddRole && (
                   <div className="mb-3">
-                    <AddRoleForm tenantId={tenantId} onCancel={() => setShowAddRole(false)}
-                      onAdd={({ roleId, scopeId }) => { onAddRole(sel, roleId, scopeId); setShowAddRole(false) }} />
+                    <AddRoleForm tenantId={tenantId} actingUserId={actingUserId} onCancel={() => setShowAddRole(false)}
+                      onAdd={({ roleId, scopeId, sodException }) => {
+                        const result = onAddRole(sel, roleId, scopeId, sodException)
+                        if (result?.grant) setShowAddRole(false)
+                        return result
+                      }} />
                   </div>
                 )}
 
                 {/* Existing assignments */}
                 <div className="space-y-3">
                   {selRoles.map(a => (
-                    <div key={a.id} className={`rounded-lg border p-3 group ${a.internal ? 'border-purple-200 bg-purple-50/30 border-l-4 border-l-purple-400' : 'border-black/[0.08]'}`}>
+                    <div key={a.grant.id} className={`rounded-lg border p-3 group ${a.grant.internal ? 'border-purple-200 bg-purple-50/30 border-l-4 border-l-purple-400' : 'border-black/[0.08]'}`}>
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-2">
-                          <Shield className={`w-3.5 h-3.5 ${a.internal ? 'text-purple-600' : 'text-[#3D16FA]'}`} />
+                          <Shield className={`w-3.5 h-3.5 ${a.grant.internal ? 'text-purple-600' : 'text-[#3D16FA]'}`} />
                           <span className="text-[13px] font-semibold text-gray-900">{a.role?.name}</span>
                         </div>
-                        {!a.internal && (
-                          <button type="button" onClick={() => onRemoveRole(a.id)}
+                        {!a.grant.internal && (
+                          <button type="button" onClick={() => onRemoveRole(a.grant.id)}
                             className="opacity-0 group-hover:opacity-100 p-1 text-gray-300 hover:text-red-500 cursor-pointer transition-all" title="Remove role">
                             <Trash2 className="w-3 h-3" />
                           </button>
                         )}
                       </div>
-                      <ScopeBreadcrumb nodeId={a.scopeId} />
+                      <ScopeBreadcrumb nodeId={a.grant.scope.nodeId} />
                       {a.coveredNodes.length > 1 && <p className="text-[10px] text-gray-400 mt-1">Inherits to: {a.coveredNodes.slice(1, 5).map(n => n.name).join(', ')}{a.coveredNodes.length > 5 ? ` +${a.coveredNodes.length - 5} more` : ''}</p>}
-                      {a.expiresAt && <p className="text-[10px] text-amber-600 mt-1 flex items-center gap-1"><Clock className="w-2.5 h-2.5" /> Expires {new Date(a.expiresAt).toLocaleDateString()}</p>}
+                      {a.grant.conditions?.expiresAt && (
+                        <p className={`text-[10px] mt-1 flex items-center gap-1 ${a.expired ? 'text-red-600 font-medium' : 'text-amber-600'}`}>
+                          <Clock className="w-2.5 h-2.5" /> {a.expired ? 'Expired' : 'Expires'} {new Date(a.grant.conditions.expiresAt).toLocaleDateString()}{a.expired ? ' — no longer grants access' : ''}
+                        </p>
+                      )}
+                      {a.grant.conditions?.sodException && (
+                        <p className="text-[10px] text-[#996800] mt-1">SoD exception — approved by {a.grant.conditions.sodException.approvedBy}: {a.grant.conditions.sodException.reason}</p>
+                      )}
+                      <p className="text-[10px] text-gray-400 mt-1">{a.grant.lastUsedAt ? `Last used ${new Date(a.grant.lastUsedAt).toLocaleDateString()}` : 'Never used'}</p>
                     </div>
                   ))}
                 </div>
@@ -427,8 +586,8 @@ function MembersTab({ tenantId, users, assignments, onInvite, onAddRole, onRemov
       {/* Invite modal */}
       <AnimatePresence>
         {showInvite && (
-          <InviteModal tenantId={tenantId} onClose={() => setShowInvite(false)}
-            onInvite={(data) => { onInvite(data); setShowInvite(false) }} />
+          <InviteModal tenantId={tenantId} actingUserId={actingUserId} onClose={() => setShowInvite(false)}
+            onInvite={(data) => onInvite(data)} />
         )}
       </AnimatePresence>
     </>
@@ -439,11 +598,38 @@ function MembersTab({ tenantId, users, assignments, onInvite, onAddRole, onRemov
    ROLES TAB
    ═══════════════════════════════════════════════════════════════ */
 
-function RolesTab({ assignments }) {
-  const counts = useMemo(() => { const c = {}; assignments.forEach(a => { c[a.roleId] = (c[a.roleId] || 0) + 1 }); return c }, [assignments])
+function RolesTab({ grants, users }) {
+  const counts = useMemo(() => { const c = {}; grants.forEach(g => { c[g.roleId] = (c[g.roleId] || 0) + 1 }); return c }, [grants])
+  const findings = useMemo(() => standingSodFindings('meridian'), [grants]) // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <div className="space-y-3">
-      {ROLES.filter(r => !r.hidden).map(role => (
+      {/* Separation of duties — conflicts are DETECTED and governed,
+          never silently tolerated. */}
+      <div className={`rounded-xl border p-4 ${findings.some(f => !f.exception) ? 'border-red-200 bg-red-50/40' : 'border-black/[0.08] bg-white'}`}>
+        <div className="flex items-center gap-2 mb-2">
+          <AlertCircle className={`w-4 h-4 ${findings.some(f => !f.exception) ? 'text-red-500' : 'text-gray-400'}`} />
+          <h3 className="text-[14px] font-semibold text-gray-900">Separation of duties</h3>
+          <span className="text-[11px] text-gray-400 ml-auto tabular-nums">{findings.length} finding{findings.length === 1 ? '' : 's'}</span>
+        </div>
+        {findings.length === 0 ? (
+          <p className="text-[12px] text-gray-500">No conflicting holdings across overlapping scopes.</p>
+        ) : findings.map((f, i) => {
+          const who = users.find(u => u.id === f.userId)
+          const scopes = f.grants.map(g => `${ROLES.find(r => r.id === g.roleId)?.name} @ ${ORG_NODES.find(n => n.id === g.scope.nodeId)?.name}`).join(' + ')
+          return (
+            <div key={i} className={`py-2 text-[12px] ${i > 0 ? 'border-t border-black/[0.04]' : ''}`}>
+              <p className="text-gray-800"><span className="font-medium">{who?.name || f.userId}</span> — {scopes}</p>
+              <p className="text-[10.5px] text-gray-400 font-mono mt-0.5">{f.pair.join(' + ')}</p>
+              {f.exception ? (
+                <p className="text-[11px] text-[#996800] mt-1">Named exception — approved by {f.exception.approvedBy}: {f.exception.reason}</p>
+              ) : (
+                <p className="text-[11px] text-red-600 font-medium mt-1">Violation — no exception on record. Remove one grant or record a named exception.</p>
+              )}
+            </div>
+          )
+        })}
+      </div>
+      {ROLES.map(role => (
         <div key={role.id} className={`rounded-xl border p-4 ${role.internal ? 'border-purple-200 bg-purple-50/20' : 'border-black/[0.08] bg-white'}`}>
           <div className="flex items-start justify-between gap-3 mb-2">
             <div className="flex items-center gap-2.5">
@@ -474,17 +660,24 @@ function RolesTab({ assignments }) {
    AUDIT TAB
    ═══════════════════════════════════════════════════════════════ */
 
-function AuditTab({ tenantId, auditLog, users }) {
+function AuditTab({ tenantId, auditLog, users, actingUserId }) {
   const [filter, setFilter] = useState('all')
-  const logs = useMemo(() => auditLog.filter(l => l.tenantId === tenantId).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)), [tenantId, auditLog])
+  // Point 7: a scoped view_audit holder sees only their own subtree
+  // (plus events about themselves). The count line says so.
+  const visible = useMemo(() => visibleAuditEvents(actingUserId, tenantId), [actingUserId, tenantId, auditLog.length]) // eslint-disable-line react-hooks/exhaustive-deps
+  const total = useMemo(() => auditLog.filter(l => l.tenantId === tenantId).length, [tenantId, auditLog])
+  const logs = useMemo(() => [...visible].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)), [visible])
   const filtered = filter === 'all' ? logs : logs.filter(l => l.action === filter)
   const types = [...new Set(logs.map(l => l.action))]
 
   return (
     <div>
+      <p className="text-[11px] text-gray-400 mb-3">
+        Showing {logs.length} of {total} events — your audit scope covers {logs.length === total ? 'the whole tenant' : 'your subtree and events about you'}.
+      </p>
       <div className="flex items-center gap-1.5 mb-4 flex-wrap">
         <button type="button" onClick={() => setFilter('all')} className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors cursor-pointer ${filter === 'all' ? 'bg-gray-900 text-white' : 'bg-white border border-black/[0.10] text-gray-500 hover:text-gray-800'}`}>All</button>
-        {types.map(t => { const s = ACTION_STYLES[t] || ACTION_STYLES['resource.accessed']; return (
+        {types.map(t => { const s = ACTION_STYLES[t] || { ...ACTION_STYLES['resource.accessed'], label: t.replace(/[._-]/g, ' ') }; return (
           <button key={t} type="button" onClick={() => setFilter(t)} className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors cursor-pointer ${filter === t ? 'bg-gray-900 text-white' : 'bg-white border border-black/[0.10] text-gray-500 hover:text-gray-800'}`}>{s.label}</button>
         ) })}
       </div>
@@ -493,7 +686,7 @@ function AuditTab({ tenantId, auditLog, users }) {
           const actor = users.find(u => u.id === e.actor)
           const target = e.targetUser ? users.find(u => u.id === e.targetUser) : null
           const scope = ORG_NODES.find(n => n.id === e.scopeId)
-          const as = ACTION_STYLES[e.action] || ACTION_STYLES['resource.accessed']
+          const as = ACTION_STYLES[e.action] || { ...ACTION_STYLES['resource.accessed'], label: (e.action || '').replace(/[._-]/g, ' ') }
           return (
             <div key={e.id} className={`flex gap-3 py-3 ${i < filtered.length - 1 ? 'border-b border-black/[0.04]' : ''} ${e.internal ? 'border-l-2 border-l-purple-400 pl-3' : ''}`}>
               <div className="w-16 shrink-0 text-right"><p className="text-[11px] text-gray-400 tabular-nums">{timeAgo(e.timestamp)}</p></div>
@@ -521,52 +714,65 @@ function AuditTab({ tenantId, auditLog, users }) {
    ═══════════════════════════════════════════════════════════════ */
 
 export default function OrgAccess({ activeTab, tier }) {
+  // All state lives in the RBAC module store; this hook re-renders the
+  // panel whenever the engine reports a mutation (grant added, decision
+  // logged, member invited). No React-local copies of the grant table.
+  const { grants, users, audit } = useRbacStore()
   const [activeTenant, setActiveTenant] = useState('meridian')
-  const [users, setUsers] = useState(() => [...INITIAL_USERS])
-  const [assignments, setAssignments] = useState(() => [...INITIAL_ASSIGNMENTS])
-  const [auditLog, setAuditLog] = useState(() => [...INITIAL_AUDIT])
+  // The acting admin is whoever the View-as switcher says — refusals
+  // for a less-privileged viewer are the point, not a bug.
+  const [actingUserId] = useViewAs()
+  const [actionError, setActionError] = useState(null)
 
-  const addAuditEntry = useCallback((action, scopeId, targetUser, roleId, details, internal) => {
-    setAuditLog(prev => [{ id: `al-${Date.now()}`, timestamp: new Date().toISOString(), actor: 'alex', action, tenantId: activeTenant, scopeId, targetUser, roleId, details, internal: internal || false }, ...prev])
-  }, [activeTenant])
-
+  // Handlers RETURN the mutation result so forms can show refusals and
+  // SoD conflicts inline (rule 7/8: every refusal visible and explained).
   const handleInvite = useCallback(({ name, email, roleId, scopeId }) => {
-    const id = `user-${Date.now()}`
-    const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
-    const newUser = { id, name, initials, email, status: 'offline', lastActive: new Date().toISOString() }
-    setUsers(prev => [...prev, newUser])
-    const assignId = `ra-${Date.now()}`
-    const scopeNode = ORG_NODES.find(n => n.id === scopeId)
-    const role = ROLES.find(r => r.id === roleId)
-    setAssignments(prev => [...prev, { id: assignId, userId: id, tenantId: activeTenant, roleId, scopeType: scopeNode?.type || 'org', scopeId, assignedAt: new Date().toISOString(), assignedBy: 'alex' }])
-    addAuditEntry('member.added', scopeId, id, null, `Invited ${name} to ${TENANTS.find(t => t.id === activeTenant)?.name}`)
-    addAuditEntry('role.assigned', scopeId, id, roleId, `Assigned ${role?.name} at ${scopeNode?.name}`)
-  }, [activeTenant, addAuditEntry])
+    const user = addUser({ name, email, actorId: actingUserId, tenantId: activeTenant })
+    return addGrant({ principal: user.id, roleId, nodeId: scopeId, tenantId: activeTenant, actorId: actingUserId })
+  }, [activeTenant, actingUserId])
 
-  const handleAddRole = useCallback((userId, roleId, scopeId) => {
-    const assignId = `ra-${Date.now()}`
-    const scopeNode = ORG_NODES.find(n => n.id === scopeId)
-    const role = ROLES.find(r => r.id === roleId)
-    const user = users.find(u => u.id === userId)
-    setAssignments(prev => [...prev, { id: assignId, userId, tenantId: activeTenant, roleId, scopeType: scopeNode?.type || 'org', scopeId, assignedAt: new Date().toISOString(), assignedBy: 'alex' }])
-    addAuditEntry('role.assigned', scopeId, userId, roleId, `Assigned ${role?.name} at ${scopeNode?.name} to ${user?.name}`)
-  }, [activeTenant, users, addAuditEntry])
+  const handleAddRole = useCallback((userId, roleId, scopeId, sodException) => {
+    return addGrant({ principal: userId, roleId, nodeId: scopeId, tenantId: activeTenant, actorId: actingUserId, sodException })
+  }, [activeTenant, actingUserId])
 
-  const handleRemoveRole = useCallback((assignmentId) => {
-    const a = assignments.find(x => x.id === assignmentId)
-    if (!a) return
-    const user = users.find(u => u.id === a.userId)
-    const role = ROLES.find(r => r.id === a.roleId)
-    const scopeNode = ORG_NODES.find(n => n.id === a.scopeId)
-    setAssignments(prev => prev.filter(x => x.id !== assignmentId))
-    addAuditEntry('role.removed', a.scopeId, a.userId, a.roleId, `Removed ${role?.name} at ${scopeNode?.name} from ${user?.name}`)
-  }, [assignments, users, addAuditEntry])
+  const handleRemoveRole = useCallback((grantId) => {
+    const r = removeGrant({ grantId, actorId: actingUserId })
+    setActionError(r.error || null)
+    return r
+  }, [actingUserId])
 
   const handleRemoveMember = useCallback((userId) => {
-    const user = users.find(u => u.id === userId)
-    setAssignments(prev => prev.filter(a => !(a.userId === userId && a.tenantId === activeTenant)))
-    addAuditEntry('member.removed', ORG_NODES.find(n => n.tenantId === activeTenant && !n.parentId)?.id, userId, null, `Removed ${user?.name} from ${TENANTS.find(t => t.id === activeTenant)?.name}`)
-  }, [activeTenant, users, addAuditEntry])
+    const r = removeAllGrantsForUser({ userId, tenantId: activeTenant, actorId: actingUserId })
+    setActionError(r.error || null)
+    return r
+  }, [activeTenant, actingUserId])
+
+  // Point 9 (ruled 2026-09-21): Pro/Team gets FLAT roles — Admin,
+  // Member, Viewer at the tenant root, same engine underneath. The org
+  // tree, scoped roles, and barriers stay Enterprise.
+  if (tier === 'pro' && activeTab === 'members') {
+    return <FlatMembersPanel users={users} grants={grants} onAddRole={handleAddRole} onRemoveRole={handleRemoveRole} />
+  }
+
+  // Rule 11: below Enterprise the rest of the capability is visible but
+  // locked — an upsell, never a silently missing menu. The Access
+  // Explorer is the exception: ruled available on every tier.
+  if (tier !== 'enterprise' && activeTab !== 'explorer') {
+    return (
+      <div className="rounded-xl border border-black/[0.08] bg-gray-50 p-8 text-center max-w-lg">
+        <Shield className="w-8 h-8 mx-auto mb-3 text-[#3D16FA]" />
+        <h3 className="text-[15px] font-semibold text-gray-900 mb-1.5">Organization &amp; Access is an Enterprise capability</h3>
+        <p className="text-[12.5px] text-gray-500 leading-relaxed mb-1.5">
+          Scoped roles across your org structure, information barriers, separation-of-duties exceptions,
+          agent principals, and access reviews are included in the Enterprise plan.
+        </p>
+        <p className="text-[11.5px] text-gray-400">
+          Use the tier preview above to see it in Enterprise — on the {tier === 'pro' ? 'Pro / Team' : 'Standard'} plan these
+          controls stay visible but locked, and the engine denies them with reason <span className="font-mono">plan</span>.
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -579,10 +785,96 @@ export default function OrgAccess({ activeTab, tier }) {
           ))}
         </div>
       </div>
-      {activeTab === 'structure' && <StructureTab tenantId={activeTenant} assignments={assignments} users={users} />}
-      {activeTab === 'members' && <MembersTab tenantId={activeTenant} users={users} assignments={assignments} onInvite={handleInvite} onAddRole={handleAddRole} onRemoveRole={handleRemoveRole} onRemoveMember={handleRemoveMember} />}
-      {activeTab === 'roles' && <RolesTab assignments={assignments} />}
-      {activeTab === 'audit' && <AuditTab tenantId={activeTenant} auditLog={auditLog} users={users} />}
+      {actionError && (
+        <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-[12px] text-red-700">
+          <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {actionError}
+          <button type="button" onClick={() => setActionError(null)} className="ml-auto p-0.5 text-red-400 hover:text-red-600 cursor-pointer"><X className="w-3 h-3" /></button>
+        </div>
+      )}
+      {activeTab === 'structure' && <StructureTab tenantId={activeTenant} />}
+      {activeTab === 'members' && <MembersTab tenantId={activeTenant} users={users} grants={grants} actingUserId={actingUserId} onInvite={handleInvite} onAddRole={handleAddRole} onRemoveRole={handleRemoveRole} onRemoveMember={handleRemoveMember} />}
+      {activeTab === 'roles' && <RolesTab grants={grants} users={users} />}
+      {activeTab === 'audit' && <AuditTab tenantId={activeTenant} auditLog={audit} users={users} actingUserId={actingUserId} />}
+      {activeTab === 'explorer' && <AccessExplorer />}
+    </div>
+  )
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   PRO / TEAM — FLAT ROLES (point 9, ruled 2026-09-21)
+   Admin · Member · Viewer at the tenant root. Same engine, same
+   audit log, no hierarchy — that is what Enterprise adds.
+   ═══════════════════════════════════════════════════════════════ */
+
+const FLAT_ROLES = [
+  { id: 'tenant-admin', label: 'Admin', blurb: 'Manages members, billing, and settings' },
+  { id: 'contributor', label: 'Member', blurb: 'Creates and edits content' },
+  { id: 'viewer', label: 'Viewer', blurb: 'Read-only' },
+]
+
+function flatRoleOf(userId, grants) {
+  const mine = grants.filter(g => g.principal.type === 'user' && g.principal.id === userId)
+  if (mine.some(g => g.roleId === 'tenant-admin')) return 'Admin'
+  const perms = new Set(mine.flatMap(g => (ROLES.find(r => r.id === g.roleId)?.permissions) || []))
+  if (perms.has('create_resource') || perms.has('edit_resource') || perms.has('edit_segment')) return 'Member'
+  if (mine.length > 0) return 'Viewer'
+  return null
+}
+
+function FlatMembersPanel({ users, grants, onAddRole, onRemoveRole }) {
+  const [note, setNote] = useState(null)
+  const members = users.filter(u => !u.internal && flatRoleOf(u.id, grants))
+
+  const setFlat = (userId, flatId) => {
+    // Grant the flat role at the tenant root; remove previous flat-root
+    // grants so one chip means one role. Engine rules still apply —
+    // four-eyes blocks changing your own role.
+    const prevFlat = grants.filter(g => g.principal.type === 'user' && g.principal.id === userId
+      && g.scope.nodeId === 'mc-root' && FLAT_ROLES.some(f => f.id === g.roleId))
+    const r = onAddRole(userId, flatId, 'mc-root')
+    if (r?.error) { setNote(r.error); return }
+    if (r?.conflict) { setNote(r.conflict.message); return }
+    prevFlat.forEach(g => onRemoveRole(g.id))
+    setNote(null)
+  }
+
+  return (
+    <div className="max-w-2xl">
+      <div className="flex items-center justify-between mb-1">
+        <h3 className="text-[15px] font-semibold text-gray-900">Team members</h3>
+        <span className="text-[11px] text-gray-400">{members.length} members</span>
+      </div>
+      <p className="text-[12px] text-gray-500 mb-4">
+        Three flat roles on the Team plan — Admin, Member, Viewer. Departments, scoped roles,
+        information barriers, and the org structure are Enterprise capabilities.
+      </p>
+      {note && (
+        <p className="mb-3 text-[11.5px] text-red-600 flex items-start gap-1.5"><AlertCircle className="w-3 h-3 mt-0.5 shrink-0" /> {note}</p>
+      )}
+      <div className="rounded-xl border border-black/[0.08] bg-white divide-y divide-black/[0.04]">
+        {members.map(u => {
+          const flat = flatRoleOf(u.id, grants)
+          return (
+            <div key={u.id} className="flex items-center gap-3 px-4 py-2.5">
+              <Avatar initials={u.initials} />
+              <div className="min-w-0 flex-1">
+                <p className="text-[12.5px] font-medium text-gray-800">{u.name}</p>
+                <p className="text-[10.5px] text-gray-400">{u.email}</p>
+              </div>
+              <select value={FLAT_ROLES.find(f => f.label === flat)?.id || 'viewer'}
+                onChange={e => setFlat(u.id, e.target.value)}
+                aria-label={`Role for ${u.name}`}
+                className="rounded-lg border border-black/[0.08] bg-white px-2.5 py-1.5 text-[12px] outline-none focus:border-[#3D16FA] cursor-pointer">
+                {FLAT_ROLES.map(f => <option key={f.id} value={f.id}>{f.label} — {f.blurb}</option>)}
+              </select>
+            </div>
+          )
+        })}
+      </div>
+      <p className="text-[10.5px] text-gray-400 mt-3">
+        Every change is engine-checked (you cannot change your own role) and lands in the audit log.
+      </p>
     </div>
   )
 }

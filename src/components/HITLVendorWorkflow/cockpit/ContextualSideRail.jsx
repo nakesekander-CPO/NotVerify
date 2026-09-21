@@ -30,7 +30,7 @@ import { downloadText } from '../../../utils/demoFiles'
  */
 function visibilityFor(currentUserId) {
   if (!currentUserId) return 'restricted'
-  if (isRole(currentUserId, 'arbitr-global-admin', 'org-admin', 'tenant-admin', 'final-validator')) return 'admin'
+  if (isRole(currentUserId, 'arbitr-global-admin', 'org-manager', 'tenant-admin', 'final-validator')) return 'admin'
   if (isRole(currentUserId, 'vendor-user', 'vendor-admin')) return 'restricted'
   return 'standard'
 }

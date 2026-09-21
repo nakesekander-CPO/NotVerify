@@ -49,7 +49,7 @@ import CommandPalette from './CommandPalette'
 /* Roles that see compliance metadata (J-GAAP / TSE / ASBJ) by default. */
 const COMPLIANCE_VISIBLE_ROLES = new Set([
   'final-validator', 'compliance-reviewer', 'legal-reviewer', 'internal-reviewer',
-  'project-manager', 'org-admin', 'tenant-admin', 'arbitr-global-admin',
+  'project-manager', 'org-manager', 'tenant-admin', 'arbitr-global-admin',
 ])
 
 /* Heuristic: does a QA / glossary item carry regulatory weight that

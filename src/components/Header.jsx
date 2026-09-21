@@ -1,16 +1,23 @@
 import { useState, useRef, useEffect } from 'react'
 import { ChevronDown, User, Settings, Headphones, LogOut, Store, Workflow } from 'lucide-react'
 import StatusPill from './StatusPill'
-import { USERS, ROLE_ASSIGNMENTS, ROLES, TENANTS } from '../data/rbacModel'
-
-const CURRENT_USER_ID = 'alex'
+import { USERS, TENANTS } from '../data/rbacModel'
+import { primaryRoleOf, grantsForUser } from '../services/rbac/engine'
+import { useViewAs, VIEW_AS_IDS } from '../services/rbac/viewAs'
 
 export default function Header({ companyName, onOpenSettings, onOpenMarketplace, onNavigateHome, onOpenHitlWorkflow }) {
   const [accountOpen, setAccountOpen] = useState(false)
-  const currentUser = USERS.find(u => u.id === CURRENT_USER_ID)
-  const primaryAssignment = ROLE_ASSIGNMENTS.find(a => a.userId === CURRENT_USER_ID && a.scopeType === 'tenant') || ROLE_ASSIGNMENTS.find(a => a.userId === CURRENT_USER_ID)
-  const roleName = ROLES.find(r => r.id === primaryAssignment?.roleId)?.name || 'User'
-  const tenantName = TENANTS.find(t => t.id === primaryAssignment?.tenantId)?.name || ''
+  const [viewAs, setViewAs] = useViewAs()
+  const currentUser = USERS.find(u => u.id === viewAs)
+  const primary = primaryRoleOf(viewAs)
+  const roleName = primary?.role?.name || 'User'
+  const tenantName = TENANTS.find(t => t.id === primary?.tenantId)?.name || ''
+  // The support persona's access is time-boxed — the chip goes red the
+  // moment every grant it holds has expired.
+  const allExpired = (id) => {
+    const rows = grantsForUser(id, 'meridian')
+    return rows.length > 0 && rows.every(r => r.expired)
+  }
   const accountRef = useRef(null)
 
   useEffect(() => {
@@ -80,9 +87,27 @@ export default function Header({ companyName, onOpenSettings, onOpenMarketplace,
                 className="absolute top-full mt-2 right-0 w-52 bg-white border border-black/[0.12] rounded-lg  py-1.5 z-50"
               >
                 <div className="px-3 py-2 border-b border-black/[0.12] mb-1.5">
-                  <p className="text-[12px] font-medium text-gray-900">{roleName}</p>
+                  <p className="text-[12px] font-medium text-gray-900">{currentUser?.name} · {roleName}</p>
                   <p className="text-[11px] text-gray-500">{currentUser?.email || 'admin@meridian-capital.com'}</p>
                   {tenantName && <p className="text-[10px] text-gray-400 mt-0.5">{tenantName}</p>}
+                </div>
+                {/* View as — every panel re-renders through the engine */}
+                <div className="px-3 pt-1 pb-2 border-b border-black/[0.12] mb-1.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1">View as</p>
+                  {VIEW_AS_IDS.map(id => {
+                    const u = USERS.find(x => x.id === id)
+                    const role = primaryRoleOf(id)?.role?.name || '—'
+                    const expired = allExpired(id)
+                    return (
+                      <button key={id} role="menuitem" onClick={() => { setViewAs(id) }}
+                        className={`flex items-center justify-between w-full px-2 py-1.5 rounded-md text-[12px] cursor-pointer transition-colors ${viewAs === id ? 'bg-[#3D16FA]/10 text-[#3D16FA] font-medium' : 'text-gray-700 hover:bg-black/[0.04]'}`}>
+                        <span className="truncate">{u?.name}</span>
+                        <span className={`text-[10px] ml-2 shrink-0 ${expired ? 'text-red-600 font-semibold' : 'text-gray-400'}`}>
+                          {expired ? 'expired' : role}
+                        </span>
+                      </button>
+                    )
+                  })}
                 </div>
                 <DropdownItem icon={Settings} label="Settings" onClick={() => { setAccountOpen(false); onOpenSettings?.() }} />
                 <DropdownItem icon={Workflow} label="HITL Vendor Workflow" onClick={() => { setAccountOpen(false); onOpenHitlWorkflow?.() }} />

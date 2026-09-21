@@ -1,18 +1,29 @@
 import { useState } from 'react'
-import { ArrowLeft, Puzzle, Building2, LayoutList, Shield, Users, ScrollText, Network, Receipt, Settings as SettingsIcon } from 'lucide-react'
+import { ArrowLeft, Puzzle, Building2, LayoutList, Shield, Users, ScrollText, Network, Receipt, Compass, Settings as SettingsIcon } from 'lucide-react'
 import Billing from './Billing'
 import BillingEntities from './BillingEntities'
 import BudgetsAndAllocations from './BudgetsAndAllocations'
 import OrgAccess from './OrgAccess'
 import { PageHeader } from '../ui'
+import { setTenantPlan, holdsPermissionAnywhere, useRbacStore } from '../../services/rbac/engine'
+import { useViewAs } from '../../services/rbac/viewAs'
 
 export default function SettingsPage({ onBack, onOpenIntegrations }) {
   const [activeSection, setActiveSection] = useState('billing-v2')
   const [tier, setTier] = useState('pro')
+  const [viewAs] = useViewAs()
+  useRbacStore()
+  // Point 5: billing is a governed surface like any other.
+  const billingView = holdsPermissionAnywhere(viewAs, 'view_billing')
+  const billingManage = holdsPermissionAnywhere(viewAs, 'manage_billing')
 
   const handleTierChange = (newTier) => {
     setTier(newTier)
-    if (newTier !== 'enterprise' && (activeSection === 'billing-entities' || activeSection === 'budgets' || activeSection.startsWith('org-'))) {
+    // Rule 11: the tier preview writes the tenant's real plan, so the
+    // engine's plan-gated capabilities (barriers, agent principals, SoD
+    // exceptions…) visibly change with it.
+    setTenantPlan('meridian', newTier)
+    if (newTier !== 'enterprise' && (activeSection === 'billing-entities' || activeSection === 'budgets')) {
       setActiveSection('billing-v2')
     }
   }
@@ -24,13 +35,14 @@ export default function SettingsPage({ onBack, onOpenIntegrations }) {
       { id: 'budgets', label: 'Budgets & Allocations', icon: LayoutList, active: true, indent: true },
     ] : []),
     { id: 'integrations', label: 'API & Integrations', icon: Puzzle, active: true },
-    ...(tier === 'enterprise' ? [
-      { type: 'section-header', label: 'Organization & Access' },
-      { id: 'org-structure', label: 'Structure', icon: Network, active: true, indent: true },
-      { id: 'org-members', label: 'Members', icon: Users, active: true, indent: true },
-      { id: 'org-roles', label: 'Roles', icon: Shield, active: true, indent: true },
-      { id: 'org-audit', label: 'Audit Log', icon: ScrollText, active: true, indent: true },
-    ] : []),
+    // Rule 11: Organization & Access is never hidden — lower tiers see
+    // the capability with an upsell inside, not a missing menu.
+    { type: 'section-header', label: 'Organization & Access' },
+    { id: 'org-structure', label: 'Structure', icon: Network, active: true, indent: true },
+    { id: 'org-members', label: 'Members', icon: Users, active: true, indent: true },
+    { id: 'org-roles', label: 'Roles', icon: Shield, active: true, indent: true },
+    { id: 'org-audit', label: 'Audit Log', icon: ScrollText, active: true, indent: true },
+    { id: 'org-explorer', label: 'Access Explorer', icon: Compass, active: true, indent: true },
   ]
 
   return (
@@ -90,12 +102,23 @@ export default function SettingsPage({ onBack, onOpenIntegrations }) {
             </div>
           </div>
 
-          {activeSection === 'billing-v2' && <Billing tier={tier} />}
-          {activeSection === 'billing-entities' && <BillingEntities />}
-          {activeSection === 'budgets' && <BudgetsAndAllocations />}
+          {activeSection === 'billing-v2' && (billingView
+            ? <Billing tier={tier} canManageBilling={billingManage} />
+            : <BillingLocked reason="None of your grants carries view billing — billing is a governed surface like any other." />)}
+          {activeSection === 'billing-entities' && (billingManage ? <BillingEntities /> : <BillingLocked reason="Managing billing entities requires manage billing." />)}
+          {activeSection === 'budgets' && (billingManage ? <BudgetsAndAllocations /> : <BillingLocked reason="Managing budgets requires manage billing." />)}
           {activeSection.startsWith('org-') && <OrgAccess activeTab={activeSection.replace('org-', '')} tier={tier} />}
         </div>
       </div>
+    </div>
+  )
+}
+
+function BillingLocked({ reason }) {
+  return (
+    <div className="rounded-xl border border-black/[0.08] bg-gray-50 p-8 text-center max-w-lg">
+      <p className="text-[14px] font-semibold text-gray-900 mb-1">Billing requires a billing role</p>
+      <p className="text-[12px] text-gray-500">{reason}</p>
     </div>
   )
 }

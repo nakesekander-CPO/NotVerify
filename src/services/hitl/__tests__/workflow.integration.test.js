@@ -64,10 +64,14 @@ describe('HITL Vendor Workflow — happy path', () => {
     // Removed reviewer actions must be refused at the write path.
     expect(() => decideSegment({ segmentId: segs[3].id, actorId: 'alex', action: 'escalated' })).toThrow(/unknown action/)
 
-    // 3. Sign off (Alex is tenant-admin → permitted as admin).
+    // 3. Sign off. Alex holds the admin wildcard, which no longer
+    //    covers business sign-off at all — Sarah (final-validator at
+    //    the Securities BU, who edited nothing) signs instead.
+    expect(() => signOff({ projectId: PROJECT_ID, actorId: 'alex', statement: 'x' }))
+      .toThrow(/administration, not business decisions/)
     const so = signOff({
       projectId: PROJECT_ID,
-      actorId: 'alex',
+      actorId: 'sarah',
       statement: 'Integration test sign-off',
       canPublish: true,
       feedTM: true,
@@ -83,7 +87,9 @@ describe('HITL Vendor Workflow — happy path', () => {
     expect(() => decideSegment({ segmentId: segs[1].id, actorId: 'alex', action: 'confirmed' })).toThrow(/locked/)
 
     // 5. Reuse candidates queued — only for confirmed/edited segments.
-    const queued = queueRetrainingCandidates({ projectId: PROJECT_ID, actorId: 'alex' })
+    // Retraining is a business decision now — the final validator queues
+    // and approves, not the admin.
+    const queued = queueRetrainingCandidates({ projectId: PROJECT_ID, actorId: 'sarah' })
     expect(queued.length).toBeGreaterThan(0)
     const doneAddresses = new Set([segs[1].id, segs[2].id, segs[4].id])
     const queuedSegmentIds = new Set(queued.map(c => c.segmentId))
@@ -93,7 +99,7 @@ describe('HITL Vendor Workflow — happy path', () => {
 
     // 6. Approving a candidate across all three pipelines.
     const first = queued[0]
-    const approved = approveRetrainingCandidate({ candidateId: first.id, actorId: 'alex', target: 'all' })
+    const approved = approveRetrainingCandidate({ candidateId: first.id, actorId: 'sarah', target: 'all' })
     expect(approved.status).toBe('approved')
 
     // 7. Audit log captured the milestones.

@@ -24,10 +24,14 @@ describe('task assignment — single reviewer', () => {
     expect(t.primaryReviewerId).toBe('sarah')
     expect(t.assignmentMode).toBe('single')
     expect(t.status).toBe('assigned')
-    expect(HITL_AUDIT_LOG.length).toBe(before + 1)
+    // Unified log (rule 10): the access DECISION and the ACTION are both
+    // recorded — exactly two events, no more.
+    expect(HITL_AUDIT_LOG.length).toBe(before + 2)
     const evt = HITL_AUDIT_LOG[HITL_AUDIT_LOG.length - 1]
     expect(evt.eventType).toBe('task.assigned')
     expect(evt.afterValue.primaryReviewerId).toBe('sarah')
+    const decisionEvt = HITL_AUDIT_LOG.find(e => e.eventType === 'access.allowed' && e.permission === 'reassign_task' && e.actorId === 'alex')
+    expect(decisionEvt).toBeTruthy()
   })
 
   it('reassign requires a reason and records before/after in audit', () => {

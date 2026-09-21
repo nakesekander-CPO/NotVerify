@@ -24,9 +24,9 @@
  * is set to a vendor-user.
  */
 
-import { HITL_TASKS, HITL_SEGMENTS, getProjectById, getVendorById } from '../../data/hitlVendorWorkflow';
+import { HITL_TASKS, HITL_SEGMENTS } from '../../data/hitlVendorWorkflow';
 import { USERS } from '../../data/rbacModel';
-import { requirePermission, getUserRoles, isRole } from './rbac';
+import { requirePermission, isRole } from './rbac';
 import { appendAuditEvent } from './auditLog';
 
 function _findTask(taskId) {
@@ -42,8 +42,8 @@ function _user(id) {
 /* ─── single-reviewer assignment ──────────────────────────────── */
 
 export function assignTask({ taskId, userId, actorId, note }) {
-  requirePermission(actorId, 'reassign_task', { taskId });
   const t = _findTask(taskId);
+  const auth = requirePermission(actorId, 'reassign_task', { projectId: t.projectId, taskId });
   if (!_user(userId)) throw new Error(`reviewer not found: ${userId}`);
 
   const before = { primaryReviewerId: t.primaryReviewerId, collaboratorIds: [...t.collaboratorIds] };
@@ -55,7 +55,7 @@ export function assignTask({ taskId, userId, actorId, note }) {
   if (t.status === 'not-started' || !t.primaryReviewerId) t.status = 'assigned';
 
   appendAuditEvent({
-    actorId, actorRole: getUserRoles(actorId)[0]?.id,
+    actorId, actorRole: auth.role?.id,
     projectId: t.projectId, taskId,
     eventType: 'task.assigned',
     beforeValue: before,
@@ -74,8 +74,8 @@ export function assignTask({ taskId, userId, actorId, note }) {
  * existing call shape but must contain zero or one user.
  */
 export function assignTaskParallel({ taskId, primaryReviewerId, collaboratorIds = [], actorId, note }) {
-  requirePermission(actorId, 'reassign_task', { taskId });
   const t = _findTask(taskId);
+  const auth = requirePermission(actorId, 'reassign_task', { projectId: t.projectId, taskId });
   if (!_user(primaryReviewerId)) throw new Error(`primary reviewer not found: ${primaryReviewerId}`);
   if (collaboratorIds.length > 1) {
     throw new Error('a job has at most one second editor (sequential, never parallel)');
@@ -94,7 +94,7 @@ export function assignTaskParallel({ taskId, primaryReviewerId, collaboratorIds 
   if (t.status === 'not-started') t.status = 'assigned';
 
   appendAuditEvent({
-    actorId, actorRole: getUserRoles(actorId)[0]?.id,
+    actorId, actorRole: auth.role?.id,
     projectId: t.projectId, taskId,
     eventType: 'task.second-editor-assigned',
     beforeValue: before,
@@ -112,8 +112,8 @@ export const assignSecondEditor = ({ taskId, primaryReviewerId, secondEditorId, 
 
 export function reassignTask({ taskId, toUserId, actorId, reason }) {
   if (!reason || !reason.trim()) throw new Error('reassignTask: reason is required');
-  requirePermission(actorId, 'reassign_task', { taskId });
   const t = _findTask(taskId);
+  const auth = requirePermission(actorId, 'reassign_task', { projectId: t.projectId, taskId });
   if (!_user(toUserId)) throw new Error(`reviewer not found: ${toUserId}`);
   if (t.primaryReviewerId === toUserId) throw new Error('already assigned to this user');
 
@@ -123,7 +123,7 @@ export function reassignTask({ taskId, toUserId, actorId, reason }) {
   t.assignedBy = actorId;
 
   appendAuditEvent({
-    actorId, actorRole: getUserRoles(actorId)[0]?.id,
+    actorId, actorRole: auth.role?.id,
     projectId: t.projectId, taskId,
     eventType: 'task.reassigned',
     beforeValue: before,
@@ -136,8 +136,8 @@ export function reassignTask({ taskId, toUserId, actorId, reason }) {
 /* ─── unassign (removes reviewer; task returns to backlog) ────── */
 
 export function unassignTask({ taskId, actorId, reason }) {
-  requirePermission(actorId, 'reassign_task', { taskId });
   const t = _findTask(taskId);
+  const auth = requirePermission(actorId, 'reassign_task', { projectId: t.projectId, taskId });
   const before = { primaryReviewerId: t.primaryReviewerId, collaboratorIds: [...t.collaboratorIds] };
   t.primaryReviewerId = null;
   t.collaboratorIds = [];
@@ -147,7 +147,7 @@ export function unassignTask({ taskId, actorId, reason }) {
   t.status = 'not-started';
 
   appendAuditEvent({
-    actorId, actorRole: getUserRoles(actorId)[0]?.id,
+    actorId, actorRole: auth.role?.id,
     projectId: t.projectId, taskId,
     eventType: 'task.unassigned',
     beforeValue: before,
@@ -160,8 +160,8 @@ export function unassignTask({ taskId, actorId, reason }) {
 /* ─── add / remove the single second editor ───────────────────── */
 
 export function addCollaborator({ taskId, userId, actorId }) {
-  requirePermission(actorId, 'reassign_task', { taskId });
   const t = _findTask(taskId);
+  const auth = requirePermission(actorId, 'reassign_task', { projectId: t.projectId, taskId });
   if (!_user(userId)) throw new Error(`user not found: ${userId}`);
   if (t.primaryReviewerId === userId) throw new Error('user is already the primary reviewer');
   if (t.collaboratorIds.includes(userId)) return t;
@@ -171,7 +171,7 @@ export function addCollaborator({ taskId, userId, actorId }) {
   t.collaboratorIds = [userId];
   t.assignmentMode = 'sequential';
   appendAuditEvent({
-    actorId, actorRole: getUserRoles(actorId)[0]?.id, projectId: t.projectId, taskId,
+    actorId, actorRole: auth.role?.id, projectId: t.projectId, taskId,
     eventType: 'task.second-editor-assigned',
     afterValue: { userId },
   });
@@ -180,12 +180,12 @@ export function addCollaborator({ taskId, userId, actorId }) {
 export const assignSecondEditorTo = addCollaborator;
 
 export function removeCollaborator({ taskId, userId, actorId }) {
-  requirePermission(actorId, 'reassign_task', { taskId });
   const t = _findTask(taskId);
+  const auth = requirePermission(actorId, 'reassign_task', { projectId: t.projectId, taskId });
   t.collaboratorIds = t.collaboratorIds.filter(x => x !== userId);
   if (t.collaboratorIds.length === 0) t.assignmentMode = 'single';
   appendAuditEvent({
-    actorId, actorRole: getUserRoles(actorId)[0]?.id, projectId: t.projectId, taskId,
+    actorId, actorRole: auth.role?.id, projectId: t.projectId, taskId,
     eventType: 'task.second-editor-removed',
     afterValue: { userId },
   });

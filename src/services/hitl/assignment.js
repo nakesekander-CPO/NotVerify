@@ -20,7 +20,7 @@ import {
   getProjectById,
 } from '../../data/hitlVendorWorkflow';
 import { recommendVendors } from './selectionEngine';
-import { requirePermission, getUserRoles } from './rbac';
+import { requirePermission } from './rbac';
 import { appendAuditEvent } from './auditLog';
 
 function persistRecommendation(projectId, rec) {
@@ -54,7 +54,7 @@ function setProjectStatus(projectId, status) {
  * @returns { recommendation, assignment }
  */
 export function runRecommendationAndAssign({ projectId, actorId, policyId, poolId }) {
-  requirePermission(actorId, 'review_recommendation', { projectId });
+  const auth = requirePermission(actorId, 'review_recommendation', { projectId });
   const project = getProjectById(projectId);
   if (!project) throw new Error(`project not found: ${projectId}`);
 
@@ -63,7 +63,7 @@ export function runRecommendationAndAssign({ projectId, actorId, policyId, poolI
 
   setProjectStatus(projectId, 'vendor-recommended');
   appendAuditEvent({
-    actorId, actorRole: getUserRoles(actorId)[0]?.id, projectId,
+    actorId, actorRole: auth.role?.id, projectId,
     eventType: 'vendor.recommended',
     afterValue: { recommendationId: persisted.id, vendorId: persisted.recommendedVendorId, score: persisted.score },
     policy: persisted.policyId,
@@ -71,7 +71,7 @@ export function runRecommendationAndAssign({ projectId, actorId, policyId, poolI
 
   if (!rec.recommended) {
     appendAuditEvent({
-      actorId, actorRole: getUserRoles(actorId)[0]?.id, projectId,
+      actorId, actorRole: auth.role?.id, projectId,
       eventType: 'vendor.no-eligible',
       reason: `No vendor passed hard filters under policy "${rec.policyId}"`,
       policy: rec.policyId,
@@ -115,7 +115,7 @@ export function runRecommendationAndAssign({ projectId, actorId, policyId, poolI
   VENDOR_ASSIGNMENTS.push(assignment);
   setProjectStatus(projectId, 'vendor-assignment-awaiting-approval');
   appendAuditEvent({
-    actorId, actorRole: getUserRoles(actorId)[0]?.id, projectId, vendorId: assignment.vendorId,
+    actorId, actorRole: auth.role?.id, projectId, vendorId: assignment.vendorId,
     eventType: 'assignment.awaiting-approval',
     afterValue: { assignmentId: assignment.id, score: rec.recommended.score },
     policy: rec.policyId,
@@ -127,7 +127,7 @@ export function manualOverride({ projectId, vendorId, actorId, reason }) {
   if (!reason || !reason.trim()) {
     throw new Error('manualOverride: reason is required');
   }
-  requirePermission(actorId, 'override_assignment', { projectId });
+  const auth = requirePermission(actorId, 'override_assignment', { projectId });
 
   const project = getProjectById(projectId);
   if (!project) throw new Error(`project not found: ${projectId}`);
@@ -152,7 +152,7 @@ export function manualOverride({ projectId, vendorId, actorId, reason }) {
   setProjectStatus(projectId, 'in-vendor-review');
 
   appendAuditEvent({
-    actorId, actorRole: getUserRoles(actorId)[0]?.id, projectId, vendorId,
+    actorId, actorRole: auth.role?.id, projectId, vendorId,
     eventType: 'assignment.manual-override',
     beforeValue: { recommendedVendorId: lastRec?.recommendedVendorId },
     afterValue: { vendorId, assignmentId: assignment.id },
@@ -162,14 +162,14 @@ export function manualOverride({ projectId, vendorId, actorId, reason }) {
 }
 
 export function approveAssignment({ assignmentId, actorId, comment }) {
-  requirePermission(actorId, 'approve_assignment', { assignmentId });
   const a = VENDOR_ASSIGNMENTS.find(x => x.id === assignmentId);
   if (!a) throw new Error(`assignment not found: ${assignmentId}`);
+  const auth = requirePermission(actorId, 'approve_assignment', { projectId: a.projectId, assignmentId });
   a.status = 'active';
   a.approvalDecision = { decision: 'approved', actorId, at: new Date().toISOString(), comment: comment || '' };
   setProjectStatus(a.projectId, 'in-vendor-review');
   appendAuditEvent({
-    actorId, actorRole: getUserRoles(actorId)[0]?.id, projectId: a.projectId, vendorId: a.vendorId,
+    actorId, actorRole: auth.role?.id, projectId: a.projectId, vendorId: a.vendorId,
     eventType: 'assignment.approved',
     afterValue: { assignmentId },
   });
@@ -178,14 +178,14 @@ export function approveAssignment({ assignmentId, actorId, comment }) {
 
 export function rejectAssignment({ assignmentId, actorId, reason }) {
   if (!reason || !reason.trim()) throw new Error('rejectAssignment: reason is required');
-  requirePermission(actorId, 'approve_assignment', { assignmentId });
   const a = VENDOR_ASSIGNMENTS.find(x => x.id === assignmentId);
   if (!a) throw new Error(`assignment not found: ${assignmentId}`);
+  const auth = requirePermission(actorId, 'approve_assignment', { projectId: a.projectId, assignmentId });
   a.status = 'rejected';
   a.approvalDecision = { decision: 'rejected', actorId, at: new Date().toISOString(), reason };
   setProjectStatus(a.projectId, 'vendor-selection-pending');
   appendAuditEvent({
-    actorId, actorRole: getUserRoles(actorId)[0]?.id, projectId: a.projectId, vendorId: a.vendorId,
+    actorId, actorRole: auth.role?.id, projectId: a.projectId, vendorId: a.vendorId,
     eventType: 'assignment.rejected',
     afterValue: { assignmentId },
     reason,
