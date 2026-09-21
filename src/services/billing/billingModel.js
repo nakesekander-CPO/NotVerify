@@ -595,34 +595,44 @@ export function getDemoAccount(key) {
         { date: '2026-05-01', event: 'grant', delta: +2, source: 'Monthly contract grant', ref: 'INV-2026-005' },
         { date: '2026-05-22', event: 'usage', delta: -1, source: 'Trusted review — BaFin Filing Translation — DE', actor: 'Klaus Berger' },
       ],
-      // Trust Credits are purchased on the same invoice/PO rail as
-      // Intelligence Credits — tracked requests, own pricing.
-      trustTopUpRequests: [
-        { id: 'TTR-1009', date: '2026-04-12', credits: 3, cost: trustPriceFor(3), po: 'PO-2026-013', status: 'completed', notes: 'Bundle · granted Apr 14' },
-      ],
-      // Combined orders — Intelligence + Trust credits on one invoice.
+      // ONE purchase-request stream (PR- ids). Every order — Intelligence,
+      // Trust, or combined — is a thread: request → invoice → grant.
+      // `invoiceId` links the thread to its invoice row; `grantedSoFar`
+      // records partial grants so payment releases only the remainder.
       purchaseRequests: [
-        { id: 'PR-1044', date: '2026-05-18', po: 'PO-2026-021', status: 'invoiced',
+        { id: 'PR-1044', date: '2026-05-18', po: 'PO-2026-021', status: 'invoiced', invoiceId: 'INV-2026-007',
           items: [
             { type: 'intelligence', credits: 25000, cost: priceFor(25000) },
             { type: 'trust', credits: 5, cost: trustPriceFor(5) },
           ],
           cost: priceFor(25000) + trustPriceFor(5),
-          notes: 'Combined order · granted on finalization (Net 30)' },
+          grantedSoFar: 2500,
+          notes: 'Combined order · 2,500 of 25,000 IC granted on finalization; remainder and Trust Credits on payment' },
+        { id: 'PR-1029', date: '2026-04-30', po: 'PO-2026-019', status: 'completed', invoiceId: 'INV-2026-006',
+          items: [{ type: 'intelligence', credits: 5000, cost: priceFor(5000) }],
+          cost: priceFor(5000),
+          notes: 'Invoice paid · credits granted May 2' },
+        { id: 'PR-1024', date: '2026-04-12', po: 'PO-2026-014', status: 'completed',
+          items: [{ type: 'intelligence', credits: 10000, cost: priceFor(10000) }],
+          cost: priceFor(10000),
+          notes: 'Credits granted Apr 14' },
+        { id: 'PR-1009', date: '2026-04-12', po: 'PO-2026-013', status: 'completed',
+          items: [{ type: 'trust', credits: 3, cost: trustPriceFor(3) }],
+          cost: trustPriceFor(3),
+          notes: 'Bundle · granted Apr 14' },
       ],
       receipts: [],
+      // Past-due severity is proportionate: the unpaid row is the $4,000
+      // subscription (credible "credits may pause" stakes), not a $45
+      // top-up. INV-2026-007 carries the full combined-order amount.
       invoices: [
         { id: 'INV-2026-008', date: '2026-06-01', type: 'Subscription', amount: 4000, po: 'PO-2026-018', status: 'open',     dueDate: '2026-07-01' },
-        { id: 'INV-2026-007', date: '2026-05-15', type: 'Credit top-up', amount: priceFor(25000), po: 'PO-2026-021', status: 'open', dueDate: '2026-06-14', creditsPending: 0 },
-        { id: 'INV-2026-006', date: '2026-05-01', type: 'Credit top-up', amount: priceFor(5000), po: 'PO-2026-019', status: 'past_due', dueDate: '2026-05-31' },
-        { id: 'INV-2026-005', date: '2026-05-01', type: 'Subscription', amount: 4000, po: 'PO-2026-018', status: 'paid',     dueDate: '2026-05-31' },
+        { id: 'INV-2026-007', date: '2026-05-15', type: 'Credit order', amount: priceFor(25000) + trustPriceFor(5), po: 'PO-2026-021', status: 'open', dueDate: '2026-06-14' },
+        { id: 'INV-2026-006', date: '2026-05-01', type: 'Credit order', amount: priceFor(5000), po: 'PO-2026-019', status: 'paid',     dueDate: '2026-05-31' },
+        { id: 'INV-2026-005', date: '2026-05-01', type: 'Subscription', amount: 4000, po: 'PO-2026-018', status: 'past_due', dueDate: '2026-05-31' },
         { id: 'INV-2026-004', date: '2026-04-01', type: 'Subscription', amount: 4000, po: 'PO-2026-012', status: 'paid',     dueDate: '2026-05-01' },
       ],
-      topUpRequests: [
-        { id: 'TR-1031', date: '2026-05-15', credits: 25000, cost: priceFor(25000), rate: rateFor(25000), po: 'PO-2026-021', status: 'invoiced',  notes: 'Credits granted on finalization · awaiting payment (Net 30)' },
-        { id: 'TR-1029', date: '2026-04-30', credits: 5000,  cost: priceFor(5000),  rate: rateFor(5000),  po: 'PO-2026-019', status: 'past_due',  notes: 'Invoice past due since May 31' },
-        { id: 'TR-1024', date: '2026-04-12', credits: 10000, cost: priceFor(10000), rate: rateFor(10000), po: 'PO-2026-014', status: 'completed', notes: 'Credits granted Apr 14' },
-      ],
+      topUpRequests: [],
     }, [
       // Ledger order deliberately demonstrates the consumption rule:
       // usage BEFORE the promo grant draws plan; usage AFTER it draws
@@ -630,7 +640,7 @@ export function getDemoAccount(key) {
       { date: '2026-04-20', event: 'migration',  source: 'Legacy migration — PO-2025-098', bucket: 'legacy',      delta: +840,   ref: 'MIG-0042', actor: 'system' },
       { date: '2026-05-01', event: 'grant',      source: 'Monthly plan grant',             bucket: 'plan',        delta: +50000, ref: 'INV-2026-005', actor: 'system' },
       { date: '2026-05-09', event: 'usage',      source: 'Q3 Earnings Report — JA',        bucket: 'plan',        delta: -1200,  actor: 'Hana Ito' },
-      { date: '2026-05-16', event: 'top_up',     source: 'PO top-up — TR-1031 (partial grant)', bucket: 'top_up', delta: +2500,  ref: 'INV-2026-007', actor: 'system' },
+      { date: '2026-05-16', event: 'top_up',     source: 'Order PR-1044 — partial grant (2,500 of 25,000 IC)', bucket: 'top_up', delta: +2500,  ref: 'INV-2026-007', actor: 'system' },
       { date: '2026-05-22', event: 'usage',      source: 'BaFin Filing Translation — DE',  bucket: 'plan',        delta: -904,   actor: 'Klaus Berger' },
       { date: '2026-05-27', event: 'adjustment', source: 'Manual adjustment — billing correction', bucket: 'adjustment', delta: +250, ref: 'TICKET-1234', actor: 'arbitr Finance' },
       { date: '2026-05-28', event: 'promo_grant',source: 'Promotional credit — Q2 pilot (expires Jun 30)', bucket: 'promotional', delta: +300, ref: 'PROMO-Q2', actor: 'system', expiresAt: '2026-06-30' },

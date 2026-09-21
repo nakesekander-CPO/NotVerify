@@ -8,7 +8,7 @@
 import { useMemo, useState } from 'react'
 import {
   CheckCircle2, AlertTriangle, Lock, Download, FileText, Receipt,
-  Sparkles, Building2, Phone, ShieldCheck,
+  Sparkles, Building2, Phone, ShieldCheck, Plus,
 } from 'lucide-react'
 import {
   creditPackages, priceFor, rateFor,
@@ -320,7 +320,7 @@ function requestLineLabel(item) {
     : `${item.credits.toLocaleString()} IC`
 }
 
-function InvoiceTopUp({ account, appendLedger, appendTrustLedger }) {
+function InvoiceTopUp({ account, appendLedger, appendTrustLedger, onPayInvoices }) {
   const trustAvailable = account.trustCredits?.grantThisCycle > 0 || account.trustCredits?.available > 0
   const [ic, setIc] = useState(25000)
   const [tc, setTc] = useState(trustAvailable ? 5 : 0)
@@ -328,6 +328,10 @@ function InvoiceTopUp({ account, appendLedger, appendTrustLedger }) {
   const [added, setAdded] = useState([])
   const [statusOverrides, setStatusOverrides] = useState({}) // id → status (after grant)
   const [done, setDone] = useState(null)
+  /* The order form is one click away, not a permanent wall of selects —
+   * the default view is the request thread, which is what a procurement
+   * team comes here to check. */
+  const [showForm, setShowForm] = useState(false)
 
   const items = [
     ic > 0 && { type: 'intelligence', credits: ic },
@@ -353,6 +357,7 @@ function InvoiceTopUp({ account, appendLedger, appendTrustLedger }) {
     setAdded(r => [req, ...r])
     const summary = req.items.map(requestLineLabel).join(' + ')
     setDone(`Request ${req.id} submitted — ${summary} on one invoice (${fmtMoney(req.cost)}) under ${account.netTerms}. ${req.notes}.`)
+    setShowForm(false)
     setTimeout(() => setDone(null), 4000)
   }
 
@@ -372,9 +377,27 @@ function InvoiceTopUp({ account, appendLedger, appendTrustLedger }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h4 className="text-[13px] font-semibold text-gray-900">Purchase requests</h4>
+          <p className="text-[11.5px] text-gray-500 mt-0.5">Each request is one thread: order → invoice → credit grant.</p>
+        </div>
+        {!showForm && (
+          <button onClick={() => setShowForm(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#3D16FA] text-white text-[12px] font-semibold hover:bg-[#2E10C4] cursor-pointer shrink-0">
+            <Plus className="w-3.5 h-3.5" /> New purchase request
+          </button>
+        )}
+      </div>
+      {done && <p className="text-[12px] text-[#2E10C4] inline-flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 shrink-0" />{done}</p>}
+
+      {showForm && (
       <Card>
-        <h4 className="text-[13px] font-semibold text-gray-900">Order credits</h4>
+        <div className="flex items-start justify-between gap-3">
+          <h4 className="text-[13px] font-semibold text-gray-900">Order credits</h4>
+          <button onClick={() => setShowForm(false)} className="text-[11px] text-gray-400 hover:text-gray-700 cursor-pointer">Cancel</button>
+        </div>
         <p className="text-[12px] text-gray-500 mt-0.5 mb-4">
           Order Intelligence Credits, Trust Credits, or both on a single {account.poRequired ? 'PO-backed invoice' : 'invoice'} under {account.netTerms}. Each line is priced on its own schedule; you'll see one combined total before you submit.
         </p>
@@ -459,11 +482,10 @@ function InvoiceTopUp({ account, appendLedger, appendTrustLedger }) {
             </div>
           </div>
         </div>
-        {done && <p className="mt-3 text-[12px] text-[#2E10C4] inline-flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 shrink-0" />{done}</p>}
       </Card>
+      )}
 
       <Card>
-        <h4 className="text-[13px] font-semibold text-gray-900 mb-3">Purchase requests</h4>
         <ul className="divide-y divide-black/[0.06]">
           {requests.map(r => (
             <li key={r.id} className="py-3 text-[12px]">
@@ -486,7 +508,25 @@ function InvoiceTopUp({ account, appendLedger, appendTrustLedger }) {
                       </li>
                     ))}
                   </ul>
-                  <p className="text-[10.5px] text-gray-400 mt-1 truncate">{fmtDate(r.date)} · {r.po || 'No PO'} · {r.notes}</p>
+                  {/* The thread: this request's invoice, inline. */}
+                  {(() => {
+                    const inv = r.invoiceId ? account.invoices.find(i => i.id === r.invoiceId) : null
+                    if (!inv) return <p className="text-[10.5px] text-gray-400 mt-1 truncate">{fmtDate(r.date)} · {r.po || 'No PO'} · {r.notes}</p>
+                    return (
+                      <div className="mt-1.5 space-y-0.5">
+                        <p className="text-[11px] text-gray-600 inline-flex items-center gap-1.5 flex-wrap">
+                          <FileText className="w-3 h-3 text-gray-400 shrink-0" />
+                          Invoice <span className="font-mono">{inv.id}</span>
+                          <StatusPill status={inv.status} />
+                          <span className={inv.status === 'past_due' ? 'text-red-600 font-medium' : 'text-gray-400'}>
+                            {inv.status === 'paid' ? 'paid' : `due ${fmtDate(inv.dueDate)}`}
+                          </span>
+                          <span className="text-gray-400">· {r.po}</span>
+                        </p>
+                        <p className="text-[10.5px] text-gray-400 truncate">{fmtDate(r.date)} · {r.notes}</p>
+                      </div>
+                    )
+                  })()}
                 </div>
                 <span className="text-right shrink-0">
                   <span className="text-gray-900 font-semibold tabular-nums block">{fmtMoney(r.cost)}</span>
@@ -495,8 +535,11 @@ function InvoiceTopUp({ account, appendLedger, appendTrustLedger }) {
                 <div className="flex flex-col items-end gap-1.5 shrink-0">
                   <StatusPill status={r.status} />
                   {r.status !== 'completed' && (
-                    <button onClick={() => grant(r)}
-                      className="text-[10.5px] text-[#3D16FA] hover:text-[#2E10C4] cursor-pointer whitespace-nowrap font-medium">
+                    /* Supplier-side simulation control — marked as such.
+                       A customer never marks their own invoice paid. */
+                    <button onClick={() => (r.invoiceId && onPayInvoices) ? onPayInvoices([r.invoiceId]) : grant(r)}
+                      className="inline-flex items-center gap-1 text-[10.5px] text-purple-700 hover:text-purple-900 cursor-pointer whitespace-nowrap font-medium">
+                      <span className="text-[8.5px] uppercase tracking-wider px-1 py-0.5 rounded bg-purple-50 border border-purple-200">Internal</span>
                       Mark paid &amp; grant →
                     </button>
                   )}
@@ -509,6 +552,22 @@ function InvoiceTopUp({ account, appendLedger, appendTrustLedger }) {
           On payment, each line is fulfilled to its own wallet — Intelligence to the Intelligence balance, Trust to the Trust balance.
         </p>
       </Card>
+    </div>
+  )
+}
+
+/* ── Orders & Invoices — ONE thread per purchase ─────────────────
+ *
+ * On the invoice/PO rail, procurement thinks in threads: PO → purchase
+ * request → invoice → credit grant. This tab keeps the whole thread on
+ * one surface: the request list (with each request's invoice inline),
+ * and the full invoice register below it. */
+
+export function OrdersInvoicesPanel({ account, appendLedger, appendTrustLedger, filter, setFilter, onPayInvoices, onPayAll, paying }) {
+  return (
+    <div className="space-y-8">
+      <InvoiceTopUp account={account} appendLedger={appendLedger} appendTrustLedger={appendTrustLedger} onPayInvoices={onPayInvoices} />
+      <InvoicesPanel account={account} filter={filter} setFilter={setFilter} onPayAll={onPayAll} paying={paying} />
     </div>
   )
 }
@@ -855,10 +914,13 @@ export function AdminPanel({ account, appendLedger, updateBillingSettings }) {
         </div>
       )}
 
-      <Card>
+      <Card className="border-l-4 border-l-purple-300">
         <div className="flex items-center gap-2 mb-1">
-          <ShieldCheck className="w-4 h-4 text-gray-600" />
-          <h4 className="text-[13px] font-semibold text-gray-900">Manual credit adjustment</h4>
+          <ShieldCheck className="w-4 h-4 text-purple-600" />
+          <h4 className="text-[13px] font-semibold text-gray-900 inline-flex items-center gap-2">
+            Manual credit adjustment
+            <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200 font-semibold">Internal — arbitr Finance</span>
+          </h4>
         </div>
         <p className="text-[12px] text-gray-500 mb-4">Adjustments require a reason code, an internal note, and a reference. Removals, adjustments over 1,000 credits, and all Enterprise adjustments need a second approver.</p>
         <AdjustmentForm account={account} appendLedger={appendLedger} />

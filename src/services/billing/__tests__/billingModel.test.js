@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  PRICING, rateFor, priceFor, savingsPct, creditPackages,
+  PRICING, priceFor, savingsPct, creditPackages,
   buildLedger, walletFromLedger, reconciliationSummary, planMeterState,
   tabVisibility, validateAdjustment, buildAdjustmentEntry,
   getDemoAccount, DEMO_ACCOUNT_KEYS,
@@ -8,7 +8,7 @@ import {
   allocateUsageToBuckets, bucketsFromLedger, pastDueSummary, markInvoicesPaid,
   validateTopUpRequest, TRUST_PRICING, trustPriceFor, trustWalletFromLedger,
   purchaseRequestTotal, validatePurchaseRequest, buildPurchaseRequest, normalizeRequest,
-  purchaseRequestFulfillment, purchaseLineCost,
+  purchaseRequestFulfillment,
 } from '../billingModel'
 
 describe('pricing — one schedule for both rails', () => {
@@ -39,11 +39,13 @@ describe('pricing — one schedule for both rails', () => {
     expect(best[0].credits).toBe(10000)
   })
 
-  it('invoice/PO requests use the same pricing function as card', () => {
+  it('invoice/PO purchase-request lines use the same pricing function as card', () => {
     const ent = getDemoAccount('enterprise-invoice')
-    for (const tr of ent.topUpRequests) {
-      expect(tr.cost).toBe(priceFor(tr.credits))
-      expect(tr.rate).toBe(rateFor(tr.credits))
+    expect(ent.purchaseRequests.length).toBeGreaterThan(0)
+    for (const pr of ent.purchaseRequests) {
+      for (const line of pr.items) {
+        if (line.type === 'intelligence') expect(line.cost).toBe(priceFor(line.credits))
+      }
     }
   })
 })
@@ -399,11 +401,13 @@ describe('past-due banner ↔ invoice register consistency', () => {
     const a = getDemoAccount('enterprise-invoice')
     const pd = pastDueSummary(a.invoices)
     expect(pd.count).toBe(1)
-    expect(pd.ids).toEqual(['INV-2026-006'])
-    expect(pd.total).toBe(priceFor(5000)) // $45 — computed, never hardcoded
+    // Proportionate stakes: the past-due row is the $4,000 subscription,
+    // not a $45 top-up — "credits may pause" is credible.
+    expect(pd.ids).toEqual(['INV-2026-005'])
+    expect(pd.total).toBe(4000)
     expect(pd.oldestDueDate).toBe('2026-05-31')
     // The same row exists in the register with the same amount.
-    const row = a.invoices.find(i => i.id === 'INV-2026-006')
+    const row = a.invoices.find(i => i.id === 'INV-2026-005')
     expect(row.status).toBe('past_due')
     expect(row.amount).toBe(pd.total)
   })
@@ -414,7 +418,7 @@ describe('past-due banner ↔ invoice register consistency', () => {
     const after = markInvoicesPaid(a.invoices, before.ids)
     expect(pastDueSummary(after).count).toBe(0)
     expect(pastDueSummary(after).total).toBe(0)
-    expect(after.find(i => i.id === 'INV-2026-006').status).toBe('paid')
+    expect(after.find(i => i.id === 'INV-2026-005').status).toBe('paid')
     // Other invoices untouched: open count unchanged.
     expect(after.filter(i => i.status === 'open').length)
       .toBe(a.invoices.filter(i => i.status === 'open').length)
@@ -534,13 +538,19 @@ describe('Trust Credits — purchase & invoicing parity with Intelligence Credit
     expect(validateTopUpRequest({ credits: 5, po: '' }, poOpt).ok).toBe(true)
   })
 
-  it('the invoice/PO enterprise account seeds tracked trust purchases', () => {
+  it('the invoice/PO enterprise account seeds tracked trust purchases in the one PR stream', () => {
     const a = getDemoAccount('enterprise-invoice')
-    expect(a.trustTopUpRequests.length).toBeGreaterThanOrEqual(1)
-    for (const r of a.trustTopUpRequests) expect(r.cost).toBe(trustPriceFor(r.credits))
-    // An invoiced Trust line now rides on a combined IC+Trust order.
+    const trustLines = a.purchaseRequests.flatMap(r => r.items.filter(i => i.type === 'trust'))
+    expect(trustLines.length).toBeGreaterThanOrEqual(1)
+    for (const line of trustLines) expect(line.cost).toBe(trustPriceFor(line.credits))
+    // An invoiced Trust line rides on a combined IC+Trust order.
     const invoicedTrust = a.purchaseRequests.some(r => r.status === 'invoiced' && r.items.some(i => i.type === 'trust'))
     expect(invoicedTrust).toBe(true)
+    // Every invoiced/past-due request names its invoice — the thread is
+    // navigable in both directions.
+    for (const r of a.purchaseRequests.filter(x => x.status === 'invoiced')) {
+      expect(a.invoices.some(i => i.id === r.invoiceId)).toBe(true)
+    }
   })
 
   it('trust requests never appear on card-rail accounts (rail-shaped)', () => {

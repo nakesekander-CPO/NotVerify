@@ -24,10 +24,11 @@ import {
   getDemoAccount, walletFromLedger, planMeterState, tabVisibility,
   railPermissions, validateRailChange, buildRailChangeRequest,
   pastDueSummary, markInvoicesPaid, trustWalletFromLedger,
+  purchaseRequestFulfillment,
 } from '../../services/billing/billingModel'
 import {
-  TopUpPanel, UsageLedgerPanel, InvoicesPanel, PaymentsReceiptsPanel,
-  AdminPanel, PlansPanel,
+  TopUpPanel, UsageLedgerPanel, PaymentsReceiptsPanel,
+  AdminPanel, PlansPanel, OrdersInvoicesPanel,
 } from './BillingPanels'
 import { Card, StatusPill, fmtDate, fmtMoney } from './BillingShared'
 import { useToast } from '../ToastProvider'
@@ -77,14 +78,14 @@ export default function Billing({ tier = 'pro' }) {
     const creditWallet = walletFromLedger(ledger, { planGrant: baseAccount.creditWallet.plan.grantThisCycle })
     // Re-derive invoice flags + linked request statuses from live
     // invoice state so the past-due warning re-evaluates on payment.
-    const paidPos = new Set(invoices.filter(i => i.status === 'paid' && i.po).map(i => i.po))
-    const topUpRequests = (baseAccount.topUpRequests || []).map(r =>
-      ['past_due', 'invoiced'].includes(r.status) && paidPos.has(r.po)
+    const paidInvoiceIds = new Set(invoices.filter(i => i.status === 'paid').map(i => i.id))
+    const purchaseRequests = (baseAccount.purchaseRequests || []).map(r =>
+      r.status !== 'completed' && r.invoiceId && paidInvoiceIds.has(r.invoiceId)
         ? { ...r, status: 'completed', notes: 'Invoice paid · credits granted' }
         : r
     )
     const a = {
-      ...baseAccount, ...settings, ledger, creditWallet, invoices, receipts, topUpRequests,
+      ...baseAccount, ...settings, ledger, creditWallet, invoices, receipts, purchaseRequests,
       trustCredits: { ...trustWalletFromLedger(trustLedger), ledger: trustLedger },
       hasPastDueInvoices: invoices.some(i => i.status === 'past_due'),
       hasOpenInvoices: invoices.some(i => i.status === 'open'),
@@ -132,15 +133,19 @@ export default function Billing({ tier = 'pro' }) {
         const paidRows = invoices.filter(i => ids.includes(i.id))
         if (paidRows.length === 0) throw new Error('Invoice not found')
         setInvoicesByAccount(s => ({ ...s, [accountKey]: markInvoicesPaid(invoices, ids) }))
-        // Release credit grants held against the now-paid invoice(s).
+        // Release the linked order's REMAINING credits: full fulfillment
+        // minus anything already granted on finalization; Trust lines go
+        // to the Trust ledger — the wallets never cross.
         for (const inv of paidRows) {
-          const req = (baseAccount.topUpRequests || []).find(r => r.po && r.po === inv.po && r.status === 'past_due')
-          if (req) appendLedger({
-            id: `tp-${inv.id}`, date: new Date().toISOString().slice(0, 10),
-            event: 'top_up', source: `PO top-up — ${req.id} (released on payment)`,
-            bucket: 'top_up', delta: req.credits, ref: inv.id, actor: 'system',
-            note: `Granted on payment of ${inv.id}`,
+          const req = (baseAccount.purchaseRequests || []).find(r => r.invoiceId === inv.id && r.status !== 'completed')
+          if (!req) continue
+          const { icRows, trustRows } = purchaseRequestFulfillment(req)
+          const already = req.grantedSoFar || 0
+          icRows.forEach(row => {
+            const delta = row.delta - already
+            if (delta > 0) appendLedger({ ...row, delta, ref: inv.id, note: `Released on payment of ${inv.id}${already ? ` (${already.toLocaleString()} granted earlier)` : ''}` })
           })
+          trustRows.forEach(row => appendTrustLedger({ ...row, event: 'grant', ref: inv.id }))
         }
         const total = paidRows.reduce((s, i) => s + i.amount, 0)
         setPaySuccess(`${paidRows.map(i => i.id).join(', ')} paid — ${fmtMoney(total)}. Held credit grants released; the past-due hold is cleared.`)
@@ -163,49 +168,77 @@ export default function Billing({ tier = 'pro' }) {
   }
 
   /* Reset to a visible tab when the account/rail changes hides one. */
+  /* On the invoice/PO rail, orders and invoices are ONE thread —
+   * request → invoice → grant — so they share one tab. The badge counts
+   * invoices needing attention (open + past due). */
+  const attention = account.invoices.filter(i => i.status === 'open' || i.status === 'past_due').length
   const tabDefs = [
     account.tabs.overview        && { id: 'overview', label: 'Overview', icon: Wallet },
     account.tabs.plans           && { id: 'plans', label: account.tier === 'enterprise' && !isCard ? 'Plan & Contract' : 'Plans', icon: Tag },
-    account.tabs.topUp           && { id: 'topup', label: isCard ? 'Buy credits' : 'Top-up requests', icon: Plus },
+    isCard && account.tabs.topUp && { id: 'topup', label: 'Buy credits', icon: Plus },
+    !isCard && account.tabs.invoices && { id: 'orders', label: 'Orders & Invoices', icon: FileText, badge: attention || undefined },
     account.tabs.usageLedger     && { id: 'usage', label: 'Usage & Ledger', icon: History },
-    account.tabs.invoices        && { id: 'invoices', label: 'Invoices', icon: FileText },
     account.tabs.paymentsReceipts&& { id: 'payments', label: 'Payments & receipts', icon: Receipt },
     account.tabs.admin           && { id: 'admin', label: 'Admin', icon: SettingsIcon },
   ].filter(Boolean)
   const activeTab = tabDefs.some(t => t.id === tab) ? tab : 'overview'
+  const ordersTab = () => setTab(isCard ? 'topup' : 'orders')
 
   const goToExpiring = () => { setLedgerFilter('promotional'); setTab('usage') }
 
   return (
-    <div className="p-8 space-y-6">
-      <header className="flex items-start justify-between gap-4">
-        <div>
-          <h3 className="text-[18px] font-semibold text-gray-900 mb-0.5">Billing</h3>
-          <p className="text-[13px] text-gray-500">
-            {isCard
-              ? 'Subscription, credits, and payments — self-serve.'
-              : 'Subscription, credits, invoices, and purchase requests.'}
-          </p>
+    <div className="p-8 space-y-5">
+      {/* Demo-only controls sit together, clearly meta, above the page. */}
+      {IS_DEMO_ENV && account.tier === 'enterprise' && (
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 border border-black/[0.06]">
+          <span className="text-[10px] uppercase tracking-wider text-amber-600 shrink-0">Demo · preview both rails</span>
+          <div className="flex items-center gap-1">
+            {[['invoice_or_po', 'Invoice / PO'], ['card_or_ach', 'Card / ACH']].map(([v, l]) => (
+              <button key={v} onClick={() => setEntRail(v)}
+                className={`px-2 py-0.5 rounded text-[10.5px] font-medium cursor-pointer ${entRail === v ? 'bg-[#3D16FA] text-white' : 'text-gray-500 hover:bg-black/[0.05]'}`}>
+                {l}
+              </button>
+            ))}
+          </div>
         </div>
-        <RailControl account={account} entRail={entRail} setEntRail={setEntRail} />
+      )}
+
+      <header>
+        <div className="flex items-baseline justify-between gap-4 flex-wrap">
+          <h3 className="text-[18px] font-semibold text-gray-900">Billing</h3>
+          {/* The billing arrangement is one quiet line, not a card. */}
+          <RailControl account={account} />
+        </div>
+        <p className="text-[13px] text-gray-500 mt-0.5">
+          {isCard
+            ? 'Subscription, credits, and payments — self-serve.'
+            : 'Subscription, credits, invoices, and purchase requests.'}
+        </p>
       </header>
 
-      <AlertStack account={account} onOpenInvoices={() => { setInvoiceFilter('all'); setTab('invoices') }} onTopUp={() => setTab('topup')} onViewExpiring={goToExpiring}
+      {/* Full alert cards live on Overview only; every other tab gets a
+          one-line billing-health strip — same numbers, no shouting. */}
+      <AlertStack account={account} compact={activeTab !== 'overview'}
+        onOpenInvoices={() => { setInvoiceFilter('all'); ordersTab() }} onTopUp={ordersTab} onViewExpiring={goToExpiring}
+        onReviewPastDue={() => { setInvoiceFilter('past_due'); ordersTab() }}
         onPayPastDue={onPayPastDue} payingPastDue={payingPastDue} payError={payError} paySuccess={paySuccess} />
 
       <Tabs ariaLabel="Billing sections" tabs={tabDefs} active={activeTab} onChange={setTab} />
 
       {activeTab === 'overview' && (
-        <OverviewPanel account={account} onTopUp={() => setTab('topup')} onChangePlan={() => setTab('plans')}
-          onViewLedger={() => setTab('usage')} onViewInvoices={() => setTab('invoices')} onViewPayments={() => setTab('payments')} />
+        <OverviewPanel account={account} onTopUp={ordersTab} onChangePlan={() => setTab('plans')}
+          onViewLedger={() => setTab('usage')} onViewInvoices={() => { setInvoiceFilter('all'); ordersTab() }} onViewPayments={() => setTab('payments')} />
       )}
       {activeTab === 'plans' && <PlansPanel account={account} />}
-      {activeTab === 'topup' && <TopUpPanel account={account} appendLedger={appendLedger} appendTrustLedger={appendTrustLedger} appendReceipt={appendReceipt} />}
-      {activeTab === 'usage' && <UsageLedgerPanel account={account} filter={ledgerFilter} setFilter={setLedgerFilter} />}
-      {activeTab === 'invoices' && account.tabs.invoices && (
-        <InvoicesPanel account={account} filter={invoiceFilter} setFilter={setInvoiceFilter}
-          onPayAll={() => payInvoiceIds(pastDueSummary(invoices).ids)} paying={payingPastDue} />
+      {activeTab === 'topup' && isCard && <TopUpPanel account={account} appendLedger={appendLedger} appendTrustLedger={appendTrustLedger} appendReceipt={appendReceipt} />}
+      {activeTab === 'orders' && !isCard && (
+        <OrdersInvoicesPanel account={account}
+          appendLedger={appendLedger} appendTrustLedger={appendTrustLedger} appendReceipt={appendReceipt}
+          filter={invoiceFilter} setFilter={setInvoiceFilter}
+          onPayInvoices={payInvoiceIds} paying={payingPastDue}
+          onPayAll={() => payInvoiceIds(pastDueSummary(invoices).ids)} />
       )}
+      {activeTab === 'usage' && <UsageLedgerPanel account={account} filter={ledgerFilter} setFilter={setLedgerFilter} />}
       {activeTab === 'payments' && account.tabs.paymentsReceipts && <PaymentsReceiptsPanel account={account} />}
       {activeTab === 'admin' && account.tabs.admin && <AdminPanel account={account} appendLedger={appendLedger} updateBillingSettings={updateBillingSettings} />}
     </div>
@@ -222,7 +255,7 @@ export default function Billing({ tier = 'pro' }) {
 
 const RAIL_LABEL = { card_or_ach: 'Card / ACH', invoice_or_po: 'Invoice / PO' }
 
-function RailControl({ account, entRail, setEntRail }) {
+function RailControl({ account }) {
   const perms = railPermissions(account.role)
   const [open, setOpen] = useState(false)
   const [reason, setReason] = useState('')
@@ -230,7 +263,8 @@ function RailControl({ account, entRail, setEntRail }) {
   const [request, setRequest] = useState(null)
   if (!perms.canViewPaymentRail) return null
 
-  const targetRail = account.paymentRail === 'card_or_ach' ? 'invoice_or_po' : 'card_or_ach'
+  const isCard = account.paymentRail === 'card_or_ach'
+  const targetRail = isCard ? 'invoice_or_po' : 'card_or_ach'
   const validation = validateRailChange({ targetRail, reason, acknowledged }, account)
 
   const submit = () => {
@@ -240,23 +274,23 @@ function RailControl({ account, entRail, setEntRail }) {
   }
 
   return (
-    <div className="shrink-0 rounded-lg border border-black/[0.08] bg-gray-50 px-3 py-2 max-w-[300px]">
-      <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Billing arrangement</p>
-      <div className="flex items-center gap-2">
-        <span className="text-[12px] font-semibold text-gray-900">{RAIL_LABEL[account.paymentRail]}</span>
+    <div className="relative shrink-0 text-right">
+      <p className="text-[11.5px] text-gray-500">
+        <span className="font-semibold text-gray-800">{RAIL_LABEL[account.paymentRail]}</span>
+        {!isCard && <> · {account.netTerms} · {account.poNumber}</>}
         {perms.canRequestPaymentRailChange && !request && (
-          <button onClick={() => setOpen(o => !o)} className="text-[11px] text-[#3D16FA] hover:text-[#2E10C4] cursor-pointer">
+          <button onClick={() => setOpen(o => !o)} className="ml-2 text-[11px] text-[#3D16FA] hover:text-[#2E10C4] cursor-pointer">
             Request change
           </button>
         )}
-      </div>
+      </p>
       {request && (
-        <p className="text-[10.5px] text-gray-500 mt-1">
+        <p className="text-[10.5px] text-gray-500 mt-0.5">
           Request {request.id} → {RAIL_LABEL[request.toRail]} · {request.status === 'pending_approval' ? 'pending approval' : 'approved'} · logged to audit
         </p>
       )}
       {open && (
-        <div className="mt-2 pt-2 border-t border-black/[0.08] space-y-2">
+        <div className="absolute right-0 top-full mt-2 z-20 w-[300px] rounded-lg border border-black/[0.12] bg-white shadow-lg p-3 text-left space-y-2">
           <p className="text-[11px] text-gray-700">
             Change to <span className="font-semibold">{RAIL_LABEL[targetRail]}</span>. This changes invoices vs. receipts,
             payment methods, PO and net-terms handling, and how top-ups are purchased.
@@ -279,26 +313,13 @@ function RailControl({ account, entRail, setEntRail }) {
           </div>
         </div>
       )}
-      {IS_DEMO_ENV && account.tier === 'enterprise' && (
-        <div className="mt-2 pt-2 border-t border-dashed border-black/[0.1]">
-          <p className="text-[9.5px] uppercase tracking-wider text-amber-600 mb-1">Demo environment · preview both rails</p>
-          <div className="flex gap-1">
-            {[['invoice_or_po', 'Invoice / PO'], ['card_or_ach', 'Card / ACH']].map(([v, l]) => (
-              <button key={v} onClick={() => setEntRail(v)}
-                className={`px-2 py-0.5 rounded text-[10.5px] font-medium cursor-pointer ${entRail === v ? 'bg-[#3D16FA] text-white' : 'text-gray-500 hover:bg-black/[0.05]'}`}>
-                {l}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   )
 }
 
 /* ── Alerts — rail-aware, action sits beside the message ─────── */
 
-function AlertStack({ account, onOpenInvoices, onTopUp, onViewExpiring, onPayPastDue, payingPastDue, payError, paySuccess }) {
+function AlertStack({ account, compact, onOpenInvoices, onTopUp, onViewExpiring, onReviewPastDue, onPayPastDue, payingPastDue, payError, paySuccess }) {
   const isCard = account.paymentRail === 'card_or_ach'
   const w = account.creditWallet
   const alerts = []
@@ -317,16 +338,22 @@ function AlertStack({ account, onOpenInvoices, onTopUp, onViewExpiring, onPayPas
     const pd = pastDueSummary(account.invoices)
     const open = account.invoices.filter(i => i.status === 'open')
     if (pd.count > 0) {
+      /* Rail purity: a Net-terms account settles by bank transfer, so the
+       * primary action is the invoice + remittance details. Card payment
+       * stays available as the explicitly-labelled exception. */
       alerts.push({
         tone: 'red', icon: AlertCircle,
         title: `${pd.count} invoice${pd.count === 1 ? ' is' : 's are'} past due`,
         body: `${fmtMoney(pd.total)} due since ${fmtDate(pd.oldestDueDate)}. Credits may pause if unpaid.`,
         primary: {
-          label: payingPastDue ? 'Processing…' : `Pay ${fmtMoney(pd.total)} now`,
+          label: 'View invoice & remittance',
+          onClick: onReviewPastDue,
+        },
+        cta: {
+          label: payingPastDue ? 'Processing…' : 'Pay by card (exception)',
           onClick: onPayPastDue,
           busy: payingPastDue,
         },
-        cta: { label: 'Open invoices', onClick: onOpenInvoices },
         errorText: payError,
       })
     }
@@ -352,6 +379,41 @@ function AlertStack({ account, onOpenInvoices, onTopUp, onViewExpiring, onPayPas
   }
 
   if (alerts.length === 0) return null
+
+  /* One-line billing-health strip for every tab except Overview: the
+   * same numbers, one Review action, no stacked banners. A payment
+   * success/error still shows in full so feedback is never compacted
+   * away. */
+  if (compact && !paySuccess && !payError) {
+    const pd = isCard ? { count: 0 } : pastDueSummary(account.invoices)
+    const openCount = isCard ? 0 : account.invoices.filter(i => i.status === 'open').length
+    const segments = [
+      pd.count > 0 && { text: `${pd.count} past due (${fmtMoney(pd.total)})`, tone: 'text-red-700 font-semibold' },
+      openCount > 0 && { text: `${openCount} open invoice${openCount === 1 ? '' : 's'}`, tone: 'text-gray-600' },
+      account.expiring?.amount > 0 && { text: `${account.expiring.amount.toLocaleString()} promo credits expire ${fmtDate(account.expiring.expiresAt)}`, tone: 'text-gray-600' },
+      isCard && account.cardExpiresSoon && { text: 'card expires soon', tone: 'text-amber-700' },
+      isCard && account.lastPaymentFailed && { text: 'last payment failed', tone: 'text-red-700 font-semibold' },
+    ].filter(Boolean)
+    if (segments.length === 0) return null
+    return (
+      <div className="flex items-center gap-2 rounded-lg border border-black/[0.08] bg-gray-50 px-3 py-1.5 text-[11.5px]">
+        <AlertCircle className={`w-3.5 h-3.5 shrink-0 ${pd.count > 0 ? 'text-red-500' : 'text-gray-400'}`} />
+        <span className="min-w-0 truncate text-gray-500">
+          {segments.map((seg, i) => (
+            <span key={i}>
+              {i > 0 && <span className="text-gray-300"> · </span>}
+              <span className={seg.tone}>{seg.text}</span>
+            </span>
+          ))}
+        </span>
+        <button onClick={pd.count > 0 ? onReviewPastDue : onOpenInvoices}
+          className="ml-auto shrink-0 text-[11px] font-semibold text-[#3D16FA] hover:text-[#2E10C4] cursor-pointer">
+          Review →
+        </button>
+      </div>
+    )
+  }
+
   const tones = {
     red:     'bg-red-50 border-red-200 text-red-800',
     amber:   'bg-amber-50 border-amber-200 text-amber-800',
@@ -380,7 +442,7 @@ function AlertStack({ account, onOpenInvoices, onTopUp, onViewExpiring, onPayPas
                 <span className="font-semibold">{a.title}</span>
                 <span className="opacity-90"> — {a.body}</span>
                 {a.cta && (
-                  <button onClick={a.cta.onClick} className="ml-2 font-semibold underline underline-offset-2 cursor-pointer whitespace-nowrap">
+                  <button onClick={a.cta.onClick} disabled={a.cta.busy} className="ml-2 font-semibold underline underline-offset-2 cursor-pointer whitespace-nowrap disabled:opacity-60 disabled:cursor-wait">
                     {a.cta.label}
                   </button>
                 )}
@@ -493,14 +555,29 @@ function OverviewPanel({ account, onTopUp, onChangePlan, onViewLedger, onViewInv
             )}
           </div>
 
-          <ul className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 text-[11.5px]">
-            {buckets.map(b => (
-              <li key={b.label} className="flex justify-between">
-                <span className="text-gray-500">{b.label}</span>
-                <span className="text-gray-900 font-medium tabular-nums">{b.value.toLocaleString()}</span>
-              </li>
-            ))}
-          </ul>
+          {/* Bucket detail is accountant material — one click away, not
+              the landing view. The ledger remains the full story. */}
+          {buckets.length > 1 && (
+            <details className="mt-3 group">
+              <summary className="text-[11px] text-[#3D16FA] hover:text-[#2E10C4] cursor-pointer list-none select-none">
+                <span className="group-open:hidden">Balance breakdown ({buckets.length} buckets) ▸</span>
+                <span className="hidden group-open:inline">Balance breakdown ▾</span>
+              </summary>
+              <ul className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5 text-[11.5px]">
+                {buckets.map(b => (
+                  <li key={b.label} className="flex justify-between">
+                    <span className="text-gray-500">{b.label}</span>
+                    <span className="text-gray-900 font-medium tabular-nums">{b.value.toLocaleString()}</span>
+                  </li>
+                ))}
+              </ul>
+              {w.legacy.available > 0 && (
+                <p className="mt-2 text-[10.5px] text-gray-400">
+                  Legacy: migrated from PO-2025-098 · consumed last · no expiry · full history in the ledger.
+                </p>
+              )}
+            </details>
+          )}
 
           {/* Trust Credits — separate currency, separate ledger. Shown
               only when the plan includes them or a balance exists. */}
@@ -516,22 +593,6 @@ function OverviewPanel({ account, onTopUp, onChangePlan, onViewLedger, onViewInv
           )}
         </Card>
       </div>
-
-      {/* Legacy credits — historical archive framing */}
-      {w.legacy.available > 0 && (
-        <Card>
-          <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-lg bg-gray-100 border border-black/[0.06] flex items-center justify-center shrink-0">
-              <History className="w-4 h-4 text-gray-500" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-semibold text-gray-900">Legacy credit balance · {w.legacy.available.toLocaleString()} credits</p>
-              <p className="text-[12px] text-gray-600 mt-0.5">Migrated from a previous purchase (PO-2025-098). Legacy credits are consumed last, after plan, promotional, top-up, and adjustment credits.</p>
-              <p className="text-[11px] text-gray-400 mt-1">No expiry · visible in the ledger under the Legacy bucket</p>
-            </div>
-          </div>
-        </Card>
-      )}
 
       <div className="grid grid-cols-2 gap-4">
         <Card>
@@ -553,51 +614,60 @@ function OverviewPanel({ account, onTopUp, onChangePlan, onViewLedger, onViewInv
           </ul>
         </Card>
 
-        <Card>
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="text-[13px] font-semibold text-gray-900">{isCard ? 'Payments & receipts' : 'Recent invoices'}</h4>
-            <button onClick={isCard ? onViewPayments : onViewInvoices} className="text-[11px] text-[#3D16FA] hover:text-[#2E10C4] cursor-pointer">View all →</button>
-          </div>
-          <ul className="divide-y divide-black/[0.06]">
-            {(isCard ? account.receipts : account.invoices).slice(0, 4).map(r => (
-              <li key={r.id} className="py-2 flex items-center gap-3 text-[12px]">
-                <Receipt className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-gray-900 truncate">{r.id} · {r.type}</p>
-                  <p className="text-[10.5px] text-gray-400">{fmtDate(r.date)}{r.method ? ` · ${r.method}` : ''}{r.po ? ` · ${r.po}` : ''}</p>
-                </div>
-                <span className="text-gray-700 tabular-nums">${r.amount.toLocaleString(undefined, { minimumFractionDigits: r.amount % 1 ? 2 : 0 })}</span>
-                <StatusPill status={r.status} />
-              </li>
-            ))}
-          </ul>
-        </Card>
+        {isCard ? (
+          <Card>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-[13px] font-semibold text-gray-900">Payments & receipts</h4>
+              <button onClick={onViewPayments} className="text-[11px] text-[#3D16FA] hover:text-[#2E10C4] cursor-pointer">View all →</button>
+            </div>
+            <ul className="divide-y divide-black/[0.06]">
+              {account.receipts.slice(0, 4).map(r => (
+                <li key={r.id} className="py-2 flex items-center gap-3 text-[12px]">
+                  <Receipt className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-gray-900 truncate">{r.id} · {r.type}</p>
+                    <p className="text-[10.5px] text-gray-400">{fmtDate(r.date)}{r.method ? ` · ${r.method}` : ''}</p>
+                  </div>
+                  <span className="text-gray-700 tabular-nums">${r.amount.toLocaleString(undefined, { minimumFractionDigits: r.amount % 1 ? 2 : 0 })}</span>
+                  <StatusPill status={r.status} />
+                </li>
+              ))}
+            </ul>
+          </Card>
+        ) : (
+          /* Do we owe anything? — the one question this card answers. */
+          <Card>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-[13px] font-semibold text-gray-900">Amounts owed</h4>
+              <button onClick={onViewInvoices} className="text-[11px] text-[#3D16FA] hover:text-[#2E10C4] cursor-pointer">Orders & invoices →</button>
+            </div>
+            {(() => {
+              const owed = account.invoices.filter(i => i.status === 'open' || i.status === 'past_due')
+              const total = owed.reduce((sum, i) => sum + i.amount, 0)
+              if (owed.length === 0) return <p className="text-[12.5px] text-gray-500">Nothing outstanding — all invoices are paid.</p>
+              return (
+                <>
+                  <p className="text-[22px] font-bold text-gray-900 leading-none" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{fmtMoney(total)}</p>
+                  <p className="text-[11px] text-gray-500 mt-1 mb-3">across {owed.length} invoice{owed.length === 1 ? '' : 's'} · {account.netTerms}</p>
+                  <ul className="divide-y divide-black/[0.06]">
+                    {owed.map(i => (
+                      <li key={i.id} className="py-2 flex items-center gap-3 text-[12px]">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-gray-900 truncate">{i.id} · {i.type}</p>
+                          <p className={`text-[10.5px] ${i.status === 'past_due' ? 'text-red-600 font-medium' : 'text-gray-400'}`}>Due {fmtDate(i.dueDate)} · {i.po}</p>
+                        </div>
+                        <span className="text-gray-700 tabular-nums">{fmtMoney(i.amount)}</span>
+                        <StatusPill status={i.status} />
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )
+            })()}
+          </Card>
+        )}
       </div>
-
-      {!isCard && (
-        <Card>
-          <div className="flex items-center gap-2 mb-2">
-            <Building2 className="w-4 h-4 text-gray-500" />
-            <h4 className="text-[13px] font-semibold text-gray-900">Billing terms</h4>
-          </div>
-          <ul className="grid grid-cols-4 gap-x-6 gap-y-2 text-[12px]">
-            <li><Term label="Payment rail" value="Invoice / PO" /></li>
-            <li><Term label="Terms" value={account.netTerms} /></li>
-            <li><Term label={`PO (${account.poRequired ? 'required' : 'optional'})`} value={account.poNumber || '—'} /></li>
-            <li><Term label="Credit grant" value={account.grantPolicy === 'on-finalization' ? 'On invoice finalization' : 'On payment'} /></li>
-          </ul>
-        </Card>
-      )}
     </div>
-  )
-}
-
-function Term({ label, value }) {
-  return (
-    <>
-      <span className="text-gray-400 text-[10.5px] uppercase tracking-wider block">{label}</span>
-      <span className="text-gray-900">{value}</span>
-    </>
   )
 }
 
